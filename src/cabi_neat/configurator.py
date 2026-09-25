@@ -15,6 +15,7 @@ from .builder import Cabinet
 from .builder import open_transformation
 from .config import CabinetConfig
 from .layout import part_category_group
+from .layout import resolve_layout
 from .planner import Planner
 
 MATERIALS = {
@@ -48,7 +49,32 @@ class Configurator:
         self._lock = threading.Lock()
         self.version = 0  # incremented on every applied config, so the planner page can notice changes
         self.last_error = None
+        self.stale = True  # the 3D model doesn't show the current config yet
         self.planner = Planner(self)
+
+    def set_config(self, config):
+        """Make ``config`` the current one without building it: the 3D view is updated by :meth:`generate`.
+
+        Only the layout is resolved, which is fast and catches impossible configurations. Returns False (and keeps the
+        previous config) if it's invalid.
+        """
+        try:
+            resolve_layout(config)
+        except ValueError as e:
+            self.last_error = str(e)
+            return False
+        with self._lock:
+            self.config = config
+            self.last_error = None
+            self.stale = True
+            self.version += 1
+        return True
+
+    def generate(self):
+        """Build the current config and show it in the 3D view. Returns the joinery errors."""
+        if not self.apply(self.config):
+            return None
+        return list(self.cabinet.errors)
 
     def apply(self, config):
         """Build ``config`` and show it. Invalid configs are reported and the previous cabinet is kept."""
@@ -62,6 +88,7 @@ class Configurator:
             self.config = config
             self.cabinet = cabinet
             self.last_error = None
+            self.stale = False
             self.version += 1
             for error in cabinet.errors:
                 print("Joinery: {}".format(error))
@@ -92,7 +119,9 @@ class Configurator:
                     moved = open_transformation(part)
                     if moved:
                         transformation = DISPLAY_SCALE * moved
-                geometry = self.cabinet.plates[part.name].modelgeometry.transformed(transformation)
+                # send a mesh, not the Brep: compas_threejs regenerates a Brep's display mesh with a new guid when it's
+                # moved in the viewer, which the frontend then shows as a second object that can't be removed
+                geometry = self.cabinet.plates[part.name].modelgeometry.transformed(transformation).to_viewmesh()
                 self.app.add_geometry(geometry, MATERIALS[group])
                 self._objects.append(geometry)
         finally:

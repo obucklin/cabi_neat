@@ -151,3 +151,47 @@ def test_panel_joints_survive_sectioning():
     assert sorted(after.values()) == sorted(before.values())
     by_position = {tuple(p.origin): p.attributes["joint"] for p in layout.by_category("shelf")}
     assert after == by_position
+
+
+def test_panel_joint_parameters():
+    interior = rows("open", "open", "open", panel_joints=[{"type": "clamex_p14", "distance": 80, "center_connector": False}, {"type": "mortise_tenon"}])
+    layout = resolve_layout(CabinetConfig(interior=interior, tenon_count=3))
+    first, second = layout.part("shelf_0"), layout.part("shelf_1")
+    assert first.attributes["joint_parameters"] == {"distance": 80, "center_connector": False}
+    assert second.attributes["joint_parameters"] == {"depth": None, "tenon_count": 3}  # cabinet defaults
+    kind, parameters = layout.joint_kinds[("shelf_0", "side_left")]
+    assert kind == "clamex_p14" and parameters["distance"] == 80
+    config = CabinetConfig(interior=interior)
+    assert CabinetConfig.from_json(config.to_json()) == config
+    with pytest.raises(ValueError, match="Unknown parameters"):
+        rows("open", "open", panel_joints=[{"type": "clamex_p14", "depth": 3}])
+
+
+def test_per_section_hinges_drawers_and_drawer_shelves():
+    from cabi_neat.sections import sectioned
+
+    interior = rows(
+        Cell("drawer", drawer={"front_one_piece": True, "bottom_offset": 15}),
+        Cell("drawer"),
+        Cell(door_style="single", hinges={"hinge_count": 2, "cup_edge_distance": 3}),
+        drawer_shelves=True,
+    )
+    config = CabinetConfig(interior=interior, hinges={"end_distance": 80})
+    layout = resolve_layout(config)
+    # the two stacked drawers get a shelf between them (a shelf between drawers and door anyway)
+    assert len(layout.by_category("shelf")) == 2
+    # the first drawer has a one-piece front (no box front), the second uses the cabinet's two-piece default
+    assert "drawer_0_box_front" not in [p.name for p in layout.parts]
+    assert "drawer_1_box_front" in [p.name for p in layout.parts]
+    assert layout.part("drawer_0_bottom").origin[2] - layout.part("drawer_0_side_l").origin[2] == pytest.approx(15)
+    # the door's hinges: its own dimensions over the cabinet's
+    kind, parameters = next(v for (main, cross), v in layout.joint_kinds.items() if v[0] == "cup_hinge")
+    assert (parameters["hinge_count"], parameters["cup_edge_distance"], parameters["end_distance"]) == (2, 3, 80)
+    # the options survive JSON and conversion to section form
+    assert CabinetConfig.from_json(config.to_json()) == config
+    converted = sectioned(config).interior
+    assert converted.drawer_shelves is True
+    assert converted.children[0].drawer == {"front_one_piece": True, "bottom_offset": 15}
+    assert converted.children[2].hinges == {"hinge_count": 2, "cup_edge_distance": 3}
+    with pytest.raises(ValueError, match="Unknown drawer settings"):
+        Cell("drawer", drawer={"color": "red"})

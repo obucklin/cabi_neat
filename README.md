@@ -66,7 +66,11 @@ Fronts follow these rules:
 
 ### Joints
 
-Panels are joined with compas_timber's `PlateLButtJoint` / `PlateTButtJoint`. The back runs the full height between the sides. The top and bottom butt against it as `main_plate`, with the back as `cross_plate`. The back sits in rabbets cut into the sides using `cabi_neat.joints.PlateRabbetJoint`, set by `back_joint="rabbet"` (the default; `"butt"` turns it off) and `rabbet_depth` (default: half the side thickness). The rabbet joint is an L joint with the back as main plate. The back is extended `rabbet_depth` into each side, and the side gets a `FreeContour` pocket as wide as the back is thick. Each shelf and divider picks its own joint to the sides, top, bottom and other panels: mortise and tenon, Clamex P-14, or stopped dado. In the planner it's a dropdown next to each panel's position. In the config it's `Split.panel_joints`, one entry per panel, where `None` means the cabinet's `interior_joint`. Shelves at the same height across columns share a setting.
+Panels are joined with compas_timber's `PlateLButtJoint` / `PlateTButtJoint`. The back runs the full height between the sides. The top and bottom butt against it as `main_plate`, with the back as `cross_plate`. The back sits in rabbets cut into the sides using `cabi_neat.joints.PlateRabbetJoint`, set by `back_joint="rabbet"` (the default; `"butt"` turns it off) and `rabbet_depth` (default: half the side thickness). The rabbet joint is an L joint with the back as main plate. The back is extended `rabbet_depth` into each side, and the side gets a `FreeContour` pocket as wide as the back is thick. Each shelf and divider picks its own joint to the sides, top, bottom and other panels: mortise and tenon, Clamex P-14, or stopped dado. In the planner it's a dropdown next to each panel's position, followed by only that joint's parameters. Empty fields use the defaults. In the config it's `Split.panel_joints`, one entry per panel:
+
+- a joint type;
+- a dict with the type and its parameters, e.g. `{"type": "clamex_p14", "distance": 80, "center_connector": false}` (see `JOINT_PARAMETERS`);
+- or `None`, which means the cabinet's `interior_joint`. Shelves at the same height across columns share a setting.
 
 `cabi_neat.joints.PlateMortiseTenon` is a T joint. Its settings:
 
@@ -91,6 +95,22 @@ By default, the top and bottom are joined to the sides with Lamello Clamex P-14 
 - The main plate's edge is extended into the groove, with a notch where the groove stops, so the panel slides in from behind and nothing shows at the front.
 - The groove's `depth` (`dado_depth`) defaults to a third of the cross plate's thickness.
 
+Drawer boxes are joined like this:
+
+- **Box back:** rabbeted into the sides (`PlateRabbetJoint`).
+- **Box front, two-piece fronts:** also rabbeted into the sides. The visible front is fixed to the box front.
+- **One-piece fronts** (`drawer_front_one_piece`): the visible front is the box front. Each side is fixed to its back face with one Clamex P-14 connector in the middle, plus two Ø8 alignment dowels 30 from the ends.
+- **Bottom:** sits in grooves in the sides, front and back (`cabi_neat.joints.PlateGrooveJoint`), `drawer_bottom_offset` (default 10) above the box's lower edge. The grooves run through the sides. In the front and back they stop, exactly as long as the bottom's edge including its corners reaching into the side grooves: as short as possible without notching the bottom, and invisible on a one-piece front. Their depth (`drawer_groove_depth`) defaults to half the grooved panel's thickness.
+
+Doors hang on European concealed cup hinges ("Topfband") using `cabi_neat.joints.CupHingeJoint`, a joint between the door and the side or divider on its hinge side. Each hinge makes these cuts:
+
+- **Door:** a Ø35 × 13 pot (`FreeContour`) whose edge is 5 mm from the door edge (the pot offset). Also two Ø3 × 11 screw holes (`Drilling`), 48 apart and 6 further from the edge than the pot centre.
+- **Side:** the mounting plate's two Ø5 × 12 screw holes (`Drilling`), 32 apart, on the face towards the door. They're 37 from the door's back face, so for inset doors they move back by the door's thickness.
+
+Each door gets 4 hinges, 100 from its ends; set `hinge_count` to `None` to pick the count from the door height. The hinge type follows `door_mount`.
+
+Every dimension can be changed per door (the `hinges` of a section with a door, or in the planner under that door). `CabinetConfig.hinges` sets cabinet-wide defaults, e.g. `{"cup_edge_distance": 3, "door_hole_spacing": 52}`.
+
 The cut list is measured on the processed plates, so it includes the back's extra width and the tenons.
 
 Configs serialize to JSON with `config.to_json(path)` and `CabinetConfig.from_json(path)`; see `examples/03_custom_stack.json`.
@@ -102,18 +122,35 @@ python -m cabi_neat                               # or: cabi-neat
 python -m cabi_neat examples/04_high_shelf.json   # start from a saved config
 ```
 
-This opens the planner at `http://127.0.0.1:9001/planner/`. It shows a 2D front elevation next to a live 3D view, and all the controls are in the planner:
+This opens the planner at `http://127.0.0.1:9001/planner/`. It shows a 2D front elevation next to a 3D view.
 
-- **Cabinet:** dimensions, panel / back / front thickness, front gap, overlay or inset fronts, and the drawer options.
-- **Sections:** the whole interior is a section, and so is every compartment made by a shelf or divider.
-  1. **Select** a section by clicking it. Each click goes one level deeper, `Esc` goes back up, and the breadcrumbs jump to any level.
-  2. **Add or remove** shelves and dividers with the counters. They're evenly spaced. Dividers run full height, and the shelf count applies to every column. Select a single column to give it a different shelf count.
-  3. **Position** the selected section's panels by dragging them, or by typing their distance from the bottom or left of the section. Shelves at the same height in different columns move together.
-  4. **Fronts:** give a section a door (hinged left or right, or double), or tick **Drawer** for a section without shelves or dividers. Everything inside a section with a door is behind that door: those sections can't have fronts of their own, and with inset fronts their panels are set back. Panels between fronts come forward flush with the carcass. Dividing a drawer gives stacked or side-by-side drawers.
+**Hierarchy bar.** Below the toolbar, `↑ Up | Carcass › Section 1 › Section 1.2` shows where you are.
+- Click a button to go to that level, or use `↑ Up` / `Esc` for the parent.
+- To go deeper, click a compartment in the plan.
 
-  Child sections that have their own shelves or dividers are greyed out, and only the selected section's own panels can be edited.
-- **View:** show fronts in the plan, and show or open fronts in the 3D view (doors swing on their hinges, drawers slide out).
-- **Toolbar:** undo and redo, a snap grid, a cut list, and JSON save/load.
+**Sidebar.** It shows only the current compartment's parameters:
+- **Carcass** (the top level): cabinet dimensions, thicknesses, front gap, overlay or inset, carcass joints (back rabbet, Clamex top and bottom), then the interior's front, shelves and dividers.
+- **A section:**
+  - **Dimensions:** clear size, its own size, flexible.
+  - **Type:** Open, Door or Drawers. Switching type converts the section, and only that type's controls are shown:
+    - **Open:** shelves and dividers, with each panel's position and joint (and that joint's parameters).
+    - **Door:** hinged left, right or double, with the door's **Hinges** as a collapsible menu (collapsible General, Door and Side groups). Below that, the shelves and dividers behind the door.
+    - **Drawers:** how many stacked drawers, dividers for side-by-side stacks, and "Shelves between drawers" (with 2 or more). A collapsible **Drawer settings** menu (one-piece front, bottom height, bottom groove depth) applies to all of the section's drawers. The drawer positions can be typed too.
+  - A section behind a door has no type: it's open, with its shelves and dividers.
+
+Empty fields use the cabinet's defaults, shown as placeholders.
+
+**How sections work:**
+- Shelves, dividers and drawers are evenly spaced when added. Their spacing stays automatic: when the parent compartment or the cabinet changes size, they redistribute evenly.
+- A position you type or drag, or a size you type, is fixed and stays. Only the compartment before a moved panel becomes fixed, and the automatic ones around it keep sharing the rest. Tick "Automatic" on a compartment to go back to shared spacing.
+- Dividers run full height, and the shelf count applies to every column.
+- Drag the current section's panels in the plan, or type their positions.
+- A section with a door covers everything inside it.
+- Drawers can't be behind a door. For drawers below shelves, divide the section first, then set each part's type.
+
+**Generate 3D.** Edits only update the plan. **Generate 3D** (top right) builds the timber model and updates the 3D view. It's highlighted while the 3D view is out of date. The cut list generates first if needed.
+
+**Toolbar.** Undo/redo, a snap grid, the cut list, JSON save (with a save dialog in Chrome/Edge) and load, and toggles for fronts in the plan and fronts shown or open in 3D.
 
 The page keeps no geometry of its own. It edits the interior tree (`planner_frontend/tree.js`) and posts the config to `/planner/api/config`. Python then resolves and builds the cabinet, updates the 3D view, and sends the resolved layout back for drawing. `cabi_neat.sections.sectioned(config)` converts any config into the planner's *section form*, where every node has an explicit front, without changing its geometry.
 

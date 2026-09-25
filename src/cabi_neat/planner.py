@@ -9,12 +9,13 @@ from pathlib import Path
 from fastapi import Body
 
 from .config import CabinetConfig
+from .joints import CupHingeJoint
 from .layout import resolve_layout
 from .sections import sectioned
 
 FRONTEND_DIR = Path(__file__).parent / "planner_frontend"
 
-_PART_ATTRIBUTES = ("split", "gap", "hinge_side", "drawer", "joint")
+_PART_ATTRIBUTES = ("split", "gap", "hinge_side", "drawer", "joint", "joint_parameters")
 
 
 def layout_to_data(layout):
@@ -47,7 +48,10 @@ class Planner:
     ``GET /planner/api/state``
         ``{"version", "config", "layout", "error"}`` for the current config, with ``config.interior`` in section form.
     ``POST /planner/api/config``
-        Apply a config. Returns the new state with ``"ok": true``, or ``{"ok": false, "error": ...}``.
+        Make a config the current one (validated, not built). Returns the new state with ``"ok": true``, or
+        ``{"ok": false, "error": ...}``.
+    ``POST /planner/api/generate``
+        Build the current config and show it in the 3D view: ``{"ok", "errors"}`` plus the new state.
     ``GET /planner/api/version``
         ``{"version"}``, which increments whenever the configurator applies a config.
     ``GET /planner/api/cutlist``
@@ -63,6 +67,7 @@ class Planner:
         app.add_route("/planner/api/version", self.get_version)
         app.add_route("/planner/api/config", self.post_config, methods=("POST",))
         app.add_route("/planner/api/cutlist", self.get_cut_list)
+        app.add_route("/planner/api/generate", self.post_generate, methods=("POST",))
         app.add_route("/planner/api/display", self.post_display, methods=("POST",))
         app.add_static_mount("/planner", FRONTEND_DIR, name="planner_frontend")
 
@@ -86,9 +91,21 @@ class Planner:
             "layout": layout_to_data(resolve_layout(config)),
             "error": self.configurator.last_error,
             "display": {"show_fronts": self.configurator.show_fronts, "open_fronts": self.configurator.open_fronts},
+            "stale": self.configurator.stale,
+            "joint_defaults": config.joint_defaults(),
+            "hinge_defaults": {key: CupHingeJoint.PARAMETERS[key] for key in CupHingeJoint.DIMENSIONS},
         }
 
+    def post_generate(self):
+        errors = self.configurator.generate()
+        if errors is None:
+            return {"ok": False, "error": self.configurator.last_error}
+        return dict(self.get_state(), ok=True, errors=[str(getattr(e, "debug_info", e)) for e in errors])
+
     def get_cut_list(self):
+        # the cut list is measured on the built plates
+        if self.configurator.stale:
+            self.configurator.generate()
         cabinet = self.configurator.cabinet
         return {"rows": [list(row) for row in cabinet.cut_list()] if cabinet else []}
 
@@ -101,6 +118,6 @@ class Planner:
             config = CabinetConfig.from_data(data)
         except (TypeError, ValueError) as e:
             return {"ok": False, "error": str(e)}
-        if not self.configurator.apply(config):
+        if not self.configurator.set_config(config):
             return {"ok": False, "error": self.configurator.last_error}
         return dict(self.get_state(), ok=True)

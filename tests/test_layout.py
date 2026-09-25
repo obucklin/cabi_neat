@@ -175,8 +175,9 @@ def test_invalid_configs_raise(config):
 def test_drawer_height_default():
     config = CabinetConfig.stack(["drawer", Zone(ZoneKind.DRAWER, 250), "open"], height=1000, thickness=20, drawer_height=150, door_style="none")
     fronts = sorted((p for p in resolve_layout(config).by_category("drawer_side") if p.name.endswith("_l")), key=lambda p: p.origin[2])
-    assert [f.origin[2] for f in fronts] == pytest.approx([20, 170])
-    assert fronts[1].size[2] == pytest.approx(250 - config.drawer_top_clearance)
+    # the second drawer's box starts at its front, half the front gap above the boundary between the stacked drawers
+    assert [f.origin[2] for f in fronts] == pytest.approx([20, 170 + 1.5])
+    assert fronts[1].size[2] == pytest.approx(250 - config.drawer_top_clearance - 1.5)
 
 
 def test_shelves_between_drawers():
@@ -221,3 +222,15 @@ def test_one_piece_drawer_front(mount):
         assert side.origin[1] == pytest.approx(front.max[1])
         assert (side.name, front.name) in layout.joints
     assert (bottom.name, front.name) in layout.joints
+
+
+@pytest.mark.parametrize("mount", ["overlay", "inset"])
+@pytest.mark.parametrize("between", [False, True])
+def test_drawer_boxes_do_not_reach_below_their_fronts(mount, between):
+    config = CabinetConfig.stack(["drawer", "drawer", "drawer", "open"], door_mount=mount, shelves_between_drawers=between)
+    layout = resolve_layout(config)
+    for front in layout.by_category("drawer_front"):
+        key = front.attributes["drawer"]
+        box = [p for p in layout.parts if p.attributes.get("drawer") == key and p.category != "drawer_front"]
+        assert min(p.origin[2] for p in box) >= front.origin[2] - 1e-9, key
+        assert max(p.max[2] for p in box) <= front.max[2] + 1e-9, key

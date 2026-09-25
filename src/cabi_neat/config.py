@@ -120,6 +120,60 @@ class Column:
 BACK_JOINTS = ("rabbet", "butt")
 INTERIOR_JOINTS = ("mortise_tenon", "clamex_p14", "stopped_dado", "butt")
 CARCASS_JOINTS = ("butt", "clamex_p14")
+# the dimensions of door hinges that can be set in CabinetConfig.hinges (see cabi_neat.joints.CupHingeJoint)
+HINGE_DIMENSIONS = (
+    "hinge_count",
+    "end_distance",
+    "cup_diameter",
+    "cup_depth",
+    "cup_edge_distance",
+    "door_hole_spacing",
+    "door_hole_offset",
+    "door_hole_diameter",
+    "door_hole_depth",
+    "plate_offset",
+    "plate_hole_spacing",
+    "plate_hole_diameter",
+    "plate_hole_depth",
+)
+# the parameters each interior joint type takes, as passed to its joint class
+JOINT_PARAMETERS = {
+    "mortise_tenon": ("depth", "tenon_count"),
+    "clamex_p14": ("distance", "center_connector"),
+    "stopped_dado": ("depth", "stop_distance"),
+    "butt": (),
+}
+
+
+# per-drawer settings (Cell.drawer), each defaulting to the cabinet's field in DRAWER_DEFAULTS
+DRAWER_OPTIONS = ("front_one_piece", "bottom_offset", "groove_depth")
+DRAWER_DEFAULTS = {"front_one_piece": "drawer_front_one_piece", "bottom_offset": "drawer_bottom_offset", "groove_depth": "drawer_groove_depth"}
+
+
+def _check_options(options, allowed, what):
+    """Validate a dict of per-node options, returning a copy without ``None`` values (or ``None`` if empty)."""
+    if not options:
+        return None
+    unknown = set(options) - set(allowed)
+    if unknown:
+        raise ValueError("Unknown {}: {}.".format(what, ", ".join(sorted(unknown))))
+    options = {k: v for k, v in options.items() if v is not None}
+    return options or None
+
+
+def _check_panel_joint(entry):
+    """Validate one entry of :attr:`Split.panel_joints`, returning a copy."""
+    if entry is None:
+        return None
+    joint = entry if isinstance(entry, str) else entry.get("type")
+    if joint not in INTERIOR_JOINTS:
+        raise ValueError("Panel joints must be one of {}, got {!r}.".format(", ".join(INTERIOR_JOINTS), joint))
+    if isinstance(entry, str):
+        return entry
+    unknown = set(entry) - {"type"} - set(JOINT_PARAMETERS[joint])
+    if unknown:
+        raise ValueError("Unknown parameters for {}: {}.".format(joint, ", ".join(sorted(unknown))))
+    return dict(entry)
 
 
 def _enum_value(value):
@@ -138,20 +192,35 @@ class Cell:
         Clear height (in a rows split) or clear width (in a columns split). ``None`` shares the remaining space.
     door_style, hinge_side
         Override the inherited door style / hinge side for this compartment's front.
+    hinges
+        Hinge dimensions for this compartment's door, over the cabinet's ``hinges`` (see ``HINGE_DIMENSIONS``).
+    drawer
+        Settings for this drawer, over the cabinet's (see ``DRAWER_OPTIONS``).
     """
 
     kind: ZoneKind = ZoneKind.OPEN
     size: Optional[float] = None
     door_style: Optional[DoorStyle] = None
     hinge_side: Optional[HingeSide] = None
+    hinges: Optional[dict] = None
+    drawer: Optional[dict] = None
 
     def __post_init__(self):
         self.kind = ZoneKind(self.kind)
         self.door_style = DoorStyle(self.door_style) if self.door_style is not None else None
         self.hinge_side = HingeSide(self.hinge_side) if self.hinge_side is not None else None
+        self.hinges = _check_options(self.hinges, HINGE_DIMENSIONS, "hinge dimensions")
+        self.drawer = _check_options(self.drawer, DRAWER_OPTIONS, "drawer settings")
 
     def to_data(self):
-        return {"kind": self.kind.value, "size": self.size, "door_style": _enum_value(self.door_style), "hinge_side": _enum_value(self.hinge_side)}
+        return {
+            "kind": self.kind.value,
+            "size": self.size,
+            "door_style": _enum_value(self.door_style),
+            "hinge_side": _enum_value(self.hinge_side),
+            "hinges": dict(self.hinges) if self.hinges else None,
+            "drawer": dict(self.drawer) if self.drawer else None,
+        }
 
 
 @dataclass
@@ -181,8 +250,14 @@ class Split:
         Cover the whole split with a single door (or pair of doors). Panels behind it are set back for inset doors.
         Otherwise, consecutive open cells of a rows split share one door, and open cells of a columns split get one door each.
     panel_joints
-        How each panel between consecutive children joins its neighbours (one entry per panel, see ``INTERIOR_JOINTS``).
-        ``None``, or a ``None`` entry, uses the cabinet's ``interior_joint``.
+        How each panel between consecutive children joins its neighbours, one entry per panel: a joint type (see
+        ``INTERIOR_JOINTS``), or a dict with a ``"type"`` and that joint's parameters (see ``JOINT_PARAMETERS``), e.g.
+        ``{"type": "clamex_p14", "distance": 80}``. ``None``, or a ``None`` entry, uses the cabinet's ``interior_joint``.
+        Parameters that aren't given use the cabinet's defaults (:meth:`CabinetConfig.joint_defaults`).
+    hinges
+        Hinge dimensions for this split's door (with ``one_door``), over the cabinet's ``hinges``.
+    drawer_shelves
+        Put shelves between stacked drawers in this split, overriding the cabinet's ``shelves_between_drawers``.
     """
 
     direction: SplitDirection = SplitDirection.ROWS
@@ -191,7 +266,9 @@ class Split:
     door_style: Optional[DoorStyle] = None
     hinge_side: Optional[HingeSide] = None
     one_door: bool = False
-    panel_joints: Optional[List[Optional[str]]] = None
+    panel_joints: Optional[List[Union[None, str, dict]]] = None
+    hinges: Optional[dict] = None
+    drawer_shelves: Optional[bool] = None
 
     def __post_init__(self):
         self.direction = SplitDirection(self.direction)
@@ -199,20 +276,20 @@ class Split:
         self.door_style = DoorStyle(self.door_style) if self.door_style is not None else None
         self.hinge_side = HingeSide(self.hinge_side) if self.hinge_side is not None else None
         if self.panel_joints is not None:
-            self.panel_joints = list(self.panel_joints)
             if len(self.panel_joints) != len(self.children) - 1:
                 raise ValueError("panel_joints needs one entry per panel: {} for {} children.".format(len(self.children) - 1, len(self.children)))
-            for joint in self.panel_joints:
-                if joint is not None and joint not in INTERIOR_JOINTS:
-                    raise ValueError("Panel joints must be one of {}, got {!r}.".format(", ".join(INTERIOR_JOINTS), joint))
+            self.panel_joints = [_check_panel_joint(j) for j in self.panel_joints]
+        self.hinges = _check_options(self.hinges, HINGE_DIMENSIONS, "hinge dimensions")
 
     def panel_joint(self, gap, default):
-        """The joint of the panel after child ``gap``, or ``default``."""
-        if self.panel_joints is None or self.panel_joints[gap] is None:
-            return default
-        return self.panel_joints[gap]
-        self.door_style = DoorStyle(self.door_style) if self.door_style is not None else None
-        self.hinge_side = HingeSide(self.hinge_side) if self.hinge_side is not None else None
+        """``(type, parameters)`` of the panel after child ``gap``, or ``(default, {})``."""
+        entry = self.panel_joints[gap] if self.panel_joints is not None else None
+        if entry is None:
+            return default, {}
+        if isinstance(entry, str):
+            return entry, {}
+        parameters = dict(entry)
+        return parameters.pop("type"), parameters
 
     def to_data(self):
         return {
@@ -222,7 +299,9 @@ class Split:
             "door_style": _enum_value(self.door_style),
             "hinge_side": _enum_value(self.hinge_side),
             "one_door": self.one_door,
-            "panel_joints": list(self.panel_joints) if self.panel_joints is not None else None,
+            "panel_joints": [dict(j) if isinstance(j, dict) else j for j in self.panel_joints] if self.panel_joints is not None else None,
+            "hinges": dict(self.hinges) if self.hinges else None,
+            "drawer_shelves": self.drawer_shelves,
         }
 
 
@@ -280,6 +359,9 @@ class CabinetConfig:
         Depth of stopped dado grooves. ``None`` uses a third of the grooved panel's thickness.
     dado_stop
         How far behind a shelf's or divider's front edge its stopped dado ends, so the groove doesn't show at the front.
+    hinges
+        Door hinge dimensions that differ from :class:`cabi_neat.joints.CupHingeJoint`'s defaults, e.g.
+        ``{"door_hole_spacing": 52, "hinge_count": 3}``. The hinge type follows ``door_mount``.
     front_thickness
         Thickness of doors and drawer fronts.
     columns
@@ -297,9 +379,14 @@ class CabinetConfig:
     inset_setback
         How far inset fronts are set back from the carcass front.
     drawer_side_thickness
-        Thickness of drawer box sides, front and back.
+        Thickness of drawer box sides, front and back. ``None`` uses the carcass ``thickness``.
     drawer_bottom_thickness
         Thickness of drawer box bottoms.
+    drawer_bottom_offset
+        Height of a drawer bottom's underside above the box's lower edge. The bottom sits in grooves in the sides,
+        front and back, so there must be material below it.
+    drawer_groove_depth
+        Depth of the grooves holding drawer bottoms. ``None`` uses half the grooved panel's thickness.
     drawer_clearance
         Gap between a drawer box side and the carcass (space for runners).
     drawer_top_clearance
@@ -331,6 +418,7 @@ class CabinetConfig:
     tenon_count: int = 2
     dado_depth: Optional[float] = None
     dado_stop: float = 20.0
+    hinges: Optional[dict] = None
     front_thickness: float = 18.0
     columns: List[Column] = field(default_factory=lambda: [Column()])
     interior: Optional[Union[Split, Cell]] = None
@@ -339,8 +427,10 @@ class CabinetConfig:
     hinge_side: HingeSide = HingeSide.LEFT
     front_gap: float = 3.0
     inset_setback: float = 0.0
-    drawer_side_thickness: float = 12.0
+    drawer_side_thickness: Optional[float] = None
     drawer_bottom_thickness: float = 8.0
+    drawer_bottom_offset: float = 10.0
+    drawer_groove_depth: Optional[float] = None
     drawer_clearance: float = 13.0
     drawer_top_clearance: float = 20.0
     drawer_height: Optional[float] = None
@@ -358,6 +448,10 @@ class CabinetConfig:
         self.hinge_side = HingeSide(self.hinge_side)
         if self.back_joint not in BACK_JOINTS:
             raise ValueError("back_joint must be one of {}, got {!r}.".format(", ".join(BACK_JOINTS), self.back_joint))
+        if self.hinges:
+            unknown = set(self.hinges) - set(HINGE_DIMENSIONS)
+            if unknown:
+                raise ValueError("Unknown hinge dimensions: {}.".format(", ".join(sorted(unknown))))
         if self.carcass_joint not in CARCASS_JOINTS:
             raise ValueError("carcass_joint must be one of {}, got {!r}.".format(", ".join(CARCASS_JOINTS), self.carcass_joint))
         if self.interior_joint not in INTERIOR_JOINTS:
@@ -401,6 +495,29 @@ class CabinetConfig:
     def copy(self, **changes):
         """Return a deep copy, optionally with some top-level parameters changed."""
         return replace(CabinetConfig.from_data(self.to_data()), **changes)
+
+    @property
+    def drawer_panel_thickness(self):
+        """Thickness of drawer box sides, front and back: ``drawer_side_thickness``, or the carcass ``thickness``."""
+        return self.drawer_side_thickness if self.drawer_side_thickness is not None else self.thickness
+
+    def drawer_options(self, cell):
+        """The settings of the drawer ``cell``: its own, falling back to the cabinet's."""
+        own = cell.drawer or {}
+        return {key: own.get(key, getattr(self, field)) for key, field in DRAWER_DEFAULTS.items()}
+
+    def hinge_options(self, node):
+        """The hinge dimensions of ``node``'s door: its own, falling back to the cabinet's ``hinges``."""
+        return dict(self.hinges or {}, **(node.hinges or {}))
+
+    def joint_defaults(self):
+        """Parameters of each interior joint type, for panels that don't set their own."""
+        return {
+            "mortise_tenon": {"depth": self.tenon_depth, "tenon_count": self.tenon_count},
+            "clamex_p14": {"distance": 60.0, "center_connector": True},
+            "stopped_dado": {"depth": self.dado_depth, "stop_distance": self.dado_stop},
+            "butt": {},
+        }
 
     def interior_tree(self):
         """The interior as a :class:`Split` tree: ``interior`` if set, otherwise built from ``columns``."""

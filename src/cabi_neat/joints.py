@@ -16,9 +16,11 @@ from compas.geometry import dot_vectors
 from compas.geometry import intersection_plane_plane
 from compas_brep import Brep
 from compas_model.elements import Feature
+from compas_timber.connections import Joint
 from compas_timber.connections import JointTopology
 from compas_timber.connections import PlateButtJoint
 from compas_timber.errors import BeamJoiningError
+from compas_timber.fabrication import Drilling
 from compas_timber.fabrication import FreeContour
 from compas_timber.geometry import brep_difference_first
 
@@ -359,6 +361,81 @@ class PlateStoppedDadoJoint(_PlateHousingJoint):
             self._trim(end, length + self._margin)
 
 
+class PlateGrooveJoint(_PlateHousingJoint):
+    """A T joint where the main plate's whole edge sits in a groove in the cross plate's face, e.g. a drawer bottom.
+
+    The main plate's edge is extended ``depth`` into the groove, a :class:`compas_timber.fabrication.FreeContour` in
+    the cross plate. The groove either runs ``through`` the cross plate, out at both ends, or stops ``overhang`` past
+    both ends of the main plate's edge, where plates joined to the neighbouring edges reach into their own grooves.
+
+    Parameters
+    ----------
+    plate_a : :class:`compas_timber.elements.Plate`
+        The main plate, whose edge sits in the groove.
+    plate_b : :class:`compas_timber.elements.Plate`
+        The cross plate, which gets the groove.
+    depth : float, optional
+        Depth of the groove. Defaults to half the cross plate's thickness.
+    through : bool, optional
+        Run the groove out of the cross plate at both ends. Default is False.
+    overhang : float, optional
+        For a stopped groove: how far it runs past both ends of the main plate's edge, as it was before any joint
+        extended it. By default the groove is exactly as long as the extended edge, e.g. including the corners of a
+        panel that also sits in grooves at its ends: as short as it can be without cutting the panel. Whatever of the
+        main plate reaches past the groove's ends (e.g. those corners, with ``overhang=0``) is cut away.
+    **kwargs
+        Passed to :class:`compas_timber.connections.PlateJoint` (``topology``, ``a_segment_index``, ``b_segment_index``, ...).
+    """
+
+    DEPTH_FRACTION = 0.5
+
+    @property
+    def __data__(self):
+        data = super(PlateGrooveJoint, self).__data__
+        data["depth"] = self.depth
+        data["through"] = self.through
+        data["overhang"] = self.overhang
+        return data
+
+    def __init__(self, plate_a=None, plate_b=None, depth=None, through=False, overhang=None, **kwargs):
+        super(PlateGrooveJoint, self).__init__(plate_a, plate_b, depth=depth, **kwargs)
+        self.through = through
+        self.overhang = overhang
+
+    def __repr__(self):
+        return "PlateGrooveJoint({0}, {1}, {2})".format(self.main_plate, self.cross_plate, JointTopology.get_name(self.topology))
+
+    def _set_edge_planes(self):
+        # the edge as it is before any joint extends it (e.g. into grooves at its ends), which is what a stopped groove
+        # has to house; extensions only reach the outlines once the plate's shape is computed, after this
+        edge = self.a_outlines[0].lines[self.main_segment_index]
+        self._original_edge = (Point(*edge.start), Point(*edge.end))
+        super(PlateGrooveJoint, self)._set_edge_planes()
+
+    def groove_interval(self):
+        """(start, end) of the groove along the joining edge, from the start of the main plate's edge."""
+        if self.through:
+            cross_min, cross_max = self._cross_span()
+            return cross_min - self._margin, cross_max + self._margin
+        edge, along, length = self._edge()
+        if self.overhang is None:
+            # the edge as extended by all joints (e.g. into grooves at its ends): as short as possible, nothing cut away
+            return 0.0, length
+        original = getattr(self, "_original_edge", None) or (edge.start, edge.end)
+        ends = sorted(dot_vectors(Vector.from_start_end(edge.start, p), along) for p in original)
+        return ends[0] - self.overhang, ends[1] + self.overhang
+
+    def add_features(self):
+        """Cut the groove into the cross plate, and anything of the main plate reaching past its ends."""
+        _refresh_blanks(self.main_plate, self.cross_plate)
+        start, end = self.groove_interval()
+        self._pocket(start, end)
+        if not self.through:
+            _, _, length = self._edge()
+            self._trim(min(start, 0.0) - self._margin, start)
+            self._trim(end, max(end, length) + self._margin)
+
+
 # ==========================================================================
 # Lamello Clamex P-14
 # ==========================================================================
@@ -485,6 +562,17 @@ class ClamexP14Joint(PlateButtJoint):
         Distance from each end of the joining edge to the nearest connector's center. Default is 60.
     center_connector : bool, optional
         Add a connector in the middle of the edge. Default is False.
+    connector_count : int, optional
+        Number of connectors, overriding ``distance``/``center_connector``: 1 puts a single connector in the middle of
+        the edge, more are spread evenly from ``distance`` to ``distance`` from the ends.
+    dowels : bool, optional
+        Add two alignment dowels, ``dowel_distance`` from the ends of the edge. Default is False.
+    dowel_distance : float, optional
+        Distance from each end of the joining edge to a dowel's center. Default is 30.
+    dowel_diameter : float, optional
+        Default is 8.
+    dowel_edge_depth, dowel_face_depth : float, optional
+        Depth of the dowel holes in the main plate's edge and in the cross plate's face. Defaults are 20 and 10.
     **kwargs
         Passed to :class:`compas_timber.connections.PlateJoint` (``topology``, ``a_segment_index``, ``b_segment_index``, ...).
 
@@ -500,12 +588,37 @@ class ClamexP14Joint(PlateButtJoint):
         data = super(ClamexP14Joint, self).__data__
         data["distance"] = self.distance
         data["center_connector"] = self.center_connector
+        data["connector_count"] = self.connector_count
+        data["dowels"] = self.dowels
+        data["dowel_distance"] = self.dowel_distance
+        data["dowel_diameter"] = self.dowel_diameter
+        data["dowel_edge_depth"] = self.dowel_edge_depth
+        data["dowel_face_depth"] = self.dowel_face_depth
         return data
 
-    def __init__(self, plate_a=None, plate_b=None, distance=60.0, center_connector=False, **kwargs):
+    def __init__(
+        self,
+        plate_a=None,
+        plate_b=None,
+        distance=60.0,
+        center_connector=False,
+        connector_count=None,
+        dowels=False,
+        dowel_distance=30.0,
+        dowel_diameter=8.0,
+        dowel_edge_depth=20.0,
+        dowel_face_depth=10.0,
+        **kwargs,
+    ):
         super(ClamexP14Joint, self).__init__(plate_a, plate_b, **kwargs)
         self.distance = distance
         self.center_connector = center_connector
+        self.connector_count = connector_count
+        self.dowels = dowels
+        self.dowel_distance = dowel_distance
+        self.dowel_diameter = dowel_diameter
+        self.dowel_edge_depth = dowel_edge_depth
+        self.dowel_face_depth = dowel_face_depth
 
     def __repr__(self):
         return "ClamexP14Joint({0}, {1}, {2})".format(self.main_plate, self.cross_plate, JointTopology.get_name(self.topology))
@@ -522,35 +635,69 @@ class ClamexP14Joint(PlateButtJoint):
             normal = -normal
         return normal
 
-    def connector_frames(self):
-        """Frames at the connectors' centers, on the cross plate's face at the middle of the main plate's thickness.
+    def _span(self):
+        """The joining edge, its unit direction, and the (start, end) of the part of it that overlaps the cross plate."""
+        edge = self.a_outlines[0].lines[self.main_segment_index]
+        along = edge.direction.unitized()
+        span = [dot_vectors(Vector.from_start_end(edge.start, p), along) for p in self.cross_plate.outline_a.points]
+        return edge, along, max(0.0, min(span)), min(edge.length, max(span))
+
+    def _frames_at(self, positions):
+        """Frames on the cross plate's face at the middle of the main plate's thickness, at ``positions`` along the edge.
 
         x runs along the joining edge, y is the main plate's normal and z points into the main plate.
         """
         inner = self._cross_planes[0]
         near, far = self._main_planes
-        edge = self.a_outlines[0].lines[self.main_segment_index]
-        along = edge.direction.unitized()
-        # the joining edge is where the main plate's edge overlaps the cross plate
-        span = [dot_vectors(Vector.from_start_end(edge.start, p), along) for p in self.cross_plate.outline_a.points]
-        start, end = max(0.0, min(span)), min(edge.length, max(span))
-        if end - start >= 2 * self.distance:
-            positions = [start + self.distance, end - self.distance]
-            if self.center_connector:
-                positions.insert(1, (start + end) / 2.0)
-        else:
-            positions = [(start + end) / 2.0]
-
+        edge, along, _, _ = self._span()
         thickness = Vector.from_start_end(near.point, far.point)
         normal = Vector(*near.normal).unitized()
         half = normal * (dot_vectors(thickness, normal) / 2.0)  # from the near face to the middle of the main plate
-        into_main = -self._into_cross_plate()
-        yaxis = Vector(*cross_vectors(into_main, along))
-        frames = []
-        for t in positions:
-            point = Point(*inner.closest_point(edge.start + along * t + half))
-            frames.append(Frame(point, along, yaxis))
-        return frames
+        yaxis = Vector(*cross_vectors(-self._into_cross_plate(), along))
+        return [Frame(Point(*inner.closest_point(edge.start + along * t + half)), along, yaxis) for t in positions]
+
+    def connector_positions(self):
+        """Positions of the connectors along the joining edge."""
+        _, _, start, end = self._span()
+        count = self.connector_count
+        if count == 1 or (count is None and end - start < 2 * self.distance):
+            return [(start + end) / 2.0]
+        if count is not None:
+            return [start + self.distance + i * (end - start - 2 * self.distance) / (count - 1) for i in range(count)]
+        positions = [start + self.distance, end - self.distance]
+        if self.center_connector:
+            positions.insert(1, (start + end) / 2.0)
+        return positions
+
+    def _check_dowels(self):
+        """Raise if a dowel hole would cut into a connector's groove (the edge is too short for both)."""
+        if not self.dowels:
+            return
+        r, d = _P14Groove.BLADE_RADIUS, _P14Groove.DEPTH
+        half_groove = math.sqrt(r**2 - (r - d) ** 2)  # half the groove's length at the surface
+        _, _, start, end = self._span()
+        for dowel in (start + self.dowel_distance, end - self.dowel_distance):
+            for connector in self.connector_positions():
+                if abs(dowel - connector) < half_groove + self.dowel_diameter / 2.0:
+                    raise BeamJoiningError(
+                        beams=[self.main_plate, self.cross_plate],
+                        joint=self,
+                        debug_info="The {:.0f} long edge is too short for connectors and dowels {:.0f} from its ends: they overlap.".format(end - start, self.dowel_distance),
+                    )
+
+    def connector_frames(self):
+        """Frames at the connectors' centers, on the cross plate's face at the middle of the main plate's thickness.
+
+        x runs along the joining edge, y is the main plate's normal and z points into the main plate.
+        """
+        return self._frames_at(self.connector_positions())
+
+    def dowel_frames(self):
+        """Frames at the alignment dowels' centers (none unless ``dowels``), like :meth:`connector_frames`."""
+        if not self.dowels:
+            return []
+        _, _, start, end = self._span()
+        return self._frames_at([start + self.dowel_distance, end - self.dowel_distance])
 
     def _ref_side(self, plate, point, normal):
         """Index of ``plate``'s reference side through ``point`` whose normal is ``normal``."""
@@ -576,3 +723,218 @@ class ClamexP14Joint(PlateButtJoint):
             self.main_plate.add_features(edge)
             self.cross_plate.add_features(face)
             self.features.extend([edge, face])
+        self._check_dowels()
+        for frame in self.dowel_frames():
+            into_main = frame.zaxis
+            point = frame.point
+            main_hole = Drilling.from_line_and_element(Line(point - into_main * 5.0, point + into_main * self.dowel_edge_depth), self.main_plate, self.dowel_diameter)
+            face_hole = Drilling.from_line_and_element(Line(point + into_main * 5.0, point - into_main * self.dowel_face_depth), self.cross_plate, self.dowel_diameter)
+            self.main_plate.add_features(main_hole)
+            self.cross_plate.add_features(face_hole)
+            self.features.extend([main_hole, face_hole])
+
+
+# ==========================================================================
+# Concealed cup hinges (Topfband)
+# ==========================================================================
+
+
+def _hinge_count(height):
+    """Number of hinges for a door of ``height``, following the usual cup hinge guideline."""
+    for limit, count in ((900, 2), (1600, 3), (2000, 4)):
+        if height <= limit:
+            return count
+    return 5
+
+
+class CupHingeJoint(Joint):
+    """European concealed cup hinges ("Topfband") between a door and the panel it hangs on.
+
+    For each hinge, the door gets a cup, a :class:`compas_timber.fabrication.FreeContour`, in its back face, plus two
+    screw holes for the hinge, and the panel gets the two screw holes of the mounting plate on its face towards the door.
+    The holes are :class:`compas_timber.fabrication.Drilling` s.
+
+    The mounting plate's holes are measured from the door's back face, so they follow the door: for an ``"overlay"``
+    door that's the panel's front edge, for an ``"inset"`` door it's further back by the door's thickness (and setback).
+    ``mount`` records which hinge type the door needs.
+
+    Parameters
+    ----------
+    door : :class:`compas_timber.elements.Plate`
+        The door.
+    panel : :class:`compas_timber.elements.Plate`
+        The side or divider the door hangs on.
+    mount : str, optional
+        ``"overlay"`` (default) or ``"inset"``.
+    hinge_count : int, optional
+        Number of hinges. Default is 4. ``None`` picks it from the door's height (2 up to 900, 3 up to 1600, 4 up to
+        2000, else 5).
+    end_distance : float, optional
+        Distance from each end of the door's hinge edge to the nearest cup's center. Default is 100.
+    cup_diameter, cup_depth : float, optional
+        The cup's bore. Defaults are 35 and 13.
+    cup_edge_distance : float, optional
+        Distance from the door's edge to the edge of the cup ("K"). Default is 5.
+    door_hole_spacing : float, optional
+        Distance between the door's two screw holes, along the hinge edge. Default is 48.
+    door_hole_offset : float, optional
+        How much further from the door's edge the screw holes are than the cup's center. Default is 6.
+    door_hole_diameter, door_hole_depth : float, optional
+        The door's screw holes. Defaults are 3 and 11.
+    plate_offset : float, optional
+        Distance from the door's back face to the mounting plate's holes, along the panel. Default is 37.
+    plate_hole_spacing : float, optional
+        Distance between the mounting plate's two holes, centered on the cup's height. Default is 32.
+    plate_hole_diameter, plate_hole_depth : float, optional
+        The mounting plate's screw holes. Defaults are 5 and 12.
+    """
+
+    MIN_ELEMENT_COUNT = 2
+    MAX_ELEMENT_COUNT = 2
+    PARAMETERS = {
+        "mount": "overlay",
+        "hinge_count": 4,
+        "end_distance": 100.0,
+        "cup_diameter": 35.0,
+        "cup_depth": 13.0,
+        "cup_edge_distance": 5.0,
+        "door_hole_spacing": 48.0,
+        "door_hole_offset": 6.0,
+        "door_hole_diameter": 3.0,
+        "door_hole_depth": 11.0,
+        "plate_offset": 37.0,
+        "plate_hole_spacing": 32.0,
+        "plate_hole_diameter": 5.0,
+        "plate_hole_depth": 12.0,
+    }
+    # the processing dimensions, i.e. everything but the hinge type
+    DIMENSIONS = tuple(key for key in PARAMETERS if key != "mount")
+
+    @property
+    def __data__(self):
+        data = super(CupHingeJoint, self).__data__
+        data.update({key: getattr(self, key) for key in self.PARAMETERS})
+        return data
+
+    def __init__(self, door=None, panel=None, **kwargs):
+        parameters = {key: kwargs.pop(key, default) for key, default in self.PARAMETERS.items()}
+        super(CupHingeJoint, self).__init__(elements=(door, panel), **kwargs)
+        for key, value in parameters.items():
+            setattr(self, key, value)
+        if self.mount not in ("overlay", "inset"):
+            raise ValueError("mount must be 'overlay' or 'inset', got {!r}.".format(self.mount))
+
+    def __repr__(self):
+        return "CupHingeJoint({0}, {1}, {2})".format(self.door, self.panel, self.mount)
+
+    @property
+    def door(self):
+        return self.element_a
+
+    @property
+    def panel(self):
+        return self.element_b
+
+    def _error(self, message):
+        return BeamJoiningError(beams=[self.door, self.panel], joint=self, debug_info=message)
+
+    # geometry -------------------------------------------------------------
+
+    @staticmethod
+    def _center(plate):
+        points = plate.outline_a.points[:-1] + plate.outline_b.points[:-1]
+        return Point(*[sum(p[i] for p in points) / len(points) for i in range(3)])
+
+    def _hinge_edge(self):
+        """The door's edge along the panel: the edge parallel to the panel's faces that is closest to it."""
+        panel_plane = self.panel.planes[0]
+        normal = Vector(*panel_plane.normal).unitized()
+        panel_center = self._center(self.panel)
+        best = None
+        for edge in self.door.outline_a.lines:
+            if abs(dot_vectors(edge.direction.unitized(), normal)) > 1e-6:
+                continue
+            distance = abs(dot_vectors(Vector.from_start_end(panel_center, edge.point_at(0.5)), normal))
+            if best is None or distance < best[0]:
+                best = (distance, edge)
+        if best is None:
+            raise self._error("The door has no edge parallel to the panel.")
+        return best[1]
+
+    def _near_face(self, plate, other):
+        """The face plane of ``plate`` closer to ``other``, and a unit normal pointing from it into ``plate``."""
+        other_center = self._center(other)
+        a, b = plate.planes
+        if abs(distance_point_plane(other_center, a)) > abs(distance_point_plane(other_center, b)):
+            a, b = b, a
+        into = Vector(*a.normal).unitized()
+        if dot_vectors(Vector.from_start_end(a.point, b.point), into) < 0:
+            into = -into
+        return a, into
+
+    def hinge_frames(self):
+        """Frames at the cup centers, on the door's back face: x along the hinge edge, y from the edge into the door,
+        z into the door."""
+        edge = self._hinge_edge()
+        back, into_door = self._near_face(self.door, self.panel)
+        along = edge.direction.unitized()
+        # from the hinge edge towards the middle of the door, in the back face
+        across = Vector.from_start_end(edge.point_at(0.5), self._center(self.door))
+        across = across - along * dot_vectors(across, along) - into_door * dot_vectors(across, into_door)
+        across = across.unitized()
+
+        length = edge.length
+        count = self.hinge_count or _hinge_count(length)
+        end = min(self.end_distance, length / 4.0)
+        positions = [end] if count == 1 else [end + i * (length - 2 * end) / (count - 1) for i in range(count)]
+        offset = self.cup_diameter / 2.0 + self.cup_edge_distance
+        frames = []
+        for t in positions:
+            point = Point(*back.closest_point(edge.start + along * t)) + across * offset
+            frames.append(Frame(point, along, across))
+        return frames
+
+    def plate_points(self, frame):
+        """The mounting plate's hole centers on the panel's face, for the hinge at ``frame``."""
+        face, _ = self._near_face(self.panel, self.door)
+        _, into_door = self._near_face(self.door, self.panel)
+        # frame.point is on the door's back face; from there, into the carcass along the panel's face
+        point = Point(*face.closest_point(frame.point)) - into_door * self.plate_offset
+        half = frame.xaxis * (self.plate_hole_spacing / 2.0)
+        return [point - half, point + half]
+
+    # joint ----------------------------------------------------------------
+
+    def add_extensions(self):
+        """Hinges don't change the plates' outlines."""
+
+    def clear_extensions(self):
+        """Nothing to clear. (The base class removes beam-style extensions keyed by joint, which plates don't have.)"""
+
+    def _drilling(self, element, point, into, depth, diameter):
+        line = Line(point - into * 5.0, point + into * depth)  # start outside the element so the drilling starts on its face
+        return Drilling.from_line_and_element(line, element, diameter)
+
+    def _cup(self, frame):
+        points = [
+            frame.point + frame.xaxis * (math.cos(a) * self.cup_diameter / 2.0) + frame.yaxis * (math.sin(a) * self.cup_diameter / 2.0)
+            for a in (2 * math.pi * i / 36 for i in range(36))
+        ]
+        return FreeContour.from_polyline_and_element(Polyline(points + [points[0]]), self.door, depth=self.cup_depth, interior=True)
+
+    def add_features(self):
+        _refresh_blanks(self.door, self.panel)
+        if self.hinge_count is not None and self.hinge_count < 1:
+            raise self._error("There must be at least one hinge.")
+        _, into_door = self._near_face(self.door, self.panel)
+        _, into_panel = self._near_face(self.panel, self.door)
+        for frame in self.hinge_frames():
+            door_features = [self._cup(frame)]
+            hole_center = frame.point + frame.yaxis * self.door_hole_offset
+            for sign in (-1, 1):
+                point = hole_center + frame.xaxis * (sign * self.door_hole_spacing / 2.0)
+                door_features.append(self._drilling(self.door, point, into_door, self.door_hole_depth, self.door_hole_diameter))
+            panel_features = [self._drilling(self.panel, p, into_panel, self.plate_hole_depth, self.plate_hole_diameter) for p in self.plate_points(frame)]
+            self.door.add_features(door_features)
+            self.panel.add_features(panel_features)
+            self.features.extend(door_features + panel_features)

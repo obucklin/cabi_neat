@@ -11,7 +11,6 @@ const props = document.getElementById("props");
 const messageEl = document.getElementById("message");
 const main = document.getElementById("main");
 
-const DOOR_LABELS = { none: "None", left: "Left", right: "Right", double: "Double" };
 const FRONT_TEXT = { left: "Door, hinged left", right: "Door, hinged right", double: "Double doors" };
 
 const state = {
@@ -45,9 +44,13 @@ function applyState(data) {
   state.layout = data.layout;
   state.version = data.version;
   if (data.display) state.display = data.display;
+  if (data.joint_defaults) state.jointDefaults = data.joint_defaults;
+  if ("stale" in data) state.stale = data.stale;
+  if (data.hinge_defaults) state.hingeDefaults = data.hinge_defaults;
   validateSelection();
   render();
   renderProps();
+  updateToolbar();
   if (state.showCutList) loadCutList();
 }
 
@@ -55,7 +58,7 @@ function applyState(data) {
 async function post(config, { record = true } = {}) {
   if (state.busy) return false;
   state.busy = true;
-  setMessage("Building…");
+  setMessage("Updating…");
   try {
     const res = await fetch("api/config", {
       method: "POST",
@@ -107,9 +110,14 @@ async function setDisplay(changes) {
 }
 
 async function loadCutList() {
+  const wasStale = state.stale;
+  if (wasStale) setMessage("Generating 3D for the cut list…");
   const res = await fetch("api/cutlist");
   state.cutList = (await res.json()).rows;
-  renderProps();
+  if (wasStale) {
+    setMessage(null);
+    await load();
+  } else renderProps();
 }
 
 function setMessage(text, kind = "info") {
@@ -198,9 +206,9 @@ function sectionAt(p) {
   return leaf.slice(0, Math.min(common + 1, leaf.length));
 }
 
-/** Editable panel groups of the selected section, each with the gap rectangles of its members. */
-function ownGroups() {
-  return T.panelGroups(root(), state.selection).map((group) => ({
+/** Panel groups of the section at `path`, each with the gap rectangles of its members. */
+function groupsFor(path) {
+  return T.panelGroups(root(), path).map((group) => ({
     ...group,
     rects: group.members.map(({ split, gap }) => {
       const a = regionOf([...split, gap]);
@@ -208,6 +216,11 @@ function ownGroups() {
       return group.direction === T.ROWS ? [a[0], a[1] + a[3], a[2], b[1] - (a[1] + a[3])] : [a[0] + a[2], a[1], b[0] - (a[0] + a[2]), a[3]];
     }),
   }));
+}
+
+/** Editable panel groups of the selected section. */
+function ownGroups() {
+  return groupsFor(state.selection);
 }
 
 function groupAt(p) {
@@ -220,9 +233,9 @@ function groupAt(p) {
   return null;
 }
 
-/** Distance from the start of the selected section to the near face of a group's panel. */
-function groupPosition(group) {
-  const s = regionOf(state.selection);
+/** Distance from the start of the section at `path` to the near face of a group's panel. */
+function groupPosition(group, path = state.selection) {
+  const s = regionOf(path);
   const [x, z] = group.rects[0];
   return group.direction === T.ROWS ? z - s[1] : x - s[0];
 }
@@ -360,166 +373,361 @@ function numberRow(label, value, attrs) {
   return `<label class="row">${esc(label)} <input type="number" value="${value === null || value === undefined ? "" : round(value)}" step="1" ${attrs} /></label>`;
 }
 
-function counter(label, value, action, disabled) {
-  const dis = disabled ? "disabled" : "";
-  return `<div class="row ${disabled ? "disabled" : ""}">${label}<span class="counter">
-    <button data-action="${action}" data-step="-1" ${dis} aria-label="Fewer ${label.toLowerCase()}">−</button>
-    <input type="number" min="0" max="30" step="1" data-action="${action}" value="${value === null ? "" : value}" placeholder="mixed" ${dis} />
-    <button data-action="${action}" data-step="1" ${dis} aria-label="More ${label.toLowerCase()}">+</button>
+function counter(label, value, action, attrs = "") {
+  return `<div class="row">${label}<span class="counter">
+    <button data-action="${action}" data-step="-1" ${attrs} aria-label="Fewer ${label.toLowerCase()}">−</button>
+    <input type="number" min="0" max="30" step="1" data-action="${action}" ${attrs} value="${value === null ? "" : value}" placeholder="mixed" />
+    <button data-action="${action}" data-step="1" ${attrs} aria-label="More ${label.toLowerCase()}">+</button>
   </span></div>`;
+}
+
+function group(title, body) {
+  return `<div class="group"><h2>${title}</h2>${body}</div>`;
+}
+
+/** "Section 1.2" for path [0, 1]. */
+function sectionLabel(path) {
+  return path.length ? `Section ${path.map((i) => i + 1).join(".")}` : "Carcass";
+}
+
+/** A short description of a section: its front and how it's divided. */
+function sectionSummary(node) {
+  const parts = [];
+  if (T.isDrawer(node)) parts.push("drawer");
+  else if (T.hasDoor(node)) parts.push({ left: "door L", right: "door R", double: "double door" }[T.doorOf(node)]);
+  const shelves = T.shelvesOf(node);
+  const dividers = T.dividersOf(node);
+  if (dividers) parts.push(`${dividers} divider${dividers > 1 ? "s" : ""}`);
+  if (shelves) parts.push(`${shelves} shel${shelves > 1 ? "ves" : "f"}`);
+  return parts.join(", ");
+}
+
+/** The hierarchy bar: buttons for every level down to the current compartment. */
+function renderCrumbs() {
+  const crumbs = document.getElementById("crumbs");
+  const path = state.selection;
+  const buttons = [`<button data-crumb="up" ${path.length ? "" : "disabled"} title="Go to the parent (Esc)">↑ Up</button>`];
+  for (let n = 0; n <= path.length; n++) {
+    const p = path.slice(0, n);
+    const summary = sectionSummary(T.getNode(root(), p));
+    if (n) buttons.push('<span class="sep">›</span>');
+    buttons.push(`<button data-crumb="${T.key(p)}" class="${n === path.length ? "current" : ""}" title="${esc(summary)}">${sectionLabel(p)}</button>`);
+  }
+  const node = T.getNode(root(), path);
+  const hint = T.isSplit(node) ? "Click a compartment in the plan to open it." : "";
+  crumbs.innerHTML = buttons.join("") + `<span class="hint">${hint}</span>`;
 }
 
 function renderProps() {
   if (!state.config) return;
+  renderCrumbs();
   const c = state.config;
+  const path = state.selection;
   const html = [];
 
-  html.push(`<div class="group"><h2>Cabinet</h2>
-    ${numberRow("Width", c.width, 'data-param="width" min="100"')}
-    ${numberRow("Height", c.height, 'data-param="height" min="100"')}
-    ${numberRow("Depth", c.depth, 'data-param="depth" min="100"')}
-    ${numberRow("Panel thickness", c.thickness, 'data-param="thickness" min="5"')}
-    ${numberRow("Back thickness", c.back_thickness, 'data-param="back_thickness" min="1"')}
-    <label class="row">Back joint <select data-param="back_joint">
-      <option value="rabbet" ${c.back_joint === "rabbet" ? "selected" : ""}>rabbet</option>
-      <option value="butt" ${c.back_joint === "butt" ? "selected" : ""}>butt</option>
-    </select></label>
-    ${c.back_joint === "rabbet" ? numberRow("Rabbet depth", c.rabbet_depth, `data-param="rabbet_depth" data-nullable min="0" placeholder="${round(c.thickness / 2)}" title="Empty: half the side thickness"`) : ""}
-    ${numberRow("Front thickness", c.front_thickness, 'data-param="front_thickness" min="5"')}
-    ${numberRow("Front gap", c.front_gap, 'data-param="front_gap" min="0"')}
-    <div class="hint">Top and bottom join the sides with Clamex P-14 connectors, including a center connector.
-      Each shelf and divider picks its own joint below.</div>
-    ${numberRow("Connector distance", c.clamex_distance, 'data-param="clamex_distance" min="0"')}
-    ${numberRow("Tenon depth", c.tenon_depth, `data-param="tenon_depth" data-nullable min="0" placeholder="${round(c.thickness / 4)}" title="Empty: a quarter of the receiving panel's thickness"`)}
-    ${numberRow("Tenons per edge", c.tenon_count, 'data-param="tenon_count" min="1" max="10"')}
-    ${numberRow("Dado depth", c.dado_depth, `data-param="dado_depth" data-nullable min="0" placeholder="${round(c.thickness / 3)}" title="Empty: a third of the grooved panel's thickness"`)}
-    ${numberRow("Dado stop from front", c.dado_stop, 'data-param="dado_stop" min="0"')}
-    <label class="row">Fronts <select data-param="door_mount">
-      <option value="overlay" ${c.door_mount === "overlay" ? "selected" : ""}>overlay</option>
-      <option value="inset" ${c.door_mount === "inset" ? "selected" : ""}>inset</option>
-    </select></label>
-    <label class="row">Shelves between drawers <input type="checkbox" data-param="shelves_between_drawers" ${c.shelves_between_drawers ? "checked" : ""} /></label>
-    <label class="row">One-piece drawer fronts <input type="checkbox" data-param="drawer_front_one_piece" ${c.drawer_front_one_piece ? "checked" : ""} /></label>
-  </div>`);
-
-  html.push(sectionProps(state.selection));
-
-  html.push(`<div class="group"><h2>View</h2>
-    <label class="row">Fronts in plan <input type="checkbox" data-view="plan-fronts" ${state.showFronts ? "checked" : ""} /></label>
-    <label class="row">Fronts in 3D <input type="checkbox" data-view="show_fronts" ${state.display.show_fronts ? "checked" : ""} /></label>
-    <label class="row">Open fronts in 3D <input type="checkbox" data-view="open_fronts" ${state.display.open_fronts ? "checked" : ""} /></label>
-  </div>`);
+  if (path.length === 0) {
+    html.push(
+      group(
+        "Cabinet",
+        `${numberRow("Width", c.width, 'data-param="width" min="100"')}
+        ${numberRow("Height", c.height, 'data-param="height" min="100"')}
+        ${numberRow("Depth", c.depth, 'data-param="depth" min="100"')}
+        ${numberRow("Panel thickness", c.thickness, 'data-param="thickness" min="5"')}
+        ${numberRow("Back thickness", c.back_thickness, 'data-param="back_thickness" min="1"')}
+        ${numberRow("Front thickness", c.front_thickness, 'data-param="front_thickness" min="5"')}
+        ${numberRow("Front gap", c.front_gap, 'data-param="front_gap" min="0"')}
+        <label class="row">Fronts <select data-param="door_mount">
+          <option value="overlay" ${c.door_mount === "overlay" ? "selected" : ""}>overlay</option>
+          <option value="inset" ${c.door_mount === "inset" ? "selected" : ""}>inset</option>
+        </select></label>`,
+      ),
+    );
+    html.push(
+      group(
+        "Carcass joints",
+        `<div class="subhead">Back in the sides: rabbet</div>
+        ${numberRow("Depth", c.rabbet_depth, `data-param="rabbet_depth" data-nullable min="0" placeholder="${round(c.thickness / 2)}" title="Empty: half the side thickness"`)}
+        <div class="subhead">Top and bottom on the sides: Clamex P-14</div>
+        ${numberRow("Connector distance", c.clamex_distance, 'data-param="clamex_distance" min="0"')}
+        <label class="row">Center connector <input type="checkbox" data-param="clamex_center" ${c.clamex_center ? "checked" : ""} /></label>`,
+      ),
+    );
+  } else {
+    const summary = sectionSummary(T.getNode(root(), path));
+    const covered = T.coveredBy(root(), path);
+    const behind = covered
+      ? `<div class="hint">Behind the door of <button class="linklike" data-action="select" data-path="${T.key(covered)}">${esc(sectionLabel(covered))}</button>.</div>`
+      : "";
+    html.push(`<h3>${sectionLabel(path)}</h3>${summary ? `<div class="hint">${esc(summary)}</div>` : ""}${behind}`);
+  }
+  html.push(...sectionGroups(path));
 
   if (state.showCutList) {
     const rows = state.cutList.map((r) => `<tr><td>${esc(r[1])}</td><td>${round(r[2])}</td><td>${round(r[3])}</td><td>${round(r[4])}</td></tr>`);
-    html.push(`<div class="group"><h2>Cut list · ${state.cutList.length} parts</h2>
-      <table class="cutlist"><thead><tr><th>Part</th><th>L</th><th>W</th><th>T</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>`);
+    html.push(group(`Cut list · ${state.cutList.length} parts`, `<table class="cutlist"><thead><tr><th>Part</th><th>L</th><th>W</th><th>T</th></tr></thead><tbody>${rows.join("")}</tbody></table>`));
   }
 
+  const scroll = props.scrollTop;
   props.innerHTML = html.join("");
+  props.scrollTop = scroll;
 }
 
-function sectionProps(path) {
+/** The parameter groups of the section at `path`: dimensions, front (with its hinges or drawer), shelves and dividers. */
+const TYPE_LABELS = { open: "Open", door: "Door", drawers: "Drawers" };
+const DOOR_STYLES = { left: "Left", right: "Right", double: "Double" };
+
+/** The parameter groups of the section at `path`: dimensions, type, then the controls of that type. */
+function sectionGroups(path) {
   const c = state.config;
   const node = T.getNode(root(), path);
   const r = regionOf(path);
-  const crumbs = [];
-  for (let n = 0; n <= path.length; n++) {
-    const p = path.slice(0, n);
-    crumbs.push(`<button data-action="select" data-path="${T.key(p)}" ${n === path.length ? "disabled" : ""}>${esc(sectionName(p))}</button>`);
-  }
-  const html = [`<div class="group"><h2>${esc(sectionName(path))}</h2><div class="crumbs">${crumbs.join("›")}</div>
-    <div class="hint">${round(r[2])} × ${round(r[3])} mm clear</div>`];
+  const covered = T.coveredBy(root(), path);
+  const groups = [];
 
+  let dims = `<div class="hint">${round(r[2])} × ${round(r[3])} mm clear</div>`;
   if (path.length) {
     const parent = T.getNode(root(), path.slice(0, -1));
     const rows = parent.direction === T.ROWS;
-    html.push(`${numberRow(rows ? "Height" : "Width", rows ? r[3] : r[2], 'min="1" data-action="size"')}
-      <label class="row">Flexible (takes the remaining space) <input type="checkbox" data-action="flex" ${node.size === null ? "checked" : ""} /></label>`);
+    dims += `${numberRow(rows ? "Height" : "Width", rows ? r[3] : r[2], 'min="1" data-action="size"')}
+      <label class="row">Automatic (shares the space evenly) <input type="checkbox" data-action="flex" ${node.size === null ? "checked" : ""} /></label>`;
+  }
+  groups.push(group(path.length ? "Dimensions" : "Interior", dims));
+
+  // behind a door a section is always open; elsewhere choose what it is
+  const type = T.typeOf(node);
+  if (!covered) {
+    const buttons = T.TYPES.map((t) => `<button data-action="type" data-type="${t}" class="${t === type ? "active" : ""}">${TYPE_LABELS[t]}</button>`);
+    groups.push(group("Type", `<div class="segmented">${buttons.join("")}</div>`));
   }
 
-  html.push(counter("Shelves", T.shelvesOf(node), "shelves", false));
-  html.push(counter("Dividers", T.dividersOf(node), "dividers", false));
+  if (type === "door") {
+    const door = T.doorOf(node);
+    const styles = Object.entries(DOOR_STYLES).map(([d, label]) => `<button data-action="door" data-door="${d}" class="${d === door ? "active" : ""}">${label}</button>`);
+    groups.push(group("Door", `<div class="segmented">${styles.join("")}</div>${hingeMenu(node)}`));
+  }
 
-  const groups = ownGroups();
-  if (groups.length) {
-    const counts = { [T.ROWS]: 0, [T.COLUMNS]: 0 };
-    html.push(`<div class="hint">Panels: position from the bottom (shelves) or left (dividers) of this section, and joint.</div>`);
-    groups.forEach((group, i) => {
-      const n = ++counts[group.direction];
-      const label = group.direction === T.ROWS ? `Shelf ${n}` : `Divider ${n}`;
-      // stacked drawers have no panel between them, so no joint either
-      const hasPanel = group.rects.some(([, , w, h]) => Math.min(w, h) > 0.5);
-      const joint = T.panelJointOf(root(), group, c.interior_joint);
-      const options = Object.entries(T.JOINTS).map(([value, text]) => `<option value="${value}" ${value === joint ? "selected" : ""}>${text}</option>`);
-      html.push(`<div class="panel-row"><span>${label}</span>
-        <input type="number" value="${round(groupPosition(group))}" min="0" step="1" data-action="position" data-group="${i}" aria-label="${label} position" />
-        ${hasPanel ? `<select data-action="joint" data-group="${i}" aria-label="${label} joint">${options.join("")}</select>` : "<span></span>"}
-      </div>`);
+  if (type === "drawers") {
+    const drawers = T.drawersOf(node);
+    let body = counter("Drawers", drawers, "drawers") + counter("Dividers", T.dividersOf(node), "dividers");
+    if (drawers === null || drawers > 1) {
+      const stack = T.isSplit(node) && node.direction === T.COLUMNS ? node.children.find(T.isSplit) : node;
+      const on = (stack && stack.drawer_shelves) ?? c.shelves_between_drawers;
+      body += `<label class="row">Shelves between drawers <input type="checkbox" data-action="drawer-shelves" ${on ? "checked" : ""} /></label>`;
+    }
+    body += collapsible("drawer-settings", "Drawer settings" + changed(Object.keys(T.firstDrawer(node).drawer || {}).length), drawerFields(T.firstDrawer(node)), 1);
+    body += panelRows(path);
+    groups.push(group("Drawers", body));
+  } else {
+    groups.push(group(type === "door" ? "Shelves & dividers behind the door" : "Shelves & dividers", counter("Shelves", T.shelvesOf(node), "shelves") + counter("Dividers", T.dividersOf(node), "dividers") + panelRows(path)));
+  }
+  return groups;
+}
+
+/** Positions (and joints, where there's a panel) of the section's shelves, dividers and drawer boundaries. */
+function panelRows(path) {
+  const c = state.config;
+  const panelGroups = groupsFor(path);
+  if (!panelGroups.length) return "";
+  const counts = { [T.ROWS]: 0, [T.COLUMNS]: 0 };
+  let html = `<div class="hint">Position from the bottom (shelves) or left (dividers) of this section, and joint.</div>`;
+  panelGroups.forEach((g, i) => {
+    const n = ++counts[g.direction];
+    // stacked drawers have no panel between them, so no joint either
+    const hasPanel = g.rects.some(([, , w, h]) => Math.min(w, h) > 0.5);
+    const label = g.direction === T.ROWS ? (hasPanel ? `Shelf ${n}` : `Drawer ${n} top`) : `Divider ${n}`;
+    const joint = T.panelJointOf(root(), g, c.interior_joint);
+    const options = Object.entries(T.JOINTS).map(([value, text]) => `<option value="${value}" ${value === joint.type ? "selected" : ""}>${text}</option>`);
+    html += `<div class="panel-row"><span>${label}</span>
+      <input type="number" value="${round(groupPosition(g, path))}" min="0" step="1" data-action="position" data-group="${i}" aria-label="${label} position" />
+      ${hasPanel ? `<select data-action="joint" data-group="${i}" aria-label="${label} joint">${options.join("")}</select>` : "<span></span>"}
+    </div>`;
+    if (hasPanel) html += jointFields(joint, i, label);
+  });
+  return html;
+}
+
+/** Drawer settings, shown from `drawer` and applied to every drawer of the section; empty fields use the cabinet's. */
+function drawerFields(drawer) {
+  const c = state.config;
+  const own = drawer.drawer || {};
+  const onePiece = own.front_one_piece ?? c.drawer_front_one_piece;
+  const number = (key, label, fallback, title) =>
+    `<label class="row" title="${esc(title)}">${label} <input type="number" min="0" step="1" data-action="drawer-option" data-key="${key}"
+      value="${own[key] === undefined ? "" : round(own[key])}" placeholder="${fallback}" /></label>`;
+  return `<label class="row" title="The visible front is also the drawer box's front">One-piece front <input type="checkbox" data-action="drawer-option" data-key="front_one_piece" ${onePiece ? "checked" : ""} /></label>
+    ${number("bottom_offset", "Bottom height", round(c.drawer_bottom_offset), "Underside of the bottom above the box's lower edge")}
+    ${number("groove_depth", "Bottom groove depth", c.drawer_groove_depth ?? round((c.drawer_side_thickness ?? c.thickness) / 2), "Empty: half the grooved panel's thickness")}`;
+}
+
+// the door hinges' processing dimensions, in collapsible groups; empty fields use the cabinet's defaults
+const HINGE_FIELDS = [
+  ["general", "General", [["hinge_count", "Hinges per door", 1], ["end_distance", "End distance"]]],
+  [
+    "door",
+    "Door",
+    [
+      ["cup_diameter", "Pot diameter"],
+      ["cup_depth", "Pot depth"],
+      ["cup_edge_distance", "Pot offset (to door edge)"],
+      ["door_hole_diameter", "Screw diameter"],
+      ["door_hole_depth", "Screw depth"],
+      ["door_hole_spacing", "Screw spacing"],
+      ["door_hole_offset", "Screw offset from pot center"],
+    ],
+  ],
+  ["side", "Side", [["plate_offset", "Offset from door back"], ["plate_hole_spacing", "Screw spacing"], ["plate_hole_diameter", "Screw diameter"], ["plate_hole_depth", "Screw depth"]]],
+];
+
+// ids of the open collapsible menus, kept across re-renders
+const openMenus = new Set();
+
+function collapsible(id, title, body, level) {
+  return `<details class="collapsible level-${level}" data-menu="${id}" ${openMenus.has(id) ? "open" : ""}><summary>${title}</summary><div class="collapsible-body">${body}</div></details>`;
+}
+
+function changed(count) {
+  return count ? ` <span class="changed">· ${count} changed</span>` : "";
+}
+
+/** A door's hinges: its own dimensions in General / Door / Side menus; empty fields use the cabinet's. */
+function hingeMenu(node) {
+  const own = node.hinges || {};
+  const defaults = { ...(state.hingeDefaults || {}), ...(state.config.hinges || {}) };
+  const menus = HINGE_FIELDS.map(([id, title, fields]) => {
+    const inputs = fields.map(([key, label, min]) => {
+      const value = own[key];
+      return `<label class="row">${esc(label)} <input type="number" min="${min ?? 0}" step="any" data-option="hinges" data-key="${key}"
+        value="${value === undefined || value === null ? "" : round(value)}" placeholder="${defaults[key] ?? ""}" /></label>`;
     });
-  }
+    const count = fields.filter(([key]) => own[key] !== undefined && own[key] !== null).length;
+    return collapsible(`hinges/${id}`, title + changed(count), inputs.join(""), 2);
+  });
+  return collapsible("hinges", `Hinges · ${state.config.door_mount}` + changed(Object.keys(own).length), menus.join(""), 1);
+}
 
-  const covered = T.coveredBy(root(), path);
-  const door = T.doorOf(node);
-  if (covered) {
-    html.push(`<div class="hint">Behind the door of <button class="linklike" data-action="select" data-path="${T.key(covered)}">${esc(sectionName(covered))}</button>.</div>`);
-  }
-  const doors = T.DOORS.map((d) => `<button data-action="door" data-door="${d}" class="${d === door ? "active" : ""}" ${covered ? "disabled" : ""}>${DOOR_LABELS[d]}</button>`);
-  html.push(`<div class="${covered ? "disabled" : ""}">Door</div><div class="segmented">${doors.join("")}</div>`);
-  const drawerDisabled = covered || T.isSplit(node);
-  html.push(`<label class="row ${drawerDisabled ? "disabled" : ""}">Drawer <input type="checkbox" data-action="drawer" ${T.isDrawer(node) ? "checked" : ""} ${drawerDisabled ? "disabled" : ""} /></label>`);
-  if (T.isSplit(node) && !covered) html.push(`<div class="hint">Only a section without shelves or dividers can be a drawer.</div>`);
-  html.push("</div>");
-  return html.join("");
+// remember which menus are open; `toggle` doesn't bubble, so listen while capturing
+props.addEventListener(
+  "toggle",
+  (evt) => {
+    const id = evt.target.dataset && evt.target.dataset.menu;
+    if (!id) return;
+    if (evt.target.open) openMenus.add(id);
+    else openMenus.delete(id);
+  },
+  true,
+);
+
+// the parameters shown for each interior joint type; empty fields use the cabinet's defaults
+const JOINT_FIELDS = {
+  mortise_tenon: [
+    { key: "depth", label: "Depth", auto: (c) => `${round(c.thickness / 4)}`, hint: "Empty: a quarter of the receiving panel's thickness" },
+    { key: "tenon_count", label: "Tenons", min: 1 },
+  ],
+  clamex_p14: [
+    { key: "distance", label: "From ends" },
+    { key: "center_connector", label: "Center", checkbox: true },
+  ],
+  stopped_dado: [
+    { key: "depth", label: "Depth", auto: (c) => `${round(c.thickness / 3)}`, hint: "Empty: a third of the grooved panel's thickness" },
+    { key: "stop_distance", label: "Stop", hint: "How far behind the front edge the groove stops" },
+  ],
+};
+
+function jointFields(joint, group, label, at = "") {
+  const c = state.config;
+  const defaults = (state.jointDefaults && state.jointDefaults[joint.type]) || {};
+  const fields = (JOINT_FIELDS[joint.type] || []).map((f) => {
+    const attrs = `data-action="joint-param" data-group="${group}" data-key="${f.key}" ${at} aria-label="${label} ${f.label.toLowerCase()}"`;
+    if (f.checkbox) {
+      const checked = joint.params[f.key] ?? defaults[f.key];
+      return `<label class="param">${f.label} <input type="checkbox" ${checked ? "checked" : ""} ${attrs} /></label>`;
+    }
+    const value = joint.params[f.key];
+    const fallback = defaults[f.key] ?? (f.auto ? f.auto(c) : "");
+    return `<label class="param" title="${esc(f.hint || "Empty: the cabinet default")}">${f.label}
+      <input type="number" min="${f.min ?? 0}" step="1" value="${value === undefined || value === null ? "" : round(value)}" placeholder="${esc(fallback)}" ${attrs} /></label>`;
+  });
+  return fields.length ? `<div class="joint-params">${fields.join("")}</div>` : "";
 }
 
 function select(path) {
   state.selection = path;
   render();
   renderProps();
+  props.scrollTop = 0;
 }
+
+// the counters in "Shelves & dividers": [read the count, set the count]
+const COUNTERS = {
+  shelves: [T.shelvesOf, T.setShelves],
+  dividers: [T.dividersOf, T.setDividers],
+  drawers: [T.drawersOf, T.setDrawers],
+};
+
+/** The section the sidebar shows: the current one. */
+function sectionOf() {
+  return state.selection;
+}
+
+document.getElementById("crumbs").addEventListener("click", (evt) => {
+  const button = evt.target.closest("button[data-crumb]");
+  if (!button) return;
+  const crumb = button.dataset.crumb;
+  select(crumb === "up" ? state.selection.slice(0, -1) : pathFromKey(crumb));
+});
 
 props.addEventListener("click", async (evt) => {
   const button = evt.target.closest("button[data-action]");
   if (!button || state.busy) return;
   const { action } = button.dataset;
-  const path = state.selection;
+  const path = sectionOf();
   if (action === "select") select(pathFromKey(button.dataset.path));
+  else if (action === "type") await edit(() => T.setType(root(), path, button.dataset.type));
   else if (action === "door") await edit(() => T.setDoor(root(), path, button.dataset.door));
-  else if (action === "shelves" || action === "dividers") {
-    const node = T.getNode(root(), path);
-    const current = action === "shelves" ? (T.shelvesOf(node) ?? 0) : T.dividersOf(node);
-    const n = Math.max(0, current + Number(button.dataset.step));
-    await edit(() => (action === "shelves" ? T.setShelves(root(), path, n) : T.setDividers(root(), path, n)));
+  else if (action in COUNTERS) {
+    const [count, set] = COUNTERS[action];
+    const n = Math.max(0, (count(T.getNode(root(), path)) ?? 0) + Number(button.dataset.step));
+    await edit(() => set(root(), path, n));
   }
 });
 
 props.addEventListener("change", async (evt) => {
   const el = evt.target;
-  if (el.dataset.view) {
-    if (el.dataset.view === "plan-fronts") {
-      state.showFronts = el.checked;
-      render();
-    } else await setDisplay({ [el.dataset.view]: el.checked });
+  if (state.busy) return;
+  if (el.dataset.option) {
+    // a per-section option: a door's hinges or a drawer's settings
+    const value = el.type === "checkbox" ? el.checked : el.value === "" ? null : Number(el.value);
+    await edit(() => T.setOption(root(), sectionOf(), el.dataset.option, el.dataset.key, value));
     return;
   }
-  if (state.busy) return;
+  if (el.dataset.field) {
+    await edit(() => T.setField(root(), sectionOf(), el.dataset.field, el.checked));
+    return;
+  }
   if (el.dataset.param) {
     let value = el.type === "checkbox" ? el.checked : el.tagName === "SELECT" ? el.value : Number(el.value);
     if ("nullable" in el.dataset && el.value === "") value = null;
     if (!(await post({ ...state.config, [el.dataset.param]: value }))) renderProps();
     return;
   }
-  const path = state.selection;
+  const path = sectionOf();
   const { action } = el.dataset;
-  if (action === "shelves") await edit(() => T.setShelves(root(), path, Number(el.value)));
-  else if (action === "dividers") await edit(() => T.setDividers(root(), path, Number(el.value)));
-  else if (action === "drawer") await edit(() => T.setDrawer(root(), path, el.checked));
-  else if (action === "joint") await edit(() => T.setPanelJoint(root(), ownGroups()[Number(el.dataset.group)].members, el.value));
+  const group = () => groupsFor(path)[Number(el.dataset.group)];
+  if (action in COUNTERS) await edit(() => COUNTERS[action][1](root(), path, Number(el.value)));
+  else if (action === "drawer-shelves") await edit(() => T.setDrawerShelves(root(), path, el.checked));
+  else if (action === "drawer-option") {
+    const value = el.type === "checkbox" ? el.checked : el.value === "" ? null : Number(el.value);
+    await edit(() => T.setDrawerOption(root(), path, el.dataset.key, value));
+  }
+  else if (action === "joint") await edit(() => T.setPanelJoint(root(), group().members, el.value, state.config.interior_joint));
+  else if (action === "joint-param") {
+    const value = el.type === "checkbox" ? el.checked : el.value === "" ? null : Number(el.value);
+    await edit(() => T.setPanelJointParam(root(), group().members, el.dataset.key, value, state.config.interior_joint));
+  }
   else if (action === "position") {
-    const group = ownGroups()[Number(el.dataset.group)];
-    const delta = Number(el.value) - groupPosition(group);
-    await edit(() => T.movePanels(root(), regions(), group.members, delta));
+    const g = group();
+    const delta = Number(el.value) - groupPosition(g, path);
+    await edit(() => T.movePanels(root(), regions(), g.members, delta));
   } else if (action === "size") await edit(() => T.setSize(root(), regions(), path, Number(el.value)));
   else if (action === "flex") {
     const r = regionOf(path);
@@ -583,6 +791,14 @@ svg.addEventListener("pointerup", async () => {
 });
 
 function updateToolbar() {
+  const generate = document.getElementById("generate");
+  generate.classList.toggle("stale", Boolean(state.stale));
+  generate.textContent = state.stale ? "Generate 3D •" : "Generate 3D";
+  generate.title = state.stale ? "The 3D view doesn't show the latest changes yet: build the timber model and update it" : "Build the timber model and update the 3D view";
+  generate.disabled = state.busy;
+  document.getElementById("view-plan-fronts").checked = state.showFronts;
+  document.getElementById("view-3d-fronts").checked = state.display.show_fronts;
+  document.getElementById("view-3d-open").checked = state.display.open_fronts;
   document.getElementById("undo").disabled = !state.history.length || state.busy;
   document.getElementById("redo").disabled = !state.future.length || state.busy;
   document.getElementById("cutlist-toggle").classList.toggle("active", state.showCutList);
@@ -622,6 +838,35 @@ document.addEventListener("keydown", (evt) => {
 document.getElementById("undo").addEventListener("click", undo);
 document.getElementById("redo").addEventListener("click", redo);
 document.getElementById("snap").addEventListener("change", (evt) => (state.snap = Number(evt.target.value)));
+async function generate() {
+  if (state.busy) return;
+  state.busy = true;
+  updateToolbar();
+  setMessage("Generating 3D…");
+  try {
+    const res = await fetch("api/generate", { method: "POST" });
+    const data = await res.json();
+    if (!data.ok) {
+      setMessage(data.error || "The model could not be built.", "error");
+      return;
+    }
+    applyState(data);
+    setMessage(data.errors.length ? `Joinery: ${data.errors.join(" ")}` : null, data.errors.length ? "error" : "info");
+  } catch (e) {
+    setMessage(`Could not reach the server: ${e.message}`, "error");
+  } finally {
+    state.busy = false;
+    updateToolbar();
+  }
+}
+
+document.getElementById("generate").addEventListener("click", generate);
+document.getElementById("view-plan-fronts").addEventListener("change", (evt) => {
+  state.showFronts = evt.target.checked;
+  render();
+});
+document.getElementById("view-3d-fronts").addEventListener("change", (evt) => setDisplay({ show_fronts: evt.target.checked }));
+document.getElementById("view-3d-open").addEventListener("change", (evt) => setDisplay({ open_fronts: evt.target.checked }));
 document.getElementById("cutlist-toggle").addEventListener("click", () => {
   state.showCutList = !state.showCutList;
   updateToolbar();
@@ -632,10 +877,27 @@ document.getElementById("toggle-3d").addEventListener("click", () => {
   main.classList.toggle("no-3d");
   render();
 });
-document.getElementById("download").addEventListener("click", () => {
-  const blob = new Blob([JSON.stringify(state.config, null, 2)], { type: "application/json" });
+document.getElementById("download").addEventListener("click", async () => {
+  const text = JSON.stringify(state.config, null, 2);
+  if (window.showSaveFilePicker) {
+    // Chrome/Edge: a real save dialog
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: "cabinet.json",
+        types: [{ description: "Cabinet configuration", accept: { "application/json": [".json"] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(text);
+      await writable.close();
+      setMessage(`Saved ${handle.name}.`);
+    } catch (e) {
+      if (e.name !== "AbortError") setMessage(`Could not save: ${e.message}`, "error");
+    }
+    return;
+  }
+  // other browsers: download, which asks where to save if the browser is set to
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
+  a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
   a.download = "cabinet.json";
   a.click();
   URL.revokeObjectURL(a.href);

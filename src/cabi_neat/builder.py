@@ -16,6 +16,8 @@ from compas_timber.elements import Plate
 from compas_timber.model import TimberModel
 
 from .joints import ClamexP14Joint
+from .joints import CupHingeJoint
+from .joints import PlateGrooveJoint
 from .joints import PlateMortiseTenon
 from .joints import PlateRabbetJoint
 from .joints import PlateStoppedDadoJoint
@@ -50,9 +52,14 @@ SPECIAL_JOINTS = {
     ("rabbet", JointTopology.TOPO_EDGE_EDGE): PlateRabbetJoint,
     ("mortise_tenon", JointTopology.TOPO_EDGE_FACE): PlateMortiseTenon,
     ("stopped_dado", JointTopology.TOPO_EDGE_FACE): PlateStoppedDadoJoint,
+    ("groove", JointTopology.TOPO_EDGE_FACE): PlateGrooveJoint,
     ("clamex_p14", JointTopology.TOPO_EDGE_EDGE): ClamexP14Joint,
     ("clamex_p14", JointTopology.TOPO_EDGE_FACE): ClamexP14Joint,
 }
+
+
+# joints between plates that don't touch, created as they are
+UNCONNECTED_JOINTS = {"cup_hinge": CupHingeJoint}
 
 
 def join_plates(model, main, cross, kind=None, **parameters):
@@ -68,6 +75,8 @@ def join_plates(model, main, cross, kind=None, **parameters):
     :class:`compas_timber.connections.PlateJoint` | None
         ``None`` if the plates don't touch.
     """
+    if kind in UNCONNECTED_JOINTS:
+        return UNCONNECTED_JOINTS[kind].create(model, main, cross, **parameters)
     result = PlateConnectionSolver().find_topology(main, cross)
     special = SPECIAL_JOINTS.get((kind, result.topology))
     if special:

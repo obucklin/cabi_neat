@@ -59,18 +59,15 @@ function extent(regions, path, direction) {
   return direction === ROWS ? r[3] : r[2];
 }
 
-/** Freeze all sizes from the resolved regions, keeping the last child of each split flexible. */
-export function freeze(root, regions) {
-  root = clone(root);
-  const visit = (node, path) => {
-    if (!isSplit(node)) return;
-    node.children.forEach((child, i) => {
-      child.size = i === node.children.length - 1 ? null : extent(regions, [...path, i], node.direction);
-      visit(child, [...path, i]);
-    });
-  };
-  visit(root, []);
-  return root;
+/**
+ * Make sure a split keeps a flexible child (size null), so its children still add up when its own size changes.
+ * Picks the last child that isn't one of `keep` (the ones the user just set), or failing that the last of them.
+ */
+function keepFlexible(split, keep) {
+  if (split.children.some((c) => c.size === null)) return;
+  const candidates = split.children.map((_, i) => i).filter((i) => !keep.includes(i));
+  const flex = candidates.length ? candidates[candidates.length - 1] : keep[keep.length - 1];
+  split.children[flex].size = null;
 }
 
 // ============================================================================
@@ -103,8 +100,10 @@ function collapseTo(node, first) {
   if (hasDoor(node)) {
     result.door_style = node.door_style;
     result.hinge_side = node.hinge_side;
+    result.hinges = node.hinges ?? null;
     if (isSplit(result)) result.one_door = true;
   }
+  if (isSplit(result) && isSplit(node)) result.drawer_shelves = node.drawer_shelves ?? null;
   return result;
 }
 
@@ -115,12 +114,14 @@ function withCount(node, direction, n) {
     const children = node.children.slice(0, n + 1).map((c) => ({ ...c, size: null }));
     while (children.length < n + 1) children.push({ ...clone(children[children.length - 1]), size: null });
     let panelJoints = node.panel_joints ? node.panel_joints.slice(0, n) : null;
-    if (panelJoints) while (panelJoints.length < n) panelJoints.push(panelJoints[panelJoints.length - 1] ?? null);
+    if (panelJoints) while (panelJoints.length < n) panelJoints.push(clone(panelJoints[panelJoints.length - 1] ?? null));
     return { ...node, children, panel_joints: panelJoints };
   }
   if (n === 0) return node;
   const inner = withoutFront(clone(node));
   inner.size = null;
+  // the door, and its hinges, stay on the section being divided
+  if (hasDoor(node)) inner.hinges = null;
   return {
     direction,
     children: Array.from({ length: n + 1 }, () => clone(inner)),
@@ -129,6 +130,7 @@ function withCount(node, direction, n) {
     hinge_side: node.hinge_side ?? "left",
     one_door: hasDoor(node),
     panel_joints: null,
+    hinges: hasDoor(node) ? (node.hinges ?? null) : null,
   };
 }
 
@@ -181,32 +183,38 @@ export function panelGroups(root, path) {
   return groups;
 }
 
-/** Move panels (each the boundary between children `gap` and `gap + 1` of the split at `split`) by `delta` mm. */
+/**
+ * Move panels (each the boundary between children `gap` and `gap + 1` of the split at `split`) by `delta` mm.
+ * The compartment before each panel gets a fixed size; the others keep theirs (automatic ones still share).
+ */
 export function movePanels(root, regions, members, delta, minSize = 30) {
-  root = freeze(root, regions);
+  root = clone(root);
   for (const { split, gap } of members) {
     const parent = getNode(root, split);
     const a = extent(regions, [...split, gap], parent.direction) + delta;
     const b = extent(regions, [...split, gap + 1], parent.direction) - delta;
     if (a < minSize || b < minSize) throw new PlannerError(`Compartments must stay at least ${minSize} mm.`);
     parent.children[gap].size = a;
+    // the compartment after the panel keeps its own setting: if it's fixed it gives up what the first one gains, so
+    // the next panel stays where it is; if it's automatic it keeps sharing with the other automatic ones
     if (parent.children[gap + 1].size !== null) parent.children[gap + 1].size = b;
+    keepFlexible(parent, [gap]);
   }
   return root;
 }
 
-/** Set the size of the node at `path` along its parent's direction (null = flexible). */
+/** Set the size of the node at `path` along its parent's direction (null = flexible: shares the space evenly). */
 export function setSize(root, regions, path, size) {
   if (path.length === 0) throw new PlannerError("The whole interior's size follows the cabinet dimensions.");
-  root = freeze(root, regions);
+  root = clone(root);
   const parent = getNode(root, path.slice(0, -1));
   const index = path[path.length - 1];
+  if (size !== null && parent.children.length === 1) throw new PlannerError("A single compartment always fills its region.");
   parent.children[index].size = size;
-  // keep one flexible sibling so the total still adds up
-  if (parent.children.every((c) => c.size !== null)) {
-    const flex = parent.children.length - 1 === index ? index - 1 : parent.children.length - 1;
-    if (flex < 0) throw new PlannerError("A single compartment always fills its region.");
-    parent.children[flex].size = null;
+  if (size !== null && parent.children.every((c) => c.size !== null)) {
+    // keep a sibling flexible so the total still adds up
+    const others = parent.children.map((_, i) => i).filter((i) => i !== index);
+    parent.children[others[others.length - 1]].size = null;
   }
   return root;
 }
@@ -270,21 +278,179 @@ export function setDrawer(root, path, on) {
 
 export const JOINTS = { mortise_tenon: "Mortise & tenon", clamex_p14: "Clamex P-14", stopped_dado: "Stopped dado" };
 
-/** The joint of a panel group (its first member's), or `fallback` when it uses the cabinet default. */
+/** `{type, params}` of an entry of `panel_joints`: a type, `{type, ...params}`, or null for `fallback`. */
+function jointEntry(entry, fallback) {
+  if (!entry) return { type: fallback, params: {} };
+  if (typeof entry === "string") return { type: entry, params: {} };
+  const { type, ...params } = entry;
+  return { type, params };
+}
+
+/** The joint of a panel group (its first member's): `{type, params}`, with only the parameters it sets itself. */
 export function panelJointOf(root, group, fallback) {
   const { split, gap } = group.members[0];
   const joints = getNode(root, split).panel_joints;
-  return (joints && joints[gap]) || fallback;
+  return jointEntry(joints && joints[gap], fallback);
 }
 
-/** Set the joint of every panel in a group (e.g. aligned shelves across columns). */
-export function setPanelJoint(root, members, joint) {
-  if (!(joint in JOINTS) && joint !== "butt") throw new PlannerError(`Unknown joint ${joint}.`);
+function updateMembers(root, members, update) {
   root = clone(root);
   for (const { split, gap } of members) {
     const node = getNode(root, split);
     if (!node.panel_joints) node.panel_joints = Array(node.children.length - 1).fill(null);
-    node.panel_joints[gap] = joint;
+    node.panel_joints[gap] = update(node.panel_joints[gap]);
   }
   return root;
+}
+
+/** Set the joint type of every panel in a group (e.g. aligned shelves across columns), dropping other types' parameters. */
+export function setPanelJoint(root, members, type, fallback) {
+  if (!(type in JOINTS) && type !== "butt") throw new PlannerError(`Unknown joint ${type}.`);
+  return updateMembers(root, members, (entry) => {
+    const current = jointEntry(entry, fallback);
+    return current.type === type && Object.keys(current.params).length ? { type, ...current.params } : type;
+  });
+}
+
+/** Set one parameter of the joint of every panel in a group; null goes back to the cabinet's default. */
+export function setPanelJointParam(root, members, key, value, fallback) {
+  return updateMembers(root, members, (entry) => {
+    const { type, params } = jointEntry(entry, fallback);
+    const next = { ...params, [key]: value };
+    if (value === null || value === undefined) delete next[key];
+    return Object.keys(next).length ? { type, ...next } : type;
+  });
+}
+
+// ============================================================================
+// per-section options
+// ============================================================================
+
+/** Set `key` of the options dict `field` (e.g. "hinges", "drawer") of the section at `path`; null goes back to the default. */
+export function setOption(root, path, field, key, value) {
+  root = clone(root);
+  const node = getNode(root, path);
+  const options = { ...(node[field] || {}) };
+  if (value === null || value === undefined) delete options[key];
+  else options[key] = value;
+  node[field] = Object.keys(options).length ? options : null;
+  return root;
+}
+
+/** Set a plain field (e.g. "drawer_shelves") of the section at `path`. */
+export function setField(root, path, field, value) {
+  root = clone(root);
+  getNode(root, path)[field] = value;
+  return root;
+}
+
+/** True if the section at `path` stacks two drawers directly on top of each other. */
+export function hasStackedDrawers(node) {
+  return isSplit(node) && node.direction === ROWS && node.children.some((c, i) => i > 0 && isDrawer(c) && isDrawer(node.children[i - 1]));
+}
+
+// ============================================================================
+// drawers
+// ============================================================================
+
+/** Number of drawers filling a section: 1 for a drawer, n for n stacked drawers; per column with dividers (null if they differ). */
+export function drawersOf(node) {
+  if (isDrawer(node)) return 1;
+  if (!isSplit(node)) return 0;
+  if (node.direction === ROWS) return node.children.every(isDrawer) ? node.children.length : 0;
+  const counts = new Set(node.children.map(drawersOf));
+  return counts.size === 1 ? [...counts][0] : null;
+}
+
+function drawer(size, options) {
+  return { kind: "drawer", size, door_style: "none", hinge_side: "left", drawer: options ? clone(options) : null };
+}
+
+/** `node` filled with `n` stacked drawers (0: a plain compartment again). */
+function withDrawers(node, n) {
+  const existing = drawersOf(node) ? (isDrawer(node) ? node : node.children[0]) : null;
+  const options = existing ? existing.drawer : null;
+  if (n === 0) return existing ? { kind: "open", size: node.size, door_style: "none", hinge_side: "left" } : node;
+  if (n === 1) return drawer(node.size, options);
+  return {
+    direction: ROWS,
+    children: Array.from({ length: n }, () => drawer(null, options)),
+    size: node.size,
+    door_style: "none",
+    hinge_side: "left",
+    one_door: false,
+    panel_joints: null,
+    drawer_shelves: isSplit(node) && existing ? (node.drawer_shelves ?? null) : null,
+  };
+}
+
+/** Fill the section at `path` with `n` equal stacked drawers, replacing its shelves. With dividers, every column gets them. */
+export function setDrawers(root, path, n) {
+  checkCount(n);
+  if (n > 0 && coveredBy(root, path)) throw new PlannerError("Drawers can't be behind a door. Remove the door first.");
+  root = clone(root);
+  const node = getNode(root, path);
+  if (isSplit(node) && node.direction === COLUMNS) {
+    node.children = node.children.map((c) => withDrawers(c, n));
+    return root;
+  }
+  return replace(root, path, withDrawers(node, n));
+}
+
+/** Set "shelves between drawers" for the drawer stacks of the section at `path` (every column's, with dividers). */
+export function setDrawerShelves(root, path, on) {
+  root = clone(root);
+  const node = getNode(root, path);
+  const stacks = node.direction === COLUMNS ? node.children.filter(isSplit) : [node];
+  for (const stack of stacks) stack.drawer_shelves = on;
+  return root;
+}
+
+// ============================================================================
+// section type
+// ============================================================================
+
+export const TYPES = ["open", "door", "drawers"];
+
+/** "drawers" if a section is filled with drawers, "door" if it has a door, otherwise "open". */
+export function typeOf(node) {
+  if (drawersOf(node) !== 0) return "drawers";
+  return hasDoor(node) ? "door" : "open";
+}
+
+/** Make the section at `path` open, a door (hinged left unless it already had one) or drawers (one, unless it had some). */
+export function setType(root, path, type) {
+  if (!TYPES.includes(type)) throw new PlannerError(`Unknown section type ${type}.`);
+  const node = getNode(root, path);
+  if (typeOf(node) === type) return root;
+  if (type !== "open" && coveredBy(root, path)) throw new PlannerError("This section is behind another door.");
+  if (type === "drawers") return setDrawers(setDoor(root, path, "none"), path, 1);
+  if (drawersOf(node) !== 0) root = setDrawers(root, path, 0);
+  return setDoor(root, path, type === "door" ? "left" : "none");
+}
+
+/** Set `key` of the settings of every drawer in the section at `path` (null goes back to the cabinet's default). */
+export function setDrawerOption(root, path, key, value) {
+  root = clone(root);
+  const visit = (node) => {
+    if (isDrawer(node)) {
+      const options = { ...(node.drawer || {}) };
+      if (value === null || value === undefined) delete options[key];
+      else options[key] = value;
+      node.drawer = Object.keys(options).length ? options : null;
+    } else if (isSplit(node)) node.children.forEach(visit);
+  };
+  visit(getNode(root, path));
+  return root;
+}
+
+/** The first drawer in a section (whose settings the sidebar shows for all of them), or null. */
+export function firstDrawer(node) {
+  if (isDrawer(node)) return node;
+  if (!isSplit(node)) return null;
+  for (const child of node.children) {
+    const found = firstDrawer(child);
+    if (found) return found;
+  }
+  return null;
 }

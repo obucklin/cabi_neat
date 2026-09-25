@@ -76,3 +76,8 @@ def test_back_joint_validated():
 def test_interior_joint_validated():
     with pytest.raises(ValueError, match="interior_joint"):
         CabinetConfig(interior_joint="dowel")
+
+
+def test_drawer_panels_follow_carcass_thickness():
+    assert CabinetConfig(thickness=19).drawer_panel_thickness == 19
+    assert CabinetConfig(thickness=19, drawer_side_thickness=15).drawer_panel_thickness == 15

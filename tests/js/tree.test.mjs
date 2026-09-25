@@ -6,7 +6,6 @@ import {
   coveredBy,
   dividersOf,
   doorOf,
-  freeze,
   getNode,
   isDrawer,
   isSplit,
@@ -14,6 +13,17 @@ import {
   panelGroups,
   panelJointOf,
   setPanelJoint,
+  setPanelJointParam,
+  setOption,
+  setField,
+  hasStackedDrawers,
+  drawersOf,
+  setDrawers,
+  setDrawerShelves,
+  typeOf,
+  setType,
+  setDrawerOption,
+  firstDrawer,
   PlannerError,
   setDividers,
   setDoor,
@@ -144,8 +154,22 @@ test("setSize keeps one flexible sibling", () => {
   assert.equal(root.children[0].size, null);
 });
 
-test("freeze keeps the last child flexible", () => {
-  assert.deepEqual(freeze(twoRows(), regionsTwo).children.map((c) => c.size), [400, null]);
+test("moving a panel only fixes the compartment before it; automatic siblings keep sharing", () => {
+  // three evenly shared compartments: 300 each
+  const root = setShelves(cell(), [], 2);
+  const regions = { "": [18, 18, 1000, 936], "0": [18, 18, 1000, 300], "1": [18, 336, 1000, 300], "2": [18, 654, 1000, 300] };
+  const moved = movePanels(root, regions, [{ split: [], gap: 1 }], 50);
+  assert.deepEqual(moved.children.map((c) => c.size), [null, 350, null]);
+  // with only two compartments one of them stays flexible
+  const two = setShelves(cell(), [], 1);
+  const regionsTwo = { "": [18, 18, 1000, 1000], "0": [18, 18, 1000, 491], "1": [18, 527, 1000, 491] };
+  assert.deepEqual(movePanels(two, regionsTwo, [{ split: [], gap: 0 }], 9).children.map((c) => c.size), [500, null]);
+});
+
+test("setting one size leaves automatic siblings automatic", () => {
+  const root = setSize(setShelves(cell(), [], 2), {}, [0], 300);
+  assert.deepEqual(root.children.map((c) => c.size), [300, null, null]);
+  assert.deepEqual(setSize(root, {}, [0], null).children.map((c) => c.size), [null, null, null]);
 });
 
 test("counts are validated", () => {
@@ -156,16 +180,120 @@ test("counts are validated", () => {
 test("panel joints are set per group and follow count changes", () => {
   let root = setShelves(setDividers(cell(), [], 1), [], 2);
   const shelves = panelGroups(root, []).filter((g) => g.direction === "rows");
-  root = setPanelJoint(root, shelves[1].members, "clamex_p14");
+  root = setPanelJoint(root, shelves[1].members, "clamex_p14", "mortise_tenon");
   assert.deepEqual(root.children[0].panel_joints, [null, "clamex_p14"]);
   assert.deepEqual(root.children[1].panel_joints, [null, "clamex_p14"]);
   const groups = panelGroups(root, []).filter((g) => g.direction === "rows");
-  assert.equal(panelJointOf(root, groups[0], "mortise_tenon"), "mortise_tenon");
-  assert.equal(panelJointOf(root, groups[1], "mortise_tenon"), "clamex_p14");
+  assert.deepEqual(panelJointOf(root, groups[0], "mortise_tenon"), { type: "mortise_tenon", params: {} });
+  assert.deepEqual(panelJointOf(root, groups[1], "mortise_tenon"), { type: "clamex_p14", params: {} });
   // adding a shelf extends the list, removing trims it
   root = setShelves(root, [], 3);
   assert.deepEqual(root.children[0].panel_joints, [null, "clamex_p14", "clamex_p14"]);
   root = setShelves(root, [], 1);
   assert.deepEqual(root.children[0].panel_joints, [null]);
-  assert.throws(() => setPanelJoint(root, groups[0].members, "glue"), PlannerError);
+  assert.throws(() => setPanelJoint(root, groups[0].members, "glue", "mortise_tenon"), PlannerError);
+});
+
+test("joint parameters are set per group, reset with null, and dropped when the type changes", () => {
+  let root = setShelves(setDividers(cell(), [], 1), [], 1);
+  const [shelf] = panelGroups(root, []).filter((g) => g.direction === "rows");
+  root = setPanelJointParam(root, shelf.members, "tenon_count", 3, "mortise_tenon");
+  assert.deepEqual(root.children[0].panel_joints, [{ type: "mortise_tenon", tenon_count: 3 }]);
+  assert.deepEqual(root.children[1].panel_joints, [{ type: "mortise_tenon", tenon_count: 3 }]);
+  assert.deepEqual(panelJointOf(root, shelf, "x"), { type: "mortise_tenon", params: { tenon_count: 3 } });
+  root = setPanelJoint(root, shelf.members, "mortise_tenon", "mortise_tenon");
+  assert.deepEqual(root.children[0].panel_joints, [{ type: "mortise_tenon", tenon_count: 3 }]);
+  root = setPanelJointParam(root, shelf.members, "tenon_count", null, "mortise_tenon");
+  assert.deepEqual(root.children[0].panel_joints, ["mortise_tenon"]);
+  root = setPanelJointParam(root, shelf.members, "distance", 80, "mortise_tenon");
+  root = setPanelJoint(root, shelf.members, "clamex_p14", "mortise_tenon");
+  assert.deepEqual(root.children[0].panel_joints, ["clamex_p14"]);
+  // copies made when adding shelves are independent
+  root = setPanelJointParam(root, shelf.members, "distance", 70, "mortise_tenon");
+  root = setShelves(root, [], 2);
+  root.children[0].panel_joints[1].distance = 1;
+  assert.equal(root.children[0].panel_joints[0].distance, 70);
+});
+
+test("per-section options: set, reset, and hinges stay with the door when dividing", () => {
+  let root = setOption(door(), [], "hinges", "hinge_count", 2);
+  assert.deepEqual(root.hinges, { hinge_count: 2 });
+  root = setShelves(root, [], 2);
+  assert.deepEqual(root.hinges, { hinge_count: 2 });
+  assert.ok(root.children.every((c) => !c.hinges));
+  root = setShelves(root, [], 0);
+  assert.deepEqual(root.hinges, { hinge_count: 2 });
+  root = setOption(root, [], "hinges", "hinge_count", null);
+  assert.equal(root.hinges, null);
+  let drawers = setShelves(cell({ kind: "drawer", drawer: { bottom_offset: 12 } }), [], 1);
+  assert.ok(hasStackedDrawers(drawers));
+  assert.ok(drawers.children.every((c) => c.drawer.bottom_offset === 12));
+  drawers = setField(drawers, [], "drawer_shelves", true);
+  assert.equal(drawers.drawer_shelves, true);
+  assert.ok(!hasStackedDrawers(setShelves(cell(), [], 1)));
+});
+
+test("drawers fill a section, replace its shelves, and apply to every column", () => {
+  let root = setDrawers(cell(), [], 3);
+  assert.equal(root.direction, "rows");
+  assert.ok(root.children.every(isDrawer));
+  assert.equal(drawersOf(root), 3);
+  assert.equal(shelvesOf(root), 2);
+  root = setDrawers(root, [], 1);
+  assert.ok(isDrawer(root));
+  root = setDrawers(root, [], 0);
+  assert.ok(!isDrawer(root) && !isSplit(root));
+  // replacing shelves
+  root = setDrawers(setShelves(cell(), [], 2), [], 2);
+  assert.equal(drawersOf(root), 2);
+  // per column
+  root = setDrawers(setDividers(cell(), [], 1), [], 2);
+  assert.equal(root.direction, "columns");
+  assert.ok(root.children.every((c) => drawersOf(c) === 2));
+  assert.equal(drawersOf(root), 2);
+  root = setDrawerShelves(root, [], true);
+  assert.ok(root.children.every((c) => c.drawer_shelves === true));
+  // drawer settings carry over when the count changes
+  let one = setDrawers(cell(), [], 1);
+  one.drawer = { bottom_offset: 12 };
+  assert.ok(setDrawers(one, [], 3).children.every((c) => c.drawer.bottom_offset === 12));
+  // not behind a door
+  const covered = setShelves(door(), [], 1);
+  assert.throws(() => setDrawers(covered, [0], 2), PlannerError);
+  assert.equal(drawersOf(setShelves(cell(), [], 1)), 0);
+});
+
+test("section types switch between open, door and drawers", () => {
+  let root = setShelves(cell(), [], 2);
+  assert.equal(typeOf(root), "open");
+  root = setType(root, [], "door");
+  assert.equal(typeOf(root), "door");
+  assert.equal(doorOf(root), "left");
+  assert.equal(shelvesOf(root), 2); // the shelves stay, behind the door
+  root = setType(root, [], "drawers");
+  assert.equal(typeOf(root), "drawers");
+  assert.ok(isDrawer(root) && !hasDoorLike(root));
+  root = setDrawers(root, [], 3);
+  root = setType(root, [], "drawers"); // no change
+  assert.equal(drawersOf(root), 3);
+  root = setType(root, [], "open");
+  assert.equal(typeOf(root), "open");
+  assert.throws(() => setType(root, [], "window"), PlannerError);
+  const covered = setShelves(door(), [], 1);
+  assert.throws(() => setType(covered, [0], "door"), PlannerError);
+  assert.throws(() => setType(covered, [0], "drawers"), PlannerError);
+});
+
+function hasDoorLike(node) {
+  return node.door_style && node.door_style !== "none";
+}
+
+test("drawer settings apply to every drawer of a section", () => {
+  let root = setDrawers(setDividers(cell(), [], 1), [], 2);
+  root = setDrawerOption(root, [], "bottom_offset", 15);
+  assert.ok(root.children.every((c) => c.children.every((d) => d.drawer.bottom_offset === 15)));
+  assert.equal(firstDrawer(root).drawer.bottom_offset, 15);
+  root = setDrawerOption(root, [], "bottom_offset", null);
+  assert.equal(firstDrawer(root).drawer, null);
+  assert.equal(firstDrawer(setShelves(cell(), [], 1)), null);
 });

@@ -150,12 +150,12 @@ input[type="number"] {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 290px minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: 340px minmax(0, 1fr) minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
 }
 
 #main.no-3d {
-  grid-template-columns: 290px minmax(0, 1fr) 0;
+  grid-template-columns: 340px minmax(0, 1fr) 0;
 }
 
 #main.no-3d #view-pane {
@@ -453,12 +453,148 @@ table.cutlist td:first-child {
 
 .panel-row {
   display: grid;
-  grid-template-columns: 1fr 64px 124px;
+  grid-template-columns: auto minmax(44px, 64px) minmax(0, 132px);
+  justify-content: space-between;
   gap: 6px;
   align-items: center;
   white-space: nowrap;
 }
 
-.panel-row input {
+.panel-row input,
+.panel-row select {
   width: 100%;
+  min-width: 0;
+}
+
+.subhead {
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.joint-params {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 12px;
+  margin: -2px 0 6px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.joint-params .param {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.joint-params input[type="number"] {
+  width: 56px;
+  padding: 2px 4px;
+}
+
+/* top bar: generate button, hierarchy */
+.tools.end {
+  margin-left: auto;
+}
+
+button.primary {
+  background: var(--panel);
+  font-weight: 600;
+}
+
+button.primary.stale {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+#crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+#crumbs .sep {
+  color: var(--muted);
+}
+
+#crumbs button.current {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+#crumbs .hint {
+  margin-left: 8px;
+}
+
+#sidebar h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+/* collapsible menus (hinges): indented, coloured by level */
+:root {
+  --level-1: #2f6fdb;
+  --level-2: #c4892b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --level-1: #6a9cf0;
+    --level-2: #e0a64e;
+  }
+}
+
+details.collapsible {
+  border-left: 3px solid var(--level-1);
+  border-radius: 0 6px 6px 0;
+  background: color-mix(in srgb, var(--level-1) 7%, transparent);
+  margin-top: 4px;
+}
+
+details.collapsible.level-2 {
+  border-left-color: var(--level-2);
+  background: color-mix(in srgb, var(--level-2) 8%, transparent);
+  margin: 4px 0 0 4px;
+}
+
+details.collapsible > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 5px 8px;
+  font-weight: 600;
+}
+
+details.collapsible > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.collapsible > summary::before {
+  content: "▸";
+  display: inline-block;
+  width: 1em;
+  color: var(--muted);
+  transition: transform 0.12s;
+}
+
+details.collapsible[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+details.collapsible > summary .changed {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.collapsible-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2px 8px 8px 12px;
 }

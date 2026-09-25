@@ -39,15 +39,23 @@ class StubConfigurator:
         if open_fronts is not None:
             self.open_fronts = open_fronts
 
-    def apply(self, config):
+    stale = True
+
+    def set_config(self, config):
         try:
             resolve_layout(config)
         except ValueError as e:
             self.last_error = str(e)
             return False
         self.config = config
+        self.stale = True
         self.version += 1
         return True
+
+    def generate(self):
+        self.stale = False
+        self.version += 1
+        return []
 
 
 @pytest.fixture
@@ -61,6 +69,7 @@ def test_routes_registered(planner):
     assert ("/planner/api/config", ("POST",)) in routes
     assert ("/planner/api/cutlist", ("GET",)) in routes
     assert ("/planner/api/display", ("POST",)) in routes
+    assert ("/planner/api/generate", ("POST",)) in routes
     assert (planner.configurator.app.mounts["/planner"] / "index.html").exists()
     assert planner.url == "http://127.0.0.1:9001/planner/"
 
@@ -68,9 +77,9 @@ def test_routes_registered(planner):
 def test_state_is_sectioned(planner):
     state = planner.get_state()
     interior = state["config"]["interior"]
-    assert interior["direction"] == "columns"
-    column = interior["children"][0]
-    kinds = [c.get("kind") or ("section" if c["one_door"] else "split") for c in column["children"]]
+    # the single column of the columns shorthand is collapsed: the interior itself holds the drawers and the section
+    assert interior["direction"] == "rows"
+    kinds = [c.get("kind") or ("section" if c["one_door"] else "split") for c in interior["children"]]
     assert kinds == ["drawer", "drawer", "section"]
     assert state["display"] == {"show_fronts": True, "open_fronts": False}
     assert state["layout"]["regions"][""][2] == pytest.approx(800 - 36)
@@ -81,6 +90,15 @@ def test_display_and_cut_list(planner):
     planner.post_display({"open_fronts": True})
     assert planner.configurator.open_fronts and planner.configurator.show_fronts
     assert planner.get_cut_list() == {"rows": []}
+    assert planner.configurator.stale is False  # the cut list generated the model first
+
+
+def test_config_changes_mark_the_3d_view_stale(planner):
+    data = planner.get_state()["config"]
+    result = planner.post_config(dict(data, width=900))
+    assert result["ok"] and result["stale"] is True
+    generated = planner.post_generate()
+    assert generated["ok"] and generated["errors"] == [] and generated["stale"] is False
 
 
 def test_post_config(planner):

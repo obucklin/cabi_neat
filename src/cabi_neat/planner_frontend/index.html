@@ -21,11 +21,20 @@
           </select>
         </label>
         <button id="cutlist-toggle" title="Show the cut list">Cut list</button>
-        <button id="download" title="Download the configuration as JSON">Save JSON</button>
+        <button id="download" title="Save the configuration as JSON">Save JSON</button>
         <label class="button" title="Load a configuration JSON">Load JSON<input type="file" id="upload" accept=".json,application/json" hidden /></label>
-        <button id="toggle-3d" title="Show or hide the 3D view">3D</button>
+      </div>
+      <div class="tools">
+        <label class="inline" title="Show doors and drawer fronts in the plan"><input type="checkbox" id="view-plan-fronts" checked /> Fronts</label>
+        <label class="inline" title="Show doors and drawer fronts in the 3D view"><input type="checkbox" id="view-3d-fronts" checked /> 3D fronts</label>
+        <label class="inline" title="Show doors open and drawers pulled out in the 3D view"><input type="checkbox" id="view-3d-open" /> 3D open</label>
+        <button id="toggle-3d" title="Show or hide the 3D view">3D view</button>
+      </div>
+      <div class="tools end">
+        <button id="generate" class="primary" title="Build the timber model and update the 3D view">Generate 3D</button>
       </div>
     </header>
+    <nav id="crumbs" aria-label="Section hierarchy"></nav>
     <main id="main">
       <aside id="sidebar">
         <div id="props"></div>
