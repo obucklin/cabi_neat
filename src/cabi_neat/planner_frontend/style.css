@@ -450,3 +450,15 @@ table.cutlist th:first-child,
 table.cutlist td:first-child {
   text-align: left;
 }
+
+.panel-row {
+  display: grid;
+  grid-template-columns: 1fr 64px 124px;
+  gap: 6px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.panel-row input {
+  width: 100%;
+}

@@ -380,8 +380,20 @@ function renderProps() {
     ${numberRow("Depth", c.depth, 'data-param="depth" min="100"')}
     ${numberRow("Panel thickness", c.thickness, 'data-param="thickness" min="5"')}
     ${numberRow("Back thickness", c.back_thickness, 'data-param="back_thickness" min="1"')}
+    <label class="row">Back joint <select data-param="back_joint">
+      <option value="rabbet" ${c.back_joint === "rabbet" ? "selected" : ""}>rabbet</option>
+      <option value="butt" ${c.back_joint === "butt" ? "selected" : ""}>butt</option>
+    </select></label>
+    ${c.back_joint === "rabbet" ? numberRow("Rabbet depth", c.rabbet_depth, `data-param="rabbet_depth" data-nullable min="0" placeholder="${round(c.thickness / 2)}" title="Empty: half the side thickness"`) : ""}
     ${numberRow("Front thickness", c.front_thickness, 'data-param="front_thickness" min="5"')}
     ${numberRow("Front gap", c.front_gap, 'data-param="front_gap" min="0"')}
+    <div class="hint">Top and bottom join the sides with Clamex P-14 connectors, including a center connector.
+      Each shelf and divider picks its own joint below.</div>
+    ${numberRow("Connector distance", c.clamex_distance, 'data-param="clamex_distance" min="0"')}
+    ${numberRow("Tenon depth", c.tenon_depth, `data-param="tenon_depth" data-nullable min="0" placeholder="${round(c.thickness / 4)}" title="Empty: a quarter of the receiving panel's thickness"`)}
+    ${numberRow("Tenons per edge", c.tenon_count, 'data-param="tenon_count" min="1" max="10"')}
+    ${numberRow("Dado depth", c.dado_depth, `data-param="dado_depth" data-nullable min="0" placeholder="${round(c.thickness / 3)}" title="Empty: a third of the grooved panel's thickness"`)}
+    ${numberRow("Dado stop from front", c.dado_stop, 'data-param="dado_stop" min="0"')}
     <label class="row">Fronts <select data-param="door_mount">
       <option value="overlay" ${c.door_mount === "overlay" ? "selected" : ""}>overlay</option>
       <option value="inset" ${c.door_mount === "inset" ? "selected" : ""}>inset</option>
@@ -408,6 +420,7 @@ function renderProps() {
 }
 
 function sectionProps(path) {
+  const c = state.config;
   const node = T.getNode(root(), path);
   const r = regionOf(path);
   const crumbs = [];
@@ -431,11 +444,18 @@ function sectionProps(path) {
   const groups = ownGroups();
   if (groups.length) {
     const counts = { [T.ROWS]: 0, [T.COLUMNS]: 0 };
-    html.push(`<div class="hint">Panel positions, from the ${groups.some((g) => g.direction === T.ROWS) ? "bottom" : "left"} of this section:</div>`);
+    html.push(`<div class="hint">Panels: position from the bottom (shelves) or left (dividers) of this section, and joint.</div>`);
     groups.forEach((group, i) => {
       const n = ++counts[group.direction];
-      const label = group.direction === T.ROWS ? `Shelf ${n} (from bottom)` : `Divider ${n} (from left)`;
-      html.push(numberRow(label, groupPosition(group), `min="0" data-action="position" data-group="${i}"`));
+      const label = group.direction === T.ROWS ? `Shelf ${n}` : `Divider ${n}`;
+      // stacked drawers have no panel between them, so no joint either
+      const hasPanel = group.rects.some(([, , w, h]) => Math.min(w, h) > 0.5);
+      const joint = T.panelJointOf(root(), group, c.interior_joint);
+      const options = Object.entries(T.JOINTS).map(([value, text]) => `<option value="${value}" ${value === joint ? "selected" : ""}>${text}</option>`);
+      html.push(`<div class="panel-row"><span>${label}</span>
+        <input type="number" value="${round(groupPosition(group))}" min="0" step="1" data-action="position" data-group="${i}" aria-label="${label} position" />
+        ${hasPanel ? `<select data-action="joint" data-group="${i}" aria-label="${label} joint">${options.join("")}</select>` : "<span></span>"}
+      </div>`);
     });
   }
 
@@ -485,7 +505,8 @@ props.addEventListener("change", async (evt) => {
   }
   if (state.busy) return;
   if (el.dataset.param) {
-    const value = el.type === "checkbox" ? el.checked : el.tagName === "SELECT" ? el.value : Number(el.value);
+    let value = el.type === "checkbox" ? el.checked : el.tagName === "SELECT" ? el.value : Number(el.value);
+    if ("nullable" in el.dataset && el.value === "") value = null;
     if (!(await post({ ...state.config, [el.dataset.param]: value }))) renderProps();
     return;
   }
@@ -494,6 +515,7 @@ props.addEventListener("change", async (evt) => {
   if (action === "shelves") await edit(() => T.setShelves(root(), path, Number(el.value)));
   else if (action === "dividers") await edit(() => T.setDividers(root(), path, Number(el.value)));
   else if (action === "drawer") await edit(() => T.setDrawer(root(), path, el.checked));
+  else if (action === "joint") await edit(() => T.setPanelJoint(root(), ownGroups()[Number(el.dataset.group)].members, el.value));
   else if (action === "position") {
     const group = ownGroups()[Number(el.dataset.group)];
     const delta = Number(el.value) - groupPosition(group);

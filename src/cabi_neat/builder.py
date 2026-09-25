@@ -15,6 +15,10 @@ from compas_timber.connections import PlateTButtJoint
 from compas_timber.elements import Plate
 from compas_timber.model import TimberModel
 
+from .joints import ClamexP14Joint
+from .joints import PlateMortiseTenon
+from .joints import PlateRabbetJoint
+from .joints import PlateStoppedDadoJoint
 from .layout import resolve_layout
 
 X = Vector(1, 0, 0)
@@ -41,11 +45,23 @@ def plate_from_part(part):
     return plate
 
 
-def join_plates(model, main, cross):
+# (kind, topology) -> joint type used instead of the plain L/T butt joint
+SPECIAL_JOINTS = {
+    ("rabbet", JointTopology.TOPO_EDGE_EDGE): PlateRabbetJoint,
+    ("mortise_tenon", JointTopology.TOPO_EDGE_FACE): PlateMortiseTenon,
+    ("stopped_dado", JointTopology.TOPO_EDGE_FACE): PlateStoppedDadoJoint,
+    ("clamex_p14", JointTopology.TOPO_EDGE_EDGE): ClamexP14Joint,
+    ("clamex_p14", JointTopology.TOPO_EDGE_FACE): ClamexP14Joint,
+}
+
+
+def join_plates(model, main, cross, kind=None, **parameters):
     """Join two plates, choosing an L- or T-butt joint from their actual topology.
 
     ``main`` is the plate that butts against ``cross``. For an L topology the order is kept; for a T topology the solver
-    determines which plate's edge meets the other's face.
+    determines which plate's edge meets the other's face. With ``kind="rabbet"``, an L topology gets a
+    :class:`PlateRabbetJoint` (``parameters`` are passed to it) with the rabbet in ``cross``. With
+    ``kind="mortise_tenon"``, a T topology gets a :class:`PlateMortiseTenon` with the tenons on the edge plate.
 
     Returns
     -------
@@ -53,13 +69,17 @@ def join_plates(model, main, cross):
         ``None`` if the plates don't touch.
     """
     result = PlateConnectionSolver().find_topology(main, cross)
-    if result.topology == JointTopology.TOPO_EDGE_EDGE:
-        joint_type = PlateLButtJoint
+    special = SPECIAL_JOINTS.get((kind, result.topology))
+    if special:
+        joint_type = special
+    elif result.topology == JointTopology.TOPO_EDGE_EDGE:
+        joint_type, parameters = PlateLButtJoint, {}
     elif result.topology == JointTopology.TOPO_EDGE_FACE:
-        joint_type = PlateTButtJoint
+        joint_type, parameters = PlateTButtJoint, {}
     else:
         return None
-    joint = joint_type(result.plate_a, result.plate_b, topology=result.topology, a_segment_index=result.a_segment_index, b_segment_index=result.b_segment_index)
+    segments = {"topology": result.topology, "a_segment_index": result.a_segment_index, "b_segment_index": result.b_segment_index}
+    joint = joint_type(result.plate_a, result.plate_b, **segments, **parameters)
     model.add_joint(joint)
     return joint
 
@@ -114,7 +134,8 @@ class Cabinet:
             self.model.add_element(plate)
             self.plates[part.name] = plate
         for main, cross in self.layout.joints:
-            if join_plates(self.model, self.plates[main], self.plates[cross]) is None:
+            kind, parameters = self.layout.joint_kinds.get((main, cross), (None, {}))
+            if join_plates(self.model, self.plates[main], self.plates[cross], kind, **parameters) is None:
                 self.errors.append("No contact between {} and {}.".format(main, cross))
         self.errors.extend(self.model.process_joinery())
 
@@ -126,8 +147,15 @@ class Cabinet:
         return dict(groups)
 
     def cut_list(self):
-        """Rows of (category, name, length, width, thickness), sorted by category."""
-        rows = [(p.category, p.name) + p.dimensions for p in self.layout.parts]
+        """Rows of (category, name, length, width, thickness), sorted by category.
+
+        Sizes are measured on the processed plates, so they include what joints add (e.g. a back extended into rabbets).
+        """
+        rows = []
+        for part in self.layout.parts:
+            box = self.plates[part.name].elementgeometry.aabb
+            length, width = sorted((box.xmax - box.xmin, box.ymax - box.ymin), reverse=True)
+            rows.append((part.category, part.name, length, width, box.zmax - box.zmin))
         return sorted(rows)
 
     def format_cut_list(self):

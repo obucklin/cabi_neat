@@ -65,3 +65,14 @@ def test_copy_is_deep():
     copy.columns[0].zones[0].height = 100
     assert copy.width == 900
     assert config.columns[0].zones[0].height is None
+
+
+def test_back_joint_validated():
+    assert CabinetConfig(back_joint="butt").back_joint == "butt"
+    with pytest.raises(ValueError, match="back_joint"):
+        CabinetConfig(back_joint="glue")
+
+
+def test_interior_joint_validated():
+    with pytest.raises(ValueError, match="interior_joint"):
+        CabinetConfig(interior_joint="dowel")

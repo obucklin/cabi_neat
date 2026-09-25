@@ -14,7 +14,7 @@ from .sections import sectioned
 
 FRONTEND_DIR = Path(__file__).parent / "planner_frontend"
 
-_PART_ATTRIBUTES = ("split", "gap", "hinge_side", "drawer")
+_PART_ATTRIBUTES = ("split", "gap", "hinge_side", "drawer", "joint")
 
 
 def layout_to_data(layout):

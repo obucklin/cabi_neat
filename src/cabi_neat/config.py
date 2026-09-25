@@ -117,6 +117,11 @@ class Column:
         return cls(**data)
 
 
+BACK_JOINTS = ("rabbet", "butt")
+INTERIOR_JOINTS = ("mortise_tenon", "clamex_p14", "stopped_dado", "butt")
+CARCASS_JOINTS = ("butt", "clamex_p14")
+
+
 def _enum_value(value):
     return value.value if value is not None else None
 
@@ -175,6 +180,9 @@ class Split:
     one_door
         Cover the whole split with a single door (or pair of doors). Panels behind it are set back for inset doors.
         Otherwise, consecutive open cells of a rows split share one door, and open cells of a columns split get one door each.
+    panel_joints
+        How each panel between consecutive children joins its neighbours (one entry per panel, see ``INTERIOR_JOINTS``).
+        ``None``, or a ``None`` entry, uses the cabinet's ``interior_joint``.
     """
 
     direction: SplitDirection = SplitDirection.ROWS
@@ -183,10 +191,26 @@ class Split:
     door_style: Optional[DoorStyle] = None
     hinge_side: Optional[HingeSide] = None
     one_door: bool = False
+    panel_joints: Optional[List[Optional[str]]] = None
 
     def __post_init__(self):
         self.direction = SplitDirection(self.direction)
         self.children = [node_from_data(c) for c in self.children]
+        self.door_style = DoorStyle(self.door_style) if self.door_style is not None else None
+        self.hinge_side = HingeSide(self.hinge_side) if self.hinge_side is not None else None
+        if self.panel_joints is not None:
+            self.panel_joints = list(self.panel_joints)
+            if len(self.panel_joints) != len(self.children) - 1:
+                raise ValueError("panel_joints needs one entry per panel: {} for {} children.".format(len(self.children) - 1, len(self.children)))
+            for joint in self.panel_joints:
+                if joint is not None and joint not in INTERIOR_JOINTS:
+                    raise ValueError("Panel joints must be one of {}, got {!r}.".format(", ".join(INTERIOR_JOINTS), joint))
+
+    def panel_joint(self, gap, default):
+        """The joint of the panel after child ``gap``, or ``default``."""
+        if self.panel_joints is None or self.panel_joints[gap] is None:
+            return default
+        return self.panel_joints[gap]
         self.door_style = DoorStyle(self.door_style) if self.door_style is not None else None
         self.hinge_side = HingeSide(self.hinge_side) if self.hinge_side is not None else None
 
@@ -198,6 +222,7 @@ class Split:
             "door_style": _enum_value(self.door_style),
             "hinge_side": _enum_value(self.hinge_side),
             "one_door": self.one_door,
+            "panel_joints": list(self.panel_joints) if self.panel_joints is not None else None,
         }
 
 
@@ -234,6 +259,27 @@ class CabinetConfig:
         Thickness of carcass panels, shelves and dividers.
     back_thickness
         Thickness of the back panel, which sits between sides, top and bottom, flush with the rear.
+    back_joint
+        How the back joins the sides: ``"rabbet"`` (the back sits in a rabbet cut into each side) or ``"butt"``.
+    rabbet_depth
+        Depth of the rabbet in the sides. ``None`` uses half the side thickness.
+    carcass_joint
+        How the top and bottom join the sides: ``"butt"`` or ``"clamex_p14"`` (Lamello Clamex P-14 connectors).
+    clamex_distance
+        Distance from each end of a joining edge to the nearest Clamex connector.
+    clamex_center
+        Add a Clamex connector in the middle of each joining edge.
+    interior_joint
+        Default for how shelves and dividers join the carcass and each other: ``"mortise_tenon"``, ``"clamex_p14"``,
+        ``"stopped_dado"`` (a groove open at the back, so the panel slides in from behind) or ``"butt"``. Each panel can override it (see :attr:`Split.panel_joints`).
+    tenon_depth
+        How far tenons go into the panel they join. ``None`` uses a quarter of that panel's thickness.
+    tenon_count
+        Number of tenons per shelf or divider edge.
+    dado_depth
+        Depth of stopped dado grooves. ``None`` uses a third of the grooved panel's thickness.
+    dado_stop
+        How far behind a shelf's or divider's front edge its stopped dado ends, so the groove doesn't show at the front.
     front_thickness
         Thickness of doors and drawer fronts.
     columns
@@ -275,6 +321,16 @@ class CabinetConfig:
     depth: float = 500.0
     thickness: float = 18.0
     back_thickness: float = 8.0
+    back_joint: str = "rabbet"
+    rabbet_depth: Optional[float] = None
+    carcass_joint: str = "clamex_p14"
+    clamex_distance: float = 60.0
+    clamex_center: bool = True
+    interior_joint: str = "mortise_tenon"
+    tenon_depth: Optional[float] = None
+    tenon_count: int = 2
+    dado_depth: Optional[float] = None
+    dado_stop: float = 20.0
     front_thickness: float = 18.0
     columns: List[Column] = field(default_factory=lambda: [Column()])
     interior: Optional[Union[Split, Cell]] = None
@@ -300,6 +356,12 @@ class CabinetConfig:
         self.door_mount = DoorMount(self.door_mount)
         self.door_style = DoorStyle(self.door_style)
         self.hinge_side = HingeSide(self.hinge_side)
+        if self.back_joint not in BACK_JOINTS:
+            raise ValueError("back_joint must be one of {}, got {!r}.".format(", ".join(BACK_JOINTS), self.back_joint))
+        if self.carcass_joint not in CARCASS_JOINTS:
+            raise ValueError("carcass_joint must be one of {}, got {!r}.".format(", ".join(CARCASS_JOINTS), self.carcass_joint))
+        if self.interior_joint not in INTERIOR_JOINTS:
+            raise ValueError("interior_joint must be one of {}, got {!r}.".format(", ".join(INTERIOR_JOINTS), self.interior_joint))
 
     # ==========================================================================
     # presets

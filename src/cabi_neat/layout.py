@@ -93,6 +93,7 @@ class Layout:
     config: CabinetConfig
     parts: List[Part] = field(default_factory=list)
     joints: List[Tuple[str, str]] = field(default_factory=list)  # (main, cross) part names
+    joint_kinds: Dict[Tuple[str, str], Tuple[str, Dict]] = field(default_factory=dict)  # (main, cross) -> (kind, parameters), default: butt
     regions: Dict[str, Tuple[float, float, float, float]] = field(default_factory=dict)  # node path key -> (x, z, width, height)
 
     def add(self, part):
@@ -101,8 +102,11 @@ class Layout:
         self.parts.append(part)
         return part
 
-    def join(self, main, cross):
+    def join(self, main, cross, kind=None, **parameters):
+        """Record a joint between two parts. ``kind`` selects a special joint (e.g. ``"rabbet"``), default is a butt joint."""
         self.joints.append((main.name, cross.name))
+        if kind:
+            self.joint_kinds[(main.name, cross.name)] = (kind, parameters)
 
     def part(self, name):
         for p in self.parts:
@@ -170,17 +174,26 @@ def resolve_layout(config):
     if front_depth >= inner_depth:
         raise ValueError("Cabinet is too shallow for inset fronts.")
 
-    # carcass: sides run full height, top and bottom sit between them, back is inset flush with the rear
+    # carcass: sides run full height; the back sits between them, full height and flush with the rear;
+    # top and bottom sit between the sides and in front of the back
     left = layout.add(Part("side_left", "side", (0, 0, 0), (t, D, H), "x"))
     right = layout.add(Part("side_right", "side", (W - t, 0, 0), (t, D, H), "x"))
-    bottom = layout.add(Part("bottom", "bottom", (t, 0, 0), (W - 2 * t, D, t), "z"))
-    top = layout.add(Part("top", "top", (t, 0, H - t), (W - 2 * t, D, t), "z"))
-    back = layout.add(Part("back", "back", (t, D - bt, t), (W - 2 * t, bt, H - 2 * t), "y"))
+    bottom = layout.add(Part("bottom", "bottom", (t, 0, 0), (W - 2 * t, D - bt, t), "z"))
+    top = layout.add(Part("top", "top", (t, 0, H - t), (W - 2 * t, D - bt, t), "z"))
+    back = layout.add(Part("back", "back", (t, D - bt, 0), (W - 2 * t, bt, H), "y"))
     for panel in (bottom, top):
-        layout.join(panel, left)
-        layout.join(panel, right)
-    for panel in (left, right, bottom, top):
-        layout.join(back, panel)
+        for side in (left, right):
+            if c.carcass_joint == "clamex_p14":
+                layout.join(panel, side, "clamex_p14", distance=c.clamex_distance, center_connector=c.clamex_center)
+            else:
+                layout.join(panel, side)
+    for side in (left, right):
+        if c.back_joint == "rabbet":
+            layout.join(back, side, "rabbet", rabbet_depth=c.rabbet_depth)
+        else:
+            layout.join(back, side)
+    for panel in (bottom, top):
+        layout.join(panel, back)
 
     root = c.interior_tree()
     root_is_cell = isinstance(root, Cell)
@@ -269,12 +282,13 @@ def _resolve_split(layout, node, path, rect, panels, bounds, back, front_depth, 
                 attrs = {"node": "_".join(map(str, path)), "split": path_key(path), "gap": i}
                 if is_rows:
                     panel = layout.add(Part(_name("shelf", *path, i), "shelf", (x, y0, pos), (w, inner_depth - y0, t), "z", attrs))
-                    layout.join(panel, panels["left"])
-                    layout.join(panel, panels["right"])
+                    ends = (panels["left"], panels["right"])
                 else:
                     panel = layout.add(Part(_name("divider", *path, i), "divider", (pos, y0, z), (t, inner_depth - y0, h), "x", attrs))
-                    layout.join(panel, panels["bottom"])
-                    layout.join(panel, panels["top"])
+                    ends = (panels["bottom"], panels["top"])
+                panel.attributes["joint"] = node.panel_joint(i, c.interior_joint)
+                for end in ends:
+                    _join_interior(layout, panel, end, panel.attributes["joint"])
                 layout.join(panel, back)
                 prev_panel, prev_bound = panel, "inner"
                 pos += t
@@ -307,6 +321,20 @@ def _resolve_split(layout, node, path, rect, panels, bounds, back, front_depth, 
         cs, ch = child_style(children[run[0]])
         # named after the first compartment it covers, so it can't clash with a door covering a whole split
         _add_door(layout, _name("door", *path, run[0]), merged, cs, ch, {"node": "_".join(map(str, path))})
+
+
+def _join_interior(layout, panel, other, joint):
+    """Join a shelf or divider to the panel at one of its ends with ``joint`` (see ``INTERIOR_JOINTS``)."""
+    c = layout.config
+    if joint == "mortise_tenon":
+        layout.join(panel, other, "mortise_tenon", depth=c.tenon_depth, tenon_count=c.tenon_count)
+    elif joint == "clamex_p14":
+        layout.join(panel, other, "clamex_p14", distance=c.clamex_distance, center_connector=c.clamex_center)
+    elif joint == "stopped_dado":
+        # open at the back (+y) so the panel slides in from behind; stopped at the front
+        layout.join(panel, other, "stopped_dado", depth=c.dado_depth, stop_distance=c.dado_stop, open_direction=(0.0, 1.0, 0.0))
+    else:
+        layout.join(panel, other)
 
 
 def _add_door(layout, name, opening, style, hinge, attrs):

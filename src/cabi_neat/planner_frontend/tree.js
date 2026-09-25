@@ -114,7 +114,9 @@ function withCount(node, direction, n) {
     if (n === 0) return collapseTo(node, node.children[0]);
     const children = node.children.slice(0, n + 1).map((c) => ({ ...c, size: null }));
     while (children.length < n + 1) children.push({ ...clone(children[children.length - 1]), size: null });
-    return { ...node, children };
+    let panelJoints = node.panel_joints ? node.panel_joints.slice(0, n) : null;
+    if (panelJoints) while (panelJoints.length < n) panelJoints.push(panelJoints[panelJoints.length - 1] ?? null);
+    return { ...node, children, panel_joints: panelJoints };
   }
   if (n === 0) return node;
   const inner = withoutFront(clone(node));
@@ -126,6 +128,7 @@ function withCount(node, direction, n) {
     door_style: hasDoor(node) ? node.door_style : "none",
     hinge_side: node.hinge_side ?? "left",
     one_door: hasDoor(node),
+    panel_joints: null,
   };
 }
 
@@ -258,5 +261,30 @@ export function setDrawer(root, path, on) {
   if (coveredBy(root, path)) throw new PlannerError("A drawer can't be behind a door. Remove the door first.");
   node.kind = "drawer";
   withoutFront(node);
+  return root;
+}
+
+// ============================================================================
+// panel joints
+// ============================================================================
+
+export const JOINTS = { mortise_tenon: "Mortise & tenon", clamex_p14: "Clamex P-14", stopped_dado: "Stopped dado" };
+
+/** The joint of a panel group (its first member's), or `fallback` when it uses the cabinet default. */
+export function panelJointOf(root, group, fallback) {
+  const { split, gap } = group.members[0];
+  const joints = getNode(root, split).panel_joints;
+  return (joints && joints[gap]) || fallback;
+}
+
+/** Set the joint of every panel in a group (e.g. aligned shelves across columns). */
+export function setPanelJoint(root, members, joint) {
+  if (!(joint in JOINTS) && joint !== "butt") throw new PlannerError(`Unknown joint ${joint}.`);
+  root = clone(root);
+  for (const { split, gap } of members) {
+    const node = getNode(root, split);
+    if (!node.panel_joints) node.panel_joints = Array(node.children.length - 1).fill(null);
+    node.panel_joints[gap] = joint;
+  }
   return root;
 }

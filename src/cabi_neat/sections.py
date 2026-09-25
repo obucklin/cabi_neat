@@ -79,6 +79,10 @@ def _section_split(node, path, regions, style, hinge, t, covered):
         else:
             groups.append({"indices": [i], "mergeable": mergeable})
 
+    def joints(gaps):
+        """The panel joints of ``node`` at the given gap indices (None if the node has none)."""
+        return [node.panel_joints[g] for g in gaps] if node.panel_joints is not None else None
+
     children = []
     for group in groups:
         indices = group["indices"]
@@ -88,7 +92,7 @@ def _section_split(node, path, regions, style, hinge, t, covered):
             for k, i in enumerate(indices[:-1]):
                 cells[k].size = _extent(regions, path + [i], node.direction)
             s, h = resolved(first)
-            children.append(Split(node.direction, cells, door_style=s, hinge_side=h, one_door=True))
+            children.append(Split(node.direction, cells, door_style=s, hinge_side=h, one_door=True, panel_joints=joints(indices[:-1])))
         elif isinstance(first, Split):
             children.append(_section_split(first, path + [indices[0]], regions, style, hinge, t, covered or own_door))
         else:
@@ -102,6 +106,8 @@ def _section_split(node, path, regions, style, hinge, t, covered):
             indices = group["indices"]
             child.size = sum(_extent(regions, path + [i], node.direction) for i in indices) + t * (len(indices) - 1)
 
+    # the panel after each group is the one after its last member
+    panel_joints = joints([group["indices"][-1] for group in groups[:-1]])
     if own_door:
-        return Split(node.direction, children, door_style=style, hinge_side=hinge, one_door=True)
-    return Split(node.direction, children, door_style=DoorStyle.NONE, hinge_side=HingeSide.LEFT)
+        return Split(node.direction, children, door_style=style, hinge_side=hinge, one_door=True, panel_joints=panel_joints)
+    return Split(node.direction, children, door_style=DoorStyle.NONE, hinge_side=HingeSide.LEFT, panel_joints=panel_joints)

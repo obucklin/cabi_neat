@@ -64,6 +64,35 @@ Fronts follow these rules:
 
 `columns=[Column(...)]` is shorthand for `columns(rows(...), ...)`. See `examples/04_high_shelf.json`.
 
+### Joints
+
+Panels are joined with compas_timber's `PlateLButtJoint` / `PlateTButtJoint`. The back runs the full height between the sides. The top and bottom butt against it as `main_plate`, with the back as `cross_plate`. The back sits in rabbets cut into the sides using `cabi_neat.joints.PlateRabbetJoint`, set by `back_joint="rabbet"` (the default; `"butt"` turns it off) and `rabbet_depth` (default: half the side thickness). The rabbet joint is an L joint with the back as main plate. The back is extended `rabbet_depth` into each side, and the side gets a `FreeContour` pocket as wide as the back is thick. Each shelf and divider picks its own joint to the sides, top, bottom and other panels: mortise and tenon, Clamex P-14, or stopped dado. In the planner it's a dropdown next to each panel's position. In the config it's `Split.panel_joints`, one entry per panel, where `None` means the cabinet's `interior_joint`. Shelves at the same height across columns share a setting.
+
+`cabi_neat.joints.PlateMortiseTenon` is a T joint. Its settings:
+
+- `interior_joint="mortise_tenon"` is the default; `"butt"` gives plain T-butts.
+- `tenon_depth`: how far the tenons go in. The default is a quarter of the receiving panel's thickness.
+- `tenon_count`: the number of tenons per edge, default 2. They're evenly spaced, and both ends of the edge are left free.
+
+The shelf's edge is extended into the other panel. `FreeContour` pockets then cut the extension away between the tenons and cut matching blind mortises. Joints with the back stay plain T-butts.
+
+By default, the top and bottom are joined to the sides with Lamello Clamex P-14 connectors, including a centre connector (`carcass_joint="clamex_p14"`, `clamex_center=True`), using `cabi_neat.joints.ClamexP14Joint`:
+
+- The plates are trimmed as in an L or T butt joint.
+- Connectors sit at the middle of the main plate's thickness, `clamex_distance` (default 60) from both ends of the joining edge. With `clamex_center`, there's one more in the middle.
+- Each connector adds two features, both compas_model `Feature`s that cut a P-System groove (a Ø100.4 blade segment, 7 wide, 14.7 deep):
+  - `P14Edge(ref_side, location)` in the main plate's edge;
+  - `P14Face(ref_side, x, y, orientation)` in the cross plate's face.
+- `joint.connector_frames()` gives each connector's position and orientation.
+
+`cabi_neat.joints.PlateStoppedDadoJoint` is a stopped dado (housing), used as follows:
+
+- The groove in the cross plate runs out through its edge in `open_direction`; the cabinet uses the back. It stops `stop_distance` (`dado_stop`, default 20) behind the main plate's front edge.
+- The main plate's edge is extended into the groove, with a notch where the groove stops, so the panel slides in from behind and nothing shows at the front.
+- The groove's `depth` (`dado_depth`) defaults to a third of the cross plate's thickness.
+
+The cut list is measured on the processed plates, so it includes the back's extra width and the tenons.
+
 Configs serialize to JSON with `config.to_json(path)` and `CabinetConfig.from_json(path)`; see `examples/03_custom_stack.json`.
 
 ## Planner

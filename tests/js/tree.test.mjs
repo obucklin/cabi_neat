@@ -12,6 +12,8 @@ import {
   isSplit,
   movePanels,
   panelGroups,
+  panelJointOf,
+  setPanelJoint,
   PlannerError,
   setDividers,
   setDoor,
@@ -149,4 +151,21 @@ test("freeze keeps the last child flexible", () => {
 test("counts are validated", () => {
   assert.throws(() => setShelves(cell(), [], -1), PlannerError);
   assert.throws(() => setDividers(cell(), [], 1.5), PlannerError);
+});
+
+test("panel joints are set per group and follow count changes", () => {
+  let root = setShelves(setDividers(cell(), [], 1), [], 2);
+  const shelves = panelGroups(root, []).filter((g) => g.direction === "rows");
+  root = setPanelJoint(root, shelves[1].members, "clamex_p14");
+  assert.deepEqual(root.children[0].panel_joints, [null, "clamex_p14"]);
+  assert.deepEqual(root.children[1].panel_joints, [null, "clamex_p14"]);
+  const groups = panelGroups(root, []).filter((g) => g.direction === "rows");
+  assert.equal(panelJointOf(root, groups[0], "mortise_tenon"), "mortise_tenon");
+  assert.equal(panelJointOf(root, groups[1], "mortise_tenon"), "clamex_p14");
+  // adding a shelf extends the list, removing trims it
+  root = setShelves(root, [], 3);
+  assert.deepEqual(root.children[0].panel_joints, [null, "clamex_p14", "clamex_p14"]);
+  root = setShelves(root, [], 1);
+  assert.deepEqual(root.children[0].panel_joints, [null]);
+  assert.throws(() => setPanelJoint(root, groups[0].members, "glue"), PlannerError);
 });

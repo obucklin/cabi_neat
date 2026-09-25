@@ -129,3 +129,25 @@ def test_door_on_divided_section_next_to_door_on_compartment(shelved):
     doors = layout.by_category("door")
     assert len(doors) == 2
     assert len({p.name for p in layout.parts}) == len(layout.parts)
+
+
+def test_panel_joints_validated_and_serialized():
+    with pytest.raises(ValueError, match="one entry per panel"):
+        rows("open", "open", panel_joints=[])
+    with pytest.raises(ValueError, match="Panel joints"):
+        rows("open", "open", panel_joints=["glue"])
+    config = CabinetConfig(interior=rows("open", "open", panel_joints=["clamex_p14"]))
+    assert CabinetConfig.from_json(config.to_json()) == config
+
+
+def test_panel_joints_survive_sectioning():
+    from cabi_neat.sections import sectioned
+
+    interior = rows("drawer", "open", "open", "open", panel_joints=["clamex_p14", "butt", "mortise_tenon"])
+    layout = resolve_layout(CabinetConfig(interior=interior))
+    before = {p.name: p.attributes["joint"] for p in layout.by_category("shelf")}
+    after_config = sectioned(CabinetConfig(interior=interior))
+    after = {tuple(p.origin): p.attributes["joint"] for p in resolve_layout(after_config).by_category("shelf")}
+    assert sorted(after.values()) == sorted(before.values())
+    by_position = {tuple(p.origin): p.attributes["joint"] for p in layout.by_category("shelf")}
+    assert after == by_position
