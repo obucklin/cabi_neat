@@ -877,31 +877,66 @@ document.getElementById("toggle-3d").addEventListener("click", () => {
   main.classList.toggle("no-3d");
   render();
 });
-document.getElementById("download").addEventListener("click", async () => {
-  const text = JSON.stringify(state.config, null, 2);
+/** Save `blob` with a save dialog where the browser has one (Chrome/Edge), else as a download. */
+async function saveFile(blob, suggestedName, description, accept) {
   if (window.showSaveFilePicker) {
-    // Chrome/Edge: a real save dialog
     try {
-      const handle = await window.showSaveFilePicker({
-        suggestedName: "cabinet.json",
-        types: [{ description: "Cabinet configuration", accept: { "application/json": [".json"] } }],
-      });
+      const handle = await window.showSaveFilePicker({ suggestedName, types: [{ description, accept }] });
       const writable = await handle.createWritable();
-      await writable.write(text);
+      await writable.write(blob);
       await writable.close();
-      setMessage(`Saved ${handle.name}.`);
+      return handle.name;
     } catch (e) {
-      if (e.name !== "AbortError") setMessage(`Could not save: ${e.message}`, "error");
+      if (e.name === "AbortError") return null;
+      throw e;
     }
-    return;
   }
-  // other browsers: download, which asks where to save if the browser is set to
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
-  a.download = "cabinet.json";
+  a.href = URL.createObjectURL(blob);
+  a.download = suggestedName;
   a.click();
   URL.revokeObjectURL(a.href);
+  return suggestedName;
+}
+
+document.getElementById("download").addEventListener("click", async () => {
+  try {
+    const name = await saveFile(new Blob([JSON.stringify(state.config, null, 2)], { type: "application/json" }), "cabinet.json", "Cabinet configuration", {
+      "application/json": [".json"],
+    });
+    if (name) setMessage(`Saved ${name}.`);
+  } catch (e) {
+    setMessage(`Could not save: ${e.message}`, "error");
+  }
 });
+
+async function exportFile(kind) {
+  if (state.busy) return;
+  const formats = {
+    btlx: ["cabinet.btlx", "BTLx", { "application/xml": [".btlx"] }],
+    hops: ["cabinet_hops.zip", "HOPS programs (zip)", { "application/zip": [".zip"] }],
+  };
+  const [name, description, accept] = formats[kind];
+  state.busy = true;
+  updateToolbar();
+  setMessage(state.stale ? "Generating 3D and exporting…" : "Exporting…");
+  try {
+    const res = await fetch(`api/export/${kind}`);
+    if (!res.ok) throw new Error(`the server answered ${res.status}`);
+    const summary = res.headers.get("X-Export-Summary") || "";
+    const saved = await saveFile(await res.blob(), name, description, accept);
+    setMessage(saved ? `Exported ${saved}. ${summary}` : null);
+    if (state.stale) await load();
+  } catch (e) {
+    setMessage(`Could not export: ${e.message}`, "error");
+  } finally {
+    state.busy = false;
+    updateToolbar();
+  }
+}
+
+document.getElementById("export-btlx").addEventListener("click", () => exportFile("btlx"));
+document.getElementById("export-hops").addEventListener("click", () => exportFile("hops"));
 document.getElementById("upload").addEventListener("change", async (evt) => {
   const file = evt.target.files[0];
   evt.target.value = "";

@@ -8,6 +8,7 @@ from compas.geometry import Point
 from compas.geometry import Rotation
 from compas.geometry import Translation
 from compas.geometry import Vector
+from compas.tolerance import Tolerance
 from compas_timber.connections import JointTopology
 from compas_timber.connections import PlateConnectionSolver
 from compas_timber.connections import PlateLButtJoint
@@ -132,7 +133,8 @@ class Cabinet:
     def __init__(self, config):
         self.config = config
         self.layout = resolve_layout(config)
-        self.model = TimberModel()
+        # the cabinet is designed in millimetres; compas' default unit is metres, which BTLx export would scale by 1000
+        self.model = TimberModel(tolerance=Tolerance(unit="MM"))
         self.plates = {}
         self.errors = []
         self._build()

@@ -154,6 +154,22 @@ Empty fields use the cabinet's defaults, shown as placeholders.
 
 The page keeps no geometry of its own. It edits the interior tree (`planner_frontend/tree.js`) and posts the config to `/planner/api/config`. Python then resolves and builds the cabinet, updates the 3D view, and sends the resolved layout back for drawing. `cabi_neat.sections.sectioned(config)` converts any config into the planner's *section form*, where every node has an explicit front, without changing its geometry.
 
+## Fabrication output
+
+```bash
+python -m cabi_neat.export cabinet.json --btlx cabinet.btlx --hops hops/
+```
+
+The planner's toolbar has **Export BTLx** and **Export HOPS** (a zip with one program per part and a `report.txt`). From Python, `cabi_neat.export.btlx(cabinet, path)` and `cabi_neat.export.hops(cabinet, directory)` do the same. Each export returns a report of what it couldn't export.
+
+- **BTLx** is written by compas_timber's `BTLxWriter` from the cabinet's `TimberModel`. The model is in millimetres (`Tolerance(unit="MM")`). Features that aren't BTLx processings, the Clamex P-14 grooves, are left out while writing and stay on the plates.
+- **HOPS** is written with [easyhops](../easyhops), one job per plate:
+  - The face with the most machining is on top. The other face's machining comes first, followed by a machine stop to turn the panel over.
+  - Pockets (rabbets, grooves, mortises, tenon gaps, hinge pots) become a contour plus the `_ExecutePocket_V5` macro at the pocket's depth.
+  - Drillings (hinge screws, dowels, mounting plates) keep their real depth.
+  - Tool positions are machine-specific. Set them with `cabi_neat.export.HopsTools`: a router (default easyhops' SRSLD12, Ø11.8, position 404), a smaller router for narrower pockets such as 8 mm grooves (a Ø6 placeholder at position 405), and a drill (position 607).
+  - Not exported yet: Clamex P-14 grooves, drillings into a panel's end (the drawer dowels), and non-rectangular outlines. The rectangular panels are expected to be cut to size.
+
 ## Setup
 
 Plate geometry needs the OCC backend of compas_brep.
@@ -161,7 +177,7 @@ Plate geometry needs the OCC backend of compas_brep.
 ```bash
 conda create -n cabi-dev python=3.12
 conda activate cabi-dev
-pip install -e ../compas_timber -e ../compas_threejs -e ".[dev,viewer]"
+pip install -e ../compas_timber -e ../compas_threejs -e ../easyhops -e ".[dev,viewer]"
 pytest
 node --test tests/js/*.test.mjs   # planner tree operations
 ```

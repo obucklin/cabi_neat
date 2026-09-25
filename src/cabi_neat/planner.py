@@ -7,6 +7,7 @@ the whole config back; the configurator rebuilds the 3D model, which the page sh
 from pathlib import Path
 
 from fastapi import Body
+from fastapi import Response
 
 from .config import CabinetConfig
 from .joints import CupHingeJoint
@@ -38,6 +39,13 @@ def layout_to_data(layout):
     return {"parts": parts, "regions": {k: list(v) for k, v in layout.regions.items()}}
 
 
+def _download_headers(filename, report):
+    from .export import _short_summary
+
+    summary = _short_summary(report).encode("ascii", "replace").decode("ascii")
+    return {"Content-Disposition": 'attachment; filename="{}"'.format(filename), "X-Export-Summary": summary, "Access-Control-Expose-Headers": "X-Export-Summary"}
+
+
 class Planner:
     """Registers the planner page and its API on a :class:`Configurator`'s App. Must be created before the App starts.
 
@@ -56,6 +64,9 @@ class Planner:
         ``{"version"}``, which increments whenever the configurator applies a config.
     ``GET /planner/api/cutlist``
         ``{"rows": [[category, name, length, width, thickness], ...]}`` for the current cabinet.
+    ``GET /planner/api/export/btlx``, ``GET /planner/api/export/hops``
+        The cabinet as a BTLx file, or its HOPS jobs as a zip (generating the model first if needed). The header
+        ``X-Export-Summary`` says what couldn't be exported.
     ``POST /planner/api/display``
         ``{"show_fronts", "open_fronts"}`` (either optional): what the 3D view shows.
     """
@@ -68,6 +79,8 @@ class Planner:
         app.add_route("/planner/api/config", self.post_config, methods=("POST",))
         app.add_route("/planner/api/cutlist", self.get_cut_list)
         app.add_route("/planner/api/generate", self.post_generate, methods=("POST",))
+        app.add_route("/planner/api/export/btlx", self.get_btlx)
+        app.add_route("/planner/api/export/hops", self.get_hops)
         app.add_route("/planner/api/display", self.post_display, methods=("POST",))
         app.add_static_mount("/planner", FRONTEND_DIR, name="planner_frontend")
 
@@ -101,6 +114,23 @@ class Planner:
         if errors is None:
             return {"ok": False, "error": self.configurator.last_error}
         return dict(self.get_state(), ok=True, errors=[str(getattr(e, "debug_info", e)) for e in errors])
+
+    def _built_cabinet(self):
+        if self.configurator.stale:
+            self.configurator.generate()
+        return self.configurator.cabinet
+
+    def get_btlx(self):
+        from . import export
+
+        xml, report = export.btlx(self._built_cabinet())
+        return Response(content=xml, media_type="application/xml", headers=_download_headers("cabinet.btlx", report))
+
+    def get_hops(self):
+        from . import export
+
+        data, report = export.hops_zip(self._built_cabinet())
+        return Response(content=data, media_type="application/zip", headers=_download_headers("cabinet_hops.zip", report))
 
     def get_cut_list(self):
         # the cut list is measured on the built plates
