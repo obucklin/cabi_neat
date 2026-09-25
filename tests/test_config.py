@@ -1,0 +1,67 @@
+import pytest
+
+from cabi_neat import CabinetConfig
+from cabi_neat import Column
+from cabi_neat import DoorMount
+from cabi_neat import DoorStyle
+from cabi_neat import HingeSide
+from cabi_neat import Zone
+from cabi_neat import ZoneKind
+
+
+def test_stack_accepts_kind_strings():
+    config = CabinetConfig.stack(["drawer", "open", Zone(ZoneKind.OPEN, height=300)])
+    assert len(config.columns) == 1
+    assert [z.kind for z in config.columns[0].zones] == [ZoneKind.DRAWER, ZoneKind.OPEN, ZoneKind.OPEN]
+    assert config.columns[0].zones[2].height == 300
+
+
+def test_grid():
+    config = CabinetConfig.grid(3, 4)
+    assert len(config.columns) == 3
+    assert all(len(c.zones) == 4 for c in config.columns)
+    assert all(z.kind == ZoneKind.OPEN for c in config.columns for z in c.zones)
+
+
+def test_shelves_and_drawers():
+    config = CabinetConfig.shelves_and_drawers(shelves=2, drawers=3, columns=2)
+    kinds = [z.kind for z in config.columns[0].zones]
+    assert kinds == [ZoneKind.DRAWER] * 3 + [ZoneKind.OPEN] * 3
+    assert config.columns[0].zones is not config.columns[1].zones
+
+
+def test_enums_from_strings():
+    config = CabinetConfig(door_mount="inset", door_style="double", hinge_side="right")
+    assert config.door_mount == DoorMount.INSET
+    assert config.door_style == DoorStyle.DOUBLE
+    assert config.hinge_side == HingeSide.RIGHT
+
+
+def test_json_roundtrip():
+    config = CabinetConfig(
+        width=1000,
+        door_mount=DoorMount.INSET,
+        columns=[Column(zones=[Zone(ZoneKind.DRAWER, 200), Zone()], width=400, door_style=DoorStyle.SINGLE, hinge_side=HingeSide.RIGHT), Column()],
+    )
+    restored = CabinetConfig.from_json(config.to_json())
+    assert restored == config
+
+
+def test_json_file_roundtrip(tmp_path):
+    path = tmp_path / "cabinet.json"
+    config = CabinetConfig.grid(2, 3)
+    config.to_json(str(path))
+    assert CabinetConfig.from_json(str(path)) == config
+
+
+def test_unknown_parameter_rejected():
+    with pytest.raises(ValueError, match="colour"):
+        CabinetConfig.from_data({"colour": "red"})
+
+
+def test_copy_is_deep():
+    config = CabinetConfig.grid(2, 2)
+    copy = config.copy(width=900)
+    copy.columns[0].zones[0].height = 100
+    assert copy.width == 900
+    assert config.columns[0].zones[0].height is None

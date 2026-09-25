@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cabinet planner</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header id="toolbar">
+      <div class="brand">Cabinet planner</div>
+      <div class="tools">
+        <button id="undo" title="Undo (Ctrl+Z)">Undo</button>
+        <button id="redo" title="Redo (Ctrl+Shift+Z)">Redo</button>
+        <label class="inline">Snap
+          <select id="snap">
+            <option value="1">1 mm</option>
+            <option value="5">5 mm</option>
+            <option value="10" selected>10 mm</option>
+            <option value="50">50 mm</option>
+          </select>
+        </label>
+        <button id="cutlist-toggle" title="Show the cut list">Cut list</button>
+        <button id="download" title="Download the configuration as JSON">Save JSON</button>
+        <label class="button" title="Load a configuration JSON">Load JSON<input type="file" id="upload" accept=".json,application/json" hidden /></label>
+        <button id="toggle-3d" title="Show or hide the 3D view">3D</button>
+      </div>
+    </header>
+    <main id="main">
+      <aside id="sidebar">
+        <div id="props"></div>
+        <div id="message" role="status" aria-live="polite"></div>
+      </aside>
+      <section id="plan-pane">
+        <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
+      </section>
+      <section id="view-pane">
+        <iframe id="view3d" title="3D view"></iframe>
+      </section>
+    </main>
+    <script type="module" src="planner.js"></script>
+  </body>
+</html>

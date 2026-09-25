@@ -1,0 +1,20 @@
+{
+  "width": 1000,
+  "height": 1800,
+  "depth": 500,
+  "door_mount": "overlay",
+  "door_style": "single",
+  "interior": {
+    "direction": "rows",
+    "children": [
+      {
+        "direction": "columns",
+        "children": [
+          {"direction": "rows", "size": 400, "children": [{"size": 500}, {"size": 400}, "open"]},
+          {"kind": "open", "hinge_side": "right"}
+        ]
+      },
+      {"kind": "open", "size": 300, "door_style": "double"}
+    ]
+  }
+}

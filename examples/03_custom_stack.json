@@ -1,0 +1,26 @@
+{
+  "width": 1200,
+  "height": 900,
+  "depth": 550,
+  "door_mount": "overlay",
+  "door_style": "single",
+  "hinge_side": "left",
+  "columns": [
+    {
+      "width": 500,
+      "zones": [
+        {"kind": "drawer", "height": 150},
+        {"kind": "drawer", "height": 150},
+        {"kind": "drawer", "height": 250},
+        {"kind": "drawer"}
+      ]
+    },
+    {
+      "hinge_side": "right",
+      "zones": [
+        {"kind": "open"},
+        {"kind": "open", "height": 300}
+      ]
+    }
+  ]
+}
