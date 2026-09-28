@@ -46,7 +46,10 @@ def test_btlx(cabinet, tmp_path):
 def test_hops(cabinet, tmp_path):
     files, report = export.hops(cabinet, str(tmp_path))
     assert report.errors == []
-    assert set(files) == {"{}.hop".format(name) for name in cabinet.plates}
+    # every plate has a program, identical ones share it
+    names = {"{}.hop".format(name) for name in cabinet.plates}
+    covered = {n for n in files if n in names} | {p + ".hop" for parts in report.copies.values() for p in parts}
+    assert covered == names
     # written like the machine's own files: Windows line endings
     written = (tmp_path / "side_left.hop").read_bytes()
     assert written.startswith(b";MAKROTYP=0\r\n") and b"\n" not in written.replace(b"\r\n", b"")
@@ -55,7 +58,7 @@ def test_hops(cabinet, tmp_path):
         assert "CALL Park_V7 ( VAL MODE:=3,POSX:=0,POSY:=0)" in text, name
     # part size from the blank, e.g. a drawer bottom including its tongues in the grooves
     part = cabinet.layout.part("drawer_0_0_bottom")
-    assert re.search(r"DY := ([\d.]+)", files["drawer_0_0_bottom.hop"]).group(1) == "{:g}".format(part.size[1] + 2 * 9)
+    assert re.search(r"DY := ([\d.]+)", files["drawer_0_0_bottom_CUT_2.hop"]).group(1) == "{:g}".format(part.size[1] + 2 * 9)
     assert report.skipped == []
 
 
@@ -170,3 +173,37 @@ def test_hops_rabbets_are_single_lines(cabinet):
     assert rabbet[2] == "SP (492,1200,9,1,1,_ANF*2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0.5mm)"  # Z: the floor above the underside
     assert rabbet[3:5] == ["G01 (0,-DY,0,0,10,2)", "EP (1,_ANF*2,0)"]
     assert "TASCHENBREITE:=1252" not in side
+
+
+def test_hops_identical_parts_share_a_program():
+    cabinet = Cabinet(CabinetConfig.shelves_and_drawers(3, 3))
+    files, report = export.hops(cabinet)
+    # four equal shelves: one program, named after the first with how many to cut
+    assert "shelf_0_2_CUT_4.hop" in files and not any(n.startswith("shelf_0_3") for n in files)
+    assert report.copies["shelf_0_2_CUT_4"] == ["shelf_0_2", "shelf_0_3", "shelf_0_4", "shelf_0_5"]
+    text = files["shelf_0_2_CUT_4.hop"]
+    assert ";NCNAME=shelf_0_2_CUT_4\n" in text and ";BILD=SHELF_0_2_CUT_4.WMF\n" in text
+    assert "shelf_0_2_CUT_4: shelf_0_2, shelf_0_3, shelf_0_4, shelf_0_5" in report.summary()
+    # parts that differ keep their own programs, without a count
+    assert "side_left.hop" in files and "side_right.hop" in files
+    assert sum(len(parts) for parts in report.copies.values()) + len(files) - len(report.copies) == len(cabinet.plates)
+
+
+def test_hops_stopped_dado_tenons_are_milled_from_the_end():
+    cabinet = Cabinet(CabinetConfig.grid(2, 2, door_style="none", interior_joint="stopped_dado"))
+    files, report = export.hops(cabinet)
+    assert report.skipped == []
+    shelf = files["shelf_0_0_CUT_2.hop"]
+    divider = files["divider_0.hop"]
+    # the dados are milled with the D13.4 router, so their closed ends have R6.7 corners
+    assert "WZF (402," in divider and "TASCHENBREITE:=18," in divider
+    # the shelf's notches: no pockets, a contour in the tilted plane on each end, with arcs of the same radius
+    assert "_RechteckTasche_V5" not in shelf
+    assert shelf.count("; Stopped dado tenon: 20 x 6 notch milled from the end, corners R6.7") == 2
+    assert shelf.count("EbeneF (") == 2 and shelf.count("Ebene0()") == 2
+    assert "EbeneF (0,0,0,90,270,1,2)" in shelf and "EbeneF (385,0,0,90,90,1,2)" in shelf
+    left = shelf[shelf.index("EbeneF (0,0,0,90,270,1,2)") : shelf.index("Ebene0()")].splitlines()
+    assert left[1].startswith("SP (-31.7,0,-6,1,")  # 6 deep, to the tenon's shoulder
+    assert left[2:7] == ["G01 (-26.7,0,0,0,0,2)", "G02R (-20,-6.7,0,6.7,0,0,2)", "G01 (-20,-11.3,0,0,0,2)", "G02R (-26.7,-18,0,6.7,0,0,2)", "G01 (-31.7,-18,0,0,0,2)"]
+    # and a straight pass for the rest of the notch, out to the edge
+    assert left[8].startswith("SP (-2.58,11.7,-6,0,")

@@ -169,11 +169,13 @@ The planner's toolbar has **Export BTLx** and **Export HOPS** (a zip with one pr
   - The part is cut to size first: saw 201 and `_Sformat_V5`.
   - Rabbets are a single line along their inner edge (`SP`/`G01`/`EP`, radius correction 1), as in `sides_schrank`.
   - Other pockets (grooves, mortises, tenon gaps) use `_RechteckTasche_V5` with the largest router that fits. Pockets open to an edge are widened past it for a bigger router. Other shapes use a contour and `_ExecutePocket_V5`.
+  - The notches that leave a stopped dado's tenon are milled from the plate's end: the working plane is tilted onto the end face (`EbeneF`, as in `Clamex_MS_FI`) and a contour runs along the tenon's end with arcs of the dado router's radius, so the tenon fits the dado's rounded end. Straight passes clear the rest of the notch.
   - Hinge pots use `_Kreisbahn_V5` with the Ø20 router (403).
   - Drillings into faces use `Bohrung`, drillings into edges `HorzB`, always with a spindle drill (`WZB`) of the hole's diameter: the shortest one that's deep enough. The drill head isn't used. The defaults include a Ø8 (603) and a Ø3 (602, placeholder number) to be loaded.
   - Clamex P-14 in faces uses `Clamex_MS_FI` with the finger mill (136). In edges it uses `Clamex1_Stumpf` (ends) and `Clamex1_Stumpf_X` (long edges) with the disc (108), plus the access holes (drill 135).
   - With machining on both faces, the other face comes first, then `MachineStop_V7` to turn the panel over about its long edge. A plate with Clamex access holes has their face on top: the underside of shelves and of the top, and the inside of everything else.
   - The tools default to the ETH machine's tool table (260611_ETH). `HopsTools.from_too(path)` reads another table.
+  - Identical parts (shelves, drawer bottoms, …) share one program, named after the first with `_CUT_<n>` appended, e.g. `shelf_0_2_CUT_4.hop` is cut four times. `report.txt` lists the parts each one is for.
   - Files are written with Windows line endings.
 
 ## Setup

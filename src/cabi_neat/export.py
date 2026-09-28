@@ -26,9 +26,13 @@ class ExportReport:
 
     skipped: List[str] = field(default_factory=list)  # human-readable, one entry per left-out feature
     errors: List[str] = field(default_factory=list)
+    copies: Dict[str, List[str]] = field(default_factory=dict)  # file written once -> the parts it's cut for
 
     def summary(self):
         lines = []
+        if self.copies:
+            lines.append("{} program(s) for several identical parts:".format(len(self.copies)))
+            lines.extend("  {}: {}".format(name, ", ".join(parts)) for name, parts in self.copies.items())
         if self.skipped:
             lines.append("{} feature(s) not exported:".format(len(self.skipped)))
             lines.extend("  " + s for s in self.skipped)
@@ -122,6 +126,9 @@ def _assembly(name):
 def hops(cabinet, directory=None, tools=None):
     """One HOPS program per plate of the cabinet, written to ``directory`` as ``<part name>.hop`` if given.
 
+    Identical parts (e.g. shelves, drawer bottoms) share one program, named after the first of them with ``_CUT_<n>``
+    appended: ``shelf_0_1_CUT_3.hop`` is cut three times. ``report.copies`` lists which parts each one is for.
+
     See :mod:`cabi_neat.hops` for what they contain and :class:`cabi_neat.hops.HopsTools` for the tools.
 
     Returns
@@ -133,26 +140,65 @@ def hops(cabinet, directory=None, tools=None):
 
     from .hops import HopsTools
     from .hops import PlateProgram
+    from .hops import StoppedDadoNotch
 
     tools = tools or HopsTools()
     report = ExportReport()
-    files: Dict[str, str] = {}
+    programs = {}  # the machining (the text without the part's name) -> [(part name, text)]
     directions = _access_directions(cabinet)
+    # the notches that leave stopped dados' tenons, to be milled from the end: {plate: {id(feature): notch}}
+    notches = {}
+    for joint in cabinet.model.joints:
+        if type(joint).__name__ != "PlateStoppedDadoJoint":
+            continue
+        notch = StoppedDadoNotch(joint.pocket_depth, joint.main_plate.thickness, joint.pocket_depth)
+        for feature in joint.features:
+            if feature in joint.main_plate.features:
+                notches.setdefault(joint.main_plate, {})[id(feature)] = notch
     for part in cabinet.layout.parts:
-        program = PlateProgram(cabinet.plates[part.name], tools, directions.get(part.name), comment=part.category)
+        plate = cabinet.plates[part.name]
+        program = PlateProgram(plate, tools, directions.get(part.name), comment=part.category, stopped_dados=notches.get(plate))
         try:
             text = program.text()
         except Exception as e:  # keep going: one part's problem shouldn't stop the others
             report.errors.append("{}: {}".format(part.name, e))
             continue
         report.skipped.extend(program.skipped)
-        files["{}.hop".format(part.name)] = text
+        programs.setdefault(_without_name(text), []).append((part.name, text))
+    files: Dict[str, str] = {}
+    for parts in programs.values():
+        name, text = parts[0]
+        if len(parts) > 1:
+            name = "{}_CUT_{}".format(name, len(parts))
+            text = _renamed(text, name)
+            report.copies[name] = [p for p, _ in parts]
+        files["{}.hop".format(name)] = text
     if directory:
         os.makedirs(directory, exist_ok=True)
         for name, text in files.items():
             with open(os.path.join(directory, name), "wb") as f:
                 f.write(hops_bytes(text))
     return files, report
+
+
+_NAME_LINES = (";BILD=", ";NCNAME=")
+
+
+def _without_name(text):
+    return "\n".join(line for line in text.split("\n") if not line.startswith(_NAME_LINES))
+
+
+def _renamed(text, name):
+    from .hops import _ascii
+
+    lines = []
+    for line in text.split("\n"):
+        if line.startswith(";BILD="):
+            line = ";BILD={}.WMF".format(_ascii(name).upper())
+        elif line.startswith(";NCNAME="):
+            line = ";NCNAME={}".format(_ascii(name))
+        lines.append(line)
+    return "\n".join(lines)
 
 
 def hops_bytes(text):

@@ -269,7 +269,7 @@ def _ref_point(ref_side, x, y):
 # ==========================================================================
 
 # order of the operations within a pass, so tools are changed as rarely as possible
-ORDER = ("pocket", "pot", "drill", "clamex_face", "horizontal", "clamex_edge")
+ORDER = ("pocket", "side_contour", "pot", "drill", "clamex_face", "horizontal", "clamex_edge")
 
 
 @dataclass
@@ -291,10 +291,14 @@ class PlateProgram:
     tools : :class:`HopsTools`, optional
     access_direction : vector, optional
         Where the Clamex access holes should face (world). The face closest to it goes on top if there are any.
+    stopped_dados : dict, optional
+        The plate's notches at the closed end of stopped dados, milled from the end instead of as pockets:
+        ``{id(FreeContour): StoppedDadoNotch}``.
     """
 
-    def __init__(self, plate, tools=None, access_direction=None, comment=""):
+    def __init__(self, plate, tools=None, access_direction=None, comment="", stopped_dados=None):
         self.plate = plate
+        self.stopped_dados = stopped_dados or {}
         self.tools = tools or HopsTools()
         self.access_direction = access_direction
         self.comment = comment
@@ -376,6 +380,8 @@ class PlateProgram:
 
     def _face_of(self, feature):
         name = type(feature).__name__
+        if id(feature) in self.stopped_dados:
+            return 0  # milled from the end
         if name in ("FreeContour", "Drilling"):
             return self.space.side_of(self.plate.ref_sides[feature.ref_side_index])
         if name == "P14Face":
@@ -391,6 +397,8 @@ class PlateProgram:
 
     def _convert(self, feature, top):
         name = type(feature).__name__
+        if id(feature) in self.stopped_dados:
+            return self._stopped_dado_notch(feature, self.stopped_dados[id(feature)], top)
         if name == "FreeContour" and feature.counter_sink:
             return self._pocket(feature)
         if name == "Drilling":
@@ -571,6 +579,80 @@ class PlateProgram:
         )
         return [_Op("pocket", router.number, lines, "Pocket, {} deep".format(_n(depth)), face, (min(ys), min(xs)))]
 
+    # -- stopped dado notches ---------------------------------------------------
+
+    def _stopped_dado_notch(self, feature, notch, top):
+        """The notch that leaves the tenon of a stopped dado, milled from the plate's end with the tool axis along it.
+
+        A router milling the dado from above leaves its closed end rounded with the router's radius, across the dado's
+        width. So the tenon's end gets the same corners: a contour in the end face, along the tenon's end with an arc
+        of that radius at either face, then straight passes to clear the rest of the notch. The working plane is tilted
+        90 degrees onto the end face (``EbeneF``, as ``Clamex_MS_FI`` does): its X along the edge, its Y up with 0 at the
+        top face, its Z out of the end face; the tool cuts ``notch.depth`` deep, down to the tenon's shoulder.
+        """
+        length, width, thickness = self.space.size
+        ref_side = self.plate.ref_sides[feature.ref_side_index]
+        points = [self.space.hops_point(self.space.local_point(_ref_point(ref_side, p[0], p[1])), top)[:2] for p in feature.contour_param_object.polyline]
+        x0, x1 = max(min(p[0] for p in points), 0.0), min(max(p[0] for p in points), length)
+        y0, y1 = max(min(p[1] for p in points), 0.0), min(max(p[1] for p in points), width)
+        # which end the tenon is on (normal out of it) and which edge the notch opens to (the origin, on that edge)
+        if abs(x1 - x0 - notch.depth) < 0.01 and (x0 < 1e-3 or x1 > length - 1e-3):
+            end_x = 0.0 if x0 < 1e-3 else length
+            normal = (-1.0, 0.0) if end_x == 0.0 else (1.0, 0.0)
+            origin, inward = ((end_x, width), (0.0, -1.0)) if y1 > width - 1e-3 else ((end_x, 0.0), (0.0, 1.0))
+            stop = y1 - y0
+        elif abs(y1 - y0 - notch.depth) < 0.01 and (y0 < 1e-3 or y1 > width - 1e-3):
+            end_y = 0.0 if y0 < 1e-3 else width
+            normal = (0.0, -1.0) if end_y == 0.0 else (0.0, 1.0)
+            origin, inward = ((length, end_y), (-1.0, 0.0)) if x1 > length - 1e-3 else ((0.0, end_y), (1.0, 0.0))
+            stop = x1 - x0
+        else:
+            self._skip("stopped dado notch that isn't at the plate's end - milled as a pocket instead")
+            return self._pocket(feature)
+        router = self.tools.router_for(notch.dado_width, notch.dado_depth)
+        if router is None or router.usable_length < notch.depth:
+            self._skip("stopped dado notch - no router for it")
+            return []
+        radius = min(router.diameter / 2.0, thickness / 2.0)
+        # the plane's X: normal = X x Z (up) gives X = (-ny, nx); u, the distance from the open edge towards the tenon,
+        # is X or -X
+        axis = (-normal[1], normal[0])
+        sign = 1.0 if axis[0] * inward[0] + axis[1] * inward[1] > 0 else -1.0
+        angle = math.degrees(math.atan2(axis[1], axis[0])) % 360.0
+
+        def at(u, v):
+            return "{},{},0".format(_n(sign * u), _n(v))
+
+        lead = 5.0
+        arc = "G03R" if sign > 0 else "G02R"  # both arcs turn anticlockwise in (u, v)
+        # the tool runs on the notch's side of the tenon: to the right of the path in (u, v), mirrored with X
+        correction = 2 if sign > 0 else 1
+        lines = [
+            "EbeneF ({},{},0,90,{},1,2)".format(_n(origin[0]), _n(origin[1]), _n(angle)),
+            "SP ({},{},{},{},1,_ANF*2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0.5mm)".format(_n(sign * (stop + radius + lead)), 0, _n(-notch.depth), correction),
+            "G01 ({},0,0,2)".format(at(stop + radius, 0)),
+            "{} ({},{},0,0,2)".format(arc, at(stop, -radius), _n(radius)),
+        ]
+        if thickness - 2 * radius > 1e-6:
+            lines.append("G01 ({},0,0,2)".format(at(stop, -thickness + radius)))
+        lines += [
+            "{} ({},{},0,0,2)".format(arc, at(stop + radius, -thickness), _n(radius)),
+            "G01 ({},0,0,2)".format(at(stop + radius + lead, -thickness)),
+            "EP (1,_ANF*2,0)",
+        ]
+        # the rest of the notch, out to the open edge
+        u = stop - radius
+        while u - radius > 0:
+            u = max(u - 0.8 * router.diameter, 0.0)
+            lines += [
+                "SP ({},{},{},0,1,_ANF*2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0.5mm)".format(_n(sign * u), _n(radius + lead), _n(-notch.depth)),
+                "G01 ({},0,0,2)".format(at(u, -thickness - radius - lead)),
+                "EP (1,_ANF*2,0)",
+            ]
+        lines.append("Ebene0()")
+        comment = "Stopped dado tenon: {} x {} notch milled from the end, corners R{}".format(_n(stop), _n(notch.depth), _n(radius))
+        return [_Op("side_contour", router.number, lines, comment, 0, (origin[1], origin[0]))]
+
     # -- drillings -----------------------------------------------------------
 
     def _drilling(self, drilling, top):
@@ -698,6 +780,15 @@ class PlateProgram:
             params["c{}".format(i + 1)] = values["c{}".format(i + 1)]
         params.update(ril=0, c_typ=1, tenso=0, absenken=0)
         return _call("Clamex1_Stumpf" if ends else "Clamex1_Stumpf_X", **params)
+
+
+@dataclass(frozen=True)
+class StoppedDadoNotch:
+    """What the HOPS export needs to know about the notch at the closed end of a stopped dado."""
+
+    depth: float  # how far the tenon goes into the dado, the notch's depth from the end
+    dado_width: float  # the dado's width: the tenon plate's thickness
+    dado_depth: float
 
 
 def _slot_groups(connectors, span):
