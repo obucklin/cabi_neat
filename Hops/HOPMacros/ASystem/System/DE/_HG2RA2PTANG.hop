@@ -1,0 +1,25 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=_HG2RA2PTANG
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=HG2PRTANGP2.wmf
+VARS
+   HTPX1 := 0;*VAR*Erster Punkt in X
+   HTPY1 := 0;*VAR*Erster Punkt in Y
+   HTPX2 := 0;*VAR*Zweiter Punkt in X
+   HTPY2 := 0;*VAR*Zweiter Punkt in Y
+   _HTPX1 := 0;
+   _HTPY1 := 0;
+   _HTPX2 := 0;
+   _HTPY2 := 0;
+START
+CALLDLL HG2PRTANGP2(Hilfsgeometrie,Dummy, VAL P1X:=HTPX1,P1Y:=HTPY1,P2X:=HTPX2,P2Y:=HTPY2)
+_HTPX1 := HTPX1
+_HTPY1 := HTPY1
+_HTPX2 := HTPX2
+_HTPY2 := HTPY2
+

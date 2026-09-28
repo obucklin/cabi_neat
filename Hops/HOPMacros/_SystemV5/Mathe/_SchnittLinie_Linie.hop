@@ -1,0 +1,50 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   SX1 := -100;*VAR*
+   SY1 := 0;*VAR*
+   EX1 := 100;*VAR*
+   EY1 := 0;*VAR*
+   SX2 := 10;*VAR*
+   SY2 := 100;*VAR*
+   EX2 := 10;*VAR*
+   EY2 := 0;*VAR*
+   SPx := 0;*VAR**REF*
+   SPy := 0;*VAR**REF*
+   OK := 0;*VAR**REF*
+   VX1 := 0;
+   VY1 := 0;
+   VX2 := 0;
+   VY2 := 0;
+   Det := 0;
+   Det1 := 0;
+   Det2 := 0;
+   Detx := 0;
+   Dety := 0;
+START
+;******************************************************
+;********   Direkt cnc-systeme GmbH   ®  *******
+;******************************************************
+;********  Adulo2Hops - Fenstermakros  *********
+;******************************************************
+Rohteil (1000,2000,19,0,0)
+;ZLinie (SX1,SY1,EX1,EY1,0)
+;ZLinie (SX2,SY2,EX2,EY2,0)
+VX1 := EX1-SX1
+VY1 := EY1-SY1
+VX2 := EX2-SX2
+VY2 := EY2-SY2
+Det := VX1 * VY2 - VX2 * VY1
+IF abs(det)<0.0001
+OK := 0
+ELSE
+Det1 := VX1 * SY1 - VY1 * SX1
+Det2 := VX2 * SY2 - VY2 * SX2
+Detx := -VX1 * Det2 + VX2 * Det1
+Dety := VY2 * Det1 - VY1 * Det2
+SPx := Detx/Det
+SPy := Dety/Det
+OK := 1
+END

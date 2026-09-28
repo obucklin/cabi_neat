@@ -1,0 +1,10 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowZPADDINFO_NAMEDialog
+VARS
+   Mode := 0;*VAR*Mode
+   ZP_Name := '';*VAR*Nullpunktname
+   ZP_AddID := 0;*VAR*ID
+   ZP_AddValue := '';*VAR**REF*
+START
+CALLDLL MTM_ZPADDINFO_NAME(HopsMTManagerExt,DefaultStr,REF ZP_ADDVALUE:=ZP_AddValue VAL MODE:=Mode,ZP_NAME:=ZP_Name,ZP_ADDID:=ZP_AddID)

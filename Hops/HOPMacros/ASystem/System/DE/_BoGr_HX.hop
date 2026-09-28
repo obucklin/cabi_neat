@@ -1,0 +1,74 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=Bohgx
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=BOVGXWMF.bmp
+VARS
+   BIX := 64;*VAR*Bohrung1 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIX := 64+37;*VAR*Bohrung2 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIIX := 0;*VAR*Bohrung3 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIIIX := 0;*VAR*Bohrung4 (Wert=0-> Bohrung wird nicht abgesetzt)
+   Z := _RZ/2;*VAR*Z-Wert von der Unterkante
+   Spiegeln := 0;*VAR*1=>gespiegelt
+   T := -30;*VAR*Bohrtiefe
+   D := 8;*VAR*Bohrdurchmesser
+   Ebene := 0;*VAR*Ebene 1 oder Ebene 3
+   YP := 0;Y Position
+   DW := 90;Drehwinkel
+   TL := 0;Tieflochflag
+START
+;direkt cnc systeme NCHOPS Version 4
+;Stirnseitenbohrungen in X
+IF T>0
+T := -T
+END
+;*****************  Auswerten Ebenen zwecks Dialog 0/1
+IF ebene=0
+ebene := 1
+ELSE
+ebene := 3
+END
+;*****************************************
+IF (Ebene<>1)&(Ebene<>3)
+Fehlermeldung (____FALSCHE_EBENE_GEWAEHLT___)
+END
+IF Ebene=1
+YP := 0
+DW := 90
+END
+IF Ebene=3
+YP := _RY
+DW := 270
+END
+IF (BIX<>0)
+HorzB (BIX,YP,Z,D,T,TL,0,DW)
+END
+IF (BIIX<>0)
+HorzB (BIIX,YP,Z,D,T,TL,0,DW)
+END
+IF (BIIIX<>0)
+HorzB (BIIIX,YP,Z,D,T,TL,0,DW)
+END
+IF (BIIIIX<>0)
+HorzB (BIIIIX,YP,Z,D,T,TL,0,DW)
+END
+;Gespiegelte Bohrungen
+IF Spiegeln <> 0
+IF (BIX<>_RX/2)&(BIX<>0)
+HorzB (_RX-BIX,YP,Z,D,T,TL,0,DW)
+END
+IF (BIIX<>_RX/2)&(BIIX<>0)
+HorzB (_RX-BIIX,YP,Z,D,T,TL,0,DW)
+END
+IF (BIIIX<>_RX/2)&(BIIIX<>0)
+HorzB (_RX-BIIIX,YP,Z,D,T,TL,0,DW)
+END
+IF (BIIIIX<>_RX/2)&(BIIIIX<>0)
+HorzB (_RX-BIIIIX,YP,Z,D,T,TL,0,DW)
+END
+END
+

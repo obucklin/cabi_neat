@@ -1,0 +1,13 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowWinkelNormieren_V7Dialog
+VARS
+   Winkel := ;*VAR**REF*
+START
+;Winkel normieren
+WHILE Winkel < 0
+Winkel := Winkel + 360
+END
+WHILE Winkel >= 360
+Winkel := Winkel - 360
+END

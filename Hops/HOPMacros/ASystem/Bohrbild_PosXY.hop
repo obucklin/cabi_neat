@@ -1,0 +1,53 @@
+;MAKROTYP=1
+;BILD=
+;INFO=
+;WZGV=DEMO
+;MASCHINE=SIMU
+;NCNAME=Bohrbild_PosXY
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   Versatz := 20;*VAR*
+   FlächenWinkel := 0;*VAR*
+   Bohr_Wi := 90;*VAR*Absoluter Bohrwinkel
+   X := 0;*VAR*Referenzpunkt von Adulo
+   Y := 0;*VAR*Referenzpunkt von Adulo
+   PosX := 0;*VAR**REF*
+   PosY := 0;*VAR**REF*
+   Ndx := 1;
+   Ndy := 0;
+   Diff_Winkel := 0;Differenzwinkel zwischen Bohr und Fläche
+   Strecke1_EP_BP := 0;Strecke zw. EinfügePunkt und Bohrpunkt
+   Strecke2_EP_BP := 0;Strecke zw. EinfügePunkt und Bohrpunkt
+   Wert := 0;Speicher
+START
+Rohteil (500,78,68,0,0)
+;******************************************************
+;********   Direkt cnc-systeme GmbH   ®  *******
+;******************************************************
+;**********  Eingabe eines Bohrbildes  ***********
+;******************************************************
+WHILE Bohr_Wi<0
+Bohr_Wi := Bohr_Wi+360
+END
+WHILE Bohr_Wi>=360
+Bohr_Wi := Bohr_Wi-360
+END
+;******************************************************
+Diff_Winkel := 180-(Bohr_Wi-Flächenwinkel)
+;******************************************************
+Strecke1_EP_BP := abs(Versatz)/sin(Diff_Winkel)
+FlächenWinkel := -FlächenWinkel
+Wert := ndx
+ndx := ndx*cos(FlächenWinkel) + ndy*sin(FlächenWinkel)
+ndy := - Wert*sin(FlächenWinkel) + ndy*cos(FlächenWinkel)
+IF Versatz<0
+ndx := -ndx
+ndy := -ndy
+END
+PosX := X+ndx*Strecke1_EP_BP
+PosY := Y+ndy*Strecke1_EP_BP

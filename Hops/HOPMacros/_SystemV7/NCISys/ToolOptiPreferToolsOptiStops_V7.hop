@@ -1,0 +1,6 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   OptiStops := '';*VAR*z.B. - '-100260;-108200' (Szene;Maschinenstop)
+START
+nciext (-100707,'',0,0,0,OptiStops)

@@ -1,0 +1,309 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=TREPLANE_MEHRFACH_V7.WMF
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=Mint_Mehrfach
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA.Dll
+;DIALOGPROC=ShowTrepl_MehrDialog_V7
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2200;Dimension X
+   DY := 980mm;Dimension Y
+   DZ := 45;Dimension Z
+   DR_Wkz :=132;*VAR*Drückerfräser
+   Schloss_Wkz :=70;*VAR*Schlosskastenfräser
+   VB_Wkz :=501;*VAR*Winkelkopf zum Vorbohren
+   Nut_Wkz :=233;*VAR*Nutfräser
+   Stulp_Wkz :=70;*VAR*Fräser zum Rund-Stulp fraesen
+   Ros_Wkz :=501;*VAR*Rosetten Bohrer
+   DR_Hoehe :=DX -980;*VAR*Drückerhöhe
+   Falz_H :=25.00;*VAR*Falzhöhe
+   VorB_T :=10.00;*VAR*Lochtiefe vorbohren
+   Falz_T :=15.00;*VAR*Falztiefe
+   Dist_Falz_Stu :=1.50;*VAR*Distanz Falz <-> Stulp
+   DR_Zu :=6.00;*VAR*Zustellung Drücker
+   DR_Dm :=25.00;*VAR*Drückerdurchmesser
+   VB_Dm :=3;*VAR*Vorbohren DM
+   D_Falz_H :=12.00;*VAR*Doppel Falzhöhe
+   Wkz_Breite :=10.00;*VAR*Breite Planetnuter
+   Check_Spez_Wkz :=0;*VAR*Spezial Werkzeug Ja/Nein
+   CB_Druecker :=-1;*VAR*Drücker Ja / Nein
+   CB_VorBohren :=-1;*VAR*Vor Bohren Ja / Nein
+   CB_Zylinder :=-1;*VAR*Zylinder Ja / Nein
+   CB_Rosette :=-1;*VAR*Rossette bohren Ja / Nein
+   CB_Durch :=0;*VAR*Getriebenut durchgehend
+   Durch_DR :=-5;*VAR*Durchfrästiefe beim Drücker
+   Durch_Sch :=-5;*VAR*Durchfrästiefe beim Zylinder
+   Stulp_B :=18.00;*VAR*Stulpbreite
+   Typ_index :=0;*VAR*index Veriegelung
+   U_Typ_Index :=-1;*VAR*index E-Mass
+   U_Typ_Mass :=78;*VAR*Mass Veriegelung
+   Dorn_M := 60;*VAR*Mass Dorn
+   Dorn_Index :=2;*VAR*index Dorn
+   A_Mass :=1788;*VAR*A-Mass
+   B_Mass :=804;*VAR*B-Mass
+   C_Mass :=730;*VAR*C-Mass
+   Y_Mass :=866;*VAR*Y-Mass
+   Z_Mass :=922;*VAR*Z-Mass
+   Ros_BohrT :=-10;*VAR*Rosettenbohrtiefe
+   Ros_BohrDM :=10;*VAR*RosettenbohrDM
+   Ros_DistA :=10;*VAR*Rosetten A dist
+   Breitebart :=19.00;*VAR*Breite  Bart (19)
+   Diff_K_Stulp :=1;*VAR*Differenz Kasten Stulp
+   K1_L :=200;*VAR*Kasten1_Länge
+   K1_B :=16;*VAR*Kasten1 Breite
+   K2_L :=160.00;*VAR*Kasten2_Länge
+   K2_B :=14.00;*VAR*Kasten2_Breite
+   T_1 :=40;*VAR*Tiefe Kasten 1
+   T_2 :=100;*VAR*Tiefe Kasten 1
+   T_ZU1 :=5;*VAR*Zustellung Z Kasten 1
+   T_ZU2 :=7;*VAR*Zustellung Z Kasten 2
+   MassLine :=-1;*VAR*Masslinie angeigen
+   Buendig :=0;*VAR*Buendig = 1 / Falz = 0
+   Schl_H :=DZ/2;*VAR*Schlosshöhe bei bündig
+   SK_Vers :=0.10;*VAR*Versatz der kästen in X
+   Ka_L :=70.00;*VAR*Kleine Kästen Länge
+   Ka_B :=14.00;*VAR*Kleine Kästen Breite
+   Ka_T :=45.00;*VAR*Kleine Kästen Tiefe
+   Kasten :=0;*VAR*1=Veriegelungskasten ja 0=Veriegelungskasten nein
+   Vers_K_Klein_Stulp :=1.00;*VAR*Versatz Kasten klein Stulp
+   Diff_K1_K2 :=1;*VAR*Differenz Kasten Gross zu Kasten Klein
+   Anz := 0;
+   Anz1 := 0;
+   PosZ := 0;Position in Z
+   UmKehr := 0;Gleich oder gegenlauf
+   Diff_Stulp := (Stulp_B -18 ) / 2;Startpos in X bei  grösserer Stulpbreite
+   Pen := 0;Pendeln Ja / Nein
+   I := 0;Zaehlvariable
+   Vers := 0;
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;Fehlerhandling
+IF T_Zu2 <=0
+T_Zu2 :=5
+End
+IF Breitebart<=0
+Breitebart :=19
+End
+;Ende Fehlerhandling
+WZF (DR_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+;Berechnung der höhe
+IF Buendig = 1
+Falz_T := 0
+Falz_H := Schl_H + (Stulp_B/2)
+D_Falz_H := 0
+Dist_Falz_Stu := 0
+END
+IF (DR_Zu  > _AT_MAXDEPTH) & (_AT_MAXDEPTH <> 0)
+DR_Zu := _AT_MAXDEPTH
+END
+IF CB_Druecker = -1
+;Drücker
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=DR_Hoehe,Y_MITTE:=Falz_T + Dorn_M,TIEFE:=Durch_DR,ZUTIEFE:=DR_Zu,RADIUS:=DR_Dm / 2,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=360,ANF:=_ANF,ABF:=_ANF,RAMPE:=1,INTERPOL:=0,ESXY:=7,ESMD:=1,LASER:=0)
+END
+IF CB_Zylinder = -1
+;Schloss
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=DR_Hoehe + U_Typ_Mass,Y_MITTE:=Falz_T + Dorn_M,TIEFE:=Durch_Sch,ZUTIEFE:=DR_Zu,RADIUS:=DR_Dm / 2,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=360,ANF:=_ANF,ABF:=_ANF,RAMPE:=1,INTERPOL:=0,ESXY:=7,ESMD:=1,LASER:=0)
+;Bart
+CALL _Rechteck_V5 ( VAL X_MITTE:=DR_Hoehe + U_Typ_Mass + 16,Y_MITTE:=Falz_T + Dorn_M,LAENGE:=33,BREITE:=BreiteBart,RADIUS:=0,WINKEL:=0,TIEFE:=Durch_Sch,ZUTIEFE:=DR_Zu,RADIUSKORREKTUR:=2,AB:=0,AUFMASS:=0,ANF:=_ANF,ABF:=_ANF,UMKEHREN:=0,RAMPE:=0,RAMPENLAENGE:=50,QUADRANT:=0,INTERPOL:=0,ESXY:=7,ESMD:=1,LASER:=0)
+END
+;Doppelfalz ja oder Nein
+IF Buendig=2
+Falz_H := Falz_H + D_Falz_H
+END
+;mit Treplan Werkzeug
+IF Check_Spez_Wkz=-1
+WZF (Nut_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+IF CB_Durch = -1
+;Getriebenut durchgehend
+SP (-100,-150,Falz_H - Dist_Falz_Stu,1,0,_ANF,0,0,0,7,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-100,Falz_T + 3,0,0,7,2)
+G01 (-100,Falz_T +3,0,0,5,2)
+G01 (-100,-150,0,0,5,2)
+EP (0,_ANF,0)
+ELSE
+;Getriebenut austauchen
+SP (DR_Hoehe - (Y_Mass ),-150,Falz_H - Dist_Falz_Stu,1,0,_ANF,0,0,0,7,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (DR_Hoehe - (Y_Mass),Falz_T + 3,0,0,7,2)
+G01 (DR_Hoehe + Z_Mass,Falz_T +3,0,0,7,2)
+G01 (DR_Hoehe + Z_Mass,-150,0,0,7,2)
+EP (0,_ANF,0)
+END
+ELSE
+;hier1
+;mit Planet Fraeser
+WZF (Nut_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+IF Wkz_Breite < 2.5
+Fehlermeldung (GetMessageTextOem('37','Werkzeugbreite zu klein !!  Kleiner 2.5mm'))
+END
+IF CB_Durch=0
+;Stulp oben
+SP (DR_Hoehe - (Y_Mass),-150,Falz_H - Dist_Falz_Stu,1,0,5,0,0,0,7,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (DR_Hoehe - (Y_Mass ),Falz_T + 3,0,0,7,2)
+G01 (DR_Hoehe + (Z_Mass ),Falz_T + 3,0,0,7,2)
+G01 (DR_Hoehe + (Z_Mass),-150,0,0,7,2)
+EP (0,_Anf,0)
+;Stulp unten
+SP (DR_Hoehe - (Y_Mass ),-150,(Falz_H - Stulp_B - Dist_Falz_Stu) +Wkz_Breite,1,0,5,0,0,0,7,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (DR_Hoehe - (Y_Mass ),Falz_T + 3,0,0,7,2)
+G01 (DR_Hoehe + (Z_Mass),Falz_T + 3,0,0,7,2)
+G01 (DR_Hoehe + (Z_Mass),-150,0,0,7,2)
+EP (0,_Anf,0)
+IF (Stulp_B - 4.5) < Wkz_Breite
+Fehlermeldung (GetMessageTextOem('38','Werkzeugbreite grösser als Nutbreite '))
+;Hinweismeldung ('Werkzeugbreite grösser als Nutbreite ')
+END
+IF ((Stulp_B - 5) =Wkz_Breite ) | ((Stulp_B - 5) = (Wkz_Breite- 0.2 ))
+;Getriebenut in einem Durchgang fraesen
+SP (DR_Hoehe - (Y_Mass ),-150,(Falz_H - (Stulp_B /2)- Dist_Falz_Stu) + (Wkz_Breite/2),1,0,5,0,0,0,7,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (DR_Hoehe - (Y_Mass),Falz_T + 7,0,0,7,2)
+G01 (DR_Hoehe + (Z_Mass ),Falz_T + 7,0,0,7,2)
+G01 (DR_Hoehe + (Z_Mass ),-150,0,0,7,2)
+EP (0,_Anf,0)
+END
+IF (Stulp_B - 5) > Wkz_Breite
+Anz := (Stulp_B-5- Wkz_Breite) / Wkz_Breite
+Anz1 := Round(Anz +0.5)
+PosZ := Falz_H - Dist_Falz_Stu -2.5
+FOR I := 1 TO Anz1 STEP 1
+SP (DR_Hoehe - (Y_Mass ),-150,PosZ,1,0,5,0,0,0,7,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (DR_Hoehe - (Y_Mass ),Falz_T + 7,0,0,7,2)
+G01 (DR_Hoehe + (Z_Mass ),Falz_T + 7,0,0,7,2)
+G01 (DR_Hoehe + (Z_Mass),-150,0,0,7,2)
+EP (0,_Anf,0)
+Vers := ((Stulp_B - 5 - Wkz_Breite) / Anz)
+PosZ := PosZ - Vers
+END
+;Letzte Fraesung
+SP (DR_Hoehe - (Y_Mass),-150,Falz_H - Stulp_B - Dist_Falz_Stu + (Wkz_Breite+2.5),1,0,5,0,0,0,7,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (DR_Hoehe - (Y_Mass),Falz_T + 7,0,0,7,2)
+G01 (DR_Hoehe + (Z_Mass ),Falz_T +  7,0,0,7,2)
+G01 (DR_Hoehe + ( Z_Mass),-150,0,0,7,2)
+EP (0,_Anf,0)
+END
+/END
+ELSE
+;Durchgehende Getriebenut
+;Stulp oben
+SP (-100,-150,Falz_H - Dist_Falz_Stu,1,0,0,0,0,0,7,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-100,Falz_T + 3,0,0,7,2)
+G01 (-100,Falz_T + 3,0,0,5,2)
+G01 (-100,-150,0,0,5,2)
+EP (0,_Anf,0)
+;Stulp unten
+SP (-100,-150,(Falz_H - Stulp_B - Dist_Falz_Stu) +Wkz_Breite,1,0,0,0,0,0,7,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-100,Falz_T + 3,0,0,7,2)
+G01 (-100,Falz_T + 3,0,0,5,2)
+G01 (-100,-150,0,0,5,2)
+EP (0,_Anf,0)
+IF (Stulp_B - 4.5) < Wkz_Breite
+Fehlermeldung (GetMessageTextOem('38','Werkzeugbreite grösser als Nutbreite '))
+;Hinweismeldung ('Werkzeugbreite grösser als Nutbreite ')
+END
+IF ((Stulp_B - 5) =Wkz_Breite ) | ((Stulp_B - 5) = (Wkz_Breite- 0.2 ))
+;Getriebenut in einem Durchgang fraesen
+SP (-100,-150,(Falz_H - (Stulp_B /2)- Dist_Falz_Stu) + (Wkz_Breite/2),1,0,0,0,0,0,7,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-100,Falz_T + 7,0,0,7,2)
+G01 (-100,Falz_T + 7,0,0,5,2)
+G01 (-100,-150,0,0,5,2)
+EP (0,_Anf,0)
+END
+IF (Stulp_B - 5) > Wkz_Breite
+Anz := (Stulp_B-5- Wkz_Breite) / Wkz_Breite
+Anz1 := Round(Anz +0.5)
+PosZ := Falz_H - Dist_Falz_Stu -2.5
+FOR I := 1 TO Anz1 STEP 1
+SP (-100,-150,PosZ,1,0,0,0,0,0,7,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-100,Falz_T + 7,0,0,7,2)
+G01 (-100,Falz_T + 7,0,0,5,2)
+G01 (-100,-150,0,0,5,2)
+EP (0,_Anf,0)
+Vers := ((Stulp_B - 5 - Wkz_Breite) / Anz)
+PosZ := PosZ - Vers
+END
+;Letzte Fraesung
+SP (-100,-150,Falz_H - Stulp_B - Dist_Falz_Stu + (Wkz_Breite+2.5),1,0,5,0,0,0,7,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-100,Falz_T + 7,0,0,7,2)
+G01 (-100,Falz_T +  7,0,0,5,2)
+G01 (-100,-150,0,0,5,2)
+EP (0,_Anf,0)
+END
+END
+;Ende Planet
+END
+WZF (Schloss_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+IF (T_Zu1  > _AT_MAXDEPTH) & (_AT_MAXDEPTH <> 0)
+T_Zu1 := _AT_MAXDEPTH
+END
+IF _Job_MirX =1
+Umkehr := 1
+ELSE
+Umkehr := 0
+END
+;Kasten1 oben
+IF Kasten = 1
+CALL Box_Spez_Trepl ( VAL DR_HOEHE:=DR_Hoehe-C_Mass + ((Ka_L / 2) -15),FALZ_H:=Falz_H,FALZ_T:=Falz_T,KASTEN_L:=Ka_L,KASTEN_B:=Ka_B,T_ZU1:=T_Zu1,TIEFE1:=Ka_T,DIST_FALZ_STU:=Dist_Falz_Stu,VER_X:=SK_Vers,STULP_B:=Stulp_B,VERS_K_KLEIN_STULP:=Vers_K_Klein_Stulp)
+END
+;Kasten gross
+CALL SK_Spez_Trepl ( VAL DR_HOEHE:=DR_Hoehe,FALZ_H:=Falz_H,FALZ_T:=Falz_T,D_FALZ_H:=D_Falz_H,K1_L:=K1_L,K1_B:=K1_B,K2_L:=K2_L,K2_B:=K2_B,ZU_1:=T_Zu1,ZU_2:=T_Zu2,TIEFE1:=T_1,TIEFE2:=T_2,VER_K_D:=28.00,VER_S_K:=Diff_K_Stulp,DIST_FALZ_STU:=Dist_Falz_Stu,SK_VERSATZ:=SK_Vers,BUENDIG:=Buendig,STULP_B:=Stulp_B,DORN_M:=Dorn_M,DIFF_K1_K2:=Diff_K1_K2);BREAKPOINT
+;Kasten2 von oben
+IF Kasten = 1
+CALL Box_Spez_Trepl ( VAL DR_HOEHE:=DR_Hoehe + B_Mass - ((Ka_L / 2) -15),FALZ_H:=Falz_H,FALZ_T:=Falz_T,KASTEN_L:=Ka_L,KASTEN_B:=Ka_B,T_ZU1:=T_Zu1,TIEFE1:=Ka_T,DIST_FALZ_STU:=Dist_Falz_Stu,VER_X:=SK_Vers,STULP_B:=Stulp_B,VERS_K_KLEIN_STULP:=Vers_K_Klein_Stulp)
+END
+Ebene3()
+WZF (Stulp_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (DR_Hoehe - (C_Mass),Falz_H -Dist_Falz_Stu- Stulp_B,- (Falz_T+3),1,0,_ANF,0,0,0,3,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (DR_Hoehe - (Y_Mass ) + (Stulp_B / 2),Falz_H -Dist_Falz_Stu - Stulp_B,0,0,3,2)
+G03R (DR_Hoehe - (Y_Mass) + (Stulp_B/2),Falz_H-Dist_Falz_Stu,0,Stulp_B / 2,0,3,2)
+G01 (DR_Hoehe - (C_Mass),Falz_H - Dist_Falz_Stu,0,0,3,2)
+EP (0,_ANF,0)
+SP (DR_Hoehe + B_Mass,Falz_H -Dist_Falz_Stu -Stulp_B,- (Falz_T+3),2,0,_ANF,0,0,0,3,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (DR_Hoehe + Z_Mass -(Stulp_B / 2),Falz_H - Dist_Falz_Stu - Stulp_B,0,0,3,2)
+G02R (DR_Hoehe + Z_Mass -(Stulp_B / 2),Falz_H-Dist_Falz_Stu,0,Stulp_B / 2,0,3,2)
+G01 (DR_Hoehe + B_Mass,Falz_H - Dist_Falz_Stu,0,0,3,2)
+EP (0,_ANF,0)
+Ebene0()
+IF CB_VorBohren = -1
+WZF (VB_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+;Von Oben
+HorzB (DR_Hoehe -98-182-182-182-182,Falz_T,Falz_H - Dist_Falz_Stu-((Stulp_B / 2)),VB_Dm,-(7 + VorB_T),0,0,270,7,0,0,0)
+HorzB (DR_Hoehe -98-182-182-182,Falz_T,Falz_H - Dist_Falz_Stu-((Stulp_B / 2)),VB_Dm,-(7 + VorB_T),0,0,270,7,0,0,0)
+HorzB (DR_Hoehe -98-182-182,Falz_T,Falz_H - Dist_Falz_Stu-((Stulp_B / 2)),VB_Dm,-(7 + VorB_T),0,0,270,7,0,0,0)
+HorzB (DR_Hoehe -98-182,Falz_T,Falz_H - Dist_Falz_Stu-((Stulp_B / 2)),VB_Dm,-(7 + VorB_T),0,0,270,7,0,0,0)
+HorzB (DR_Hoehe -98,Falz_T,Falz_H - Dist_Falz_Stu-((Stulp_B / 2)),VB_Dm,-(7 + VorB_T),0,0,270,7,0,0,0)
+;Nach unten
+HorzB (DR_Hoehe + 154,Falz_T,Falz_H - Dist_Falz_Stu-((Stulp_B / 2)),VB_Dm,-(7 + VorB_T),0,0,270,7,0,0,0)
+HorzB (DR_Hoehe + 154 + 182,Falz_T,Falz_H - Dist_Falz_Stu-((Stulp_B / 2)),VB_Dm,-(7 + VorB_T),0,0,270,7,0,0,0)
+HorzB (DR_Hoehe + 154 + 182 +182,Falz_T,Falz_H - Dist_Falz_Stu-((Stulp_B / 2)),VB_Dm,-(7 + VorB_T),0,0,270,7,0,0,0)
+HorzB (DR_Hoehe + 154 + 182 +182 +182,Falz_T,Falz_H - Dist_Falz_Stu-((Stulp_B / 2)),VB_Dm,-(7 + VorB_T),0,0,270,7,0,0,0)
+HorzB (DR_Hoehe + 154 + 182 +182 +182 +182,Falz_T,Falz_H - Dist_Falz_Stu-((Stulp_B / 2)),VB_Dm,-(7 + VorB_T),0,0,270,7,0,0,0)
+END
+;Rosette bohren
+IF CB_Rosette = -1
+WZB (Ros_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+Bohrung (DR_Hoehe,(Falz_T+ Dorn_M)-19,Ros_BohrDM,Ros_BohrT,10,0,0,7,0,0,0,0)
+Bohrung (DR_Hoehe,(Falz_T+ Dorn_M)+19,Ros_BohrDM,Ros_BohrT,10,0,0,7,0,0,0,0)
+;Bei Schlieser
+Bohrung (DR_Hoehe + U_Typ_Mass + Ros_DistA,(Falz_T+ Dorn_M)+19,Ros_BohrDM,Ros_BohrT,10,0,0,7,0,0,0,0)
+Bohrung (DR_Hoehe + U_Typ_Mass + Ros_DistA,(Falz_T+ Dorn_M)-19,Ros_BohrDM,Ros_BohrT,10,0,0,7,0,0,0,0)
+END
+IF MassLine= -1
+CALL B2Punkte_V5 ( VAL P1X:=DR_Hoehe + Z_Mass,P1Y:=0,P2X:=DR_Hoehe - Y_Mass,P2Y:=0,ABSTAND:=140,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=7,ESXY2:=7)
+CALL B2Punkte_V5 ( VAL P1X:=DR_Hoehe,P1Y:=0,P2X:=DR_Hoehe - (Y_Mass),P2Y:=0,ABSTAND:=100,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=7,ESXY2:=7)
+CALL B2Punkte_V5 ( VAL P1X:=DR_Hoehe,P1Y:=0,P2X:=DR_Hoehe + Z_Mass,P2Y:=0,ABSTAND:=-100,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=7,ESXY2:=7)
+CALL B2Punkte_V5 ( VAL P1X:=DR_Hoehe,P1Y:=0,P2X:=DR_Hoehe - (C_Mass),P2Y:=0,ABSTAND:=70,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=7,ESXY2:=7)
+CALL B2Punkte_V5 ( VAL P1X:=DR_Hoehe,P1Y:=0,P2X:=DR_Hoehe + B_Mass,P2Y:=0,ABSTAND:=-70,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=7,ESXY2:=7)
+CALL B2Punkte_V5 ( VAL P1X:=DR_Hoehe,P1Y:=Falz_T,P2X:=DR_Hoehe,P2Y:=Falz_T +Dorn_M,ABSTAND:=100,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=7,ESXY2:=7)
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=_RX - DR_Hoehe,P2Y:=0,ABSTAND:=40,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=5,ESXY2:=5)
+END

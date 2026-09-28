@@ -1,0 +1,126 @@
+;MAKROTYP=0
+;INSTVERSION=6.4.0.4
+;EXEVERSION=6.6.2.165[Hops.exe]
+;BILD=HorTasche_Spez.wmf
+;INFO=
+;WZGV=
+;WZGVCONFIG=
+;MASCHINE=Simu
+;NCNAME=
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_5.dll
+;DIALOGPROC=ShowHTasche_SpezDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   EBENE := 2;*VAR*BearbeitungsEbene
+   XPOS := 0;*VAR*(Mittelpunkt)
+   YPOS := 0;*VAR*(Mittelpunkt)
+   ZPOS := 0;*VAR*(TaschenMitte) von Werkstueckunterkante
+   Lang := 100;*VAR*Taschenlaenge
+   HOEHE := 20;*VAR*TaschenHoehe
+   TIEFE := -100;*VAR*Tiefe der Tasche
+   Zutiefe := 4;*VAR*Zustellung pro Fraesung
+   Versatz := 1;*VAR*Veratz der Tasche gegen Tiefe
+   ABF := _ANF;Abfahrfaktor
+   Radius := 0;*VAR*Verrundungsradius an den Ecken der Tasche
+   umkehren := 0;*VAR*Bearbeitung umkehren
+   Interpol := 0;*VAR*Interpolation auf Anfahrbewegung
+   Pendeln := 0;*VAR*Pendeln = in Linien abzeilen
+   Farbe := 0;Mit Farbe Fuellen JA/NEIN 0/1
+   esXY := 6;*VAR*
+   esz := 1;*VAR*
+   eb := 0;Endbreite der Tasche
+START
+Rohteil (300,300,100,0,0)
+Ebene0()
+transesxy (xpos,ypos,esxy,1);BREAKPOINT
+Transesz (ZPos,esz)
+;****************************
+ebene := ebene+1
+IF (Tiefe=0) & (ZuTiefe=0)
+Fehlermeldung (GetMessageText('6','Bitte Tiefe eingeben'))
+END
+;***** ueberpruefung Tiefe negativ *****
+IF Tiefe<0
+tiefe := tiefe*(-1)
+END
+;***** ueberpruefung ZuTiefe negativ *****
+IF zuTiefe<0
+zutiefe := zutiefe*(-1)
+END
+;***** ueberpruefung ZuTiefe NULL *****
+IF ZuTiefe=0
+ZuTiefe := tiefe
+END
+;***** ueberpruefung ZuTiefe groesser Tiefe *****
+IF ZuTiefe>Tiefe
+ZuTiefe := tiefe
+END
+;***** ueberpruefung des WZD bei umfahren *****
+IF (pendeln=0) & (_WZD>hoehe)
+Fehlermeldung (GetMessageText('7','Fraeserdurchmesser ist groesser als die Taschenhoehe!'))
+END
+;****************************
+IF Radius>Hoehe/2
+Radius := Hoehe/2
+Hinweismeldung (GetMessageText('8','Radius wurde auf die Haelfte der Hoehe geaendert'))
+END
+;****************************
+;**************************************************************************************
+;Horizontales Taschenfraesen auf EB1-EB4
+;**************************************************************************************
+EB := ((abs(Tiefe) / Zutiefe)/2)*Versatz;BREAKPOINT
+IF EB > ((Lang/ 2) -_Wzr)
+Fehlermeldung (GetMessageTextOem('39','Gesamtversatz >  als halbe Breite!'))
+END
+IF (Ebene=1)
+;Von VORNE
+ZLinie (Xpos - (Lang/2),YPos,Xpos+ (Lang/2),YPos,65280,0,0,0,0)
+ZLinie (Xpos + (Lang/2),YPos,Xpos + ((Lang/2) - EB),YPos + (abs(Tiefe)),65280,0,0,0,0)
+ZLinie (Xpos + ((Lang/2) - EB),YPos + (abs(Tiefe)),Xpos -((Lang/2) - EB),YPos + (abs(Tiefe)),65280,0,0,0,0)
+ZLinie (Xpos - ((Lang/2) - EB),YPos +(abs(Tiefe)),Xpos-(Lang/2),0,65280,0,0,0,0)
+ZRechteck (XPOS-Lang/2,YPOS,Lang,Tiefe,Farbe,1,0,0,0)
+EbeneF (XPOS,YPOS,0,90,0)
+END
+;**************************************************************************************
+IF (Ebene=2)
+;Von LINKS
+ZLinie (Xpos,YPos - (Lang/2),Xpos,YPos + (Lang/2),65280,0,0,0,0)
+ZLinie (Xpos,YPos+ (Lang/2),Xpos + (abs(Tiefe)),YPos+ ((Lang/2) - EB),65280,0,0,0,0)
+ZLinie (Xpos  + (abs(Tiefe)),YPos  + ((Lang/2) - EB),Xpos + (abs(Tiefe)),YPos -  ((Lang/2) - EB),65280,0,0,0,0)
+ZLinie (Xpos +(abs(Tiefe)),YPos - ((Lang/2) - EB),Xpos,Ypos -(Lang/2),65280,0,0,0,0)
+ZRechteck (XPOS,YPOS-Lang/2,Tiefe,Lang,Farbe,1,0,0,0)
+EbeneF (XPOS,YPOS,0,90,270)
+END
+;**************************************************************************************
+IF (Ebene=3)
+;Von Hinten
+ZLinie (Xpos - (Lang/2),YPos,Xpos+ (Lang/2),YPos,65280,0,0,0,0)
+ZLinie (Xpos + (Lang/2),YPos,Xpos + ((Lang/2) - EB),YPos - (abs(Tiefe)),65280,0,0,0,0)
+ZLinie (Xpos + ((Lang/2) - EB),YPos - (abs(Tiefe)),Xpos -((Lang/2) - EB),YPos - (abs(Tiefe)),65280,0,0,0,0)
+ZLinie (Xpos - ((Lang/2) - EB),YPos -(abs(Tiefe)),Xpos-(Lang/2),Ypos,65280,0,0,0,0)
+ZRechteck (XPOS-Lang/2,YPOS,Lang,-Tiefe,Farbe,1,0,0,0)
+EbeneF (XPOS,YPOS,0,90,180)
+END
+;**************************************************************************************
+IF (Ebene=4)
+;Von Rechts
+ZLinie (Xpos,YPos - (Lang/2),Xpos,YPos + (Lang/2),65280,0,0,0,0)
+ZLinie (Xpos,YPos+ (Lang/2),Xpos - (abs(Tiefe)),YPos+ ((Lang/2) - EB),65280,0,0,0,0)
+ZLinie (Xpos  - (abs(Tiefe)),YPos  + ((Lang/2) - EB),Xpos - (abs(Tiefe)),YPos -  ((Lang/2) - EB),65280,0,0,0,0)
+ZLinie (Xpos -(abs(Tiefe)),YPos - ((Lang/2) - EB),Xpos,Ypos -(Lang/2),65280,0,0,0,0)
+ZRechteck (XPOS,YPOS-Lang/2,-Tiefe,Lang,Farbe,1,0,0,0)
+EbeneF (XPOS,YPOS,0,90,90)
+END
+;**************************************************************************************
+IF pendeln=1
+Lang := Lang - 2*_wzr
+END
+CALL SK_Fraesen ( VAL X:=0,Y:=ZPOS,Z:=0,HOEHE:=Hoehe,LAENGE:=Lang,TIEFE:=Tiefe,RADIUS:=Radius,ZUTIEFE:=ZuTiefe,ABF:=_ANF,UMKEHREN:=umkehren,INTERPOL:=Interpol,PENDELN:=Pendeln,VERSATZ:=Versatz);BREAKPOINT
+Ebene0()

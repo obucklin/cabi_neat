@@ -1,0 +1,14 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowDist2P_3D_V7Dialog
+VARS
+   P1X := 0;*VAR*
+   P1Y := 0;*VAR*
+   P1Z := 0;*VAR*
+   P2X := 100;*VAR*
+   P2Y := 30;*VAR*
+   P2Z := 100;*VAR*
+   Dist := ;*VAR**REF*
+START
+;Abstand zwischen zwei Punkten (3D)
+Dist := sqrt(sqr(P2X-P1X)+sqr(P2Y-P1Y)+sqr(P2Z-P1Z))

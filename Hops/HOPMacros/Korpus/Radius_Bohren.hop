@@ -1,0 +1,107 @@
+;MAKROTYP=1
+;BILD=Radius_Bohren.wmf
+;INFO=
+;WZGV=7123K_021
+;MASCHINE=HOLZHER
+;NCNAME=Radius Bohren
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_1.Dll
+;DIALOGPROC=ShowR_BohrenDialog
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 20;Dimension Z
+   MPX :=0.00;*VAR*Zentrum in X
+   MPY :=0.00;*VAR*Zentrum in Y
+   Tiefe :=-35;*VAR*Bohrtiefe
+   Radius :=100.00;*VAR*Bogenradius
+   AnW :=0.00;*VAR*Anfangswinkel
+   Anz := 6;*VAR*Anzahl
+   GesW :=180;*VAR*Gesamtwinkel
+   B_Durchm :=8.00;*VAR*Bohrdurchmesser
+   Neig :=-7;*VAR*Neigung
+   TLF :=10;*VAR*Tieflochflag
+   B_Typ :=0;*VAR*Bearbeitungstyp
+   SnapXY :=9;*VAR*Easy Snap in XY
+   SnapZ :=0;*VAR*Easy Snap in Z
+   Snap_HZ :=1;*VAR*Easy Snap in Z horizontal
+   H_RB_Z :=0.00;*VAR*Höhe in Z horizontal
+   Delta := 0;Deltawinkel
+   X := 0;Bohrposition
+   Y := 0;Bohrposition
+   XB := 0;Erste Position
+   YB := 0;Erste Position
+   I := 0;
+   AktW := 0;Aktueller Winkel
+   Dr_Winkel := 0;Winkel extern oder Intern
+START
+;*********************************
+; HolzHer Schweiz AG B. Achermann
+;*********************************
+;Radius Bohren
+Transesxy (Mpx,Mpy,SnapXY,0)
+IF B_Typ = 0
+WHILE GESW > 360
+GESW:=GESW-360
+END
+IF Anz > 1
+IF GesW=360
+DELTA := GesW / Anz
+ELSE
+DELTA := GesW / (Anz - 1)
+END
+AktW:=AnW
+XB:=MpX+Radius * COS(AktW)
+YB:=MpY+Radius * SIN(AktW)
+FOR I  :=  1  TO  Anz  STEP  1
+X:=MpX + Radius * COS(AktW)
+Y:=MpY + Radius * SIN(AktW)
+AktW:=AktW+Delta
+IF I=Anz
+IF (X<>XB)|(Y<>YB)
+Bohrung (X,Y,B_Durchm,Tiefe,TLF,0,0,0,SnapZ,0,0,0)
+END
+ELSE
+Bohrung (X,Y,B_Durchm,Tiefe,TLF,0,0,0,SnapZ,0,0,0)
+END
+END
+END
+;Horizontal Bohren
+ELSE
+IF B_Typ = 1 
+Dr_Winkel:= 0
+else
+Dr_Winkel:= 180
+end
+WHILE GESW > 360
+GESW:=GESW-360
+END
+IF Anz > 1
+IF GesW=360
+DELTA := GesW / Anz
+ELSE
+DELTA := GesW / (Anz - 1)
+END
+AktW:=AnW
+XB:=MpX+Radius * COS(AktW)
+YB:=MpY+Radius * SIN(AktW)
+FOR I  :=  1  TO  Anz  STEP  1
+X:=MpX + Radius * COS(AktW)
+Y:=MpY + Radius * SIN(AktW)
+AktW:=AktW+Delta
+IF I=Anz
+IF (X<>XB)|(Y<>YB)
+HorzB (X,Y,H_RB_Z,B_DurchM,Tiefe,TLF,Neig,AKTW-DELTA+Dr_Winkel,0,Snap_HZ,0,0)
+END
+ELSE
+HorzB (X,Y,H_RB_Z,B_DurchM,Tiefe,TLF,Neig,AKTW-DELTA+Dr_Winkel,0,Snap_HZ,0,0)
+END
+END
+END
+END

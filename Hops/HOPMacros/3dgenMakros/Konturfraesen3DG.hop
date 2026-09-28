@@ -1,0 +1,94 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.2.65[Hops.exe]
+;BILD=KONTURFRAESEN3DG.WMF
+;INFO=
+;WZGV=7402_131
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Konturfraesen3DG
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   KV := 0;
+   KVM := '';
+   KH := 0;
+   KHM := '';
+   KR := 0;
+   KRM := '';
+   KL := 0;
+   KLM := '';
+   MATERIAL := '';
+   RICHTUNG := 0;
+   ToolID := 0;
+   KMin_X := 0;
+   KMax_X := 0;
+   KMin_Y := 0;
+   KMax_Y := 0;
+START
+;HOLZHER GmbH
+;Copyright 2016
+;2016-05-04 - CC-Makros V2.0 KRI
+;2014-02-21 - CC-Makros V1.1 HB KEI
+;2006-08-22 - CC-Makros V1.0 KRI
+;3DG-Konturfräsen
+;EVO mit Formatmakro = 21.2.14
+;2019-02-01- Nesting Format in 2 Schritten
+IF _pVar_NoFormat=1
+;Prozessvariable - Keine Formatierung aktiv
+ELSE
+_pVar_PCount := _pVar_PCount+1
+CALL _UserInterface3DG (REF RESULT:=ToolID VAL INPUTTEXT:='GetStandardRouterID')
+WZF (_Router_Standard_ID,_VE,_V,_VA,_SD,_ANF,'1')
+;Tiefe Format VCNC / EVO
+IF _MaschinenTYP=2
+;EVO_XCUT mit Kante
+IF TEXTSAME('X_CUT_EDGE',_HHDATA_INFO)
+CALL HH_EDGE_CUT_LEFT ( VAL TIEFE:=-2,R:=0.2,V_RADIUS:=2000)
+CALL HH_EDGE_CUT_RIGHT ( VAL TIEFE:=-2,R:=0.2,V_RADIUS:=2000)
+;EVO_XCUT ohne Kante
+ELSE
+CALL _Format_V5 ( VAL ECKENVERRUNDUNG:=0,TIEFE:=-_rz-2,AUFMASS:=0,ANF:=_ANF,ESMD:=0,GGL:=2,LASER:=0,DEPTH:=0)
+END
+ELSE
+;COMMONLINE
+IF (_CommonLine=1) & ((_MaschinenTYP=3)|(_MaschinenTYP=4))
+CALL HH_COMMONLINE_FORMAT ( VAL TIEFE:=-0.15)
+ELSE
+;_pVar_FormatRadial - Entscheidung von PROCESSVAR3DG.hop
+IF _pVar_FormatRadial=1
+;Tiefe Format Masch.TYP 1 + 5 + 6 (5X/Cachs/Standard)
+KSP ('???','???',-_rz-2,2,2,_ANF,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0)
+ELSE
+;Tiefe Format Masch.TYP 3 + 4 (Nesting) Sol/KEI
+;Bei Y oder X kleiner 250mm
+;fräsen in 2 Zustellungen
+;Schruppen mit Abstand zur Kontur 0,5mm
+CALL Call_Extensions_MinMaxContours (REF MINX:=KMin_X,MINY:=KMin_Y,MAXX:=KMax_X,MAXY:=KMax_Y VAL CONTOURNAME_CONTOURNAMES:='a')
+IF (KMax_X<250)|(KMax_Y<250)
+KSP ('???','???',-_rz+1.5,2,-1,_ANF,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('a','KSP','KEP',0,0,0,0,45,1,50,1,0)
+EP (1,_ANF,0)
+END
+CALL BN_TrennerInnenAussen ()
+CALL BN_NestKontur ()
+;Ende 2 Zustellungen
+KSP ('???','???',-_rz-0.15,2,-1,_ANF,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0)
+END
+KonturFraesen ('a','KSP','KEP',0,0,0,0,45,1,50,1)
+IF _pVar_FormatRadial=1
+EP (2,_ANF,0)
+ELSE
+EP (1,_ANF,0)
+END
+END
+END
+END

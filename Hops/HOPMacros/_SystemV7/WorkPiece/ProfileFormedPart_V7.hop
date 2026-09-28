@@ -1,0 +1,47 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=ShowProfileFormedPartDialog
+;DIALOGKIND=0
+;DIMENSION_UNIT=0
+VARS
+   View := 2;*VAR*View [1..4]
+   Color := 65535;*VAR*
+   Filename := '';*VAR*DXF - Name within Path
+   Unit := 0;*VAR*unit of measurement
+   Contours := '';*VAR*
+   ContoursHoles := '';*VAR*
+   Profillength := 0;*VAR*Length of Profile
+   RawBegin := 0;*VAR*
+   RawEnd := 0;*VAR*
+   DeleteContours := 1;*VAR*delete commited contours
+   i := 0;
+   Count := 0;
+   C := '';
+START
+;-
+;- direkt cnc-systeme gmbh
+;- Macro zur Erzeugung von Werkstücken im Querschnitt
+;-
+;-
+Fertigteil (800,100,100,0,0,0,0,0,'',0,0,0)
+;-
+;$$Definition
+;-
+definestockprofile (View,Color,Filename,Unit,ContoursHoles,Contours,0.01mm,RawBegin,RawEnd,1)
+defineFPProfile (View,Color,Filename,Unit,ContoursHoles,Contours,0.01mm,Profillength)
+;$$Übergebene Konturen ablöschen
+;-
+IF DeleteContours=1
+CALL Call_Extensions_GetParamCount (REF VALUE:=Count VAL VALUES:=Contours,SEPARATOR:=';')
+FOR i := 1 TO Count STEP 1
+;alle Konturen löschen
+CALL Call_Extensions_GetParamNo (REF VALUE:=C VAL VALUES:=Contours,NO:=i,SEPARATOR:=';')
+deletecontour (C,0)
+END
+CALL Call_Extensions_GetParamCount (REF VALUE:=Count VAL VALUES:=ContoursHoles,SEPARATOR:=';')
+FOR i := 1 TO Count STEP 1
+;alle Konturen löschen
+CALL Call_Extensions_GetParamNo (REF VALUE:=C VAL VALUES:=ContoursHoles,NO:=i,SEPARATOR:=';')
+deletecontour (C,0)
+END
+END

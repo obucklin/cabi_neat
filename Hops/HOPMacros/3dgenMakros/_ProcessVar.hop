@@ -1,0 +1,117 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.1062[Hops.exe]
+;BILD=_PROCESSVAR.WMF
+;INFO=
+;WZGV=7225K_V7_DEMO
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=_ProcessVar
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   ProcessID := 0;*VAR*Prozesskennung
+START
+;HOLZHER GmbH
+;Copyright 2016
+;2016-05-04 - CC-Makros V2.0 KRI
+CreateGlobalVar ('_pVar_PreCutID',0)
+CreateGlobalVar ('_pVar_PreCutName','')
+CreateGlobalVar ('_pVar_NoDrillingH',0)
+CreateGlobalVar ('_pVar_NoDrillingV',0)
+CreateGlobalVar ('_pVar_NoFormat',1)
+CreateGlobalVar ('_pVar_NoProcessH',0)
+CreateGlobalVar ('_pVar_NoProcessV',0)
+CreateGlobalVar ('_pVar_NoLamello',0)
+CreateGlobalVar ('_pVar_PCount',0)
+CreateGlobalVar ('_pVar_NoSaw',0)
+CreateGlobalVar ('_pVar_FormatRadial',0)
+IF ProcessID=0
+;Direkt von CC mit Format=1 --> mit Formatieren
+_pVar_NoFormat := 0
+IF _nest=1
+_pVar_FormatRadial := 0
+ELSE
+_pVar_FormatRadial := 1
+END
+ELSE
+IF ProcessID=100
+;Zuschnitt war auf DBS Druckbalkensäge
+_pVar_PreCutID := 100
+_pVar_PreCutName := 'BEAMSAW'
+_pVar_NoDrillingH := 0
+_pVar_NoDrillingV := 0
+_pVar_NoFormat := 1
+_pVar_NoProcessH := 0
+_pVar_NoProcessV := 0
+_pVar_NoLamello := 0
+_pVar_NoSaw := 1
+_pVar_FormatRadial := 1
+ELSE
+IF ProcessID=101
+;Zuschnitt war auf DBS Druckbalkensäge
+_pVar_PreCutID := 101
+_pVar_PreCutName := 'BEAMSAW'
+_pVar_NoDrillingH := 0
+_pVar_NoDrillingV := 0
+_pVar_NoFormat := 0
+_pVar_NoProcessH := 0
+_pVar_NoProcessV := 0
+_pVar_NoLamello := 1
+_pVar_NoSaw := 1
+_pVar_FormatRadial := 0
+ELSE
+;Zuschnitt war auf CNC Nestingmaschine
+IF ProcessID=200
+_pVar_PreCutID := 200
+_pVar_PreCutName := 'NESTCNC'
+_pVar_NoDrillingH := 0
+_pVar_NoDrillingV := 1
+_pVar_NoFormat := 1
+_pVar_NoProcessH := 0
+_pVar_NoProcessV := 1
+_pVar_NoLamello := 1
+_pVar_NoSaw := 1
+_pVar_FormatRadial := 1
+ELSE
+;Zuschnitt war auf CNC Nestingmaschine - aber trotzdem mit Formatieren
+IF ProcessID=201
+_pVar_PreCutID := 201
+_pVar_PreCutName := 'NESTCNC'
+_pVar_NoDrillingH := 1
+_pVar_NoDrillingV := 1
+_pVar_NoFormat := 1
+_pVar_NoProcessH := 1
+_pVar_NoProcessV := 1
+_pVar_NoLamello := 0
+_pVar_NoSaw := 1
+_pVar_FormatRadial := 1
+ELSE
+IF ProcessID=1
+;Zuschnitt unbekannt - Komplettbearbeitung
+_pVar_PreCutID := 1
+_pVar_PreCutName := 'COMPLETE'
+_pVar_NoDrillingH := 0
+_pVar_NoDrillingV := 0
+_pVar_NoFormat := 0
+_pVar_NoProcessH := 0
+_pVar_NoProcessV := 0
+_pVar_NoLamello := 0
+_pVar_NoSaw := 1
+_pVar_FormatRadial := 1
+_nest := 0
+ELSE
+END
+END
+END
+END
+END
+END

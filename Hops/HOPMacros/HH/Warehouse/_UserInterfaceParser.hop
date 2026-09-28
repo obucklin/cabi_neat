@@ -1,0 +1,96 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.885[Hops.exe]
+;BILD=_USERINTERFACEPARSER.WMF
+;INFO=
+;WZGV=7707D_103
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=UserInterfaceParser
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   Inputtext := '';*VAR*Textvariable für Funktionsauswertung
+   resultstr := '';*VAR**REF*Rückgabewert als String
+   result := 0;*VAR**REF*Rückgabewert
+   _Router_NestStandard_ID := 20;Hier ID für Standard Nestfräser eintragen
+   _Router_Standard_ID := 20;Hier ID für StandardFräser eintragen
+   _Router_Groove_ID := 6;Hier ID für NutenFräser eintragen
+   _Saw_Standard_ID := 9999;Hier ID für StandardSäge eintragen
+   _Material_File := '';Hier Filename für Materialliste eintragen z.B. D:\CAMPUS\Data\Hops\Hop\Nesting\NestRawBoards\Material_Tool.csv
+   _SmallPartDefX := 100;Kleinteilerkennung bei X Maß Unterschreitung
+   _SmallPartDefY := 100;Kleinteilerkennung bei Y Maß Unterschreitung
+   _SmallPartDefXY := 12000;Kleinteilerkennung ab X*Y Fläche
+   _DimZ_Step2 := 20;Schwelle Materialstärke für 2 Schritte
+   _DimZ_Step3 := 25;Schwelle Materialstärke für 3 Schritte
+   _Standard_DepthZ := -0.2;Standardwert Frästiefe
+   _Onion_DepthZ := 0.1;Standardwert Frästiefe
+START
+;HOLZHER - GmbH
+;Copyright 2013
+;UserInterface
+;Fraeser_ID
+IF textsame(Inputtext,'GetStandardRouterID')
+result := _Router_Standard_ID
+End
+IF textsame(Inputtext,'GetStandardNestTool')
+result := _Router_NestStandard_ID
+End
+IF textsame(Inputtext,'GetGrooveRouterID')
+IF (_Router_Groove_ID>0)
+result := _Router_Groove_ID
+Else
+result := _Router_Standard_ID
+End
+End
+;Saege_ID
+IF textsame(Inputtext,'GetStandardSawID')
+result := _Saw_Standard_ID
+End
+;Filename Materialliste
+IF textsame(Inputtext,'GetMaterialFilename')
+resultstr := _Material_File
+End
+;Small part mm²
+IF textsame(Inputtext,'GetSmallPartDefXY')
+result := _SmallPartDefXY
+End
+;Small part side in mm
+IF textsame(Inputtext,'GetSmallPartDefX')
+result := _SmallPartDefX
+End
+;Small part side in mm
+IF textsame(Inputtext,'GetSmallPartDefY')
+result := _SmallPartDefY
+End
+;Auswertung Materialstärke - Anzahl Steps
+IF textsame(Inputtext,'GetStepCount')
+IF _RZ > _DimZ_Step3
+result := 3
+ELSE
+IF _RZ > _DimZ_Step2
+result := 2
+ELSE
+result := 1
+END
+END
+IF _RZ>_AT_USEABLELENGTH
+result := result + 1
+END
+End
+;onion skin z depth value
+IF textsame(Inputtext,'GetOnionZValue')
+result := _Onion_DepthZ
+End
+;standard z depth value
+IF textsame(Inputtext,'GetStandardZValue')
+result := _Standard_DepthZ
+End

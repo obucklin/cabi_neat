@@ -1,0 +1,12 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowKONTURTASTEN_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   Hold := 0;*VAR*1 bis zum Werkzeugwechsel verwenden
+   HoldCloneMoveZ := 0;*VAR*1 Fräsbahnen mit mehrfach Z-Zustellung einfügen
+   ToolID := 0;*VAR*Werkzeugboxnummer
+   Dist := 0;*VAR*Tastabstand
+START
+nciext (-100234,'NCISys',1,Hold,HoldCloneMoveZ,0,ToolID,Dist)

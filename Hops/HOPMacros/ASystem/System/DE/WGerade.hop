@@ -1,0 +1,25 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCName
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=WGerade.WMF
+VARS
+   Laenge := 50;*VAR*Länge der Geraden
+   Winkel := 0;*VAR*Winkel gegen X
+   Z := 0;*VAR*Zustelltiefe
+   R := 0;*VAR*verrundungsradius
+   X := 0;
+   Y := 0;
+START
+X := _AktPosSaveX+laenge*cos(Winkel)
+Y := _AktPosSaveY+laenge*sin(Winkel)
+_AktPosSaveX := X
+_AktPosSaveY := Y
+CALL SetPunkt (VAL X:=X,Y:=Y)
+CALL RotUmPunkt ()
+G01 (_AktPosX,_AktPosY,Z,R)
+

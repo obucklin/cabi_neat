@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowGROUPEND_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   Name := '';*VAR*Gruppenname
+START
+nciext (-120000,'NCISys',3,0,0,0,0,0,0,0,0,Name,0,0,0)

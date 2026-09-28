@@ -1,0 +1,188 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=ShowOpenPocketDialog
+;AUTOSCRIPTSTART=0
+VARS
+   DX := 1000;Dimension X
+   DY := 800;Dimension Y
+   DZ := 38;Dimension Z
+   AX := 0;More in X
+   AY := 0;More in Y
+   wwwwwwwwwwwww := 0;----------------------------------------------------------------------------
+   Ecke := 0;*VAR*0=LU / 1=U / 2=RU.......
+   Dim_X := 400;*VAR*Länge in X
+   Dim_Y := 250;*VAR*Länge in Y
+   Rad := 0;*VAR*Radius
+   PosX := 400;*VAR*Positiion in X
+   PosY := 300;*VAR*Positiion in Y
+   esx := 0;*VAR*
+   esy := 0;*VAR*
+   Angle_Switch := 0;*VAR*0=0 / 1=90
+   K := 'xP';Konturname
+   Dist := 0;*VAR*Distance to contour
+   Ueberlappung := 67;*VAR*Überlappung in % vom Werkzeugdurchmesser
+   Angle := 0;Winkel 0 / 90
+   PocketKonturName := 'xPocket';
+   Dummy := 0;
+   Lines := 0;
+   i := 0;counter
+   ConEle := 1;
+   vvvvvvvvvvvvvvvv := 0;----------------------------------------------------------------------------
+   Schrup := 1;*VAR*= 1 Schruppen ausführen
+   Tiefe := ;*VAR*Tiefe
+   Anzahl := 0;*VAR*Anzahl Zustellungen
+   MaxZ := 0;*VAR*Maximale Zustelltiefe
+   esmd := 0;*VAR*
+   Direct := 0;*VAR*switch directio
+   Mill_Fin := 1;*VAR*
+   Mill_Fin_GL := 1;*VAR*Milling direction for finisher
+   Mill_Fin_Dist := 0;*VAR*Distance to contour
+   Mill_Fin_Depth := ;*VAR*Depth finsih miller
+   Mill_Fin_Count := 0;*VAR*Anzahl Zustellungen
+   Mill_Fin_MaxZ := 0;*VAR*Maximale Zustelltiefe
+   Mill_esmd := 0;*VAR*
+   Mill_Laser := 0;*VAR*
+START
+;--------------------------------------------------------------------------------------------
+;- direkt cnc systeme NC-HOPS (Version 7.5.5.x)
+;--------------------------------------------------------------------------------------------
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0,0)
+;--------------------------------------------------------------------------------------------
+;- Rectangel pocket open
+;- 0 = LU
+;- 1 = U
+;- 2 = RU
+;- 3 = R
+;- 4 = RO
+;- 5 = O
+;- 6 = LO
+;- 7 = L
+;-
+IF (_WZR<>0)
+Transesd (Tiefe,esmd)
+Transesd (Mill_Fin_Depth,Mill_esmd)
+transesxy (dummy,PosY,esy,0)
+transesxy (PosX,dummy,esx,0)
+;-
+IF (Ecke=0) | (Ecke=2) | (Ecke=4) | (Ecke=6)
+Direct := 0
+END
+;Radius prüfen
+IF (Ecke=0) | (Ecke=2) | (Ecke=4) | (Ecke=6)
+;Ecken
+IF (Rad>Dim_X) |(Rad>Dim_Y)
+Rad := 0
+END
+ELSE
+IF (Ecke=1) | (Ecke=5)
+;oben unten
+IF (2*Rad>Dim_X)
+Rad := 0
+END
+ELSE
+;links rechts
+IF (2*Rad>Dim_Y)
+Rad := 0
+END
+END
+END
+/Ecke := 3
+/Angle_Switch := 1
+/Direct := 1
+/Tiefe := -10
+;--------------------------------------------------------------------------------------------
+IF Rad<0
+Fehlermeldung ('Negative radius not possible')
+END
+;--------------------------------------------------------------------------------------------
+;- SETTINGS
+;-
+IF Angle_Switch=0
+Angle := 0
+ELSE
+Angle := 90
+END
+;-
+;--------------------------------------------------------------------------------------------
+;- Get extensions
+CALL OpenPocket_GetAXAY (REF AX:=AX,AY:=AY VAL ECKE:=Ecke,DIM_X:=Dim_X,DIM_Y:=Dim_Y,ANGLE_SWITCH:=Angle_Switch)
+;--------------------------------------------------------------------------------------------
+;- Drawing
+CALL OpenPocket_Drawing ( VAL ECKE:=Ecke,DIM_X:=Dim_X,DIM_Y:=Dim_Y,RAD:=Rad,POSX:=PosX,POSY:=PosY)
+;--------------------------------------------------------------------------------------------
+;- Geometry
+CALL OpenPocket_Geo ( VAL K:=K,AX:=AX,AY:=AY,ECKE:=Ecke,DIM_X:=Dim_X,DIM_Y:=Dim_Y,RAD:=Rad,DIST:=Dist,POSX:=PosX,POSY:=PosY,ANGLE_SWITCH:=Angle_Switch)
+;--------------------------------------------------------------------------------------------
+;- Bogen wird mit dieser Parallelbahnberechnung korrekt behandelt
+Contour_Parallel (K,-_WZR,1,0,0,'','','',0)
+;- Create contours
+CreatePocketContour (K,0,_WZD-_WZD*Ueberlappung/100,Angle,7,0,PocketKonturName,'','',Dummy,Dummy)
+;- Get quantity
+i := 0
+WHILE CONTOUREXIST(PocketKonturName+INTTOSTR(i))
+deletecontour (PocketKonturName+'_Outline'+INTTOSTR(i),0)
+i := i+1
+END
+i := 0
+WHILE CONTOUREXIST(PocketKonturName+INTTOSTR(i))
+i := i+1
+END
+Lines := i
+;--------------------------------------------------------------------------------------------
+;- Sort contours - allways start from outside
+CALL OpenPocket_SortCont ( VAL ECKE:=Ecke,ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct)
+;--------------------------------------------------------------------------------------------
+;- Conect contours
+KB ('Combined','',GETCP_X(PocketKonturName+inttostr(1)+'_Sort_Dir',0),GETCP_Y(PocketKonturName+inttostr(1)+'_Sort_Dir',0),0,'',0,0)
+ConEle := 1
+FOR i := 1 TO Lines STEP 1
+KG01 ('',GETCP_X(PocketKonturName+inttostr(i)+'_Sort_Dir',ConEle),GETCP_Y(PocketKonturName+inttostr(i)+'_Sort_Dir',ConEle),0,'',0,2)
+IF i<lines
+KG01 ('',GETCP_X(PocketKonturName+inttostr(i+1)+'_Sort_Dir',ConEle),GETCP_Y(PocketKonturName+inttostr(i+1)+'_Sort_Dir',ConEle),0,'',0,2)
+END
+IF ConEle=1
+ConEle := 0
+ELSE
+ConEle := 1
+END
+END
+;-
+;--------------------------------------------------------------------------------------------
+;- Milling pocket
+IF Schrup
+KSP ('???','???',Tiefe,0,0,_ANF,0,0,0,0,0,0,Anzahl,MaxZ,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('SMove','KSP','KEP',0,0,0,0,0,0,0,0,0)
+KonturFraesen ('Combined','KSP','KEP',0,0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+END
+;-
+;- Delete all contours
+deletecontour (K,0)
+FOR i := 1 TO Lines STEP 1
+deletecontour (PocketKonturName+INTTOSTR(i)+'_Sort_Dir',0)
+END
+deletecontour ('SMove',0)
+deletecontour ('Combined',0)
+;--------------------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------------------
+;- Finish contour
+IF Mill_Fin = 0
+EXITMACRO
+END
+;-
+AX := 0
+AY := 0
+;-
+;--------------------------------------------------------------------------------------------
+;- Geometry
+CALL OpenPocket_GeoFinish ( VAL K:=K,ECKE:=Ecke,DIM_X:=Dim_X,DIM_Y:=Dim_Y,RAD:=Rad,POSX:=PosX,POSY:=PosY)
+;--------------------------------------------------------------------------------------------
+;- Milling finish
+KSP ('???','???',Mill_Fin_Depth,1,1,_ANF,Mill_Fin_Dist,0,0,0,0,Mill_Fin_GL,Mill_Fin_Count,Mill_Fin_MaxZ,0,0,0,0,0,0,0,0,0)
+KonturFraesen (K,'KSP','KEP',0,0,0,0,0,0,0,0,0)
+EP (1,_ANF,0)
+deletecontour (K,0)
+ELSE
+Fehlermeldung (GetMessageText('17','Bitte Werkzeug definieren'))
+END

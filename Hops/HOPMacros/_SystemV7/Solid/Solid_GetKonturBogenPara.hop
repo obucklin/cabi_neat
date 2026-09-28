@@ -1,0 +1,52 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   KN := '';*VAR*
+   OK := 1;*VAR**REF*=1 Funktion wurde korrekt ausgeführt
+   BH := 0;*VAR**REF*Bogenhöhe
+   MPx := 0;*VAR**REF*Mittelpunkt in X
+   MPy := 0;*VAR**REF*Mittelpunkt in Y
+   Radius := 0;*VAR**REF*
+   Konkav := 1;*VAR**REF*1=konkav (Wölbung nach oben); 0=konvex (Wölbung nach unten)
+   SPx := 0;*VAR**REF*
+   SPy := 0;*VAR**REF*
+   EPx := 0;*VAR**REF*
+   EPy := 0;*VAR**REF*
+   Typ := 0;cw oder ccw
+   X1 := 0;
+   X2 := 0;
+   Winkel := 0;*VAR**REF*
+START
+;Fertigteil (300,400,19,0,0,0,0,0,'',0,0,0)
+;KB (KN,'',0,0,0,'',0,0)
+;CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=0,EZ:=0,R:=5000,EI:='',ESXY:=3,ESD:=0)
+Typ := GetKE_Typ(KN,1)
+IF (GetKE_Anzahl(KN)=1) & (Typ<>1)
+X1 := GetKP_X(KN,0)
+X2 := GetKP_X(KN,1)
+IF ((Typ=3) & (X2>X1))|((Typ=2) & (X1>X2))
+konkav := 0
+END
+IF (X2>X1)
+SPx := GetKP_X(KN,0)
+SPy := GetKP_Y(KN,0)
+EPx := GetKP_X(KN,1)
+EPy := GetKP_Y(KN,1)
+ELSE
+SPx := GetKP_X(KN,1)
+SPy := GetKP_Y(KN,1)
+EPx := GetKP_X(KN,0)
+EPy := GetKP_Y(KN,0)
+END
+MPx := GetKE_Mx(KN,1)
+MPy := GetKE_My(KN,1)
+CALL Dist2P_V4 (REF DIST:=Radius VAL P1X:=SPx,P1Y:=SPy,P2X:=MPx,P2Y:=MPy)
+IF ((Typ=3) & (X2>X1))|((Typ=2) & (X1>X2))
+CALL GetWinkelDiff3P_V4 (REF WINKELDIFF3P:=Winkel VAL P1X:=GetKP_X(KN,0),P1Y:=GetKP_Y(KN,0),MX:=MPx,MY:=MPy,P3X:=GetKP_X(KN,1),P3Y:=GetKP_Y(KN,1))
+ELSE
+CALL GetWinkelDiff3P_V4 (REF WINKELDIFF3P:=Winkel VAL P1X:=GetKP_X(KN,1),P1Y:=GetKP_Y(KN,1),MX:=MPx,MY:=MPy,P3X:=GetKP_X(KN,0),P3Y:=GetKP_Y(KN,0))
+END
+BH := Radius-radius*sqrt(1-sqr(sin(Winkel/2)))
+ELSE
+OK := 0
+END

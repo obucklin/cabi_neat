@@ -1,0 +1,27 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   PosX := 50;*VAR*Gutteil Positionbestimmung X
+   PosY := 50;*VAR*Gutteil Positionbestimmung Y
+   PixB := 3;
+   Farb1 := 79797;
+   Farb2 := 8453;
+   b := 10;*VAR*Breite Zeichnungselement
+START
+;------------------------------------------------
+;-- DiREKT CNC SYSTEME GmbH
+;-- 21.01.2013 mw
+;--
+;-- Dieses Makro definiert das "Gutteil" für die MW-Simu
+;--
+;------------------------------------------------
+WZF (4444,_VE,_V,_VA,_SD,_ANF,'1')
+ncinfoprocess (4444,PosX,PosY,0,0,0,0,'','',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+WZF (9999,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _ZRechteck_2P_V6 ( VAL SX:=PosX-b/2,SY:=PosY-b/2,EX:=PosX+b/2,EY:=PosY+b/2,FUELLEN:=0,FARBE:=Farb1,ESXY1:=0,ESXY2:=0,THICKNESS:=PixB,THICKNESSKIND:=1)
+ZLinie (PosX-b/2,PosY,PosX,PosY-b/2,Farb2,0,0,PixB*2,1)
+ZLinie (PosX+b/2,PosY+b/2,PosX,PosY-b/2,Farb2,0,0,PixB*2,1)
+/CALL _ZKBCWR_V6 ( VAL SX:=PosX-5,SY:=PosY,EX:=PosX+5,EY:=PosY,R:=5,FARBE:=Farb2,ESXY1:=0,ESXY2:=0,THICKNESS:=PixB,THICKNESSKIND:=1)
+/CALL _ZKBCWR_V6 ( VAL SX:=PosX,SY:=PosY-5,EX:=PosX,EY:=PosY+5,R:=10,FARBE:=Farb2,ESXY1:=0,ESXY2:=0,THICKNESS:=PixB,THICKNESSKIND:=1)

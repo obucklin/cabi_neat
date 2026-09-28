@@ -1,0 +1,7 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   _MNCDC_ActivateSmallerProcessArea := 0;
+START
+_MNCDC_ActivateSmallerProcessArea := 1
+Call MNCDCUNLOCKSPLIT_V7 ( VAL Mode:=111111,VerkleinerungAktivieren:=_MNCDC_ActivateSmallerProcessArea)

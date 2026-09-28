@@ -1,0 +1,274 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.1.948[Hops.exe]
+;BILD=V_DUEBEL.WMF
+;INFO=
+;WZGV=STANDARD
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=V_Duebel
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_1.Dll
+;DIALOGPROC=ShowV_DuebelDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   V_RM_H := 30;*VAR*Randmass Y hinten
+   V_RM_V := 40;*VAR*Randmass Y vorne
+   V_RM_X := DZ/2;*VAR*Randmass X
+   V_M_XWert := DX/2-100;*VAR*Randmass X Mittelseite
+   V_M_YWertH := 10.00;*VAR*Mittelseite Rücksprung hinten
+   V_M_YWertV := 10.00;*VAR*Mittelseite Rücksprung vorne
+   V_Dist_DSchr := 20.00;*VAR*Distanz Dübel zu Schraube
+   V_Anz := 4;*VAR*Anzahl Dübel
+   V_D_Tiefe := -13.00;*VAR*Tiefe Dübel
+   V_S_Tiefe := -(DZ + 1.00);*VAR*Tiefe Schraube
+   V_E_Tiefe := -14;*VAR*Tiefe Excenter
+   V_D_Dm := 8.00;*VAR*Durchmesser Dübel
+   V_S_Dm := 3.00;*VAR*Durchmesser Schraube
+   V_E_Dm := 15;*VAR*Durchmesser Excenter
+   V_CheckBox_L := -1;*VAR*Dübel links Ja/Nein
+   V_CheckBox_M := 0;*VAR*Dübel Mittelseite Ja/Nein
+   V_CheckBox_R := -1;*VAR*Dübel rechts Ja/Nein
+   Schr_Exc := 2;*VAR*Schrauben oder Verbinder
+   V_Wahl := 1;*VAR*Nach Anzahl 0 oder nach Mass 1
+   V_2_D_Mass := 250.00;*VAR*Bis Mass 2 Dübel
+   V_3_D_Mass := 350.00;*VAR*Bis Mass 3 Dübel
+   V_4_D_Mass := 450.00;*VAR*Bis Mass 4 Dübel
+   V_5_D_Mass := 550.00;*VAR*Bis Mass 5 Dübel
+   Abstand := 0;Distanz zw. den Bohrungen
+   Anzahl := 2;Anzahl Bohrungen
+   Anz_Schrauben := 3;*VAR*Anzahl Schrauben
+   Anz_Exc := 3;*VAR*Anzahl Verbinder
+   D_Typ := 10;*VAR*Bohrtyp Dübeln
+   S_Typ := 20;*VAR*Bohrtyp Schrauben
+   E_Typ := 30;*VAR*Bohrtyp Excenter
+START
+Fertigteil (800,400,19,0,0,0,0,0,'',0,0,0)
+; Holzher Schweitz AG (c) B. Achermann
+IF V_Wahl=1
+IF _RY <=V_2_D_Mass
+V_Anz := 2
+END
+IF (_RY >V_2_D_Mass) &(_RY<= V_3_D_Mass)
+V_Anz := 3
+END
+IF (_RY >V_3_D_Mass) &(_RY<= V_4_D_Mass)
+V_Anz := 4
+END
+IF (_RY >V_4_D_Mass) &(_RY<= V_5_D_Mass)
+V_Anz := 5
+END
+IF _RY >V_5_D_Mass
+V_Anz := 6
+END
+ELSE
+V_Anz := V_Anz
+END
+;Linke Seite
+IF V_CheckBox_L = -1
+Bohrung (V_RM_X,V_RM_H,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+Bohrung (V_RM_X,V_RM_V,V_D_DM,V_D_Tiefe,D_Typ,0,0,1,0,0,0,0)
+IF Schr_Exc =1
+Bohrung (V_RM_X,V_RM_H+V_Dist_DSchr,V_S_DM,V_S_Tiefe,S_Typ,0,0,7,0,0,0,0)
+Bohrung (V_RM_X,V_RM_V+ V_Dist_DSchr,V_S_DM,V_S_Tiefe,S_Typ,0,0,1,0,0,0,0)
+IF (Anz_Schrauben =3) & (V_Anz=2)
+Bohrung (V_RM_X,0,V_S_DM,V_S_Tiefe,S_Typ,0,0,8,0,0,0,0)
+END
+END
+;Exzenter
+IF Schr_Exc =2
+Bohrung (V_RM_X,V_RM_H+V_Dist_DSchr,V_E_DM,V_E_Tiefe,E_Typ,0,0,7,0,0,0,0)
+Bohrung (V_RM_X,V_RM_V+ V_Dist_DSchr,V_E_DM,V_E_Tiefe,E_Typ,0,0,1,0,0,0,0)
+IF (Anz_Exc =3) & (V_Anz=2)
+Bohrung (V_RM_X,0,V_E_DM,V_E_Tiefe,E_Typ,0,0,8,0,0,0,0)
+END
+END
+IF V_Anz=3
+Abstand := ((_RY-(V_RM_H+V_RM_V)) / 2)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+IF (Schr_Exc =1) & (Anz_Schrauben =3)
+Bohrung (V_RM_X,Abstand + V_Dist_DSchr,V_S_DM,V_S_Tiefe,S_Typ,0,0,7,0,0,0,0)
+END
+IF (Schr_Exc =2) & (Anz_Exc =3)
+Bohrung (V_RM_X,Abstand + V_Dist_DSchr,V_E_DM,V_E_Tiefe,E_Typ,0,0,1,0,0,0,0)
+END
+END
+IF V_Anz=4
+Abstand := ((_RY-(V_RM_H+V_RM_V)) / 3)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 3)*2)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+IF (Schr_Exc =1) & (Anz_Schrauben =3)
+Bohrung (V_RM_X,Abstand -  V_Dist_DSchr,V_S_DM,V_S_Tiefe,S_Typ,0,0,7,0,0,0,0)
+END
+IF (Schr_Exc =2) & (Anz_Exc =3)
+Bohrung (V_RM_X,0,V_E_DM,V_E_Tiefe,E_Typ,0,0,8,0,0,0,0)
+END
+END
+IF V_Anz=5
+Abstand := ((_RY-(V_RM_H+V_RM_V)) / 4)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 4)*2)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 4)*3)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+IF (Schr_Exc =1) & (Anz_Schrauben =3)
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 4)*2)+V_RM_H
+Bohrung (V_RM_X,Abstand -V_Dist_DSchr,V_S_DM,V_S_Tiefe,S_Typ,0,0,7,0,0,0,0)
+END
+IF (Schr_Exc =2) & (Anz_Exc =3)
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 4)*2)+V_RM_H
+Bohrung (V_RM_X,Abstand -V_Dist_DSchr,V_E_DM,V_E_Tiefe,E_Typ,0,0,7,0,0,0,0)
+END
+END
+IF V_Anz=6
+Abstand := ((_RY-(V_RM_H+V_RM_V)) / 5)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 5)*2)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+IF (Schr_Exc =1) & (Anz_Schrauben =3)
+Bohrung (V_RM_X,Abstand+V_Dist_DSchr,V_S_DM,V_S_Tiefe,S_Typ,0,0,7,0,0,0,0)
+END
+IF (Schr_Exc =2) & (Anz_Exc =3)
+Bohrung (V_RM_X,0,V_E_DM,V_E_Tiefe,E_Typ,0,0,8,0,0,0,0)
+END
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 5)*3)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 5)*4)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+END
+END
+;Mittelseite
+IF V_CheckBox_M = -1
+IF V_Wahl=1
+IF (_RY-V_M_YWertH-V_M_YWertV) <=V_2_D_Mass
+Anzahl := 2
+END
+IF ((_RY-V_M_YWertH-V_M_YWertV)>V_2_D_Mass) &((_RY-V_M_YWertH-V_M_YWertV)<= V_3_D_Mass)
+Anzahl := 3
+END
+IF ((_RY-V_M_YWertH-V_M_YWertV) >V_3_D_Mass) &((_RY-V_M_YWertH-V_M_YWertV)<= V_4_D_Mass)
+Anzahl := 4
+END
+IF ((_RY-V_M_YWertH-V_M_YWertV) >V_4_D_Mass) &((_RY-V_M_YWertH-V_M_YWertV)<= V_5_D_Mass)
+Anzahl := 5
+END
+IF (_RY-V_M_YWertH-V_M_YWertV) >V_5_D_Mass
+Anzahl := 6
+END
+ELSE
+Anzahl := V_Anz
+END
+Bohrung (V_M_XWert,V_RM_H+V_M_YWertH,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+Bohrung (V_M_XWert,V_RM_V+V_M_YWertV,V_D_DM,V_D_Tiefe,D_Typ,0,0,1,0,0,0,0)
+IF Anzahl=3
+Abstand := ((_RY-(V_RM_H+V_M_YWertH+V_RM_V+V_M_YWertV)) / 2)+V_M_YWertH+V_RM_H
+Bohrung (V_M_XWert,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+END
+IF Anzahl=4
+Abstand := ((_RY-(V_RM_H+V_M_YWertH+V_RM_V+V_M_YWertV)) / 3)+V_M_YWertH+V_RM_H
+Bohrung (V_M_XWert,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_M_YWertH+V_RM_V+V_M_YWertV)) / 3)*2)+V_M_YWertH+V_RM_H
+Bohrung (V_M_XWert,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+END
+IF Anzahl=5
+Abstand := (((_RY-(V_RM_H+V_M_YWertH+V_RM_V+V_M_YWertV)) / 4))+V_M_YWertH+V_RM_H
+Bohrung (V_M_XWert,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_M_YWertH+V_RM_V+V_M_YWertV)) / 4)*2)+V_M_YWertH+V_RM_H
+Bohrung (V_M_XWert,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_M_YWertH+V_RM_V+V_M_YWertV)) / 4)*3)+V_M_YWertH+V_RM_H
+Bohrung (V_M_XWert,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+END
+IF Anzahl=6
+Abstand := (((_RY-(V_RM_H+V_M_YWertH+V_RM_V+V_M_YWertV)) / 5))+V_M_YWertH+V_RM_H
+Bohrung (V_M_XWert,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_M_YWertH+V_RM_V+V_M_YWertV)) / 5)*2)+V_M_YWertH+V_RM_H
+Bohrung (V_M_XWert,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_M_YWertH+V_RM_V+V_M_YWertV)) / 5)*3)+V_M_YWertH+V_RM_H
+Bohrung (V_M_XWert,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_M_YWertH+V_RM_V+V_M_YWertV)) / 5)*4)+V_M_YWertH+V_RM_H
+Bohrung (V_M_XWert,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,7,0,0,0,0)
+END
+END
+;Rechte Seite
+IF V_CheckBox_R = -1
+Bohrung (V_RM_X,V_RM_H,V_D_DM,V_D_Tiefe,D_Typ,0,0,5,0,0,0,0)
+Bohrung (V_RM_X,V_RM_V,V_D_DM,V_D_Tiefe,D_Typ,0,0,3,0,0,0,0)
+IF Schr_Exc =1
+Bohrung (V_RM_X,V_RM_H+V_Dist_DSchr,V_S_DM,V_S_Tiefe,S_Typ,0,0,5,0,0,0,0)
+Bohrung (V_RM_X,V_RM_V+ V_Dist_DSchr,V_S_DM,V_S_Tiefe,S_Typ,0,0,3,0,0,0,0)
+IF (Anz_Schrauben =3) & (V_Anz=2)
+Bohrung (V_RM_X,0,V_S_DM,V_S_Tiefe,S_Typ,0,0,4,0,0,0,0)
+END
+END
+IF Schr_Exc =2
+Bohrung (V_RM_X,V_RM_H+V_Dist_DSchr,V_E_DM,V_E_Tiefe,E_Typ,0,0,5,0,0,0,0)
+Bohrung (V_RM_X,V_RM_V+ V_Dist_DSchr,V_E_DM,V_E_Tiefe,E_Typ,0,0,3,0,0,0,0)
+IF (Anz_Exc =3) & (V_Anz=2)
+Bohrung (V_RM_X,0,V_E_DM,V_E_Tiefe,E_Typ,0,0,4,0,0,0,0)
+END
+END
+IF V_Anz=3
+Abstand := ((_RY-(V_RM_H+V_RM_V)) / 2)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,5,0,0,0,0)
+IF (Schr_Exc =1) & (Anz_Schrauben =3)
+Bohrung (V_RM_X,Abstand + V_Dist_DSchr,V_S_DM,V_S_Tiefe,S_Typ,0,0,5,0,0,0,0)
+END
+IF (Schr_Exc =2) & (Anz_Exc =3)
+Bohrung (V_RM_X,Abstand + V_Dist_DSchr,V_E_DM,V_E_Tiefe,E_Typ,0,0,3,0,0,0,0)
+END
+END
+IF V_Anz=4
+Abstand := ((_RY-(V_RM_H+V_RM_V)) / 3)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,5,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 3)*2)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,5,0,0,0,0)
+IF (Schr_Exc =1) & (Anz_Schrauben =3)
+Bohrung (V_RM_X,Abstand -  V_Dist_DSchr,V_S_DM,V_S_Tiefe,S_Typ,0,0,5,0,0,0,0)
+END
+IF (Schr_Exc =2) & (Anz_Exc =3)
+Bohrung (V_RM_X,0,V_E_DM,V_E_Tiefe,E_Typ,0,0,4,0,0,0,0)
+END
+END
+IF V_Anz=5
+Abstand := ((_RY-(V_RM_H+V_RM_V)) / 4)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,5,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 4)*2)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,5,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 4)*3)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,5,0,0,0,0)
+IF (Schr_Exc =1) & (Anz_Schrauben =3)
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 4)*2)+V_RM_H
+Bohrung (V_RM_X,Abstand -32,V_S_DM,V_S_Tiefe,S_Typ,0,0,5,0,0,0,0)
+END
+IF (Schr_Exc =2) & (Anz_Exc =3)
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 4)*2)+V_RM_H
+Bohrung (V_RM_X,Abstand -V_Dist_DSchr,V_E_DM,V_E_Tiefe,E_Typ,0,0,5,0,0,0,0)
+END
+END
+IF V_Anz=6
+Abstand := ((_RY-(V_RM_H+V_RM_V)) / 5)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,5,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 5)*2)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,5,0,0,0,0)
+IF (Schr_Exc =1) & (Anz_Schrauben =3)
+Bohrung (V_RM_X,Abstand +V_Dist_DSchr,V_S_DM,V_S_Tiefe,S_Typ,0,0,5,0,0,0,0)
+END
+IF (Schr_Exc =2) & (Anz_Exc =3)
+Bohrung (V_RM_X,0,V_E_DM,V_E_Tiefe,E_Typ,0,0,4,0,0,0,0)
+END
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 5)*3)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,5,0,0,0,0)
+Abstand := (((_RY-(V_RM_H+V_RM_V)) / 5)*4)+V_RM_H
+Bohrung (V_RM_X,Abstand,V_D_DM,V_D_Tiefe,D_Typ,0,0,5,0,0,0,0)
+END
+END

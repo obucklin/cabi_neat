@@ -1,0 +1,14 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=DrehenBStart
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=
+VARS
+
+START
+DrehenEB (_DX,_DY,_DrW)
+

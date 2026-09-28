@@ -1,0 +1,16 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowRotPointXYDialog
+;AUTOSCRIPTSTART=0
+VARS
+   Px := ;*VAR**REF*
+   Py := ;*VAR**REF*
+   W := 45;*VAR*
+   Mx := 0;*VAR*
+   My := 100;*VAR*
+START
+Px := Px-Mx
+Py := Py-My
+CALL RotPoint00 (REF PX:=Px,PY:=Py VAL W:=W)
+Px := Px+Mx
+Py := Py+My

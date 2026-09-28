@@ -1,0 +1,16 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   KN := '';*VAR*Konturnamen
+   AnzahlP := 0;*VAR*
+   AnzahlOutlineP := 0;*VAR*
+   i := 0;
+START
+FOR i := 1 TO AnzahlP STEP 1
+deletecontour (KN+IntToStr(i-1),0)
+END
+FOR i := 1 TO AnzahlOutlineP STEP 1
+deletecontour (KN+'_Outline'+IntToStr(i-1),0)
+END

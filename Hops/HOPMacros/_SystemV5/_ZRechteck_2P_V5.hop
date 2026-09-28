@@ -1,0 +1,27 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_ZRechteck_2P_V5Dialog
+VARS
+   SX := 0;*VAR*Startpunkt in X
+   SY := 0;*VAR*Startpunkt in Y
+   EX := 100;*VAR*Endpunkt in X
+   EY := 50;*VAR*Endpunkt in Y
+   Fuellen := 0;*VAR*Füllung
+   Farbe := 0;*VAR*
+   Toleranz := 0.001;
+   esxy1 := 0;*VAR*
+   esxy2 := 0;*VAR*
+START
+;*******************************************************
+;*******  Zeichne Rechteck über 2 Punkte  *******
+;*******************************************************
+Rohteil (500,400,19,0,0)
+;*******************************************************
+;**************************************************
+transesxy (sx,sy,esxy1,0)
+transesxy (ex,ey,esxy2,0)
+IF Fuellen=0
+ZRechteck(SX,SY,EX-SX,EY-SY,0,Farbe)
+ELSE
+ZRechteck(SX,SY,EX-SX,EY-SY,1,Farbe)
+END

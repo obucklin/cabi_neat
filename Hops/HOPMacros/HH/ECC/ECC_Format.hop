@@ -1,0 +1,109 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=ECC_FORMAT.WMF
+;INFO=
+;WZGV=7535D_132
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=AUSSENKONTUR_HOLZ
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   P1 := '';*VAR*Aufruf der Kontur
+   K_RK := 2;Zeichenrichtung ermitteln // Uhrzeiger=2 // Gegen Uhrzeiger=3
+   K_L := 0;Index of longest element
+   K_E := 0;Count of elements
+   K_E1 := -99;Lenght of contour element 1
+   K_E2 := -99;Lenght of contour element 2
+   K_E3 := -99;Lenght of contour element 3
+   K_E4 := -99;Lenght of contour element 4
+   K_E5 := -99;Lenght of contour element 5
+   K_Area := 0;Area of the Contour
+   K_Closed := 0;Contour closed?
+   i := 0;
+   F_Tiefe := -0.15;Milling depth
+   F_Square := 0;Contiur with 2x2 identical lenghts
+   F_Round := 0;Contour with odd lenghts
+   toolID := -99;
+   toolD_Ghost := -99;
+START
+;HOLZHER GmbH
+;Copyright 2019
+;2019-01-14 - Extern CAD CAM Makros V1.0 DSO
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetStandardRouterID')
+/CALL Call_Extensions_GetDirContour (REF DIR:=K_RK VAL CONTOURNAME_CONTOURNAME:=P1)
+CALL KonturGeschlossen_V7 (REF CLOSED:=K_Closed VAL KN:=P1,TOL:=0.000001)
+IF K_Closed=0
+KG01 ('',0,0,0,'',1,2)
+END
+CALL GetKonturIndex_Laengstes_Element_V7 (REF STARTELEMENT:=K_L VAL KN:=P1)
+CALL Call_Extensions_AreaContour (REF AREA:=K_Area VAL CONTOURNAME_CONTOURNAME:=P1)
+/ChangeVar (K_Area)
+IF (_MaschinenTYP=3)|(_MaschinenTYP=4)
+CALL BN_TrennerInnenAussen ()
+CALL BN_NestKontur ()
+END
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetStandardRouterID')
+WZF (9998,_VE,_V,_VA,_SD,_ANF,'1')
+toolD_Ghost := _WZD
+WZF (toolID,_VE,_V,_VA,_SD,_ANF,'1')
+IF (_COMMONLINE = 0)|(_WZD<>toolD_Ghost)
+KSP ('???','???',F_Tiefe,2,-1,_ANF,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen (P1,K_L,K_L,0,0,0,0,-50,1,-50,1,0)
+EP (1,2,0)
+END
+IF (_COMMONLINE = 1)
+WZF (9998,_VE,_V,_VA,_SD,_ANF,'1')
+toolD_Ghost := _WZD
+KSP ('???','???',0,K_RK,0,_ANF,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen (P1,'KSP','KEP',0,0,0,0,50,1,55,1,0)
+EP (0,_ANF,0)
+WZF (toolID,_VE,_V,_VA,_SD,_ANF,'1')
+K_E := GetKE_Anzahl(P1)
+IF (K_E = 4)
+CALL Call_Extensions_LengthContour (REF CONTOURLENGTH:=K_E1 VAL CONTOURNAME_CONTOURNAME:=P1,INDEXSTART:=0,INDEXEND:=0)
+CALL Call_Extensions_LengthContour (REF CONTOURLENGTH:=K_E2 VAL CONTOURNAME_CONTOURNAME:=P1,INDEXSTART:=1,INDEXEND:=1)
+CALL Call_Extensions_LengthContour (REF CONTOURLENGTH:=K_E3 VAL CONTOURNAME_CONTOURNAME:=P1,INDEXSTART:=2,INDEXEND:=2)
+CALL Call_Extensions_LengthContour (REF CONTOURLENGTH:=K_E4 VAL CONTOURNAME_CONTOURNAME:=P1,INDEXSTART:=3,INDEXEND:=3)
+/Hinweismeldung (inttostr(K_E1)+' '+inttostr(K_E2)+' '+inttostr(K_E3)+' '+inttostr(K_E4))
+IF (K_E1 = K_E3) & (K_E2 = K_E4)
+F_Square := 1
+ELSE
+F_Round := 1
+END
+ELSE
+F_Round := 1
+END
+END
+IF F_Square = 1
+Contour_Parallel (P1,_WZR,1,0,1,P1+'_Common','','',0)
+Contours_not_draw (P1,'')
+FOR i := 0 TO K_E-1 STEP 1
+KSP ('???','???',F_Tiefe,0,0,_ANF,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen (P1+'_Common',i,i+1,0,0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+END
+END
+IF F_Round = 1
+Contour_Parallel (P1,_WZR,1,1,1,P1+'_Common','','',0)
+Contours_not_draw (P1,'')
+K_E := GetKE_Anzahl(P1+'_Common')
+FOR i := 0 TO K_E-1 STEP 1
+CALL Call_Extensions_LengthContour (REF CONTOURLENGTH:=K_E1 VAL CONTOURNAME_CONTOURNAME:=P1+'_Common',INDEXSTART:=i,INDEXEND:=i)
+Hinweismeldung (inttostr(K_e1))
+/IF K_E1 > (_WZD*1.5)
+KSP ('???','???',F_Tiefe,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen (P1+'_Common',i,i+1,0,0,0,0,0,0,0,0,0)
+EP (0,0,0)
+/END
+END
+END

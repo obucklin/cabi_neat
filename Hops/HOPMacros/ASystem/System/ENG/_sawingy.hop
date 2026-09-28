@@ -1,0 +1,94 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=Makro1
+;MASCHINE=SIMU
+;WZGV=DEMO
+;BILD=_saege_y.wmf
+VARS
+   Breite := 500;breite
+   Höhe := 300;Höhe
+   Stärke := 30;Stärke
+   SX := 0;*VAR*Startpunkt in X
+   SY := 0;*VAR*Startpunkt in Y
+   SZ := -3;*VAR*Tiefe in Z
+   EX := 0;Endpunkt in X
+   EY := _RY;*VAR*Endpunkt in Y
+   EZ := -_RZ-2;*VAR*Tiefe in Z
+   BL := 0;*VAR*Lage   0=mittig    1=links   2=rechts
+   Einpassen := 0;*VAR*Einpassen  0/1
+   EL := 0;*VAR*Einlauf in mm
+   AL := 0;*VAR*Auslauf in mm
+   Parallel := 0;*VAR*Schnitt parallel versetzen
+   K := 0;*VAR*Kenner
+   KW := 0;*VAR*Kippwinkel
+   BH := _RZ;*VAR*Bezugshöhe
+   Saege_Art := 1;Säge fix = 0     Sägeaggregat = 1
+   ritzversatz := 0.05;*VAR*Versatz beim Ritzen
+START
+;direkt cnc systeme NCHOPS Version 3.4
+;Sägen in Y / MD / 07.01
+;Einlauf / Auslauf getrennt / Parallele
+;-
+;-
+;-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+;-  ÄNDERUNGSSTAND !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+;-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+;-  MW 22.08.2001
+;-  Kenner = 3 eingefügt Vorritzen vom Endpunkt zum Startpunkt hin
+;-
+;-
+;-
+;-
+;--------------------------------------------------------
+;- ACHTUNG:
+;-
+;- Die Schnitte können nur editiert werden,
+;- wenn sie auskommentiert sind !!
+;- Weil Einpassen und Bearbeitungslage
+;- sonst nicht mehr variabel sind
+;-
+;- ACHTUNG:
+;--------------------------------------------------------
+;- Wenn eingepasst sägen, dann kein Einlauf/Auslauf
+IF Einpassen=1
+el := 0
+al := 0
+END
+;-
+;---- Versatz Ritzen nur wenn ritzen angewählt wurde
+;Neu MW 22.08.2001  Kenner=3
+IF (k<>2) & (k<>3)
+ritzversatz := 0
+SZ := EZ
+END
+;-
+;*********** ---------------------->
+IF EY>SY
+IF (k=0) | (k=1)
+Sawing (SX+Parallel,SY-EL,EZ,SX+Parallel,EY+AL,EZ,BL,einpassen,0,k,KW,BH)
+END
+IF k=2
+Sawing (SX+Parallel,SY-EL,SZ,SX+Parallel,EY+AL,SZ,BL,einpassen,0,0,KW,BH)
+Sawing (SX+Parallel+ritzversatz,SY-EL,EZ,SX+Parallel+ritzversatz,EY+AL,EZ,BL,einpassen,0,1,KW,BH)
+END
+IF k=3
+Sawing (SX+Parallel,SY-EL,SZ,SX+Parallel,EY+AL,SZ,BL,einpassen,0,1,KW,BH)
+Sawing (SX+Parallel+ritzversatz,SY-EL,EZ,SX+Parallel+ritzversatz,EY+AL,EZ,BL,einpassen,0,0,KW,BH)
+END
+ELSE
+IF (k=0) | (k=1)
+Sawing (SX-Parallel,SY+EL,EZ,SX-Parallel,EY-AL,EZ,BL,einpassen,0,k,KW,BH)
+END
+IF k=2
+Sawing (SX-Parallel,SY+EL,SZ,SX-Parallel,EY-AL,SZ,BL,einpassen,0,0,KW,BH)
+Sawing (SX-Parallel-ritzversatz,SY+EL,EZ,SX-Parallel-ritzversatz,EY-AL,EZ,BL,einpassen,0,1,KW,BH)
+END
+IF k=3
+Sawing (SX-Parallel,SY+EL,SZ,SX-Parallel,EY-AL,SZ,BL,einpassen,0,1,KW,BH)
+Sawing (SX-Parallel-ritzversatz,SY+EL,EZ,SX-Parallel-ritzversatz,EY-AL,EZ,BL,einpassen,0,0,KW,BH)
+END
+END
+

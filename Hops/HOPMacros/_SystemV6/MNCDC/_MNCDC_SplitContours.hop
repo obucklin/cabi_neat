@@ -1,0 +1,23 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowSPLITCONTOURSPARSEREXTCONTOURSDialog
+VARS
+   CONTOURNAME_CONTOURNAMES := '';*VAR*
+   ContourName := '';*VAR*
+   ContourInfo := '';*VAR*
+   ContourLayer := '';*VAR*
+   Tiefe := 0;*VAR*
+   ToolID := 0;*VAR*
+   InClampArea := 0;*VAR*
+   View_OffX := 0;*VAR*
+   View_OffY := 0;*VAR*
+   View_OffZ := 0;*VAR*
+   View_RotA := 0;*VAR*
+   View_TipA := 0;*VAR*
+   MaxArcTol := 0.1mm;*VAR*
+   NewContourNames := '';*VAR**REF*
+   NewContoursCount := 0;*VAR**REF*
+START
+;Konturen teilen über DLL
+CALLDLL SPLITCONTOURSPARSEREXTCONTOURS(MNCDC,DefaultStr,REF NEWCONTOURNAMES:=NewContourNames,NEWCONTOURSCOUNT:=NewContoursCount VAL CONTOURNAME_CONTOURNAMES:=CONTOURNAME_CONTOURNAMES,CONTOURNAME:=ContourName,CONTOURINFO:=ContourInfo,CONTOURLAYER:=ContourLayer,TIEFE:=Tiefe,TOOLID:=ToolID,INCLAMPAREA:=InClampArea,VIEW_OFFX:=View_OffX,VIEW_OFFY:=View_OffY,VIEW_OFFZ:=View_OffZ,VIEW_ROTA:=View_RotA,VIEW_TIPA:=View_TipA,MAXARCTOL:=MaxArcTol)

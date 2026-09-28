@@ -1,0 +1,12 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowAPPENDSTRTOFILEDialog
+VARS
+   sFileName := '';*VAR*
+   s := '';*VAR*
+   bClearFile := 0;*VAR*
+   Result := ;*VAR**REF*
+START
+;.
+CALLDLL APPENDSTRTOFILE(Extensions,DefaultStr,REF Result:=Result VAL SFILENAME:=sFileName,S:=s,bClearFile:=bClearFile)

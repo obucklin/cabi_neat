@@ -1,0 +1,434 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.6.8.49[Hops.exe]
+;BILD=HH_START_CONPOS.WMF
+;INFO=
+;WZGV=7225K_553
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=HH_START_CONPOS
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   SHOW_T1 := 1;*VAR*SHOW Traverse 1
+   SHOW_T1_P1 := 1;*VAR*SHOW PAD1 / Traverse 1
+   SHOW_T1_P2 := 1;*VAR*SHOW PAD2 / Traverse 1
+   SHOW_T1_P3 := 1;*VAR*SHOW PAD3 / Traverse 1
+   SHOW_T1_P4 := 1;*VAR*SHOW PAD4 / Traverse 1
+   X_TRAV_1 := 300;*VAR*X_POS Traverse 1
+   Y_PAD1_T1 := 1100;*VAR*Y_POS_PAD1_TRAVERSE_1
+   Y_PAD2_T1 := 800;*VAR*Y_POS_PAD2_TRAVERSE_1
+   Y_PAD3_T1 := 500;*VAR*Y_POS_PAD3_TRAVERSE_1
+   Y_PAD4_T1 := 200;*VAR*Y_POS_PAD4_TRAVERSE_1
+   SHOW_T2 := 1;*VAR*SHOW Traverse 2
+   SHOW_T2_P1 := 1;*VAR*SHOW PAD1 / Traverse 2
+   SHOW_T2_P2 := 1;*VAR*SHOW PAD2 / Traverse 2
+   SHOW_T2_P3 := 1;*VAR*SHOW PAD3 / Traverse 2
+   SHOW_T2_P4 := 1;*VAR*SHOW PAD4 / Traverse 2
+   X_TRAV_2 := 600;*VAR*X_POS Traverse 2
+   Y_PAD1_T2 := 1100;*VAR*Y_POS_PAD1_TRAVERSE_2
+   Y_PAD2_T2 := 800;*VAR*Y_POS_PAD2_TRAVERSE_2
+   Y_PAD3_T2 := 500;*VAR*Y_POS_PAD3_TRAVERSE_2
+   Y_PAD4_T2 := 200;*VAR*Y_POS_PAD4_TRAVERSE_2
+   SHOW_T3 := 1;*VAR*SHOW Traverse 3
+   SHOW_T3_P1 := 1;*VAR*SHOW PAD1 / Traverse 3
+   SHOW_T3_P2 := 1;*VAR*SHOW PAD2 / Traverse 3
+   SHOW_T3_P3 := 1;*VAR*SHOW PAD3 / Traverse 3
+   SHOW_T3_P4 := 1;*VAR*SHOW PAD4 / Traverse 3
+   X_TRAV_3 := 900;*VAR*X_POS Traverse 3
+   Y_PAD1_T3 := 1100;*VAR*Y_POS_PAD1_TRAVERSE_3
+   Y_PAD2_T3 := 800;*VAR*Y_POS_PAD2_TRAVERSE_3
+   Y_PAD3_T3 := 500;*VAR*Y_POS_PAD3_TRAVERSE_3
+   Y_PAD4_T3 := 200;*VAR*Y_POS_PAD4_TRAVERSE_3
+   SHOW_T4 := 1;*VAR*SHOW Traverse 4
+   SHOW_T4_P1 := 1;*VAR*SHOW PAD1 / Traverse 4
+   SHOW_T4_P2 := 1;*VAR*SHOW PAD2 / Traverse 4
+   SHOW_T4_P3 := 1;*VAR*SHOW PAD3 / Traverse 4
+   SHOW_T4_P4 := 1;*VAR*SHOW PAD4 / Traverse 4
+   X_TRAV_4 := 1200;*VAR*X_POS TRAVERSE 4
+   Y_PAD1_T4 := 1100;*VAR*Y_POS_PAD1_TRAVERSE_4
+   Y_PAD2_T4 := 800;*VAR*Y_POS_PAD2_TRAVERSE_4
+   Y_PAD3_T4 := 500;*VAR*Y_POS_PAD3_TRAVERSE_4
+   Y_PAD4_T4 := 200;*VAR*Y_POS_PAD4_TRAVERSE_4
+   SHOW_T5 := 1;*VAR*SHOW Traverse 5
+   SHOW_T5_P1 := 1;*VAR*SHOW PAD1 / Traverse 5
+   SHOW_T5_P2 := 1;*VAR*SHOW PAD2 / Traverse 5
+   SHOW_T5_P3 := 1;*VAR*SHOW PAD3 / Traverse 5
+   SHOW_T5_P4 := 1;*VAR*SHOW PAD4 / Traverse 5
+   X_TRAV_5 := 1500;*VAR*X_POS TRAVERSE 5
+   Y_PAD1_T5 := 1100;*VAR*Y_POS_PAD1_TRAVERSE_5
+   Y_PAD2_T5 := 800;*VAR*Y_POS_PAD2_TRAVERSE_5
+   Y_PAD3_T5 := 500;*VAR*Y_POS_PAD3_TRAVERSE_5
+   Y_PAD4_T5 := 200;*VAR*Y_POS_PAD4_TRAVERSE_5
+   SHOW_T6 := 1;*VAR*SHOW Traverse 6
+   SHOW_T6_P1 := 1;*VAR*SHOW PAD1 / Traverse 6
+   SHOW_T6_P2 := 1;*VAR*SHOW PAD2 / Traverse 6
+   SHOW_T6_P3 := 1;*VAR*SHOW PAD3 / Traverse 6
+   SHOW_T6_P4 := 1;*VAR*SHOW PAD4 / Traverse 6
+   X_TRAV_6 := 5300;*VAR*X_POS TRAVERSE 6
+   Y_PAD1_T6 := 1100;*VAR*Y_POS_PAD1_TRAVERSE_6
+   Y_PAD2_T6 := 800;*VAR*Y_POS_PAD2_TRAVERSE_6
+   Y_PAD3_T6 := 500;*VAR*Y_POS_PAD3_TRAVERSE_6
+   Y_PAD4_T6 := 200;*VAR*Y_POS_PAD4_TRAVERSE_6
+   SHOW_T7 := 1;*VAR*SHOW Traverse 7
+   SHOW_T7_P1 := 1;*VAR*SHOW PAD1 / Traverse 7
+   SHOW_T7_P2 := 1;*VAR*SHOW PAD2 / Traverse 7
+   SHOW_T7_P3 := 1;*VAR*SHOW PAD3 / Traverse 7
+   SHOW_T7_P4 := 1;*VAR*SHOW PAD4 / Traverse 7
+   X_TRAV_7 := 5600;*VAR*X_POS TRAVERSE 7
+   Y_PAD1_T7 := 1100;*VAR*Y_POS_PAD1_TRAVERSE_7
+   Y_PAD2_T7 := 800;*VAR*Y_POS_PAD2_TRAVERSE_7
+   Y_PAD3_T7 := 500;*VAR*Y_POS_PAD3_TRAVERSE_7
+   Y_PAD4_T7 := 200;*VAR*Y_POS_PAD4_TRAVERSE_7
+   SHOW_T8 := 1;*VAR*SHOW Traverse 8
+   SHOW_T8_P1 := 1;*VAR*SHOW PAD1 / Traverse 8
+   SHOW_T8_P2 := 1;*VAR*SHOW PAD2 / Traverse 8
+   SHOW_T8_P3 := 1;*VAR*SHOW PAD3 / Traverse 8
+   SHOW_T8_P4 := 1;*VAR*SHOW PAD4 / Traverse 8
+   X_TRAV_8 := 5900;*VAR*X_POS TRAVERSE 8
+   Y_PAD1_T8 := 1100;*VAR*Y_POS_PAD1_TRAVERSE_8
+   Y_PAD2_T8 := 800;*VAR*Y_POS_PAD2_TRAVERSE_8
+   Y_PAD3_T8 := 500;*VAR*Y_POS_PAD3_TRAVERSE_8
+   Y_PAD4_T8 := 200;*VAR*Y_POS_PAD4_TRAVERSE_8
+   SHOW_T9 := 1;*VAR*SHOW Traverse 9
+   SHOW_T9_P1 := 1;*VAR*SHOW PAD1 / Traverse 9
+   SHOW_T9_P2 := 1;*VAR*SHOW PAD2 / Traverse 9
+   SHOW_T9_P3 := 1;*VAR*SHOW PAD3 / Traverse 9
+   SHOW_T9_P4 := 1;*VAR*SHOW PAD4 / Traverse 9
+   X_TRAV_9 := 6200;*VAR*X_POS TRAVERSE 9
+   Y_PAD1_T9 := 1100;*VAR*Y_POS_PAD1_TRAVERSE_9
+   Y_PAD2_T9 := 800;*VAR*Y_POS_PAD2_TRAVERSE_9
+   Y_PAD3_T9 := 500;*VAR*Y_POS_PAD3_TRAVERSE_9
+   Y_PAD4_T9 := 200;*VAR*Y_POS_PAD4_TRAVERSE_9
+   SHOW_T10 := 1;*VAR*SHOW Traverse 10
+   SHOW_T10_P1 := 1;*VAR*SHOW PAD1 / Traverse 10
+   SHOW_T10_P2 := 1;*VAR*SHOW PAD2 / Traverse 10
+   SHOW_T10_P3 := 1;*VAR*SHOW PAD3 / Traverse 10
+   SHOW_T10_P4 := 1;*VAR*SHOW PAD4 / Traverse 10
+   X_TRAV_10 := 6500;*VAR*X_POS TRAVERSE 10
+   Y_PAD1_T10 := 1100;*VAR*Y_POS_PAD1_TRAVERSE_10
+   Y_PAD2_T10 := 800;*VAR*Y_POS_PAD2_TRAVERSE_10
+   Y_PAD3_T10 := 500;*VAR*Y_POS_PAD3_TRAVERSE_10
+   Y_PAD4_T10 := 200;*VAR*Y_POS_PAD4_TRAVERSE_10
+   Trav_POS_Y := 0;
+   SHOW_TRAV_ID := 1;*VAR*SHOW_TEXT
+   Count_PAD := 4;Anzahl Pad
+START
+;TRAVERSE_1
+IF SHOW_T1
+AddMachineComponent ('',0,3,0,2,0,0,1,X_TRAV_1+15,1,Trav_POS_Y,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('1',X_TRAV_1+15,-30,30,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+IF SHOW_T1_P1=1
+IF SHOW_TRAV_ID=1
+ZText ('T1_P1',X_TRAV_1,Y_PAD1_T1,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD1_T1,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+END
+IF SHOW_T1_P2=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD2_T1,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T1_P2',X_TRAV_1,Y_PAD2_T1,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T1_P3=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD3_T1,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T1_P3',X_TRAV_1,Y_PAD3_T1,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF (SHOW_T1_P4=1)&(Count_PAD=4)
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD4_T1,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T1_P4',X_TRAV_1,Y_PAD4_T1,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END
+;TRAVERSE_2
+IF SHOW_T2
+AddMachineComponent ('',1,3,0,2,0,0,1,X_TRAV_2+15,1,Trav_POS_Y,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('2',X_TRAV_2+15,-30,30,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+IF SHOW_T2_P1=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD1_T2,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T2_P1',X_TRAV_2,Y_PAD1_T2,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T2_P2=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD2_T2,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T2_P2',X_TRAV_2,Y_PAD2_T2,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T2_P3=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD3_T2,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T2_P3',X_TRAV_2,Y_PAD3_T2,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF (SHOW_T2_P4=1)&(Count_PAD=4)
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD4_T2,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T2_P4',X_TRAV_2,Y_PAD4_T2,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END
+;TRAVERSE_3
+IF SHOW_T3
+AddMachineComponent ('',2,3,0,2,0,0,1,X_TRAV_3+15,1,Trav_POS_Y,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('3',X_TRAV_3+15,-30,30,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+IF SHOW_T3_P1=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD1_T3,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T3_P1',X_TRAV_3,Y_PAD1_T3,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T3_P2=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD2_T3,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T3_P2',X_TRAV_3,Y_PAD2_T3,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T3_P3=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD3_T3,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T3_P3',X_TRAV_3,Y_PAD3_T3,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF (SHOW_T3_P4=1)&(Count_PAD=4)
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD4_T3,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T3_P4',X_TRAV_3,Y_PAD4_T3,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END
+;TRAVERSE_4
+IF SHOW_T4;BREAKPOINT
+AddMachineComponent ('',3,3,0,2,0,0,1,X_TRAV_4+15,1,Trav_POS_Y,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('4',X_TRAV_4+15,-30,30,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+IF SHOW_T4_P1=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD1_T4,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T4_P1',X_TRAV_4,Y_PAD1_T4,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T4_P2=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD2_T4,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T4_P2',X_TRAV_4,Y_PAD2_T4,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T4_P3=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD3_T4,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T4_P3',X_TRAV_4,Y_PAD3_T4,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF (SHOW_T4_P4=1)&(Count_PAD>=4)
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD4_T4,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T4_P4',X_TRAV_4,Y_PAD4_T4,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END
+;TRAVERSE_5
+IF SHOW_T5
+AddMachineComponent ('',8,3,0,2,0,0,1,X_TRAV_5+15,1,Trav_POS_Y,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('5',X_TRAV_5+15,-30,30,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+IF SHOW_T5_P1=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD1_T5,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T5_P1',X_TRAV_5,Y_PAD1_T5,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T5_P2=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD2_T5,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T5_P2',X_TRAV_5,Y_PAD2_T5,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T5_P3=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD3_T5,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T5_P3',X_TRAV_5,Y_PAD3_T5,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF (SHOW_T5_P4=1)&(Count_PAD=4)
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,-15,1,Y_PAD4_T5,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T5_P4',X_TRAV_5,Y_PAD4_T5,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END
+;TRAVERSE_6
+IF SHOW_T6
+AddMachineComponent ('',9,3,0,2,0,0,1,X_TRAV_6-15,1,Trav_POS_Y,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('6',X_TRAV_6-15,-30,30,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+IF SHOW_T6_P1=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD1_T6,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T6_P1',X_TRAV_6,Y_PAD1_T6,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T6_P2=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD2_T6,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T6_P2',X_TRAV_6,Y_PAD2_T6,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T6_P3=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD3_T6,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T6_P3',X_TRAV_6,Y_PAD3_T6,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF (SHOW_T6_P4=1)&(Count_PAD=4)
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD4_T6,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T6_P4',X_TRAV_6,Y_PAD4_T6,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END
+;TRAVERSE_7
+IF SHOW_T7
+AddMachineComponent ('',9,3,0,2,0,0,1,X_TRAV_7-15,1,Trav_POS_Y,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('7',X_TRAV_7-15,-30,30,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+IF SHOW_T7_P1=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD1_T7,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T7_P1',X_TRAV_7,Y_PAD1_T7,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T7_P2=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD2_T7,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T7_P2',X_TRAV_7,Y_PAD2_T7,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T7_P3=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD3_T7,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T7_P3',X_TRAV_7,Y_PAD3_T7,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF (SHOW_T7_P4=1)&(Count_PAD=4)
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD4_T7,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T7_P4',X_TRAV_7,Y_PAD4_T7,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END
+;TRAVERSE_8
+IF SHOW_T8
+AddMachineComponent ('',9,3,0,2,0,0,1,X_TRAV_8-15,1,Trav_POS_Y,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('8',X_TRAV_8-15,-30,30,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+IF SHOW_T8_P1=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD1_T8,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T8_P1',X_TRAV_8,Y_PAD1_T8,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T8_P2=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD2_T8,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T8_P2',X_TRAV_8,Y_PAD2_T8,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T8_P3=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD3_T8,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T8_P3',X_TRAV_8,Y_PAD3_T8,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF (SHOW_T8_P4=1)&(Count_PAD=4)
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD4_T8,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T8_P4',X_TRAV_8,Y_PAD4_T8,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END
+;TRAVERSE_9
+IF SHOW_T9
+AddMachineComponent ('',6,3,0,2,0,0,1,X_TRAV_9-15,1,Trav_POS_Y,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('9',X_TRAV_9-15,-30,30,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+IF SHOW_T9_P1=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD1_T9,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T9_P1',X_TRAV_9,Y_PAD1_T9,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T9_P2=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD2_T9,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T9_P2',X_TRAV_9,Y_PAD2_T9,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T9_P3=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD3_T9,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T9_P3',X_TRAV_9,Y_PAD3_T9,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF (SHOW_T9_P4=1)&(Count_PAD=4)
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD4_T9,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T9_P4',X_TRAV_9,Y_PAD4_T9,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END
+;TRAVERSE_10
+IF SHOW_T10
+AddMachineComponent ('',6,3,0,2,0,0,1,X_TRAV_10-15,1,Trav_POS_Y,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('10',X_TRAV_10-15,-30,30,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+IF SHOW_T10_P1=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD1_T10,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T10_P1',X_TRAV_10,Y_PAD1_T10,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T10_P2=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD2_T10,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T10_P2',X_TRAV_10,Y_PAD2_T10,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF SHOW_T10_P3=1
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD3_T10,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T10_P3',X_TRAV_10,Y_PAD3_T10,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF (SHOW_T10_P4=1)&(Count_PAD=4)
+AddMachineComponent ('VT_slide1',-1,0,1,0,0,0,0,15,1,Y_PAD4_T10,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+IF SHOW_TRAV_ID=1
+ZText ('T10_P4',X_TRAV_10,Y_PAD4_T10,30,0,2,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END

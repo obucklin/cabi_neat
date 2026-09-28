@@ -1,0 +1,71 @@
+;MAKROTYP=1
+;BILD=Reihenbohrung.WMF
+;INFO=NC1000
+;WZGV=NC1000
+;MASCHINE=NC1000
+;NCNAME=_ZKBCWR
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   SX := 0;*VAR*Startpunkt in X
+   SY := 0;*VAR*Startpunkt in Y
+   EX := 100;*VAR*Endpunkt in X
+   EY := 0;*VAR*Endpunkt in Y
+   R := 50;*VAR*Radius
+   Farbe := 0;*VAR*
+   MX := 0;Mitte in X errechnet
+   MY := 0;Mitte in Y errechnet
+   FehlerText := '';
+   Toleranz := 0.001;
+START
+;**************************************************
+;*******  Zeichne Kreis mit R-Eingabe  *******
+;**************************************************
+Rohteil (2000,2000,19,0,0)
+;**************************************************
+;///////  Abstand zwischen End- und Startpunkt berechnen
+CALL _LZWIPU ( VAL X1:=SX,Y1:=SY,X2:=EX,Y2:=EY)
+;**************************************************
+;///////  Abstand zwischen End- und Startpunkt
+;///////  über eingegebenen Radius ist nicht konstruierbar
+IF abs(_LZWIPU)<Toleranz
+FehlerText := 'Start und Endpunkt sind gleich  --  Vollkreis_nicht möglich !!'
+Fehlermeldung (Fehlertext)
+END
+;**************************************************
+;///////  Abstand zwischen End- und Startpunkt zu gross
+IF _LZWIPU > (2*abs(R))
+FehlerText := 'Nicht konstruierbar  --  Radius zu klein !!'
+Fehlermeldung (Fehlertext)
+END
+;**************************************************
+HGNeu()
+;**************************************************
+;///////  Abstand zwischen End- und Startpunkt exakt 2 mal Radius
+IF abs(_LZWIPU-(2*abs(R)))<Toleranz
+HKreismpr (SX,SY,abs(R))
+HKreismpr (EX,EY,abs(R))
+MX := _SPX1
+MY := _SPY1
+END
+;**************************************************
+;///////  Abstand zwischen End- und Startpunkt exakt 2 mal Radius
+IF _LZWIPU < (2*abs(R))
+HKreismpr (SX,SY,abs(R))
+HKreismpr (EX,EY,abs(R))
+IF R>0
+MX := _SPX1
+MY := _SPY1
+ELSE
+MX := _SPX2
+MY := _SPY2
+END
+END
+;**************************************************
+HGNeuEnd()
+;**************************************************
+ZKBCW(MX,MY,SX,SY,EX,EY,Farbe)

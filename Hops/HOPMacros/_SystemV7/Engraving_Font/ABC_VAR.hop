@@ -1,0 +1,229 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_Gravurtext_Dialog
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.3
+VARS
+   BTEXT := 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-/';*VAR*Text Arial 8mm hoch
+   posx := 0;*VAR*Einfügeposition Text in X
+   posy := 0;*VAR*Einfügeposition Text in Y
+   Z := -1;*VAR*Depth
+   Faktor := 1;*VAR*1= ca. 10mm hoch
+   babst := 11;Buchstabenabstand
+   Bi := 'a';
+   tsi := 0;Textschleife Anzahl Buchstaben
+   relx := 0;relative x position
+   esXY := 0;*VAR*
+START
+Fertigteil (380,10,5,0,0,0,0,0,'',0,0,0)
+;------------------------------------------------------------
+/Ebene0()
+transesxy (posx,posy,esxy,0)
+;------------------------------------------------------------
+relx := posx
+SetUrsprung (posx,posy)
+;-
+FOR tsi := 1 TO StrLength(BText) STEP 1
+;-
+;- Nächster Buchstabe...
+Bi := StrCopy(BTEXT,tsi,1)
+;-
+IF StrCompare('A',Bi)=0
+CALL A ( VAL FAKTOR:=Faktor,Z:=Z)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('B',Bi)=0
+CALL B ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-2)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('C',Bi)=0
+CALL C ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('D',Bi)=0
+CALL D ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('E',Bi)=0
+CALL E ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('F',Bi)=0
+CALL F ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-2)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('G',Bi)=0
+CALL G ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('H',Bi)=0
+CALL h ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('I',Bi)=0
+CALL i ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-7)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('J',Bi)=0
+CALL j ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-2)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('K',Bi)=0
+CALL k ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('L',Bi)=0
+CALL l ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-1)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('M',Bi)=0
+CALL m ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('N',Bi)=0
+CALL n ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-1)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('O',Bi)=0
+CALL o ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('P',Bi)=0
+CALL p ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-1)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('Q',Bi)=0
+CALL q ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('R',Bi)=0
+CALL r ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('S',Bi)=0
+CALL s ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('T',Bi)=0
+CALL t ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('U',Bi)=0
+CALL u ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('V',Bi)=0
+CALL v ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('W',Bi)=0
+CALL w ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst+4)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('X',Bi)=0
+CALL x ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('Y',Bi)=0
+CALL y ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('Z',Bi)=0
+CALL z ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+babst*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('0',Bi)=0
+CALL Z0 ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-2)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('1',Bi)=0
+CALL Z1 ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-3)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('2',Bi)=0
+CALL Z2 ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-2)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('3',Bi)=0
+CALL z3 ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-2)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('4',Bi)=0
+CALL z4 ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-2)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('5',Bi)=0
+CALL z5 ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-2)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('6',Bi)=0
+CALL z6 ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-2)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('7',Bi)=0
+CALL z7 ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-2)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('8',Bi)=0
+CALL z8 ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-2)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('9',Bi)=0
+CALL z9 ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-2)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('-',Bi)=0
+CALL Minus ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-4)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('/',Bi)=0
+CALL Slash ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-2)*Faktor
+SetUrsprung (relx,posy)
+END
+IF StrCompare('_',Bi)=0
+CALL Underscore ( VAL Z:=Z,FAKTOR:=Faktor)
+relx := relx+(babst-4)*Faktor
+SetUrsprung (relx,posy)
+END
+END
+;-
+;-
+SetUrsprung (0,0)

@@ -1,0 +1,89 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=Makro1
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=_hg_para.bmp
+VARS
+   Breite := 500;breite
+   Stärke := 30;Stärke
+   Höhe := 300;Höhe
+   para := 0;*VAR*Parallele
+   x1 := ;*VAR*1. Schnittpunkt in X
+   y1 := ;*VAR*1. Schnittpunkt in Y
+   x2 := ;*VAR*2. Schnittpunkt in X
+   y2 := ;*VAR*2. Schnittpunkt in Y
+   x11 := 0;
+   y11 := 0;
+   x12 := 0;
+   y12 := 0;
+   LY := 0;Abstand in Y
+   LX := 0;Abstand in X
+   winkel := 0;Winkel der Eingangspunkte
+   X_Versatz := 0;
+   Y_Versatz := 0;
+   fertig := 0;Wenn bereits senkrecht oder waagerecht
+START
+;direkt cnc systeme NCHOPS Version3
+;Hilfsgeometrie mit Parallelversatz
+;---- Wenn Punkte horizontal
+IF y1=y2
+IF x1<x2
+y11 := y1-para
+ELSE
+y11 := y1+para
+END
+ALINEY(Y11)
+fertig := 1
+END
+;---- Wenn Punkte senkrecht
+IF x1=x2
+IF y1<y2
+x11 := x1+para
+ELSE
+x11 := x1-para
+END
+ALINEX(X11)
+fertig := 1
+END
+IF fertig=0
+;---- Abstände und Winkel berechnen
+LX := x2-x1
+LY := y2-y1
+winkel := arctan(LY/LX)
+X_Versatz := sin(winkel)*para
+Y_Versatz := cos(winkel)*para
+;--------------------------------------------
+;------------- Fallunterscheidungen
+IF x1<x2
+IF y1<y2
+x11 := x1+X_Versatz
+y11 := y1-Y_Versatz
+x12 := x2+X_Versatz
+y12 := y2-Y_Versatz
+ELSE
+x11 := x1+X_Versatz
+y11 := y1-Y_Versatz
+x12 := x2+X_Versatz
+y12 := y2-Y_Versatz
+END
+END
+IF x1>x2
+IF y1<y2
+x11 := x1-X_Versatz
+y11 := y1+y_Versatz
+x12 := x2-x_Versatz
+y12 := y2+y_Versatz
+ELSE
+x11 := x1-X_Versatz
+y11 := y1+Y_Versatz
+x12 := x2-X_Versatz
+y12 := y2+Y_Versatz
+END
+END
+ALINE2P(X11,Y11,X12,Y12)
+END
+

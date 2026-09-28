@@ -1,0 +1,133 @@
+;MAKROTYP=1
+;BILD=WinkelTasche.wmf
+;INFO=
+;WZGV=7123K_021
+;MASCHINE=HOLZHER
+;NCNAME=WinkelTasche
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_5.Dll
+;DIALOGPROC=ShowW_TascheDialog
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 250;Dimension X
+   DY := 100;Dimension Y
+   DZ := 100;Dimension Z
+   Pos_X :=100;*VAR*Zentrum in X
+   Pos_Y :=0.00;*VAR*Zentrum in Y
+   Pos_Z :=DZ/2;*VAR*Zentrum in Z
+   Tiefe :=-60;*VAR*Tiefe der Tasche
+   Radius :=40.00;*VAR*Radius der Tasche
+   Drehung :=-30;*VAR*Drehwinkel
+   Neigung :=0.00;*VAR*Neigungswinkel der Tasche
+   Zustellung :=5.00;*VAR*Z-Zustellung
+   Art :=2;*VAR*Seite der Bearbeitung
+   Austauchen :=-1;*VAR*Tasche alt oder Neu
+   Lang :=100.00;*VAR*Länge der Tasche
+   Breit :=50.00;*VAR*Breite  der Tasche
+   E_Rad :=00.00;*VAR*Eckenradius der Tasche
+   Ta_Typ :=0;*VAR*Kreis oder Rechtecktasche
+   C := 0;
+   B := 0;
+   C1 := 0;
+   B1 := 0;
+   Merker := 0;Zielkoordinate in X
+START
+;*******************************************
+;********* (c) B. Achermann ********************
+;*********Holz-Her Schweiz AG ******************
+IF Ta_Typ = 0
+;Kreistasche
+IF Art=0
+EbeneF (Pos_X,Pos_Y,Pos_Z,Neigung,270 +(Drehung),0,0)
+IF Austauchen = 0
+CALL KT_B ( VAL SPX:=0,SPY:=0,TIEFE:=-Tiefe,TRA:=Radius,ZUSTELLUNG:=Zustellung,FAKT_ANF:=_ANF,DREHRICHT:=0,LASER:=0,Z_INT:=-1,ANF_TYP:=2,SNAPXY:=0,SNAPZ:=1)
+ELSE
+CALL _Kreistasche_V5 ( VAL X_MITTE:=0,Y_MITTE:=0,RADIUS:=Radius,TIEFE:=-Tiefe,ZUSTELLUNG:=Zustellung,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=0,ESMD:=0,LASER:=0)
+END
+Ebene0()
+END
+IF Art=1
+EbeneF (Pos_X,Pos_Y,Pos_Z,90 + Neigung,Drehung,0,0)
+Merker := (Sin(Drehung) * Tiefe) + Pos_X
+WriteVar (Merker)
+IF Austauchen = 0
+CALL KT_B ( VAL SPX:=0,SPY:=0,TIEFE:=-Tiefe,TRA:=Radius,ZUSTELLUNG:=Zustellung,FAKT_ANF:=_ANF,DREHRICHT:=0,LASER:=0,Z_INT:=-1,ANF_TYP:=2,SNAPXY:=0,SNAPZ:=1)
+ELSE
+CALL _Kreistasche_V5 ( VAL X_MITTE:=0,Y_MITTE:=0,RADIUS:=Radius,TIEFE:=-Tiefe,ZUSTELLUNG:=Zustellung,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=0,ESMD:=0,LASER:=0)
+END
+Ebene0()
+END
+IF Art=2
+C := _RY / (cos(Drehung))
+B := ((C * Sin(Drehung))* -1)
+C1 := _RZ/ (cos(Neigung))
+B1 := ((C * Sin(Neigung))* -1)
+EbeneF (Pos_X,Pos_Y,Pos_Z,90 +Neigung,Drehung,0,0)
+IF Austauchen = 0
+CALL KT_B ( VAL SPX:=0,SPY:=0,TIEFE:=-Tiefe,TRA:=Radius,ZUSTELLUNG:=Zustellung,FAKT_ANF:=_ANF,DREHRICHT:=0,LASER:=0,Z_INT:=-1,ANF_TYP:=2,SNAPXY:=0,SNAPZ:=1)
+ELSE
+CALL _Kreistasche_V5 ( VAL X_MITTE:=0,Y_MITTE:=0,RADIUS:=Radius,TIEFE:=-Tiefe,ZUSTELLUNG:=Zustellung,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=0,ESMD:=0,LASER:=0)
+END
+Ebene0()
+EbeneF (Pos_X  +  B,Pos_Y,Pos_Z -  B1,90 - Neigung,180  +  Drehung,7,0)
+IF Austauchen = 0
+CALL KT_B ( VAL SPX:=0,SPY:=0,TIEFE:=-Tiefe,TRA:=Radius,ZUSTELLUNG:=Zustellung,FAKT_ANF:=_ANF,DREHRICHT:=0,LASER:=0,Z_INT:=-1,ANF_TYP:=2,SNAPXY:=0,SNAPZ:=1)
+ELSE
+CALL _Kreistasche_V5 ( VAL X_MITTE:=0,Y_MITTE:=0,RADIUS:=Radius,TIEFE:=-Tiefe,ZUSTELLUNG:=Zustellung,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=0,ESMD:=0,LASER:=0)
+END
+Ebene0()
+END
+IF Art=3
+C := _RY  / (cos(Drehung))
+B := ((C * Sin(Drehung))* -1)
+C1 := _RZ/ (cos(Neigung))
+B1 := ((C * Sin(Neigung))* -1)
+EbeneF (Pos_X,_RY + Pos_Y,Pos_Z -  B1,90 - Neigung,Drehung+180,0,0)
+IF Austauchen = 0
+CALL KT_B ( VAL SPX:=0,SPY:=0,TIEFE:=-Tiefe,TRA:=Radius,ZUSTELLUNG:=Zustellung,FAKT_ANF:=_ANF,DREHRICHT:=0,LASER:=0,Z_INT:=-1,ANF_TYP:=2,SNAPXY:=0,SNAPZ:=1)
+ELSE
+CALL _Kreistasche_V5 ( VAL X_MITTE:=0,Y_MITTE:=0,RADIUS:=Radius,TIEFE:=-Tiefe,ZUSTELLUNG:=Zustellung,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=0,ESMD:=0,LASER:=0)
+END
+Ebene0()
+END
+ELSE
+;Rechtecktasche
+IF Art=0
+EbeneF (Pos_X,Pos_Y,Pos_Z,Neigung,270 +(Drehung),0,0)
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=0,Y_MITTE:=0,TASCHENLAENGE:=Lang,TASCHENBREITE:=Breit,RADIUS:=E_Rad,WINKEL:=0,TIEFE:=Tiefe,ZUSTELLUNG:=Zustellung,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=0,ESMD:=0,LASER:=0)
+Ebene0()
+END
+IF Art=1
+EbeneF (Pos_X,Pos_Y,Pos_Z,90 + Neigung,Drehung,0,0)
+Merker := (Sin(Drehung) * Tiefe) + Pos_X
+WriteVar (Merker)
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=0,Y_MITTE:=0,TASCHENLAENGE:=Lang,TASCHENBREITE:=Breit,RADIUS:=E_Rad,WINKEL:=0,TIEFE:=Tiefe,ZUSTELLUNG:=Zustellung,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=0,ESMD:=0,LASER:=0)
+Ebene0()
+END
+IF Art=2
+C := _RY / (cos(Drehung))
+B := ((C * Sin(Drehung))* -1)
+C1 := _RZ/ (cos(Neigung))
+B1 := ((C * Sin(Neigung))* -1)
+EbeneF (Pos_X,Pos_Y,Pos_Z,90 +Neigung,Drehung,0,0)
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=0,Y_MITTE:=0,TASCHENLAENGE:=Lang,TASCHENBREITE:=Breit,RADIUS:=E_Rad,WINKEL:=0,TIEFE:=Tiefe,ZUSTELLUNG:=Zustellung,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=0,ESMD:=0,LASER:=0)
+Ebene0()
+EbeneF (Pos_X  +  B,Pos_Y,Pos_Z -  B1,90 - Neigung,180  +  Drehung,7,0)
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=0,Y_MITTE:=0,TASCHENLAENGE:=Lang,TASCHENBREITE:=Breit,RADIUS:=E_Rad,WINKEL:=0,TIEFE:=Tiefe,ZUSTELLUNG:=Zustellung,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=0,ESMD:=0,LASER:=0)
+Ebene0()
+END
+IF Art=3
+C := _RY  / (cos(Drehung))
+B := ((C * Sin(Drehung))* -1)
+C1 := _RZ/ (cos(Neigung))
+B1 := ((C * Sin(Neigung))* -1)
+EbeneF (Pos_X,Pos_Y,Pos_Z -  B1,90 - Neigung,180  +  Drehung,7,0)
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=0,Y_MITTE:=0,TASCHENLAENGE:=Lang,TASCHENBREITE:=Breit,RADIUS:=E_Rad,WINKEL:=0,TIEFE:=Tiefe,ZUSTELLUNG:=Zustellung,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=0,ESMD:=0,LASER:=0)
+Ebene0()
+END
+END

@@ -1,0 +1,36 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.8.0.2[Hops.exe]
+;BILD=GRAVURLINIE.WMF
+;INFO=
+;WZGV=7535D_222
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=SS_Gravurlinie
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   P1 := '';*VAR*Konturname
+   P2 := '';*VAR*Layername
+   Fraeser := 106;GravurFräser
+   tiefe := -2;Frästiefe von Oberkante
+START
+;Mustermakro V1_2022
+CALL GROUPSTART_V7 ( VAL NAME:='Gravur1')
+;
+;Werkzeugaufruf
+WZF (Fraeser,_VE,_V,_VA,_SD,_ANF,'1')
+;
+KSP ('???','???',tiefe,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen (P1,'KSP','KEP',0,0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+;
+CALL GROUPEND_V7 ( VAL NAME:='Gravur1')

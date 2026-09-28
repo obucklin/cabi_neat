@@ -1,0 +1,67 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.7.12.80[Hops.exe]
+;BILD=GEWINDE_V7_DORN_OBEN.WMF
+;INFO=Gewinde_V7
+;WZGV=7125K_329
+;WZGVCONFIG=
+;MASCHINE=HH7
+;NCNAME=Gewinde_V7_Dorn_oben
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_Gewinde_Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   Art := 0;*VAR*0=Innen 1=Aussen
+   S := 1.25;*VAR*Steigung
+   M := 8;*VAR*M (Durchmesser)
+   X := 50;*VAR*
+   Y := 50;*VAR*
+   depth := -10;*VAR*
+   esxy := 1;*VAR*
+   sic := 2;
+START
+Fertigteil (500,500,20,0,0,0,0,0,'',0,0,0)
+transesxy (X,Y,esxy,0)
+depth := _RZ-abs(depth)
+IF _WZD=0
+Fehlermeldung (GetMessageText('17','Kein Werkzeug gewählt'))
+END
+IF M < _WZD
+Fehlermeldung (GetMessageText('14','Kreisradius zu klein für dieses Werkzeug'))
+END
+IF Art=0
+;Innengewinde
+M := (M-_WZD)/2
+KB ('K','',X,Y,sic,'',0,0)
+KG01 ('',X-M,Y,0,'',0,2)
+WHILE _Z>-_RZ+depth;
+KG02M ('',X+M,Y,-(S/2),X,Y,'',0,2,0)
+KG02M ('',X-M,Y,-(S/2),X,Y,'',0,2,0)
+END
+KG01 ('',X,Y,0,'',0,2)
+KSP ('???','???',0,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K','KSP','KEP',0,0,0,1,0,0,0,0)
+EP (0,_ANF,0)
+END
+IF Art=1
+;Aussengewinde
+M := (M+_WZD)/2
+KB ('K','',X-M-1.5*_WZR,Y,SIC,'',0,0)
+KG01 ('',X-M,Y,0,'',0,2)
+WHILE _Z>-_RZ+depth
+KG02M ('',X+M,Y,-(S/2),X,Y,'',0,2,0)
+KG02M ('',X-M,Y,-(S/2),X,Y,'',0,2,0)
+END
+KG01 ('',X-M-1.5*_WZR,Y,0,'',0,2)
+KSP ('???','???',0,0,0,_ANF,0,0,0,esxy,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K','KSP','KEP',0,0,0,1,0,0,0,0)
+EP (0,_ANF,0)
+END
+deletecontour ('K',0)

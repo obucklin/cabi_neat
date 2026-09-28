@@ -1,0 +1,18 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowVektorProdukt_V7Dialog
+VARS
+   V1X := 1;*VAR*
+   V1Y := 0;*VAR*
+   V1Z := 0;*VAR*
+   V2X := 0;*VAR*
+   V2Y := 1;*VAR*
+   V2Z := 0;*VAR*
+   Nx := ;*VAR**REF*
+   Ny := ;*VAR**REF*
+   Nz := ;*VAR**REF*
+START
+Nx := v1y*v2z-v2y*v1z
+Ny := v1z*v2x-v2z*v1x
+Nz := v1x*v2y-v2x*v1y
+CALL VektorNormieren_V7 (REF NX:=Nx,NY:=Ny,NZ:=Nz)

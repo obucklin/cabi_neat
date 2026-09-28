@@ -1,0 +1,29 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_saege_lae_wi_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   SX := ;*VAR*Startpunkt in X
+   SY := ;*VAR*Startpunkt in Y
+   SZ := -3;*VAR*Tiefe in Z
+   Laenge := ;*VAR*Schnittlaenge
+   SchnittWinkel := 0;*VAR*Schnittwinkel
+   EZ := -2;*VAR*Tiefe in Z
+   BL := 2;*VAR*Lage   0=mittig    1=links   2=rechts
+   Einpassen := 0;*VAR*Einpassen  0/1
+   EL := 0;*VAR*Einlauf in mm
+   AL := 0;*VAR*Auslauf in mm
+   Parallel := 0;*VAR*Schnitt parallel versetzen
+   K := 0;*VAR*Kenner
+   KW := 0;*VAR*Kippwinkel
+   BH := 0;*VAR*Bezugshoehe
+   ritzversatz := 0.05;*VAR*Versatz beim Ritzen
+   esz := 0;*VAR*
+   esxy1 := 1;*VAR*
+   EX := 0;Endpunkt in X
+   EY := 0;Endpunkt in Y
+START
+transesxy (sx,sy,esxy1,1)
+ex := sx+(cos(schnittwinkel)*Laenge)
+ey := sy+(sin(schnittwinkel)*Laenge)
+CALL _saege_frei_V7 ( VAL SX:=SX,SY:=SY,SZ:=SZ,EX:=EX,EY:=EY,EZ:=EZ,BL:=BL,EINPASSEN:=Einpassen,EL:=EL,AL:=AL,PARALLEL:=Parallel,K:=K,KW:=KW,BH:=BH,RITZVERSATZ:=ritzversatz,ESZ:=esz,ESXY1:=0,ESXY2:=0)

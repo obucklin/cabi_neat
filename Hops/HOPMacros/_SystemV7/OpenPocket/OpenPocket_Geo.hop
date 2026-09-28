@@ -1,0 +1,164 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.5.4.618[Hops.exe]
+;BILD=OPENPOCKET_GEO.WMF
+;INFO=18138609
+;WZGV=THEUNS_HUELLHORST
+;WZGVCONFIG=
+;MASCHINE=THEUNS_HUELLHORST
+;NCNAME=OpenPocket_Geo
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 800;Dimension X
+   DY := 600;Dimension Y
+   DZ := 38;Dimension Z
+   K := 'Pocket1';*VAR*Konturname
+   AX := 0;*VAR*More in X
+   AY := 0;*VAR*More in Y
+   Ecke := 0;*VAR*0=LU / 1=U / 2=RU.......
+   Dim_X := 200;*VAR*Länge in X
+   Dim_Y := 300;*VAR*Länge in Y
+   Rad := 50;*VAR*Radius
+   Dist := 0;*VAR*Distance to contour
+   PosX := 400;*VAR*Positiion in X
+   PosY := 200;*VAR*Positiion in Y
+   Angle_Switch := 0;*VAR*0=0 / 1=90
+START
+;--------------------------------------------------------------------------------------------
+;- direkt cnc systeme NC-HOPS (Version 7.5.5.x)
+;--------------------------------------------------------------------------------------------
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0,0)
+;--------------------------------------------------------------------------------------------
+;- Rectangel pocket open
+;- 0 = LU
+;- 1 = U
+;- 2 = RU
+;- 3 = R
+;- 4 = RO
+;- 5 = O
+;- 6 = LO
+;- 7 = L
+;--------------------------------------------------------------------------------------------
+IF Rad>0
+IF Rad - Dist < 0
+Rad := 0
+END
+END
+;--------------------------------------------------------------------------------------------
+;- Geometry
+IF Ecke=0
+;- Edge LU
+KB (K,'',AX,AY,0,'',1,0)
+KG01 ('',Dim_X-Dist,_Y,0,'',1,2)
+KG01 ('',Dim_X-Dist,Dim_Y-Dist,0,'',1,2)
+IF Rad>0
+KVerrundung ('',0,Rad-Dist,'',2)
+END
+KG01 ('',AX,Dim_Y-Dist,0,'',1,2)
+KG01ZuKB()
+END
+;-
+IF Ecke=1
+;- U
+KB (K,'',PosX + Dim_X/2 - Dist,AY,0,'',1,0)
+KG01 ('',_X,Dim_Y-Dist,0,'',1,2)
+IF Rad>0
+KVerrundung ('',0,Rad-Dist,'',2)
+END
+KG01 ('',PosX - Dim_X/2+Dist,Dim_Y-Dist,0,'',1,2)
+IF Rad>0
+KVerrundung ('',0,Rad-Dist,'',2)
+END
+KG01 ('',PosX - Dim_X/2+Dist,AY,0,'',1,2)
+KG01ZuKB()
+END
+;-
+IF Ecke=2
+;- Edge RU
+KB (K,'',AX,AY,0,'',3,0)
+KG01 ('',AX,Dim_Y-Dist,0,'',3,2)
+KG01 ('',Dim_X-Dist,Dim_Y-Dist,0,'',3,2)
+IF Rad>0
+KVerrundung ('',0,Rad-Dist,'',2)
+END
+KG01 ('',Dim_X-Dist,AY,0,'',3,2)
+KG01ZuKB()
+END
+;-
+IF Ecke=3
+;- R
+KB (K,'',AX,PosY + Dim_Y/2 - Dist,0,'',3,0)
+KG01 ('',Dim_X - Dist,_Y,0,'',3,2)
+IF Rad>0
+KVerrundung ('',0,Rad-Dist,'',2)
+END
+KG01 ('',Dim_X - Dist,PosY - Dim_Y/2 + Dist,0,'',3,2)
+IF Rad>0
+KVerrundung ('',0,Rad-Dist,'',2)
+END
+KG01 ('',AX,PosY - Dim_Y/2 + Dist,0,'',3,2)
+KG01ZuKB()
+END
+;-
+IF Ecke=4
+;- Edge RO
+KB (K,'',AX,AY,0,'',5,0)
+KG01 ('',Dim_X - Dist,AY,0,'',5,2)
+KG01 ('',Dim_X - Dist,Dim_Y - Dist,0,'',5,2)
+IF Rad>0
+KVerrundung ('',0,Rad-Dist,'',2)
+END
+KG01 ('',AX,Dim_Y-Dist,0,'',5,2)
+KG01ZuKB()
+END
+;-
+IF Ecke=5
+;- O
+KB (K,'',PosX - Dim_X/2 + Dist,AY,0,'',7,0)
+KG01 ('',_X,Dim_Y - Dist,0,'',7,2)
+IF Rad>0
+KVerrundung ('',0,Rad-Dist,'',2)
+END
+KG01 ('',PosX + Dim_X/2 - Dist,Dim_Y - Dist,0,'',7,2)
+IF Rad>0
+KVerrundung ('',0,Rad-Dist,'',2)
+END
+KG01 ('',PosX + Dim_X/2 - Dist,AY,0,'',7,2)
+KG01ZuKB()
+END
+;-
+IF Ecke=6
+;- Edge LO
+KB (K,'',AX,AY,0,'',7,0)
+KG01 ('',AX,Dim_Y - Dist,0,'',7,2)
+KG01 ('',Dim_X - Dist,Dim_Y - Dist,0,'',7,2)
+IF Rad>0
+KVerrundung ('',0,Rad-Dist,'',2)
+END
+KG01 ('',Dim_X-Dist,AY,0,'',7,2)
+KG01ZuKB()
+END
+;-
+IF Ecke=7
+;- L
+KB (K,'',AX,PosY - Dim_Y/2 + Dist,0,'',1,0)
+KG01 ('',Dim_X - Dist,_Y,0,'',1,2)
+IF Rad>0
+KVerrundung ('',0,Rad-Dist,'',2)
+END
+KG01 ('',Dim_X-Dist,PosY + Dim_Y/2-Dist,0,'',1,2)
+IF Rad>0
+KVerrundung ('',0,Rad-Dist,'',2)
+END
+KG01 ('',AX,PosY + Dim_Y/2-Dist,0,'',1,2)
+KG01ZuKB()
+END

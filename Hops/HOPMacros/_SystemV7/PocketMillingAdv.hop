@@ -1,0 +1,81 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=Show_ExecutePocket_Dialog_Adv
+;AUTOSCRIPTSTART=0
+VARS
+   Namen := '';*VAR*Verwendete Konturnamen
+   Ueberlappung := 67;*VAR*Überlappung in % vom Werkzeugdurchmesser
+   AA := 0;*VAR*Abstand zur Kontur (Außen/Insel)
+   Mode := 0;*VAR*0 = Konturparallel; 1 = Offset; 2 = Adaptiv
+   Angle := 0;*VAR*Bearbeitungswinkel
+   RD := 0;*VAR*Fräsrichtung von aussen nach innen (1) oder von innen nach aussen (0)
+   Tiefe := ;*VAR*Frästiefe
+   esmd := 0;*VAR*
+   Anzahl := 0;*VAR*Anzahl Zustellungen
+   MaxZ := 0;*VAR*Maximale Zustelltiefe
+   FliegendEintauchen := 0;*VAR*Z-Interpolierend (0 = ohne; 1 = mit)
+   ZusaetzlicheSicherheitshöhe := 50;*VAR*Zusätzliche Sicherheitshöhe
+   StringListId := 99;
+START
+Transesd (Tiefe,esmd)
+IF Mode=0
+Mode := 2
+ELSE
+IF Mode=1
+Mode := 0
+ELSE
+IF Mode=2
+Mode := 1
+ELSE
+Fehlermeldung (GetMessageText('46','Modus wird nicht unterstützt'))
+END
+END
+END
+IF (Mode=2)|(Mode=1)
+IF RD=1
+Hinweismeldung (GetMessageText('45','"Fräsrichtung von außen nach innen" wird nicht unterstützt'))
+END
+END
+IF _WZR<>0
+;- Nur negative Zustellungen erlaubt !
+;- Wie in allen Taschenmakros !!!
+Tiefe := -ABS(Tiefe)
+MaxZ := ABS(MaxZ)
+;******* MaxZ errechnen *******
+IF MaxZ=0
+IF Anzahl>0
+MaxZ := ABS(Tiefe)/Anzahl
+ELSE
+MaxZ := ABS(Tiefe)
+END
+END
+Anzahl := 0
+StringListCreate (StringListID)
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='Tool',PARAMETERNAME:='WZD',PARAMETER:=_WZD)
+CALL StringList_WritePara ( VAL PARAMETER:=_WZD-_WZD*Ueberlappung/100,LISTEID:=StringListID,SECTIONNAME:='General',PARAMETERNAME:='StepOver')
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='General',PARAMETERNAME:='DepthStepValue',PARAMETER:=MaxZ)
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='General',PARAMETERNAME:='StartHeight',PARAMETER:=0)
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='General',PARAMETERNAME:='EndHeight',PARAMETER:=Tiefe)
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='General',PARAMETERNAME:='RoughType',PARAMETER:=Mode)
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='General',PARAMETERNAME:='ClearancePlaneHeight',PARAMETER:=ZusaetzlicheSicherheitshöhe)
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='General',PARAMETERNAME:='ParallelMachAngleInYX',PARAMETER:=Angle)
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='General',PARAMETERNAME:='MachType',PARAMETER:=1)
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='General',PARAMETERNAME:='ReverseCuttingOrder',PARAMETER:=RD)
+CALL StringList_WritePara ( VAL PARAMETER:=AA,LISTEID:=StringListID,SECTIONNAME:='General',PARAMETERNAME:='Offset')
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='Link',PARAMETERNAME:='LeadInStart',PARAMETER:=FliegendEintauchen)
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='Link',PARAMETERNAME:='LeadInAreaSmall',PARAMETER:=FliegendEintauchen)
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='Link',PARAMETERNAME:='LeadInAreaLarge',PARAMETER:=FliegendEintauchen)
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='Link',PARAMETERNAME:='LeadInSliceSmall',PARAMETER:=FliegendEintauchen)
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='Link',PARAMETERNAME:='LeadIPassesSmall',PARAMETER:=FliegendEintauchen)
+IF Anzahl > 0
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='General',PARAMETERNAME:='DepthStepMode',PARAMETER:=1)
+ELSE
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='General',PARAMETERNAME:='DepthStepMode',PARAMETER:=0)
+Anzahl := 1
+END
+CALL StringList_WritePara ( VAL LISTEID:=StringListID,SECTIONNAME:='General',PARAMETERNAME:='SetNumberOfSlices4DepthStep',PARAMETER:=Anzahl)
+pocket (Namen,StringListID,0,0,0,0,3,0,0,0)
+ELSE
+Fehlermeldung (GetMessageText('17','Bitte Werkzeug definieren'))
+;--
+END

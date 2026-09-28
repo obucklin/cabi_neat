@@ -1,0 +1,21 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   CName := '';*VAR*
+   Dist1 := 10;*VAR*
+   Dist2 := 10;*VAR*
+   Mode := 0;*VAR*
+   Z := -10;*VAR*Tiefe
+   ReverseDirection := 0;
+   Count := 0;
+   i := 0;
+START
+CreatePocketContour (CName,Dist1,Dist2,Mode,ReverseDirection,'Pocket','','',Count)
+FOR i := 1 TO Count STEP 1
+KSP ('???','???',z,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('Pocket'+IntToStr(i-1),'KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+DeleteContour('Pocket'+IntToStr(i-1))
+END

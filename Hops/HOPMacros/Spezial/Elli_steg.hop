@@ -1,0 +1,118 @@
+;MAKROTYP=1
+;INSTVERSION=6.4.0.4
+;EXEVERSION=6.6.2.165[Hops.exe]
+;BILD=Elli_steg.wmf
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=123
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_EVO.Dll
+;DIALOGPROC=Show_Elli_SpezDialog_Evo
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 25;Dimension Z
+   MX :=0;*VAR*Mitte X der Ellipse
+   MY :=0;*VAR*Mitte Y der Ellipse
+   Lang :=_Rx;*VAR*Länge der Ellipse
+   Breit :=_Ry;*VAR*Breite  der Ellipse
+   Tiefe :=- (DZ + 2);*VAR*Tiefe
+   Dreh_Winkel :=0;*VAR*Drehwinkel
+   Steg_H :=2;*VAR*Steghöhe
+   Steg_B :=4;*VAR*Stegbreite
+   Zu :=0;*VAR*Zustellung per umgang
+   P_Versatz :=0;*VAR*Parallelversatz
+   E_Typ :=2;*VAR*Einfahrtyp 0= ohne / 1= Linear / 2 Radial
+   Anf :=_ANF;*VAR*Anfahrfaktor
+   Abf :=_ANF;*VAR*Abfahrfaktor
+   BE_Art :=2;*VAR*Bearbeitungrichtung
+   RK :=1;*VAR*Radiuskorrektur
+   Snapxy :=9;*VAR*Easy Snap XY
+   ST1 :=0;*VAR*Steg1 0= ja  -1= nein
+   ST2 :=0;*VAR*Steg1 0= ja  -1= nein
+   ST3 :=0;*VAR*Steg1 0= ja  -1= nein
+   ST4 :=0;*VAR*Steg1 0= ja  -1= nein
+   Z_Inter :=0;*VAR*Z Interpolation
+   Laser :=0;*VAR*Laserbahn
+   Z_Ps := 0;Zustellung gerechnet
+   Anz := 0;Interne
+   I := 0;Zählvar
+   ; HHCH B.Achermann
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+IF Zu = 0
+Z_PS := (_Rz -Steg_H)
+Anz := 0
+ELSE
+Anz := Trunc((_Rz - Steg_H) / Zu)
+IF Anz = 0
+;Zustellung zu gross
+Z_PS := (_Rz -Steg_H)
+ELSE
+Z_PS := Zu
+END
+END
+Steg_B := Steg_B + ((_Wzr / 100) * 10)
+CALL _DrehenBBStart_V5 ( VAL DX:=MX,DY:=MY,DW:=Dreh_Winkel,ESXY1:=Snapxy)
+;Wenn Zustellung kleiner Tiefe
+IF Anz > 0
+SP (MX,MY + (Breit / 2),- (_Rz -Steg_H),RK,E_Typ,ANF,P_Versatz,0,0,Snapxy,0,Be_Art,0,Z_Ps,0,0,Laser,0,0,0,0,0,0)
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang / 2,B:=Breit / 2,EW:=90,Z:=0,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=2)
+EP (E_Typ,ABF,0)
+END
+Z_Ps := (_Rz - Steg_H)
+SP (MX,MY + (Breit / 2),- Z_Ps,RK,E_Typ,ANF,P_Versatz,0,0,Snapxy,0,Be_Art,0,Z_Ps,0,0,Laser,0,0,0,0,0,0)
+;oben
+IF ST3 = -1
+G01 (0,0,Tiefe,0,10,0)
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang / 2,B:=Breit / 2,EW:=0 + Steg_B,Z:=Tiefe,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=0)
+ELSE
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang / 2,B:=Breit / 2,EW:=90- Steg_B,Z:=- Z_Ps,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=0)
+G01 (0,0,Tiefe,0,10,0)
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang / 2,B:=Breit / 2,EW:=0 +Steg_B,Z:=Tiefe,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=0)
+END
+;rechts
+IF ST4 = -1
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang / 2,B:=Breit / 2,EW:=270 +Steg_B,Z:=Tiefe,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=0)
+ELSE
+G01 (0,0,- Z_Ps,0,10,0)
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang / 2,B:=Breit / 2,EW:=0 - Steg_B,Z:=-Z_Ps,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=0)
+G01 (0,0,Tiefe,0,10,0)
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang /2,B:=Breit / 2,EW:=270 +Steg_B,Z:=Tiefe,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=0)
+END
+;unten
+IF St1 = -1
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang / 2,B:=Breit / 2,EW:=180 + Steg_B,Z:=Tiefe,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=0)
+ELSE
+G01 (0,0,- Z_ps,0,10,0)
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang / 2,B:=Breit / 2,EW:=270 - Steg_B,Z:=- Z_Ps,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=0)
+G01 (0,0,Tiefe,0,10,0)
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang / 2,B:=Breit / 2,EW:=180 + Steg_B,Z:=Tiefe,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=0)
+END
+;Rechts
+IF St2 = -1
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang / 2,B:=Breit / 2,EW:=90 +Steg_B,Z:=Tiefe,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=0)
+ELSE
+G01 (0,0,- Z_Ps,0,10,0)
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang / 2,B:=Breit / 2,EW:=180 - Steg_B,Z:=-Z_Ps,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=0)
+G01 (0,0,Tiefe,0,10,0)
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang / 2,B:=Breit / 2,EW:=90+ Steg_B,Z:=Tiefe,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=0)
+END
+;oben
+IF ST3 = -1
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang / 2,B:=Breit / 2,EW:=90,Z:=Tiefe,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=0)
+ELSE
+G01 (0,0,-Z_Ps,0,10,0)
+CALL _Ellipsenbogen02_V5 ( VAL MX:=MX,MY:=MY,A:=Lang / 2,B:=Breit / 2,EW:=90- Steg_B,Z:=-Z_Ps,DW:=0,R:=0,ESXY1:=Snapxy,ESD:=0)
+END
+EP (E_Typ,ABF,0)
+CALL _DrehenBBEnde ()

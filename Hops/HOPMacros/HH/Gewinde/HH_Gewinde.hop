@@ -1,0 +1,100 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.7.12.80[Hops.exe]
+;BILD=HH_GEWINDE.WMF
+;INFO=
+;WZGV=7532D_151
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=HH_Gewinde
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   Pos_X := 100;*VAR*Position Gewinde in X-Position
+   Pos_Y := 0;*VAR*Position Gewind in Y-Position
+   GW_Tiefe := -12.5;*VAR*Gewindetiefe M8=24; M6=18; M5=12.5
+   P := 0;Gewindesteigung
+   E_Drehung := 0;Eindrehung wir berechnet aus (D1-d1)/2
+   GE_Groesse := 8;*VAR*Mögliche Eingaben M5=5; M6=6; M8=8
+   text := 'M';Gewinde Text
+   zugabe := 0.15;*VAR*Zugabe Durchchmesser
+START
+;----------Tiefe umwandeln in minus----------
+IF GW_Tiefe>0
+GW_Tiefe := GW_Tiefe*-1
+END
+;----------------- Gewinde M5 ---
+IF GE_Groesse=5
+Hinweismeldung ('Werkzeug ist fuer Bearbeitungstiefe von max. 12,5mm ausgelegt')
+text := 'M5'
+;Steigung = 0,8
+P := 0.8
+;Innengewinde = 4,13
+;-- Wenn Gewinde schwergaengig Variable "Zugabe" anpassen---
+E_Drehung := (5-4.13)/2+zugabe
+END
+;####################################
+;----------------- Gewinde M6 ---
+IF GE_Groesse=6
+Hinweismeldung ('Werkzeug ist fuer Bearbeitungstiefe von max.18mm ausgelegt')
+text := 'M6'
+;Steigung = 1
+P := 1
+;Innengewinde = 4,92
+;-- Wenn Gewinde schwergaengig Variable "Zugabe" anpassen---
+E_Drehung := (6-4.92)/2+zugabe
+END
+;####################################
+;----------------- Gewinde M8 ---
+IF GE_Groesse=8
+Hinweismeldung ('Werkzeug ist fuer Bearbeitungstiefe von max.24mm ausgelegt')
+text := 'M8'
+;Steigung = 1
+P := 1.25
+;Innengewinde = 6,65
+;-- Wenn Gewinde schwergaengig Variable "Zugabe" anpassen---
+E_Drehung := (8-6.65)/2+zugabe
+END
+;####################################
+;----------------- Gewinde M10 ---
+IF GE_Groesse=10
+Hinweismeldung ('Werkzeug ist fuer Bearbeitungstiefe von max.24mm ausgelegt')
+text := 'M10'
+;Steigung = 1
+P := 1.5
+;Innengewinde = 8,38
+;-- Wenn Gewinde schwergaengig Variable "Zugabe" anpassen---
+E_Drehung := (10-8.38)/2+zugabe
+END
+;####################################
+;----------------- Gewinde M12 ---
+IF GE_Groesse=12
+Hinweismeldung ('Werkzeug ist fuer Bearbeitungstiefe von max.24mm ausgelegt')
+text := 'M12'
+;Steigung = 1
+P := 1.75
+;Innengewinde = 10,11
+;-- Wenn Gewinde schwergaengig Variable "Zugabe" anpassen---
+E_Drehung := (12-10.11)/2+zugabe
+END
+;####################################
+ZText (text,Pos_x,Pos_y,30,0,1,0,'Times New Roman',0,0,0,0,0,1)
+ZKBCW (POS_X,POS_Y,POS_X-(GE_Groesse/2),POS_Y,POS_X-(GE_Groesse/2),POS_Y,0,0,0,0,0,0,1)
+SP (Pos_X,Pos_Y,1,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (Pos_X,Pos_Y,GW_Tiefe,0,0,0)
+G01 (Pos_X,Pos_Y,GW_Tiefe+(P/3),0,0,0)
+G03M (Pos_X+E_Drehung,Pos_Y,P/2,Pos_X,Pos_Y,0,0,2,0)
+G03M (Pos_X-E_Drehung,Pos_Y,P/2,Pos_X,Pos_Y,0,0,2,0)
+G03M (Pos_X+E_Drehung,Pos_Y,P/2,Pos_X,Pos_Y,0,0,2,0)
+G03M (Pos_X-0.0001,Pos_Y,P/2,Pos_X,Pos_Y,0,0,2,0)
+G01 (Pos_X,Pos_Y,1,0,0,0)
+EP (0,_ANF,0)
+;----------

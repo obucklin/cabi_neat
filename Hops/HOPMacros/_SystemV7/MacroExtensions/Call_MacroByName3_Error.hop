@@ -1,0 +1,15 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   MacroName := '';*VAR*Macroname
+   x := 0;*VAR*Paramter1
+   y := 0;*VAR*Paramter2
+   ProcessAngle := 0;*VAR*Parameter3
+   BohrbildGespiegelt := 0;*VAR*Parameter4
+   TeilGespiegelt := 0;*VAR*Parameter5
+   Vorprofilieren := 0;*VAR*Parameter6
+   FlaechenWinkel := 0;*VAR*Parameter7
+   ProfileSide := '';*VAR*Parameter8
+   CounterWidth := 0;*VAR*Parameter9
+START
+;Fehlermeldung (''  + MacroName)

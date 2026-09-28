@@ -1,0 +1,36 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.987[Hops.exe]
+;BILD=HH_MACHINE_STOP.WMF
+;INFO=
+;WZGV=STANDARD
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=HH_Machine_Stop
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogsPPHH.Dll
+;DIALOGPROC=ShowMachine_StopDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600mm;Dimension X
+   DY := 400mm;Dimension Y
+   DZ := 19mm;Dimension Z
+   msg := 'Machine STOP';*VAR*
+   park := 11;*VAR*parkpos
+   X := 0;*VAR*Parkpos X
+   Y := 0;*VAR*Parkpos Y
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+IF _HOPSVERSION=6
+CALL HH_StopDHOpt ()
+NCINFO (8200,park,x,y,0,0,0,msg,0,0,0)
+CALL Trenner_Hauptgruppen ( VAL GROUPNAME:='MachineStop for Opti')
+ELSE
+CALL MachineStop_V7 ( VAL MODE:=0,PARKMODE:=park,PARKPOSX:=X,PARKPOSY:=Y,TYP:=0,R6:=0,STR:=msg,R7:=0)
+END

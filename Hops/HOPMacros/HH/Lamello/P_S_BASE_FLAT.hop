@@ -1,0 +1,118 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.1.885[Hops.exe]
+;BILD=P_S_BASE_FLAT.WMF
+;INFO=
+;WZGV=7507D_001
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=P_S_BASE_FLAT
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   POSX := 50;*VAR*Position X
+   POSY := 0;*VAR*Position Y
+   POSZ_WI := 0;*VAR*Position Z Winkel von Innenkannte
+   EITI := -14;*VAR*Frästiefe
+   KIPPWINKEL := 0;*VAR*KIPPWINKEL
+   DREHWINKEL := 0;*VAR*DREHWINKEL
+   WZ_ID_V1 := 1360;*VAR*Werkzeug ID X NUT
+   WZ_ID_V2 := 1361;*VAR*Werkzeug ID Y Nut
+   WZ_ID_STIFT := 7;*VAR*WZ ID Stiftfraeser
+   WZ_STIFT_ON_OFF := 0;*VAR*0 = ohne Stiftfräser / 1 = mit Stiftfräser
+   Z_BEWEG := 1;*VAR*Hub in FräserRichtung
+   Temp_Var1 := 0;*VAR*Freie Variable 1
+   Temp_Var2 := 0;*VAR*Freie Variable 2
+   Temp_Var3 := 0;*VAR*Freie Variable 3
+   BOU := 1.4;FIX_BEWEGUNG zur Seite
+   NuterSAFix := 5;Nuter hat 5mm Sicherheitsabstand
+   KEIN_ZHUB := 1;Bisco_Tenso
+   DX := 300;
+   DY := 300;
+   DZ := 14.1;
+   SHOW_STL := 0;Zeige STL
+   _OFF_angle_Y_NUT := 0;Offset Drehwinkel für Aggregate Ausrichtung
+   _OFF_angle_X_NUT := 0;Offset Drehwinkel für Aggregate Ausrichtung
+   OFFSET_angle := 0;Offset für Aggregat für unterschiedliche Maschinentypen
+   ToolID := -99;
+START
+;Clamex BASE FLAT 27.04.2017 SK
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0);BREAKPOINT
+CALL _UserInterface3DG (REF RESULT:=ToolID VAL INPUTTEXT:='GetStandardRouterID')
+IF DREHWINKEL<0
+Fehlermeldung ('only positive value')
+EXITMACRO
+END
+;Standard
+IF _MaschinenTyp=1
+OFFSET_angle := 0
+END
+;EVO
+IF _MaschinenTyp=2
+IF DREHWINKEL=90
+OFFSET_angle := 180
+END
+IF DREHWINKEL=0
+OFFSET_angle := 0
+END
+END
+;7505 - 7507 - 7705 - 7707
+IF _MaschinenTyp=3
+IF DREHWINKEL=90;BREAKPOINT
+OFFSET_angle := 180
+END
+IF DREHWINKEL=0
+OFFSET_angle := 180
+END
+END
+;7532
+IF _MaschinenTyp=4
+IF DREHWINKEL=90
+OFFSET_angle := 0
+END
+IF DREHWINKEL=0
+OFFSET_angle := 180
+END
+END
+;WZ zuweissung auf Drehwinkel
+IF DREHWINKEL=0
+WZF (WZ_ID_V1,_VE,_V,_VA,_SD,_ANF,'1');BREAKPOINT
+END
+IF DREHWINKEL= 90
+WZF (WZ_ID_V2,_VE,_V,_VA,_SD,_ANF,'1')
+END
+;-----------
+;Abfrage ob Tiefe negativ
+IF EITI>=0
+Fehlermeldung ('only negativ value')
+EXITMACRO
+END
+;Anzeige STL und 2DGrafik
+IF SHOW_STL=1
+EbeneF (POSX,POSY,0,90+KIPPWINKEL,DREHWINKEL+OFFSET_angle,0,2)
+ZSTL (0,0,0,12632256,1,'P14_OF.stl',0,0)
+Ebene0()
+CALL _DrehenBBStart_V5 ( VAL DX:=POSX,DY:=POSY,DW:=90+DREHWINKEL+OFFSET_angle,ESXY1:=0)
+CALL _ZRechteck_2P_V5 ( VAL SX:=POSX-3.5,SY:=POSY-33,EX:=POSX+3.5,EY:=POSY+33,FUELLEN:=1,FARBE:=0,ESXY1:=1,ESXY2:=1)
+CALL _DrehenBBEnde ()
+END
+;Bearbeitung
+EbeneF (POSX,POSY,0,90+KIPPWINKEL,DREHWINKEL+OFFSET_angle,0,2)
+SP (0,_WZR+NuterSAFix,0,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,_WZR+EITI,0,0,0,2)
+IF Z_BEWEG=1
+G01 (0,0,BOU,0,10,2)
+G01 (0,0,-(BOU*2),0,10,2)
+G01 (0,0,BOU,0,10,2)
+END
+G01 (0,_WZR+NuterSAFix,0,0,0,2)
+EP (0,_ANF,0)
+Ebene0()

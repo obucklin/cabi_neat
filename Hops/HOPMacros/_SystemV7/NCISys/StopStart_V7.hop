@@ -1,0 +1,18 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowSTOPSTART_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   r1 := 0;*VAR*beliebige Zahl
+   r2 := 0;*VAR*beliebige Zahl
+   r3 := 0;*VAR*beliebige Zahl
+   r4 := 0;*VAR*beliebige Zahl
+   r5 := 0;*VAR*beliebige Zahl
+   r6 := 0;*VAR*beliebige Zahl
+   Name := '';*VAR*Anschlagname
+   r7 := 0;*VAR*beliebige Zahl
+   r8 := 0;*VAR*beliebige Zahl
+   r9 := 0;*VAR*beliebige Zahl
+START
+nciext (-110001,'NCISys',3,0,0,r1,r2,r3,r4,r5,r6,Name,r7,r8,r9)

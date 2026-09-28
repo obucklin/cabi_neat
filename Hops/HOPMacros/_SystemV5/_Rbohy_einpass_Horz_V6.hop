@@ -1,0 +1,72 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_Rbohy_einpass_Horz_V6Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   ebene := 0;*VAR*
+   einpassen := 0;*VAR*Einpassen   1=Ja   0=Nein
+   SPY := 64;*VAR*Mindestwert für Strartpunkt
+   PosX := 0;
+   Raster := 32mm;*VAR*Rasterwerte
+   EPY := 64;*VAR*Mindestwert für Endpunkt
+   T := -13;*VAR*Bohrtiefe
+   D := 5mm;*VAR*Bohrdurchmesser
+   Anzahl := 0;Anzahl Löcher
+   Rest := 0;Restwert links
+   i := 0;
+   länge := 0;
+   MerkerSPY := 0;
+   esy1 := 3;*VAR*
+   esy := 5;*VAR*
+   Dummy := 0;
+   TL := 0;*VAR*Tieflochflag
+   Z := 0;*VAR*
+   esz := 1;*VAR*
+   DW := 0;
+START
+;DIREKT CNC SYSTEME / NC-HOPS Version 5.x
+;Lochreihe in Y horizontal
+Transesz (Z,esz)
+transesxy (dummy,SPY,esy1,1)
+transesxy (dummy,EPY,esy,1)
+Raster := abs(Raster)
+IF ebene=0
+PosX := 0
+DW := 0
+ELSE
+PosX := _RX
+DW := 180
+END
+IF (SPY>EPY)&(einpassen=1)
+;--
+;-- wenn Referenzpunkt rechts
+;-- nur wenn einpassen gewählt
+MerkerSPY := SPY
+SPY := EPY
+EPY := MerkerSPY
+END
+IF T>0
+T := -T
+END
+MerkerSPY := SPY
+IF einpassen = 1
+länge := epY-spY
+anzahl := (länge)/Raster
+anzahl := anzahl DIV 1 +1
+rest := (länge-(anzahl-1)*Raster)/2
+FOR i := 0 TO anzahl-1 STEP 1
+HorzB (PosX,spy+rest+i*raster,Z,D,T,TL,0,DW,0,0,0,0)
+END
+ELSE
+IF EPY > SPY
+WHILE SPY <= EPY
+HorzB (PosX,SPY,Z,D,T,TL,0,DW,0,0,0,0)
+SPY := SPY + Raster
+END
+ELSE
+WHILE SPY >= EPY
+HorzB (PosX,SPY,Z,D,T,TL,0,DW,0,0,0,0)
+SPY := SPY - Raster
+END
+END
+END

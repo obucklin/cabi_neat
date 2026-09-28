@@ -1,0 +1,14 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowPPNCOPTIONS_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   NCNullpunktX := 0;*VAR*
+   NCNullpunktY := 0;*VAR*
+   NCNullpunktZ := 0;*VAR*
+   TeileDrehWinkel := 0;*VAR*
+   DrehUrsprungX := 0;*VAR*
+   DrehUrsprungY := 0;*VAR*
+START
+nciext (-200061,'NCISys',0,0,0,NCNullpunktX,NCNullpunktY,NCNullpunktZ,TeileDrehWinkel,DrehUrsprungX,DrehUrsprungY)

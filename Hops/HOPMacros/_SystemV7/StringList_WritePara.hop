@@ -1,0 +1,23 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   Parameter := 0;*VAR*Parameterwert
+   ListeId := 0;*VAR*
+   SectionName := '';*VAR*Sektionsname des Parameters
+   ParameterName := '';*VAR*Name des Parameters
+   ElementCount := 0;Element in der Liste
+   SectionId := -1;Index der existirenden Sektion
+   SectionValue := '';Fertiger String für die Seketionsbezeichnung
+   ParameterIndex := 0;Index des Parameters in der Liste
+   ParameterString := '';Fertiger String des Parameters
+START
+SectionValue := '[' + SectionName + ']'
+ParameterString := ParameterName + '=' + FLOATTOSTR( Parameter,10,4)
+StringListCount (ListeId,ElementCount)
+ParameterIndex := ElementCount
+StringListIndexOf (ListeId,SectionValue,SectionId)
+IF SectionId < 0
+StringListInsert (ListeId,0,SectionValue)
+SectionId := 0
+END
+StringListInsert (ListeId,SectionId + 1,ParameterString)

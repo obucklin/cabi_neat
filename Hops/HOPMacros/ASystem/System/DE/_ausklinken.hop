@@ -1,0 +1,65 @@
+;MAKROTYP=1
+;DZ=0.00
+;DY=0.00
+;DX=0.00
+;KOMMENTAR=
+;NCNAME=_ausklinken
+;MASCHINE=PRAEPROAUTOFORANOPTI
+;WZGV=KRAUS
+;BILD=_ausklinken.bmp
+VARS
+   XPos := 200;*VAR*X-Position der Ausklinkung
+   YPos := 50;*VAR*Y-Position der Ausklinkung
+   BasisWinkel := 110;*VAR*Grundwinkel fürs ausklinken
+   Oeffnungswinkel := 115;*VAR*Oeffnungswinkel
+   Gutseite := 1;*VAR*[0] Oben [1] Unten
+   OffsetWinkel := 0;*VAR*Vorhaltewinkel
+   Radius := 20;*VAR*Verrundungsradius
+   StartY := 0;
+   Weg := 0.1;Abfahrweg des Ausklinkung
+   StartX := 0;
+   EndY := 0;
+   EndX := 0;
+START
+;Makro Ausklinken
+;Basiswinkel = Mathematisch gesehen in Richtung des angegeben Punktes
+;MW 2.4.2001
+BasisWinkel := Basiswinkel+OffsetWinkel
+Oeffnungswinkel := Oeffnungswinkel-2*OffsetWinkel
+HGNeu()
+HLineW (XPOS,YPOS,BasisWinkel)
+HLineW (XPOS,YPOS,BasisWinkel+Oeffnungswinkel)
+Rohteil (500,500,20,0,0)
+;WZS (55,_VE,_V,_VA,_SD,_ANF)
+;Startpunkt 1. abtauchen berechnen
+weg := _WZD+1
+StartX := XPOS
+StartY := YPOS
+;StartX := XPOS+(_WZR*COS(BasisWinkel+180))
+;StartY := YPOS+(_WZR*SIN(BasisWinkel+180))
+;Endpunkt 1. abtauchen berechnen
+EndX := StartX+(Weg*COS(BasisWinkel+180))
+EndY := StartY+(Weg*SIN(BasisWinkel+180))
+IF GutSeite=1
+;Gutseite unten - erst eintauchen und dann ranfahren
+Saegen (EndX,EndY,-_WZR,StartX,StartY,-_WZR,2,1,0,0,0,0)
+ELSE
+;Gutseite oben - eintauchen und dann wegfahren
+Saegen (EndX,EndY,-_WZR,StartX,StartY,-_WZR,2,1,0,1,0,0)
+END
+;Startpunkt 2. abtauchen berechnen
+weg := _WZD+1
+StartX := XPOS
+StartY := YPOS
+;Endpunkt 2. abtauchen berechnen
+EndX := StartX+(Weg*COS(BasisWinkel+OeffnungsWinkel+180))
+EndY := StartY+(Weg*SIN(BasisWinkel+Oeffnungswinkel+180))
+IF GutSeite=1
+;Gutseite unten - erst eintauchen und dann ranfahren
+Saegen (StartX,StartY,-_WZR,EndX,EndY,-_WZR,2,1,0,1,0,0)
+ELSE
+;Gutseite oben - eintauchen und dann wegfahren
+Saegen (StartX,StartY,-_WZR,EndX,EndY,-_WZR,2,1,0,0,0,0)
+END
+HGNeuEnd()
+

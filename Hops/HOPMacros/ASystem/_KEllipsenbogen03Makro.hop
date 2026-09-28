@@ -1,0 +1,28 @@
+;MAKROTYP=1
+;BILD=
+;INFO=_KEllipsenbogen03Makro
+;WZGV=demo
+;MASCHINE=Simu
+;NCNAME=_KKEllipsenbogen03Makro
+;KOMMENTAR=
+;DX=0.00
+;DY=0.00
+;DZ=0.00
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   Name := '';*VAR*Konturelementname
+   mx := _RX/2;*VAR*Mitte in X
+   my := _RY/2;*VAR*Mitte in Y
+   a := _RX/2;*VAR*Laenge der waagrechten Halbachse
+   b := _RY/2;*VAR*Laenge der senkrechten Halbachse
+   ew := 0;*VAR*Endwinkel Ellipse X+ = 0°
+   Z := _Z;*VAR*Zustellung
+   dw := 0;*VAR*Drehwinkel
+   Info := '';*VAR*Konturelementinfo
+   _KonturElementName := '';
+   _KonturElementInfo := '';
+START
+_KonturElementName := Name
+_KonturElementInfo := Info
+CALLDLL KELLIPSENBOGEN03(Fraesen,Dummy, VAL mx:=mx,my:=my,a:=a,b:=b,ew:=ew,Z:=Z,dw:=dw)

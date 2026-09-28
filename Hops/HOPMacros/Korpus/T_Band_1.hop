@@ -1,0 +1,130 @@
+;MAKROTYP=1
+;INSTVERSION=6.4.0.3
+;EXEVERSION=6.6.2.154[Hops.exe]
+;BILD=T_Band_1.wmf
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=T_Band_1
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_1.Dll
+;DIALOGPROC=ShowT_BandDialog_1
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2000;Dimension X
+   DY := 546;Dimension Y
+   DZ := 19;Dimension Z
+   TO_ABST :=3;*VAR*Randabstand zu Top
+   AnzB :=5;*VAR*Anzahl Bänder
+   Luft_A :=0;*VAR*Luft_Anschlag Seite_unten
+   Luft_O :=0;*VAR*Luft_Oben
+   TB_Topf_DM :=35.00;*VAR*Durchmesser Topf
+   TB_Topf_Tiefe :=-13.00;*VAR*Tiefe Topf
+   TB_Topf_TLF :=30;*VAR*Bohrtyp Topf
+   TB_Topf_Check :=-1;*VAR*Topf JA / Nein
+   TB_Neben_DM :=8.00;*VAR*Durchmesser Nebenlöcher
+   TB_Neben_Tiefe :=-13.00;*VAR*Tiefe Nebenlöcher
+   TB_Neben_TLF :=10;*VAR*Bohrtyp Nebenlöcher
+   TB_Neben_Check :=-1;*VAR*Nebenlöcher JA / Nein
+   Rand_Plt_LI :=128;*VAR*Randmass Platten links
+   Rand_Plt_Re :=128;*VAR*Randmass Platten rechts
+   Raster :=32.00;*VAR*Raster Lochreihe
+   XWert_NL :=22.00;*VAR*Nebenloch X-Abst. von Topf
+   YWert_NL :=9.50;*VAR*Nebenloch Y-Abst. von Topf
+   Y_Mass := 0;Y Pos vom Topf
+   Panel_X := 0;
+   Topf1 := 0;
+   Topf2 := 0;
+   Topf3 := 0;
+   Anzeige :=0;*VAR*Masslinien anzeigen
+   ;
+   ;
+   ;(c) B.Achermann Weinig Holzher Schweiz AG
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;Luft_O und Luft_A  sind positive Werte wenn
+;die Tuer kleiner ist als die Seite
+Y_Mass := 17.5 + To_Abst
+Panel_X := _RX +(LufT_A) + (Luft_O)
+IF _Mirror
+VERXY (-(Luft_A * -1),0)
+ELSE
+VERXY (Luft_A * -1,0)
+END
+Topf1 := (Panel_X - Rand_Plt_Li - Rand_Plt_Re) + Rand_Plt_Li
+IF TB_Topf_Check = -1
+Bohrung ((Rand_Plt_Li ),Y_Mass,TB_Topf_DM,TB_Topf_Tiefe,TB_Topf_TLF,0,0,1,0,0,0,0);BREAKPOINT
+Bohrung (Topf1,Y_Mass,TB_Topf_DM,TB_Topf_Tiefe,TB_Topf_TLF,0,0,1,0,0,0,0)
+IF Anzeige = -1
+CALL B2Punkte_V5 ( VAL P1X:=Luft_A,P1Y:=0,P2X:=Rand_Plt_Li,P2Y:=0,ABSTAND:=20,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+CALL B2Punkte_V5 ( VAL P1X:=Luft_A,P1Y:=0,P2X:=Topf1,P2Y:=0,ABSTAND:=-50,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+END
+END
+IF TB_Neben_Check = -1
+Bohrung (Rand_Plt_Li - XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+Bohrung (Rand_Plt_Li + XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+Bohrung (Topf1 - XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+Bohrung (Topf1 + XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+END
+IF AnzB=3
+Topf1 := ((Panel_X - Rand_Plt_Li - Rand_Plt_Re) / 2) + Rand_Plt_Li
+IF TB_Topf_Check = -1
+Bohrung (Topf1,Y_Mass,TB_Topf_DM,TB_Topf_Tiefe,TB_Topf_TLF,0,0,1,0,0,0,0)
+IF Anzeige = -1
+CALL B2Punkte_V5 ( VAL P1X:=Luft_A,P1Y:=0,P2X:=Topf1,P2Y:=0,ABSTAND:=60,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+END
+END
+IF TB_Neben_Check = -1
+Bohrung (Topf1 - XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+Bohrung (Topf1 + XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+END
+END
+IF AnzB=4
+Topf1 := ((Panel_X - Rand_Plt_Li - Rand_Plt_Re) / 3) + Rand_Plt_Li
+Topf2 := (((Panel_X - Rand_Plt_Li - Rand_Plt_Re) / 3)*2) + Rand_Plt_Li
+IF TB_Topf_Check = -1
+Bohrung (Topf1,Y_Mass,TB_Topf_DM,TB_Topf_Tiefe,TB_Topf_TLF,0,0,1,0,0,0,0)
+Bohrung (Topf2,Y_Mass,TB_Topf_DM,TB_Topf_Tiefe,TB_Topf_TLF,0,0,1,0,0,0,0)
+IF Anzeige = -1
+CALL B2Punkte_V5 ( VAL P1X:=Luft_A,P1Y:=0,P2X:=Topf1,P2Y:=0,ABSTAND:=40,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+CALL B2Punkte_V5 ( VAL P1X:=Luft_A,P1Y:=0,P2X:=Topf2,P2Y:=0,ABSTAND:=80,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+END
+END
+IF TB_Neben_Check = -1
+Bohrung (Topf1 - XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+Bohrung (Topf1 + XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+Bohrung (Topf2 - XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+Bohrung (Topf2 + XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+END
+END
+IF AnzB=5;BREAKPOINT
+Topf1 := ((Panel_X - Rand_Plt_Li - Rand_Plt_Re) / 4) + Rand_Plt_Li
+Topf2 := (((Panel_X - Rand_Plt_Li - Rand_Plt_Re) / 4)*2) + Rand_Plt_Li
+Topf3 := (((Panel_X - Rand_Plt_Li - Rand_Plt_Re) / 4)*3) + Rand_Plt_Li
+IF TB_Topf_Check = -1
+Bohrung (Topf1,Y_Mass,TB_Topf_DM,TB_Topf_Tiefe,TB_Topf_TLF,0,0,1,0,0,0,0);BREAKPOINT
+Bohrung (Topf2,Y_Mass,TB_Topf_DM,TB_Topf_Tiefe,TB_Topf_TLF,0,0,1,0,0,0,0)
+Bohrung (Topf3,Y_Mass,TB_Topf_DM,TB_Topf_Tiefe,TB_Topf_TLF,0,0,1,0,0,0,0)
+IF Anzeige = -1
+CALL B2Punkte_V5 ( VAL P1X:=Luft_A,P1Y:=0,P2X:=Topf1,P2Y:=0,ABSTAND:=40,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+CALL B2Punkte_V5 ( VAL P1X:=Luft_A,P1Y:=0,P2X:=Topf2,P2Y:=0,ABSTAND:=80,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+CALL B2Punkte_V5 ( VAL P1X:=Luft_A,P1Y:=0,P2X:=Topf3,P2Y:=0,ABSTAND:=120,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+END
+END
+IF TB_Neben_Check = -1
+Bohrung (Topf1 - XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+Bohrung (Topf1  +  XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+Bohrung (Topf2 - XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+Bohrung (Topf2 + XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+Bohrung (Topf3 + XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+Bohrung (Topf3  -  XWert_NL,Y_Mass + YWert_NL,TB_Neben_DM,TB_Neben_Tiefe,TB_Neben_TLF,0,0,1,0,0,0,0)
+END
+END
+VERXYEND()

@@ -1,0 +1,119 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.1.948[Hops.exe]
+;BILD=ABLAENGEN_UNTEN.WMF
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Formatieren_Unten
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA.Dll
+;DIALOGPROC=ShowFAblaengenDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2080mm;Dimension X
+   DY := 980mm;Dimension Y
+   DZ := 45mm;Dimension Z
+   F_Wkz :=109;*VAR*Hobelkopf
+   F_Tiefe :=DZ+2;*VAR*Tiefe mit Hobelkopf
+   F_FaseO_Wkz :=235;*VAR*Fasfräser Fase oben
+   F_FaseU_Wkz :=135;*VAR*Fasfräser Fase unten
+   F_FASE_OL :=2.0;*VAR*Fase oben längs
+   F_Fase_UL :=2.0;*VAR*Fase unten längs
+   F_Fase_SE :=3;*VAR*Fase unten seitlich
+   F_VorSchr_Wkz :=102;*VAR*Schruppfräser Vorschruppen
+   F_Abst :=3;*VAR*Zugabe beim Vorschruppen
+   F_Vorritz :=0;*VAR*Vorritzen Ja oder nein
+   Tauschen :=-1;*VAR*Fasen und Hobel tauschen (Dia Faser Alupan Tueren)
+   Vor_T :=DZ +2;*VAR*Tiefebei Vorschruppen
+START
+;*********************************
+; HolzHer Schweiz AG B. Achermann
+;*********************************
+;Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;Vorschruppen oder sägen
+IF F_Abst > 0
+F_Abst:= - F_Abst
+WZF (F_VorSchr_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+IF _SBB <> 0
+;mit Säge
+CALL _saege_y_V5 ( VAL SX:=F_Abst,SY:=-150,SZ:=-10,EY:=-150,EZ:=- Vor_T,BL:=2,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=F_Vorritz,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=3,ESY:=5)
+ELSE
+;mit Schruppfräser
+SP (F_Abst,-50,- Vor_T,2,0,_ANF,0,0,0,3,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (F_Abst,-50,0,0,5,2)
+EP (0,_ANF,0)
+END
+END
+IF Tauschen = - 1
+;Fase oben
+IF F_Fase_OL > 0.00
+WZF (F_FaseO_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (F_Fase_SE + 50,-(20 + F_Fase_SE),- F_Fase_OL,2,0,_ANF,0,0,0,3,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (F_Fase_SE,0,0,0,3,2)
+G01 (0,F_Fase_SE,0,0,3,2)
+G01 (0,F_Fase_SE,0,0,5,2)
+G01 (F_Fase_SE,0,0,0,5,2)
+G01 ((50 + F_Fase_SE),-20,0,0,5,2)
+EP (0,_ANF,0)
+END
+;Fase unten
+IF F_Fase_UL > 0.00
+WZF (F_FaseU_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (F_Fase_SE + 50,-(20 + F_Fase_SE),F_Fase_UL,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (F_Fase_SE,0,0,0,3,2)
+G01 (0,F_Fase_SE,0,0,3,2)
+G01 (0,F_Fase_SE,0,0,5,2)
+G01 (F_Fase_SE,0,0,0,5,2)
+G01 ((50 + F_Fase_SE),-20,0,0,5,2)
+EP (0,_ANF,0)
+END
+;Auf Laenge hobeln  ohne Fase
+WZF (F_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (F_Fase_SE+50,-(20 + F_Fase_SE),- F_Tiefe,2,0,_ANF,0,0,0,3,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (F_Fase_SE,0,0,0,3,2)
+G01 (0,F_Fase_SE,0,0,3,2)
+G01 (0,F_Fase_SE,0,0,5,2)
+G01 (F_Fase_SE,0,0,0,5,2)
+G01 ((50 + F_Fase_SE),-20,0,0,5,2)
+EP (0,_ANF,0)
+ELSE
+;Auf Laenge hobeln  ohne Fase
+WZF (F_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (F_Fase_SE+50,-(20 + F_Fase_SE),- F_Tiefe,2,0,_ANF,0,0,0,3,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (F_Fase_SE,0,0,0,3,2)
+G01 (0,F_Fase_SE,0,0,3,2)
+G01 (0,F_Fase_SE,0,0,5,2)
+G01 (F_Fase_SE,0,0,0,5,2)
+G01 ((50 + F_Fase_SE),-20,0,0,5,2)
+EP (0,_ANF,0)
+;Fase oben
+IF F_Fase_OL > 0.00
+WZF (F_FaseO_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (F_Fase_SE + 50,-(20 + F_Fase_SE),- F_Fase_OL,2,0,_ANF,0,0,0,3,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (F_Fase_SE,0,0,0,3,2)
+G01 (0,F_Fase_SE,0,0,3,2)
+G01 (0,F_Fase_SE,0,0,5,2)
+G01 (F_Fase_SE,0,0,0,5,2)
+G01 ((50 + F_Fase_SE),-20,0,0,5,2)
+EP (0,_ANF,0)
+END
+;Fase unten
+IF F_Fase_UL > 0.00
+WZF (F_FaseU_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (F_Fase_SE + 50,-(20 + F_Fase_SE),F_Fase_UL,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (F_Fase_SE,0,0,0,3,2)
+G01 (0,F_Fase_SE,0,0,3,2)
+G01 (0,F_Fase_SE,0,0,5,2)
+G01 (F_Fase_SE,0,0,0,5,2)
+G01 ((50 + F_Fase_SE),-20,0,0,5,2)
+EP (0,_ANF,0)
+END
+END

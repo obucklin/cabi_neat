@@ -1,0 +1,110 @@
+;MAKROTYP=0
+;INSTVERSION=6.4.0.4
+;EXEVERSION=6.6.2.165[Hops.exe]
+;BILD=Gew_Fr_1.wmf
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Gewinde
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_8.Dll
+;DIALOGPROC=Show_Gew_Fr_1_Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   A_Typ :=11;*VAR*GewindeArt 11 = Innen_Rechts / 12 = Innen_Links / 21= Aussen_Rechts / 22= Aussen_Links
+   Wkz_ID :=128;*VAR*Gewinde Wkz ID
+   SnapXY :=1;*VAR*Snap XY
+   M_X :=0;*VAR*Mittelpunkt in X
+   M_Y :=0;*VAR*Mittelpunkt in Y
+   Drehzahl :=11529;*VAR*Drehzahl
+   Gewinde_DM :=8;*VAR*Gewinde DM
+   Steig :=1.25;*VAR*Gewinde Steigung
+   Feed :=2066;*VAR*Vorschub in mm pro Min.
+   Tiefe :=18.00;*VAR*Gewinde Tiefe
+   V_Bohr :=-1;*VAR*Vorbohren mit gleichem Werkzeug
+   V_Tief :=19.86;*VAR*Tiefe Vorbohren
+   VB_Feed :=1152;*VAR*Vorschub Vorbohren
+   B_Richtung :=0;*VAR*Bearbeitungsrichtung 0= Gleich / 1= gegenlauf
+   Kern_DM :=6.8;*VAR*Kernloch DMf
+START
+;*******************************************
+;********* (c) B. Achermann ********************
+;*********Holz-Her Schweiz AG ******************
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+WZF (Wkz_Id,_VE,Feed,_VA,Drehzahl,_ANF,'1')
+;Rechtsgewinde innen
+IF A_Typ = 11
+;Vorbohren mit gleichem Wkz
+IF V_Bohr = -1
+SP (M_X,M_Y,5,0,0,_ANF,0,0,0,SnapXY,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=VB_Feed / 2)
+G01 (0,0,1 * -1,0,10,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=VB_Feed)
+G01 (0,0,V_Tief * -1,0,10,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+EP (0,_ANF,0)
+END
+;Gleichlauf
+IF B_Richtung=0
+SP (M_X,M_Y - (Kern_Dm / 2),Tiefe * -1,1,0,_ANF,0,0,0,SnapXY,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,Steig / 3,0,10,2)
+G03M (0,Gewinde_DM-((Gewinde_Dm / 2) -( Kern_Dm / 2)),Steig / 2,0,(Gewinde_DM-((Gewinde_Dm / 2) -( Kern_Dm / 2)))/2,0,10,2,10)
+G03M (0,0,Steig,0,- (Gewinde_Dm /2),0,10,2,10)
+G03M (0,- (Gewinde_DM-((Gewinde_Dm / 2) - ( Kern_Dm / 2))),Steig / 2,0,- (Gewinde_DM-((Gewinde_Dm / 2) - ( Kern_Dm / 2))) /2,0,10,2,10);BREAKPOINT
+EP (0,_ANF,0)
+ELSE
+;Gegenlauf
+SP (M_X,M_Y - (Kern_Dm / 2),Tiefe * -1,2,0,_ANF,0,0,0,SnapXY,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,Steig / 3,0,10,2)
+g02m (0,Gewinde_DM-((Gewinde_Dm / 2) -( Kern_Dm / 2)),Steig / 2,0,(Gewinde_DM-((Gewinde_Dm / 2) -( Kern_Dm / 2)))/2,0,10,2,10)
+g02m (0,0,Steig,0,- (Gewinde_Dm /2),0,10,2,10)
+g02m (0,-(Gewinde_DM-((Gewinde_Dm / 2) -( Kern_Dm / 2))),Steig / 2,0,- ((Gewinde_DM-((Gewinde_Dm / 2) -( Kern_Dm / 2)))/2),0,10,2,10)
+EP (0,_ANF,0)
+END
+END
+;Linksgewinde  Innen
+IF A_Typ = 12
+IF V_Bohr = -1
+SP (M_X,M_Y,5,0,0,_ANF,0,0,0,SnapXY,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=VB_Feed / 2)
+G01 (0,0,-1,0,10,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=VB_Feed)
+G01 (0,0,- V_Tief,0,10,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+EP (0,_ANF,0)
+END
+;Gleichlauf
+IF B_Richtung=0
+SP (M_X,M_Y - (Kern_Dm / 2),Tiefe * -1,1,0,_ANF,0,0,0,SnapXY,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,(Steig / 3) + (Steig * 2),0,10,2)
+G03M (0,Gewinde_DM-((Gewinde_Dm / 2) -( Kern_Dm / 2)),-(Steig / 2),0,(Gewinde_DM-((Gewinde_Dm / 2) -( Kern_Dm / 2)))/2,0,10,2,10)
+G03M (0,0,- Steig,0,- (Gewinde_Dm /2),0,10,2,10)
+G03M (0,- (Gewinde_DM-((Gewinde_Dm / 2) - ( Kern_Dm / 2))),- (Steig / 2),0,- (Gewinde_DM-((Gewinde_Dm / 2) - ( Kern_Dm / 2))) /2,0,10,2,10)
+EP (0,_ANF,0)
+ELSE
+;Gegenlauf
+SP (M_X,M_Y - (Kern_Dm / 2),Tiefe * -1,2,0,_ANF,0,0,0,SnapXY,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,(Steig / 3) + (Steig * 2),0,10,2)
+g02m (0,Gewinde_DM-((Gewinde_Dm / 2) -( Kern_Dm / 2)),- (Steig / 2),0,(Gewinde_DM-((Gewinde_Dm / 2) -( Kern_Dm / 2)))/2,0,10,2,10)
+g02m (0,0,- Steig,0,- (Gewinde_Dm /2),0,10,2,10)
+g02m (0,-(Gewinde_DM-((Gewinde_Dm / 2) -( Kern_Dm / 2))),-(Steig / 2),0,- ((Gewinde_DM-((Gewinde_Dm / 2) -( Kern_Dm / 2)))/2),0,10,2,10)
+EP (0,_ANF,0)
+END
+END
+END
+;Rechtsgewinde Aussen
+IF A_Typ = 21
+END
+;Linksgewinde Aussen
+IF A_Typ = 22
+END

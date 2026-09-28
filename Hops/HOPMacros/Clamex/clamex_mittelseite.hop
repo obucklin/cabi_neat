@@ -1,0 +1,85 @@
+;MAKROTYP=1
+;INSTVERSION=6.3.0.3_Patch_6.3.0.3b
+;EXEVERSION=6.6.1.59[Hops.exe]
+;BILD=Clamex_Mittelseite.wmf
+;INFO=
+;WZGV=7225K_105
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=clamex_mittelseite
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_5.Dll
+;DIALOGPROC=ShowTClamex2_FDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   CL_Wkz := 9;*VAR*Fräswerkzeug
+   CL_Typ := 0;*VAR*1=15 / 2= 14 / 3=10
+   CL_Tief := 15.00;*VAR*Clamex Tiefe
+   Dreh_W := 90;*VAR*Drehwinkel
+   Es_DW := 1;*VAR*Easy Snap Drehwinkel
+   Pos_X := 0;*VAR*Drehpunkt in X
+   Pos_Y := 0;*VAR*Drehpunkt in Y
+   Randmass1 := 0;*VAR*Randmass von X 1
+   Randmass2 := 0;*VAR*Randmass von X2
+   Randmass3 := 0;*VAR*Randmass von X3
+   Y1 := 60;*VAR*Y _Mass von hinten
+   Y2 := 0;*VAR*Y _Mass  mitte
+   Y3 := 60;*VAR*Y _Mass  vorne
+   B_1 := -1;*VAR*Band hinten
+   B_2 := -1;*VAR*Band mitte
+   B_3 := -1;*VAR*Band vorne
+   Temp_X := 0;
+   Temp_Y := 0;
+START
+Fertigteil (500,500,19,0,0,0,0,0,'',0,0,0)
+EbeneF (Pos_X,Pos_Y,0,90,Dreh_W,ES_DW,0)
+Temp_X := _AV_OFFSETX
+Temp_Y := _AV_OFFSETY
+;Hinten
+WZF (CL_Wkz,_VE,_V,_VA,_SD,_ANF,'1');BREAKPOINT
+IF B_1 = -1
+SP (Y1,- 70,- Randmass1,0,0,_ANF,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Y1,-  (_Wzr - CL_Tief),0,0,7,2)
+G01 (Y1,-  (_Wzr - CL_Tief),-1.4,0,7,2)
+G01 (Y1,-  (_Wzr - CL_Tief),2.8,0,7,2)
+G01 (Y1,-  (_Wzr - CL_Tief),-1.4,0,7,2)
+G01 (Y1,-70,0,0,7,2)
+EP (0,_ANF,0)
+END
+;Mitte
+IF B_2 = -1
+WZF (CL_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Y2,-70,- Randmass2,0,0,_ANF,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Y2,-  (_Wzr - CL_Tief),0,0,6,2)
+G01 (Y2,-  (_Wzr - CL_Tief),-1.4,0,6,2)
+G01 (Y2,-  (_Wzr - CL_Tief),2.8,0,6,2)
+G01 (Y2,-  (_Wzr - CL_Tief),-1.4,0,6,2)
+G01 (Y2,- 70,0,0,6,2)
+EP (0,_ANF,0)
+END
+;Vorne
+IF B_3 = -1
+WZF (CL_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Y3,- 70,- Randmass3,0,0,_ANF,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Y3,-  (_Wzr - CL_Tief),0,0,5,2)
+G01 (Y3,-  (_Wzr - CL_Tief),-1.4,0,5,2)
+G01 (Y3,-  (_Wzr - CL_Tief),2.8,0,5,2)
+G01 (Y3,-  (_Wzr - CL_Tief),-1.4,0,5,2)
+G01 (Y3,-70,0,0,5,2)
+EP (0,_ANF,0)
+END
+Ebene0()
+;CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=Dreh_W+ 90,ESXY1:=1)
+;VERXY (Temp_X,Temp_Y)
+;CALL _DrehenBBStart_V5 ( VAL DX:=Temp_X,DY:=Temp_Y,DW:=Dreh_W,ESXY1:=1)
+;ZRechteck (-3.5,Y1+35,7,70,0,0,7,0,0)
+;ZRechteck (-3.5,Y2-35,7,70,0,0,8,0,0)
+;ZRechteck (-3.5,Y3-35,7,70,0,0,1,0,0)
+;CALL _DrehenBBEnde ()
+;VERXYEND()

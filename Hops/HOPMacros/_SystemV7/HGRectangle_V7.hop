@@ -1,0 +1,13 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+;DIALOGDLL=DialogsSys.Dll
+;DIALOGPROC=ShowHGRechteckDialog
+VARS
+   x := 0;*VAR*x-Wert (AP)
+   y := 0;*VAR*y-Wert (AP)
+   B := 200;*VAR*Breite
+   H := 50;*VAR*Höhe
+   W := 0;*VAR*Winkel
+   esxy := 1;*VAR*Easysnap in xy
+START
+HGRechteckV2 (x,y,B,H,W,esxy,1)

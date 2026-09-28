@@ -52,6 +52,13 @@ class StubConfigurator:
         self.version += 1
         return True
 
+    highlighted = set()
+    picked = None
+    pick_count = 0
+
+    def set_highlight(self, names):
+        self.highlighted = set(names)
+
     def generate(self):
         self.stale = False
         self.version += 1
@@ -121,3 +128,39 @@ def test_layout_to_data_projects_parts():
     shelf = next(p for p in data["parts"] if p["category"] == "shelf")
     assert set(shelf) == {"name", "category", "x", "z", "w", "h", "y", "d", "attributes"}
     assert shelf["attributes"]["split"] == "0" and shelf["attributes"]["gap"] == 0
+
+
+def test_export_errors_are_readable(planner, monkeypatch):
+    from cabi_neat import export
+
+    def missing(*args, **kwargs):
+        raise ValueError("no plates")
+
+    planner.configurator.stale = False
+    planner.configurator.cabinet = object()
+    monkeypatch.setattr(export, "hops_zip", missing)
+    response = planner.get_hops()
+    assert response.status_code == 500
+    assert b"HOPS export failed: ValueError: no plates" in response.body
+
+
+def test_new_cabinet(planner):
+    from cabi_neat.config import Cell
+
+    data = planner.get_new()
+    config = CabinetConfig.from_data(data)
+    assert isinstance(config.interior, Cell) and config.interior.door_style.value == "none"
+    assert (config.width, config.height, config.depth) == (CabinetConfig().width, CabinetConfig().height, CabinetConfig().depth)
+    result = planner.post_config(data)
+    assert result["ok"]
+    parts = {p["category"] for p in result["layout"]["parts"]}
+    assert parts == {"side", "top", "bottom", "back"}  # just the carcass
+
+
+def test_highlight_and_pick(planner):
+    planner.post_highlight({"parts": ["shelf_0_0"]})
+    assert planner.get_version()["highlight"] == ["shelf_0_0"]
+    planner.configurator.picked, planner.configurator.pick_count = "shelf_0_1", 3
+    assert planner.get_version()["pick"] == {"name": "shelf_0_1", "count": 3}
+    door = next(p for p in planner.get_state()["layout"]["parts"] if p["category"] == "door")
+    assert len(door["attributes"]["hinges"]) == 4 and door["attributes"]["cup_diameter"] == 35

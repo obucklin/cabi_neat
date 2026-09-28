@@ -1,0 +1,150 @@
+;MAKROTYP=1
+;DZ=0.00
+;DY=0.00
+;DX=0.00
+;KOMMENTAR=
+;NCNAME=_ausklinken_1
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=_ausklinken_1.bmp
+VARS
+   XPos := 0;*VAR*X-Position der Ausklinkung
+   YPos := 0;*VAR*Y-Position der Ausklinkung
+   BasisWinkel := 0;Grundwinkel fürs ausklinken
+   Oeffnungswinkel := 90;Oeffnungswinkel
+   Gutseite := 0;*VAR*[0] Oben  [1] Unten  [2] beide
+   OffsetWinkel := 0;*VAR*Vorhaltewinkel
+   Radius := 20;Verrundungsradius
+   StartX := 100;*VAR*
+   StartY := 100;*VAR*
+   Weg := 0.1;Abfahrweg des Ausklinkung
+   EndX := -100;*VAR*
+   EndY := 0;*VAR*
+   absX := 0;
+   absY := 0;
+   fertig := 0;
+   fertig2 := 0;
+   Winkel2 := 0;
+   EndX_Merk := 0;
+   EndY_Merk := 0;
+START
+;EINGABE
+Rohteil (500,500,20,0,0)
+WZS (14,_VE,_V,_VA,_SD,_ANF)
+VERXY (_rx/2,_ry/2)
+;Makro Ausklinken über 3 Punkte
+;Rechtwinklig abfangen............
+IF XPos=StartX
+IF YPos>StartY
+BasisWinkel := 90
+END
+IF YPos<StartY
+BasisWinkel := -90
+END
+fertig := 1
+END
+IF YPos=StartY
+IF XPos>StartX
+BasisWinkel := 0
+END
+IF XPos<StartX
+BasisWinkel := 180
+END
+fertig := 1
+END
+;BasisWinkel nur berechnen wenn nicht 90°-Raster
+IF fertig=0
+BasisWinkel := ARCTAN((XPos-StartX)/(YPos-StartY))
+IF BasisWinkel<0
+BasisWinkel := BasisWinkel+360
+END
+ELSE
+END
+ChangeVar (BasisWinkel)
+;------------------
+IF XPos=EndX
+IF YPos>EndY
+Winkel2 := -90
+END
+IF YPos<EndY
+Winkel2 := 90
+END
+fertig2 := 1
+END
+IF YPos=EndY
+IF XPos>EndX
+Winkel2 := 180
+END
+IF XPos<EndX
+Winkel2 := 0
+END
+fertig2 := 1
+END
+IF (fertig=1)&(fertig2=1)
+Oeffnungswinkel := 90
+END
+IF fertig2=0
+Winkel2 := ARCTAN((XPos-EndX)/(YPos-EndY))
+END
+ChangeVar (Winkel2)
+;---- Wenn nicht rechtwinklig
+IF (fertig=0)|(fertig2=0)
+IF (StartX>XPos)&(StartY>YPos)
+Oeffnungswinkel := BasisWinkel+Winkel2-180
+END
+IF (StartX>XPos)&(StartY=YPos)
+Oeffnungswinkel := BasisWinkel+Winkel2
+END
+END
+IF Oeffnungswinkel>360
+Oeffnungswinkel := Oeffnungswinkel-360
+END
+ChangeVar (Oeffnungswinkel)
+StartX := XPOS+(_WZR*COS(BasisWinkel+180))
+StartY := YPOS+(_WZR*SIN(BasisWinkel+180))
+BasisWinkel := Basiswinkel+OffsetWinkel
+Oeffnungswinkel := Oeffnungswinkel-2*OffsetWinkel
+;Startpunkt 1. abtauchen berechnen
+weg := _WZD+1
+StartX := XPOS
+StartY := YPOS
+;Endpunkt 1. abtauchen berechnen
+EndX := StartX+(Weg*COS(BasisWinkel+180))
+EndY := StartY+(Weg*SIN(BasisWinkel+180))
+IF GutSeite=0
+;Gutseite oben - eintauchen und dann wegfahren
+Saegen (EndX,EndY,-_WZR,StartX,StartY,-_WZR,2,1,0,1,0,0)
+END
+IF GutSeite=1
+;Gutseite unten - erst eintauchen und dann ranfahren
+Saegen (EndX,EndY,-_WZR,StartX,StartY,-_WZR,2,1,0,0,0,0)
+END
+IF GutSeite=2
+;Gutseite oben - eintauchen und dann wegfahren
+Saegen (EndX,EndY,-_WZR+_RZ/2,StartX,StartY,-_WZR-_WZR+_RZ/2,2,1,0,1,0,0)
+;Gutseite unten - erst eintauchen und dann ranfahren
+Saegen (EndX,EndY,-_WZR,StartX,StartY,-_WZR,2,1,0,0,0,0)
+END
+;Startpunkt 2. abtauchen berechnen
+weg := _WZD+1
+StartX := XPOS
+StartY := YPOS
+;Endpunkt 2. abtauchen berechnen
+EndX := StartX+(Weg*COS(BasisWinkel+OeffnungsWinkel+180))
+EndY := StartY+(Weg*SIN(BasisWinkel+Oeffnungswinkel+180))
+IF GutSeite=0
+;Gutseite oben - eintauchen und dann wegfahren
+Saegen (StartX,StartY,-_WZR,EndX,EndY,-_WZR,2,1,0,0,0,0)
+END
+IF GutSeite=1
+;Gutseite unten - erst eintauchen und dann ranfahren
+Saegen (StartX,StartY,-_WZR,EndX,EndY,-_WZR,2,1,0,1,0,0)
+END
+IF GutSeite=2
+;Gutseite oben - eintauchen und dann wegfahren
+Saegen (StartX,StartY,-_WZR+_RZ/2,EndX,EndY,-_WZR+_RZ/2,2,1,0,0,0,0)
+;Gutseite unten - erst eintauchen und dann ranfahren
+Saegen (StartX,StartY,-_WZR,EndX,EndY,-_WZR,2,1,0,1,0,0)
+END
+HGNeuEnd()
+

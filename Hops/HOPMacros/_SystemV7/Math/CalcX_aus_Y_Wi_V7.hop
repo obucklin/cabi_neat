@@ -1,0 +1,17 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowCalcX_aus_Y_WiDialog
+VARS
+   SX := ;*VAR**REF*Anfangspunkt in X
+   Y := 0;*VAR*Strecke in Y-Richtung
+   Winkel := 0;*VAR*Winkel der Strecke gegenüber X-Achse
+START
+;******************************************************
+;********   Direkt cnc-systeme GmbH   ®  *******
+;******************************************************
+CALL WinkelNormieren_V7 (REF WINKEL:=Winkel)
+IF (Winkel=0) | (Winkel=180) | (Winkel=360)
+Hinweismeldung (Punkt_kann_nicht_berechnet_werden_Laenge_ist_0)
+ELSE
+SX := Y/Tan(Winkel)
+END

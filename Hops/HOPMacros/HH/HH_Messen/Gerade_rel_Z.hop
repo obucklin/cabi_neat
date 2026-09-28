@@ -1,0 +1,52 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.8.0.2[Hops.exe]
+;BILD=GERADE_REL_Z.JPG
+;INFO=
+;WZGV=7235C_001
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Gerade_rel_Z
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   MesspunktNR := 1;*VAR*Messpunktnummer 1=Startpunkt; 2...9=Geraden
+   SX := 50;Startpunkt in X
+   SY := 50;Startpunkt in Y
+   TZO := -5;Tiefe in Z ab Oberkante
+   AXN := 50;*VAR*Endpunkt X relativ
+   AYN := 50;*VAR*Endpunkt Y relativ
+   MR := 0;Hilfsvariable
+   Anzahl_Messpunkte := 0;Gesamtzahl der Messpunkte
+   _TZO := 0;Globale Variable Tiefe ab OK
+START
+Anzahl_Messpunkte := _HHMPNR;BREAKPOINT
+IF MesspunktNR<=0 | MesspunktNR>=999
+Fehlermeldung ('"MesspunktNR" out of Range (min.1; max.999)')
+ELSE
+END
+IF MesspunktNR>Anzahl_Messpunkte
+Fehlermeldung ('"MesspunktNR" higher than the number of measuring points')
+ELSE
+G01 (0,0,_TZO,0,10,0)
+IF MesspunktNR>=1;BREAKPOINT
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=1,MODE:=0,STR:='V.L.MEASPOINT' + INTTOSTR(MesspunktNR) + ' = V.P.MEASARR_1[' + INTTOSTR(MesspunktNR) + ']-V.P.MEASARR_1[' + INTTOSTR(_MesspunktNRalt) + ']');BREAKPOINT
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=0,MODE:=0,STR:='G91');BREAKPOINT
+KG01 ('',AXN,AYN,0,'',10,2);BREAKPOINT
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=0,MODE:=0,STR:='G1 X' + INTTOSTR(AXN) + ' Y' + INTTOSTR(AYN) + ' ZV.L.MEASPOINT' + INTTOSTR(MesspunktNR));BREAKPOINT
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=0,MODE:=0,STR:='G90')
+_MesspunktNRalt := MesspunktNR
+ELSE
+END
+END

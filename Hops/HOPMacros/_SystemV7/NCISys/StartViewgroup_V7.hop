@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowSTARTVIEWGROUP_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   MaxDist := 0;*VAR*Maximalerabstand der Bearbeitungen (SP/EP)
+START
+nciext (-107050,'NCISys',1,0,0,MaxDist)

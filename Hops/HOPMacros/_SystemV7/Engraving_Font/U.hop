@@ -1,0 +1,27 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   DX := 10;
+   DY := 10;
+   DZ := 19;
+   Tool := 38;WZ
+   Z := -1;*VAR*
+   Faktor := 1;*VAR*1=10mm
+START
+Fertigteil(DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;$F$Big Letters
+;WZF(Tool,_VE,_V,_VA,_SD,_ANF,'')
+KB ('U','',7.6633*Faktor,9.9574*Faktor,0,'',0,0)
+KG01 ('',7.6546*Faktor,3.4011*Faktor,_Z,'',0,0)
+KG02M ('',6.4437*Faktor,0.7643*Faktor,_Z,3.8344*Faktor,3.5589*Faktor,'',0,0,0)
+KG02M ('',4.6048*Faktor,0.0428*Faktor,_Z,4.1916*Faktor,3.8003*Faktor,'',0,0,0)
+KG02M ('',2.3384*Faktor,0.1850*Faktor,_Z,3.8647*Faktor,6.3781*Faktor,'',0,0,0)
+KG02M ('',0.3726*Faktor,1.8464*Faktor,_Z,2.9720*Faktor,2.9284*Faktor,'',0,0,0)
+KG02M ('',0.0145*Faktor,3.7181*Faktor,_Z,5.8065*Faktor,3.8559*Faktor,'',0,0,0)
+KG01 ('',0.0004*Faktor,9.9574*Faktor,_Z,'',0,0)
+KSP('???','???',Z,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen('U','KSP','KEP',0,0,0,0,0,0,0,0)
+EP(0,_ANF,0)
+deletecontour ('U',0)

@@ -1,0 +1,93 @@
+;MAKROTYP=0
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=Show_EXECUTESINGLEPOCKET_V7Dialog
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.2
+VARS
+   Name := '';*VAR*Konturnamen
+   AA := 0;*VAR*Abstand Außen/Insel
+   Ueberlappung := 67;*VAR*Überlappung in % vom Werkzeugdurchmesser
+   Mode := 0;*VAR*0 = Spiral; 1 = Konturparallel; 2 = Parallel
+   Angle := 0;*VAR*Winkel Mode=3
+   Tiefe := ;*VAR*Tiefe
+   esmd := 0;*VAR*
+   Anzahl := 0;*VAR*Anzahl Zustellungen
+   MaxZ := 0;*VAR*Maximale Zustelltiefe
+   RD := 0;*VAR*Richtung umkehren
+   FliegendEintauchen := 0;*VAR*
+   MaxEintauchLaenge := 20;*VAR*
+   MaxArcDistLinesToArc := 0.1mm;*VAR*
+   LinesToArc := 0;*VAR*
+   TolShortLine := 0.001mm;*VAR*
+   DeleteShortEle := 1;*VAR*
+   AnzahlP := 0;
+   Z_Index := 0;
+   Z_Anzahl := 0;
+   Z_Step := 0;
+   Z_AktTiefe := 0;
+   PocketKonturName := 'Pocket';
+   HaveToSplit := 0;
+   InClampArea := 0;
+   i := 0;
+START
+;--
+;-- (c) DiREKT
+;--
+IF _WZR<>0
+CALL _MNCDC_HaveToSplitContours (REF RESULT:=HaveToSplit,INCLAMPAREA:=InClampArea VAL CONTOURNAME_CONTOURNAMES:=Name,TIEFE:=Tiefe,TOOLID:=_BOXID,MAXARCTOL:=0.1mm,VIEW_OFFX:=_AV_OFFSETX,VIEW_OFFY:=_AV_OFFSETY,VIEW_OFFZ:=_AV_OFFSETZ,VIEW_ROTA:=_AV_ROTA,VIEW_TIPA:=_AV_TIPA)
+IF (HaveToSplit=1) & (_MNCDC_SplitKind<>-2)
+CALL _MNCDC_ExecutePocket ( VAL NAMEN:=Name,AA:=AA,UEBERLAPPUNG:=Ueberlappung,MODE:=Mode,ANGLE:=Angle,TIEFE:=Tiefe,ESMD:=esmd,ANZAHL:=Anzahl,MAXZ:=MaxZ,RD:=RD,FLIEGENDEINTAUCHEN:=FliegendEintauchen,MAXEINTAUCHLAENGE:=MaxEintauchLaenge,INCLAMPAREA:=InClampArea)
+ELSE
+;Easysnap verrechnen
+Transesd (Tiefe,esmd)
+CALL Call_Extensions_PocketContour (REF COUNT:=AnzahlP VAL CONTOURNAME_CONTOURNAMES:=Name,DISTOUTSIDE:=AA+_WZR,DISTINSIDE:=_WZD-_WZD*Ueberlappung/100,MAXARCDIST:=0.1mm,MAXARCDISTLINESTOARC:=MaxArcDistLinesToArc,LINESTOARC:=LinesToArc,TOLSHORTLINE:=TolShortLine,DELETESHORTELE:=DeleteShortEle,NKS:=7,MODE:=Mode,REVERSE:=RD,ANGLE:=Angle,CONTOURNAME:=PocketKonturName,CONTOURINFO:='',CONTOURLAYER:='')
+IF (AnzahlP=0)
+;SF Fehler ausgeben 13.03.2009
+IF _MNCDC_SplitKind<>-2
+Fehlermeldung (GetMessageText('1001','Keine Fräskonturen vorhanden. Text vermutlich zu klein.'))
+END
+ELSE
+;- Nur negative Zustellungen erlaubt !
+;- Wie in allen Taschenmakros !!!
+Tiefe := -ABS(Tiefe)
+MaxZ := -ABS(MaxZ)
+;Gleichmässige Zustellparameter berechnen
+;CALL _Calc_Count_Step_V5 (REF Z_ANZAHL:=Z_Anzahl,Z_STEP:=Z_Step VAL TIEFE:=Tiefe,ANZAHL:=Anzahl,MAXZ:=MaxZ)
+;Z_AktTiefe := Z_Step
+;Taschenkonturen abarbeiten
+;******* Anzahl Zustellungen errechnen *******
+;SF Z_AktTiefe initialisieren und verweden 06.07.2009
+IF (Tiefe<>0) & (MaxZ<>0)
+Z_Anzahl := trunc(tiefe/maxz)
+Z_AktTiefe := 0
+ELSE
+IF Anzahl>0
+Z_Anzahl := Anzahl
+Z_AktTiefe := 0
+MaxZ := Tiefe/Anzahl
+ELSE
+Z_Anzahl := 0
+Z_AktTiefe := 0.1mm
+END
+END
+;FOR Z_Index := 1 TO Z_Anzahl STEP 1
+;CALL _ExecuteSinglePocketContours_V7 ( VAL KN:=PocketKonturName,MODE:=Mode,LASTTIEFE:=Z_AktTiefe-Z_Step,TIEFE:=Z_AktTiefe,ANZAHLP:=AnzahlP,ANZAHLOUTLINEP:=AnzahlOutlineP,RD:=RD,FLIEGENDEINTAUCHEN:=FliegendEintauchen,MAXEINTAUCHLAENGE:=MaxEintauchLaenge,LASTCALL:=Z_Index=Z_Anzahl)
+;Z_AktTiefe := Z_AktTiefe+Z_Step
+;END
+FOR Z_Index := 1 TO Z_Anzahl STEP 1
+;LastCall richtigen Wert übergeben SF 03.11.2009
+CALL _ExecuteSinglePocketContours_V7 ( VAL KN:=PocketKonturName,MODE:=Mode,LASTTIEFE:=Z_AktTiefe,TIEFE:=Z_AktTiefe+MaxZ,ANZAHLP:=AnzahlP,FLIEGENDEINTAUCHEN:=FliegendEintauchen,MAXEINTAUCHLAENGE:=MaxEintauchLaenge,LASTCALL:=(Z_AktTiefe+MaxZ)=Tiefe)
+Z_AktTiefe := _z
+END
+IF Z_AktTiefe>Tiefe
+;LastCall richtigen Wert übergeben SF 03.11.2009
+CALL _ExecuteSinglePocketContours_V7 ( VAL KN:=PocketKonturName,MODE:=Mode,LASTTIEFE:=Z_AktTiefe,TIEFE:=Tiefe,ANZAHLP:=AnzahlP,FLIEGENDEINTAUCHEN:=FliegendEintauchen,MAXEINTAUCHLAENGE:=MaxEintauchLaenge,LASTCALL:=1)
+END
+FOR i := 1 TO AnzahlP STEP 1
+deletecontour (PocketKonturName+'_'+IntToStr(i),0)
+END
+END
+END
+ELSE
+Fehlermeldung (GetMessageText('17','Bitte Werkzeug definieren'))
+END

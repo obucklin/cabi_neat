@@ -1,0 +1,168 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=xxx
+;NCNAME=1
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=RechteckWMF.bmp
+VARS
+   X_mitte := _RX/2;*VAR*Rechteckmitte in X
+   Y_Mitte := _RY/2;*VAR*Rechteckmitte in Y
+   Laenge := 100;*VAR*Rechteck in X
+   Breite := 50;*VAR*Rechteck in Y
+   Radius := 0;*VAR*Eckenradius
+   Winkel := 0;*VAR*Winkel gegen X-Achse
+   Tiefe := 0;*VAR*Tiefe der Tasche
+   Zutiefe := -5;*VAR*Zustellung pro Fräsung
+   Radiuskorrektur := 1;*VAR*0=Mitte,1=Auserhalb,2=Innerhalb
+   AB := 2;*VAR*0 -> keine , 2 -> Radial
+   Aufmass := 0;Aufmass zur Kontur
+   LX := 0;FW-X
+   LY := 0;FW-Y
+   ANZAHL := 0;
+   ÜberfahrKreisbogen := 2;
+   LängeGeradenstück := 0;
+   KreisEndpunktY := 0;Kreisendpunkt in Y beim Überfahren des Endpunktes
+   MinimalerAbstand := 0.5;
+   UeberfahrwegX := 0.5;Überfahrweg in X
+   a := 0;errechnet
+   Zustell := 0;errechnet
+   b := 0;errechnet
+   breite1 := 0;errechnet
+   umkehren := 0;*VAR*Bearbeitung umkehren
+   überf := 5;Überfahrweg
+START
+;Rohteil (100,100,20,0,0)
+;direkt cnc systeme NCHOPS Version3.4
+;*******ZUWEISUNG*******
+LX := laenge
+LY := Breite
+;****************************
+;*******ZUWEISUNG*******
+IF BREITE>LAENGE
+LY := laenge
+LX := Breite
+CALL _RotateBBStart (VAL DX:=x_mitte,DY:=y_mitte,Dw:=winkel+90)
+ELSE
+CALL _RotateBBStart (VAL DX:=x_mitte,DY:=y_mitte,Dw:=winkel)
+END
+;****************************
+;***** Überprüfung Tiefe *****
+IF Tiefe<0
+tiefe := tiefe*(-1)
+END
+IF zuTiefe<0
+zutiefe := zutiefe*(-1)
+END
+;****************************
+IF tiefe=_rz
+tiefe := tiefe
+END
+IF zuTiefe=0
+zuTiefe := Tiefe
+END
+;******* a errechnet *******
+IF zutiefe=0
+a := 0
+ELSE
+a := (tiefe div zutiefe)
+END
+;****************************
+;***** Radius muss kleiner sein als Breite/2 *****
+IF (radius>LX/2)|(radius>LY/2)
+Fehlermeldung (RADIUS_TO_LARGE)
+END
+;***** Eckradius *****
+IF (Radiuskorrektur=2)&(Radius<_WZR)&(Radius>0)
+Fehlermeldung (TOOL_DIAMETER_TO_LARGE)
+END
+;****************************
+;****** Wenn Werkzeug zu gross für die Taschengrösse
+IF (LX<(_WZD+0.1))|(ly<(_WZD+0.1))&(Radiuskorrektur=2)
+DRECTANGLE(X_MITTE-LX,Y_MITTE-LY,LX,LY,255,255)
+GIVEOUTERROR (WRONG_TOOL_DIAMETER)
+END
+IF (ly-Überf)<=_WZD
+überf := (ly-_WZD-1)/2
+END
+IF (lx<(_WZD+0.1))|(ly<(_WZD+0.1))&(Radiuskorrektur=2)
+DRECTANGLE(X_MITTE-LX,Y_MITTE-LY,LX,LY,255,255)
+GIVEOUTERROR (WRONG_TOOL_DIAMETER)
+END
+;****************************
+überf := 1
+;****************************
+;***** Anfahrbewegung *****
+IF ab=1
+ab := 2
+END
+;****************************
+IF Radiuskorrektur=0
+AB := 0
+END
+IF Tiefe=0
+Zutiefe := 0
+END
+IF Umkehren=0
+SP(X_MITTE+ÜBERF,Y_MITTE-(LY/2),0,RADIUSKORREKTUR,AB,1.1,AUFMASS,0,0)
+FOR b := 1 TO a STEP 1
+G01(X_MITTE+(ÜBERF/2),_Y,_Z-ZUTIEFE,RADIUS)
+G01(X_MITTE-(LX/2),_Y,_Z,RADIUS)
+G01(_X,_Y+LY,_Z,RADIUS)
+G01(_X+LX,_Y,_Z,RADIUS)
+G01(_X,_Y-LY,_Z,RADIUS)
+G01(X_MITTE+ÜBERF,_Y,_Z,RADIUS)
+END
+IF zustell<tiefe
+zutiefe := tiefe-(a*zutiefe)
+END
+G01(X_MITTE+(ÜBERF/2),_Y,_Z-ZUTIEFE,RADIUS)
+G01(X_MITTE-(LX/2),_Y,_Z,RADIUS)
+G01(_X,_Y+LY,_Z,RADIUS)
+G01(_X+LX,_Y,_Z,RADIUS)
+G01(_X,_Y-LY,_Z,RADIUS)
+G01(X_MITTE-(ÜBERF/2),_Y,_Z,0)
+G01(X_MITTE-ÜBERF,_Y,0,0)
+IF Radiuskorrektur>0
+EP(AB,1.1,0)
+ELSE
+EP(AB,1.1,0)
+END
+ELSE
+IF Radiuskorrektur=1
+Radiuskorrektur := 2
+ELSE
+IF Radiuskorrektur = 2
+Radiuskorrektur := 1
+END
+END
+SP(X_MITTE-ÜBERF,Y_MITTE-(LY/2),0,RADIUSKORREKTUR,AB,1.1,AUFMASS,0,0)
+FOR b := 1 TO a STEP 1
+G01(X_MITTE-(ÜBERF/2),_Y,_Z-ZUTIEFE,RADIUS)
+G01(X_MITTE+(LX/2),_Y,_Z,RADIUS)
+G01(_X,_Y+LY,_Z,RADIUS)
+G01(_X-LX,_Y,_Z,RADIUS)
+G01(_X,_Y-LY,_Z,RADIUS)
+G01(X_MITTE-ÜBERF,_Y,_Z,RADIUS)
+END
+IF zustell<tiefe
+zutiefe := tiefe-(a*zutiefe)
+END
+G01(X_MITTE-(ÜBERF/2),_Y,_Z-ZUTIEFE,RADIUS)
+G01(X_MITTE+(LX/2),_Y,_Z,RADIUS)
+G01(_X,_Y+LY,_Z,RADIUS)
+G01(_X-LX,_Y,_Z,RADIUS)
+G01(_X,_Y-LY,_Z,RADIUS)
+G01(X_MITTE-(LX/2)+2*RADIUS,_Y,_Z,0)
+G01(X_MITTE+(ÜBERF/2),_Y,_Z,0)
+G01(X_MITTE+ÜBERF,_Y,0,0)
+IF Radiuskorrektur>0
+EP(AB,1.1,0)
+ELSE
+EP(AB,1.1,0)
+END
+END
+CALL _RotateBBEnd ()
+

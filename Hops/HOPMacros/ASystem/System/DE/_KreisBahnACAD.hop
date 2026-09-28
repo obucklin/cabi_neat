@@ -1,0 +1,30 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCName
+;MASCHINE=SIMU
+;WZGV=1
+;BILD=KreisbahnWMF.bmp
+VARS
+   X_Mitte := _RX/2;*VAR*Mittelpunkt in X
+   Y_Mitte := _RY/2;*VAR*Mittelpunkt in Y
+   xf := 0;*VAR*
+   yf := 0;*VAR*
+   dw := 0;*VAR*
+   WerkzeugBox := 1;*VAR*
+   Z := -5;*VAR*Frästiefe
+   Radiuskorrektur := 2;*VAR*0=Mitte,1=Aussen,2=Innen
+   AB := 1;*VAR*0 -> keine An/Abfahrbewegung, <> 0 -> An/Abfahrbewegung
+   Radius := 20;Radius der Kreisbahn
+   KreisEndpunktY := 0;
+   ÜberfahrKreisbogen := 2;
+START
+;direkt cnc systeme NCHOPS Version3.0
+;Kreisbahn V 3.0/SF/30.09.98
+;Rohteil (100,100,19,0,0)
+Radius := XF
+WZF (WerkzeugBox,_VE,_V,_VA,_SD,_ANF)
+CALL _Kreisbahn (VAL X_Mitte:=X_Mitte,Y_Mitte:=Y_Mitte,Z:=Z,Radius:=Radius,Radiuskorrektur:=Radiuskorrektur,AB:=AB)
+

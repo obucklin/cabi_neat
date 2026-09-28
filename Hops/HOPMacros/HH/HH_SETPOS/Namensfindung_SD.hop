@@ -1,0 +1,1114 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.10.0.57[Hops.exe]
+;BILD=NAMENSFINDUNG_SD.WMF
+;INFO=
+;WZGV=7335X_103
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Namensfindung
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+START
+Fertigteil (600,400,19,0,0,0,0,0,'',0,0,0,0)
+;#
+;#
+;Namen von Grundkörper mit Sauger zusammenbauen aus Saugerkennungen
+;#
+;#
+IF (_S1>=0)&(_S2>=0)
+;#
+;#
+;Name für ersten Sauger generieren
+;#
+;#
+IF _S1=0
+_SZB := _CLAMP1
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,12.4,35,12.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,17.4,35,12.4,40,17.4,38390,0,0,0,_Strich,1,1)
+ZLinie (40,17.4,40,35.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,35.4,40,35.4,35,40.4,38390,0,0,0,_Strich,1,1)
+ZLinie (35,40.4,-35,40.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,35.4,-35,40.4,-40,35.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,35.4,-40,17.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,17.4,-40,17.4,-35,12.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-35,12.4,0,12.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,12.4,35,12.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,17.4,35,12.4,40,17.4,38390,0,0,0,_Strich,1,1)
+ZLinie (40,17.4,40,35.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,35.4,40,35.4,35,40.4,38390,0,0,0,_Strich,1,1)
+ZLinie (35,40.4,-35,40.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,35.4,-35,40.4,-40,35.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,35.4,-40,17.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,17.4,-40,17.4,-35,12.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-35,12.4,0,12.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,12.4,35,12.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,17.4,35,12.4,40,17.4,38390,0,0,0,_Strich,1,1)
+ZLinie (40,17.4,40,35.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,35.4,40,35.4,35,40.4,38390,0,0,0,_Strich,1,1)
+ZLinie (35,40.4,-35,40.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,35.4,-35,40.4,-40,35.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,35.4,-40,17.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,17.4,-40,17.4,-35,12.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-35,12.4,0,12.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,12.4,35,12.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,17.4,35,12.4,40,17.4,38390,0,0,0,_Strich,1,1)
+ZLinie (40,17.4,40,35.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,35.4,40,35.4,35,40.4,38390,0,0,0,_Strich,1,1)
+ZLinie (35,40.4,-35,40.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,35.4,-35,40.4,-40,35.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,35.4,-40,17.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,17.4,-40,17.4,-35,12.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-35,12.4,0,12.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+IF _S1=1
+_SZB := _CLAMP2
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,0,30,0,38390,0,0,_Strich,1,1)
+ZKBCCW (30,10,30,0,40,10,38390,0,0,0,_Strich,1,1)
+ZLinie (40,10,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,10,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,10,-40,10,-30,0,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,0,0,0,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,0,30,0,38390,0,0,_Strich,1,1)
+ZKBCCW (30,10,30,0,40,10,38390,0,0,0,_Strich,1,1)
+ZLinie (40,10,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,10,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,10,-40,10,-30,0,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,0,0,0,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,0,30,0,38390,0,0,_Strich,1,1)
+ZKBCCW (30,10,30,0,40,10,38390,0,0,0,_Strich,1,1)
+ZLinie (40,10,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,10,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,10,-40,10,-30,0,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,0,0,0,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,0,30,0,38390,0,0,_Strich,1,1)
+ZKBCCW (30,10,30,0,40,10,38390,0,0,0,_Strich,1,1)
+ZLinie (40,10,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,10,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,10,-40,10,-30,0,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,0,0,0,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+IF _S1=2
+_SZB := _CLAMP3
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-40,30,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (30,-30,30,-40,40,-30,38390,0,0,0,_Strich,1,1)
+ZLinie (40,-30,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,-30,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,-30,-40,-30,-30,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,-40,0,-40,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-40,30,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (30,-30,30,-40,40,-30,38390,0,0,0,_Strich,1,1)
+ZLinie (40,-30,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,-30,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,-30,-40,-30,-30,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,-40,0,-40,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-40,30,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (30,-30,30,-40,40,-30,38390,0,0,0,_Strich,1,1)
+ZLinie (40,-30,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,-30,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,-30,-40,-30,-30,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,-40,0,-40,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-40,30,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (30,-30,30,-40,40,-30,38390,0,0,0,_Strich,1,1)
+ZLinie (40,-30,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,-30,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,-30,-40,-30,-30,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,-40,0,-40,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+IF _S1=3
+_SZB := _Clamp4
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-0.4,45.4,-0.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,4.5,45.4,-0.4,50.4,4.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,4.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,4.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,4.5,-50.4,4.5,-45.4,-0.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-0.4,0,-0.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-0.4,45.4,-0.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,4.5,45.4,-0.4,50.4,4.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,4.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,4.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,4.5,-50.4,4.5,-45.4,-0.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-0.4,0,-0.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-0.4,45.4,-0.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,4.5,45.4,-0.4,50.4,4.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,4.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,4.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,4.5,-50.4,4.5,-45.4,-0.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-0.4,0,-0.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-0.4,45.4,-0.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,4.5,45.4,-0.4,50.4,4.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,4.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,4.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,4.5,-50.4,4.5,-45.4,-0.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-0.4,0,-0.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+IF _S1=4
+_SZB := _Clamp5
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-10.4,45.4,-10.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-5.5,45.4,-10.4,50.4,-5.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-5.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-5.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-5.5,-50.4,-5.5,-45.4,-10.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-10.4,0,-10.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-10.4,45.4,-10.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-5.5,45.4,-10.4,50.4,-5.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-5.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-5.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-5.5,-50.4,-5.5,-45.4,-10.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-10.4,0,-10.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-10.4,45.4,-10.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-5.5,45.4,-10.4,50.4,-5.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-5.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-5.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-5.5,-50.4,-5.5,-45.4,-10.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-10.4,0,-10.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-10.4,45.4,-10.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-5.5,45.4,-10.4,50.4,-5.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-5.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-5.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-5.5,-50.4,-5.5,-45.4,-10.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-10.4,0,-10.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+IF _S1=5
+_SZB := _Clamp6
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-25.4,45.4,-25.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-20.5,45.4,-25.4,50.4,-20.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-20.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-20.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-20.5,-50.4,-20.5,-45.4,-25.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-25.4,0,-25.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-25.4,45.4,-25.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-20.5,45.4,-25.4,50.4,-20.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-20.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-20.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-20.5,-50.4,-20.5,-45.4,-25.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-25.4,0,-25.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-25.4,45.4,-25.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-20.5,45.4,-25.4,50.4,-20.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-20.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-20.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-20.5,-50.4,-20.5,-45.4,-25.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-25.4,0,-25.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-25.4,45.4,-25.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-20.5,45.4,-25.4,50.4,-20.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-20.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-20.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-20.5,-50.4,-20.5,-45.4,-25.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-25.4,0,-25.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+IF _S1=6
+_SZB := _Clamp7
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-50,40,-50,38390,0,0,_Strich,1,1)
+ZKBCCW (40,-40,40,-50,50,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (50,-40,50,40,38390,0,0,_Strich,1,1)
+ZKBCCW (40,40,50,40,40,50,38390,0,0,0,_Strich,1,1)
+ZLinie (40,50,-40,50,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,40,-40,50,-50,40,38390,0,0,0,_Strich,1,1)
+ZLinie (-50,40,-50,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,-40,-50,-40,-40,-50,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,-50,0,-50,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-50,40,-50,38390,0,0,_Strich,1,1)
+ZKBCCW (40,-40,40,-50,50,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (50,-40,50,40,38390,0,0,_Strich,1,1)
+ZKBCCW (40,40,50,40,40,50,38390,0,0,0,_Strich,1,1)
+ZLinie (40,50,-40,50,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,40,-40,50,-50,40,38390,0,0,0,_Strich,1,1)
+ZLinie (-50,40,-50,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,-40,-50,-40,-40,-50,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,-50,0,-50,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-50,40,-50,38390,0,0,_Strich,1,1)
+ZKBCCW (40,-40,40,-50,50,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (50,-40,50,40,38390,0,0,_Strich,1,1)
+ZKBCCW (40,40,50,40,40,50,38390,0,0,0,_Strich,1,1)
+ZLinie (40,50,-40,50,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,40,-40,50,-50,40,38390,0,0,0,_Strich,1,1)
+ZLinie (-50,40,-50,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,-40,-50,-40,-40,-50,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,-50,0,-50,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+ZLinie (0,-50,40,-50,38390,0,0,_Strich,1,1)
+ZKBCCW (40,-40,40,-50,50,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (50,-40,50,40,38390,0,0,_Strich,1,1)
+ZKBCCW (40,40,50,40,40,50,38390,0,0,0,_Strich,1,1)
+ZLinie (40,50,-40,50,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,40,-40,50,-50,40,38390,0,0,0,_Strich,1,1)
+ZLinie (-50,40,-50,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,-40,-50,-40,-40,-50,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,-50,0,-50,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+IF _S1=7
+_SZB := _Clamp0
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=-40,EX:=0,EY:=40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=40,EX:=0,EY:=-40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=-40,EX:=0,EY:=40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=40,EX:=0,EY:=-40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=-40,EX:=0,EY:=40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=40,EX:=0,EY:=-40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_1,ESXY1:=0)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=-40,EX:=0,EY:=40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=40,EX:=0,EY:=-40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+;#
+;#
+;Name für zweiten Sauger generieren
+;#
+;#
+IF _S2=0
+_SZB := STRINSERT(_SZB,'_',8)
+_SZB := STRINSERT(_SZB,_Clamp1,9)
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,12.4,35,12.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,17.4,35,12.4,40,17.4,38390,0,0,0,_Strich,1,1)
+ZLinie (40,17.4,40,35.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,35.4,40,35.4,35,40.4,38390,0,0,0,_Strich,1,1)
+ZLinie (35,40.4,-35,40.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,35.4,-35,40.4,-40,35.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,35.4,-40,17.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,17.4,-40,17.4,-35,12.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-35,12.4,0,12.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,12.4,35,12.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,17.4,35,12.4,40,17.4,38390,0,0,0,_Strich,1,1)
+ZLinie (40,17.4,40,35.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,35.4,40,35.4,35,40.4,38390,0,0,0,_Strich,1,1)
+ZLinie (35,40.4,-35,40.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,35.4,-35,40.4,-40,35.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,35.4,-40,17.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,17.4,-40,17.4,-35,12.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-35,12.4,0,12.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,12.4,35,12.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,17.4,35,12.4,40,17.4,38390,0,0,0,_Strich,1,1)
+ZLinie (40,17.4,40,35.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,35.4,40,35.4,35,40.4,38390,0,0,0,_Strich,1,1)
+ZLinie (35,40.4,-35,40.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,35.4,-35,40.4,-40,35.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,35.4,-40,17.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,17.4,-40,17.4,-35,12.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-35,12.4,0,12.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,12.4,35,12.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,17.4,35,12.4,40,17.4,38390,0,0,0,_Strich,1,1)
+ZLinie (40,17.4,40,35.4,38390,0,0,_Strich,1,1)
+ZKBCCW (35,35.4,40,35.4,35,40.4,38390,0,0,0,_Strich,1,1)
+ZLinie (35,40.4,-35,40.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,35.4,-35,40.4,-40,35.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,35.4,-40,17.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-35,17.4,-40,17.4,-35,12.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-35,12.4,0,12.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+IF _S2=1
+_SZB := STRINSERT(_SZB,'_',8)
+_SZB := STRINSERT(_SZB,_Clamp2,9)
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,0,30,0,38390,0,0,_Strich,1,1)
+ZKBCCW (30,10,30,0,40,10,38390,0,0,0,_Strich,1,1)
+ZLinie (40,10,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,10,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,10,-40,10,-30,0,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,0,0,0,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,0,30,0,38390,0,0,_Strich,1,1)
+ZKBCCW (30,10,30,0,40,10,38390,0,0,0,_Strich,1,1)
+ZLinie (40,10,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,10,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,10,-40,10,-30,0,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,0,0,0,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,0,30,0,38390,0,0,_Strich,1,1)
+ZKBCCW (30,10,30,0,40,10,38390,0,0,0,_Strich,1,1)
+ZLinie (40,10,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,10,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,10,-40,10,-30,0,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,0,0,0,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,0,30,0,38390,0,0,_Strich,1,1)
+ZKBCCW (30,10,30,0,40,10,38390,0,0,0,_Strich,1,1)
+ZLinie (40,10,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,10,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,10,-40,10,-30,0,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,0,0,0,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+IF _S2=2
+_SZB := STRINSERT(_SZB,'_',8)
+_SZB := STRINSERT(_SZB,_Clamp3,9)
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-40,30,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (30,-30,30,-40,40,-30,38390,0,0,0,_Strich,1,1)
+ZLinie (40,-30,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,-30,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,-30,-40,-30,-30,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,-40,0,-40,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-40,30,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (30,-30,30,-40,40,-30,38390,0,0,0,_Strich,1,1)
+ZLinie (40,-30,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,-30,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,-30,-40,-30,-30,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,-40,0,-40,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-40,30,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (30,-30,30,-40,40,-30,38390,0,0,0,_Strich,1,1)
+ZLinie (40,-30,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,-30,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,-30,-40,-30,-30,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,-40,0,-40,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-40,30,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (30,-30,30,-40,40,-30,38390,0,0,0,_Strich,1,1)
+ZLinie (40,-30,40,30,38390,0,0,_Strich,1,1)
+ZKBCCW (30,30,40,30,30,40,38390,0,0,0,_Strich,1,1)
+ZLinie (30,40,-30,40,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,30,-30,40,-40,30,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,30,-40,-30,38390,0,0,_Strich,1,1)
+ZKBCCW (-30,-30,-40,-30,-30,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (-30,-40,0,-40,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+IF _S2=3
+_SZB := STRINSERT(_SZB,'_',8)
+_SZB := STRINSERT(_SZB,_Clamp4,9)
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-0.4,45.4,-0.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,4.5,45.4,-0.4,50.4,4.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,4.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,4.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,4.5,-50.4,4.5,-45.4,-0.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-0.4,0,-0.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-0.4,45.4,-0.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,4.5,45.4,-0.4,50.4,4.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,4.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,4.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,4.5,-50.4,4.5,-45.4,-0.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-0.4,0,-0.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-0.4,45.4,-0.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,4.5,45.4,-0.4,50.4,4.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,4.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,4.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,4.5,-50.4,4.5,-45.4,-0.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-0.4,0,-0.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-0.4,45.4,-0.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,4.5,45.4,-0.4,50.4,4.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,4.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,4.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,4.5,-50.4,4.5,-45.4,-0.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-0.4,0,-0.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+IF _S2=4
+_SZB := STRINSERT(_SZB,'_',8)
+_SZB := STRINSERT(_SZB,_Clamp5,9)
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-10.4,45.4,-10.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-5.5,45.4,-10.4,50.4,-5.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-5.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-5.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-5.5,-50.4,-5.5,-45.4,-10.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-10.4,0,-10.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-10.4,45.4,-10.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-5.5,45.4,-10.4,50.4,-5.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-5.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-5.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-5.5,-50.4,-5.5,-45.4,-10.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-10.4,0,-10.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-10.4,45.4,-10.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-5.5,45.4,-10.4,50.4,-5.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-5.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-5.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-5.5,-50.4,-5.5,-45.4,-10.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-10.4,0,-10.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-10.4,45.4,-10.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-5.5,45.4,-10.4,50.4,-5.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-5.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-5.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-5.5,-50.4,-5.5,-45.4,-10.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-10.4,0,-10.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+IF _S2=5
+_SZB := STRINSERT(_SZB,'_',8)
+_SZB := STRINSERT(_SZB,_Clamp6,9)
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-25.4,45.4,-25.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-20.5,45.4,-25.4,50.4,-20.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-20.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-20.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-20.5,-50.4,-20.5,-45.4,-25.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-25.4,0,-25.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-25.4,45.4,-25.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-20.5,45.4,-25.4,50.4,-20.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-20.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-20.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-20.5,-50.4,-20.5,-45.4,-25.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-25.4,0,-25.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-25.4,45.4,-25.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-20.5,45.4,-25.4,50.4,-20.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-20.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-20.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-20.5,-50.4,-20.5,-45.4,-25.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-25.4,0,-25.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-25.4,45.4,-25.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,-20.5,45.4,-25.4,50.4,-20.5,38390,0,0,0,_Strich,1,1)
+ZLinie (50.4,-20.5,50.4,45.4,38390,0,0,_Strich,1,1)
+ZKBCCW (45.4,45.4,50.4,45.4,45.4,50.4,38390,0,0,0,_Strich,1,1)
+ZLinie (45.4,50.4,-45.4,50.4,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,45.4,-45.4,50.4,-50.4,45.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-50.4,45.4,-50.4,-20.5,38390,0,0,_Strich,1,1)
+ZKBCCW (-45.4,-20.5,-50.4,-20.5,-45.4,-25.4,38390,0,0,0,_Strich,1,1)
+ZLinie (-45.4,-25.4,0,-25.4,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+IF _S2=6
+_SZB := STRINSERT(_SZB,'_',8)
+_SZB := STRINSERT(_SZB,_Clamp7,9)
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-50,40,-50,38390,0,0,_Strich,1,1)
+ZKBCCW (40,-40,40,-50,50,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (50,-40,50,40,38390,0,0,_Strich,1,1)
+ZKBCCW (40,40,50,40,40,50,38390,0,0,0,_Strich,1,1)
+ZLinie (40,50,-40,50,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,40,-40,50,-50,40,38390,0,0,0,_Strich,1,1)
+ZLinie (-50,40,-50,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,-40,-50,-40,-40,-50,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,-50,0,-50,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-50,40,-50,38390,0,0,_Strich,1,1)
+ZKBCCW (40,-40,40,-50,50,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (50,-40,50,40,38390,0,0,_Strich,1,1)
+ZKBCCW (40,40,50,40,40,50,38390,0,0,0,_Strich,1,1)
+ZLinie (40,50,-40,50,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,40,-40,50,-50,40,38390,0,0,0,_Strich,1,1)
+ZLinie (-50,40,-50,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,-40,-50,-40,-40,-50,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,-50,0,-50,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-50,40,-50,38390,0,0,_Strich,1,1)
+ZKBCCW (40,-40,40,-50,50,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (50,-40,50,40,38390,0,0,_Strich,1,1)
+ZKBCCW (40,40,50,40,40,50,38390,0,0,0,_Strich,1,1)
+ZLinie (40,50,-40,50,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,40,-40,50,-50,40,38390,0,0,0,_Strich,1,1)
+ZLinie (-50,40,-50,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,-40,-50,-40,-40,-50,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,-50,0,-50,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+ZLinie (0,-50,40,-50,38390,0,0,_Strich,1,1)
+ZKBCCW (40,-40,40,-50,50,-40,38390,0,0,0,_Strich,1,1)
+ZLinie (50,-40,50,40,38390,0,0,_Strich,1,1)
+ZKBCCW (40,40,50,40,40,50,38390,0,0,0,_Strich,1,1)
+ZLinie (40,50,-40,50,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,40,-40,50,-50,40,38390,0,0,0,_Strich,1,1)
+ZLinie (-50,40,-50,-40,38390,0,0,_Strich,1,1)
+ZKBCCW (-40,-40,-50,-40,-40,-50,38390,0,0,0,_Strich,1,1)
+ZLinie (-40,-50,0,-50,38390,0,0,_Strich,1,1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+IF _S2=7
+_SZB := STRINSERT(_SZB,'_',8)
+_SZB := STRINSERT(_SZB,_Clamp0,9)
+IF _Zeichnen=1
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=-40,EX:=0,EY:=40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=40,EX:=0,EY:=-40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=-40,EX:=0,EY:=40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=40,EX:=0,EY:=-40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S2,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=-40,EX:=0,EY:=40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=40,EX:=0,EY:=-40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S1,_Yakt)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=_DWakt_2,ESXY1:=0)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=-40,EX:=0,EY:=40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _ZKBCCWR_V7 ( VAL SX:=0,SY:=40,EX:=0,EY:=-40,R:=40,FARBE:=0,ESXY1:=0,ESXY2:=0,THICKNESS:=4,THICKNESSKIND:=1,USEDNCDATA:=1)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+END
+END
+END
+;#
+;#
+;Name mit Feld Index erweitern
+;#
+;#
+IF _Feld=0
+_SZB := STRINSERT(_SZB,'A_',0)
+END
+IF _Feld=1
+_SZB := STRINSERT(_SZB,'D_',0)
+END
+_SZB := STRINSERT(_SZB,'_',0)
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+IF STRPOS('A',_SZB)>0
+_SZB := STRREPLACE(_SZB,'A','D')
+ELSE
+_SZB := STRREPLACE(_SZB,'D','A')
+END
+END
+;#
+;#
+;Name um Listennummer erweitern
+;#
+;#
+IF STRPOS('A',_SZB)>0
+_SZB := STRINSERT(_SZB,INTTOSTR((_S1*8)+(_S2+1)),0)
+END
+IF STRPOS('D',_SZB)>0
+_SZB := STRINSERT(_SZB,INTTOSTR((_S1*8)+(_S2+1)+100),0)
+END
+;#
+;#
+;Name für ersten Sauger generieren
+;#
+;#
+_SN := _SZB
+ELSE
+;#
+;#
+;Fehler falls S1 oder S2 nicht gewählt wurden
+;#
+;#
+IF (_S1=-1)|(_S1>7)
+Fehlermeldung ('Error-Please check Inputs')
+END
+IF (_S2=-1)|(_S2>7)
+Fehlermeldung ('Error-Please check Inputs')
+END
+END

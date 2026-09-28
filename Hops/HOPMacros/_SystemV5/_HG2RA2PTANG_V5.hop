@@ -1,0 +1,22 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_HG2RA2PTANG_V5Dialog
+VARS
+   HTPX1 := 0;*VAR*Erster Punkt in X
+   HTPY1 := 0;*VAR*Erster Punkt in Y
+   HTPX2 := 0;*VAR*Zweiter Punkt in X
+   HTPY2 := 0;*VAR*Zweiter Punkt in Y
+   _HTPX1 := 0;
+   _HTPY1 := 0;
+   _HTPX2 := 0;
+   _HTPY2 := 0;
+   esxy1 := 0;*VAR*
+   esxy2 := 0;*VAR*
+START
+transesxy (HTPX1,HTPY1,esxy1,0)
+transesxy (HTPX2,HTPY2,esxy2,0)
+CALLDLL HG2PRTANGP2(Hilfsgeometrie,Dummy, VAL P1X:=HTPX1,P1Y:=HTPY1,P2X:=HTPX2,P2Y:=HTPY2)
+_HTPX1 := HTPX1
+_HTPY1 := HTPY1
+_HTPX2 := HTPX2
+_HTPY2 := HTPY2

@@ -1,0 +1,73 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=HORTASCH
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=_HorTasche.WMF
+VARS
+   EBENE := 1;*VAR*BearbeitungsEbene
+   XPOS := ;*VAR*(Mittelpunkt)
+   YPOS := ;*VAR*(Mittelpunkt)
+   ZPOS := ;*VAR*(TaschenMitte) von Werkstückunterkante
+   Breite := 100;*VAR*Taschenlänge
+   HOEHE := 20;*VAR*TaschenHoehe
+   TIEFE := 0;*VAR*Tiefe der Tasche
+   Radius := 0;*VAR*Verrundungsradius an den Ecken der Tasche
+   Anzahl := 1;*VAR*Anzahl der Zustellungen
+   Farbe := 0;Mit Farbe Füllen JA/NEIN 0/1
+START
+;(c) DiREKT CNC-SYSTEME GmbH /  Version 3.4
+;Rohteil (300,300,100,0,0)
+;WZF (21,_VE,_V,_VA,_SD,_ANF)
+IF Tiefe<0
+TIEFE := -Tiefe
+END
+IF Anzahl<=0
+GIVEOUTERROR (NO_STEPS)
+END
+IF _WZD>hoehe
+GIVEOUTERROR (_WRONG_TOOL)
+END
+;Horizontales Taschenfräsen auf EB1-EB4
+;**************************************************************************************
+IF (Ebene=1)&(Anzahl>0)&(_WZD<=HOEHE)
+;Von VORNE
+DRECTANGLE(XPOS-BREITE/2,YPOS,BREITE,TIEFE,FARBE,1)
+VIEW5(XPOS,YPOS,0,90,0)
+;Ebene1()
+CALL _TaschenFraesen1 (VAL X:=0,Y:=ZPOS,Z:=0,Hoehe:=Hoehe,Laenge:=Breite,Tiefe:=TIEFE,Anzahl:=Anzahl,Radius:=Radius)
+END
+;ENDE von Bearbeitung auf EBENE1
+;**************************************************************************************
+IF (Ebene=2)&(Anzahl>0)&(_WZD<=HOEHE)
+;Von LINKS
+DRECTANGLE(XPOS,YPOS-BREITE/2,TIEFE,BREITE,FARBE,1)
+;Ebene2()
+VIEW5(XPOS,YPOS,0,90,270)
+CALL _TaschenFraesen1 (VAL X:=0,Y:=ZPOS,Z:=0,Hoehe:=Hoehe,Laenge:=Breite,Tiefe:=TIEFE,Anzahl:=Anzahl,Radius:=Radius)
+END
+;ENDE von Bearbeitung auf EBENE2
+;**************************************************************************************
+IF (Ebene=3)&(Anzahl>0)&(_WZD<=HOEHE)
+;Von Hinten
+DRECTANGLE(XPOS-BREITE/2,YPOS,BREITE,-TIEFE,FARBE,1)
+VIEW5(XPOS,YPOS,0,90,180)
+;Ebene3()
+CALL _TaschenFraesen1 (VAL X:=0,Y:=ZPOS,Z:=0,Hoehe:=Hoehe,Laenge:=Breite,Tiefe:=TIEFE,Anzahl:=Anzahl,Radius:=Radius)
+END
+;ENDE von Bearbeitung auf EBENE3
+;**************************************************************************************
+IF (Ebene=4)&(Anzahl>0)&(_WZD<=HOEHE)
+;Von Rechts
+DRECTANGLE(XPOS,YPOS-BREITE/2,-TIEFE,BREITE,FARBE,1)
+VIEW5(XPOS,YPOS,0,90,90)
+;Ebene4()
+CALL _TaschenFraesen1 (VAL X:=0,Y:=ZPOS,Z:=0,Hoehe:=Hoehe,Laenge:=Breite,Tiefe:=TIEFE,Anzahl:=Anzahl,Radius:=Radius)
+END
+;ENDE von Bearbeitung auf EBENE4
+;**************************************************************************************
+VIEW0()
+

@@ -1,0 +1,38 @@
+;MAKROTYP=1
+;BILD=GeradeWX.wmf
+;INFO=_Geradewx
+;WZGV=demo
+;MASCHINE=Simu
+;NCNAME=_KGeradewx
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   Name := '';*VAR*Konturelementname
+   X := ;*VAR*Strecke in X-Richtung
+   Winkel := ;*VAR*Winkel der Strecke
+   Z := _Z;*VAR*Zustelltiefe
+   Info := '';*VAR*Konturelementinfo
+START
+;DIREKT CNC SYSTEME NCHOPS VERSION 3.0
+;Gerade mit X-Wert und Winkel
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+WHILE Winkel>360
+Winkel := Winkel-360
+END
+WHILE Winkel<0
+Winkel := Winkel+360
+END
+IF ((Winkel<90.0001)&(Winkel>89.9999))|((Winkel<270.0001)&(Winkel>269.9999))
+;Keine Lösung
+Hinweismeldung (Keine_Lösung)
+ELSE
+IF (winkel>90)&(winkel<270)
+KG01(Name,_X-X,_Y-(X*Tan(Winkel)),Z,Info)
+ELSE
+KG01(Name,_X+X,_Y+(X*Tan(Winkel)),Z,Info)
+END
+END

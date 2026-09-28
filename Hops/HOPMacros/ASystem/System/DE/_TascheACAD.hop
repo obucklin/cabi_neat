@@ -1,0 +1,34 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=xxx
+;NCNAME=simu
+;MASCHINE=demo
+;WZGV=demo
+;BILD=TascheWMF.bmp
+VARS
+   x_Mitte := _RX/2;*VAR*Taschenmitte in X
+   Y_Mitte := _RY/2;*VAR*Taschenmitte in Y
+   Taschenlaenge := _RX/2;*VAR*Tasche in X
+   Taschenbreite := _RY/2;*VAR*Tasche in Y
+   Winkel := 0;*VAR*Winkel gegen X-Achse
+   WerkzeugBox := 1;*VAR*Werkzeugnummer
+   Tiefe := -10;*VAR*Tiefe der Tasche
+   Zustellung := 0;*VAR*Tiefenzustellung pro Fräsgang
+   Radius := 0;*VAR*Eckenradius
+START
+;direkt cnc systeme NCHOPS Version3.0
+;Tasche V3.0 MW 23.09.98
+;Benötigt Rechteck.hop,WGerade.hop
+;Rohteil (508,383,16,0,0)
+;negative Werte denkbar, wenn Symbol über Mausinput eingefügt
+IF Taschenlaenge<0 
+taschenlaenge := -taschenlaenge
+END
+IF Taschenbreite<0
+Taschenbreite := -taschenbreite
+END
+WZF (WerkzeugBox,_VE,_V,_VA,_SD,_ANF)
+CALL _Tasche (VAL x_Mitte:=x_Mitte,Y_Mitte:=Y_Mitte,Taschenlaenge:=Taschenlaenge,Taschenbreite:=Taschenbreite,Radius:=Radius,Winkel:=Winkel,Tiefe:=Tiefe,Zustellung:=Zustellung)
+

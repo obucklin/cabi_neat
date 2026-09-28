@@ -1,0 +1,25 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowPocketContourParserExtContoursDialog
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.1
+VARS
+   CONTOURNAME_CONTOURNAMES := '';*VAR*
+   DistOutside := 0;*VAR*
+   DistInside := 0;*VAR*
+   MaxArcDist := 0.1mm;*VAR*
+   MaxArcDistLinesToArc := 0.1mm;*VAR*
+   LinesToArc := 0;*VAR*
+   TolShortLine := 0.001mm;*VAR*
+   DeleteShortEle := 1;*VAR*
+   NKS := 5;*VAR*
+   Mode := 0;*VAR*
+   Count := ;*VAR**REF*
+   Reverse := 0;*VAR*
+   Angle := 0;*VAR*
+   ContourName := '';*VAR*
+   ContourInfo := '';*VAR*
+   ContourLayer := '';*VAR*
+START
+;Taschenberechnung über DLL
+CALLDLL POCKETCONTOURPARSEREXTCONTOURS(Extensions,DefaultStr,REF COUNT:=Count VAL CONTOURNAME_CONTOURNAMES:=CONTOURNAME_CONTOURNAMES,DISTOUTSIDE:=DistOutside,DISTINSIDE:=DistInside,MAXARCDIST:=MaxArcDist,MAXARCDISTLINESTOARC:=MaxArcDistLinesToArc,LINESTOARC:=LinesToArc,TOLSHORTLINE:=TolShortLine,DELETESHORTELE:=DeleteShortEle,NKS:=NKS,MODE:=Mode,REVERSE:=Reverse,ANGLE:=Angle,CONTOURNAME:=ContourName,CONTOURINFO:=ContourInfo,CONTOURLAYER:=ContourLayer)

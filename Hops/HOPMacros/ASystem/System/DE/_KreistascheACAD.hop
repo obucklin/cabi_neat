@@ -1,0 +1,25 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCNAME
+;MASCHINE=nc1000
+;WZGV=nc1000
+;BILD=KreistascheWMF.bmp
+VARS
+   X := 200;*VAR*Taschenmitte in X
+   Y := 100;*VAR*Taschenmitte in Y
+   xf := 0;*VAR*
+   yf := 0;*VAR*
+   dw := 0;*VAR*
+   WerkzeugBox := 1;*VAR*
+   R := 60;Taschenradius
+   Tiefe := -10;*VAR*Taschentiefe
+   Zustellung := -5;*VAR*Zustellung
+START
+;$F$KREISTASCHE
+R := XF/2
+WZF (WerkzeugBox,_VE,_V,_VA,_SD,_ANF)
+CALL _Tasche (VAL x_Mitte:=X,Y_Mitte:=Y,Taschenlaenge:=2*R,Taschenbreite:=2*R,Radius:=R,Winkel:=0,Tiefe:=Tiefe,Zustellung:=Zustellung)
+

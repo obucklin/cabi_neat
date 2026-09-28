@@ -1,0 +1,219 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_Topf_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   Seite := 1;*VAR*Seite
+   distance := 22.5;*VAR*Abstand von Kante
+   Pos1 := 100;*VAR*Abstand von Kante
+   Pos2 := 0;*VAR*Abstand von Kante
+   Pos3 := 0;*VAR*Abstand von Kante
+   Pos4 := 0;*VAR*Abstand von Kante
+   XPos1 := 0;Posi Topf
+   YPos1 := 0;Posi Topf
+   XPos2 := 0;Posi Topf
+   YPos2 := 0;Posi Topf
+   XPos3 := 0;Posi Topf
+   YPos3 := 0;Posi Topf
+   XPos4 := 0;Posi Topf
+   YPos4 := 0;Posi Topf
+   XPos1_1 := 0;Posi Dübel 1
+   YPos1_1 := 0;Posi Dübel 1
+   XPos1_2 := 0;Posi Dübel 2
+   YPos1_2 := 0;Posi Dübel 2
+   XPos2_1 := 0;Posi Dübel 1
+   YPos2_1 := 0;Posi Dübel 1
+   XPos2_2 := 0;Posi Dübel 2
+   YPos2_2 := 0;Posi Dübel 2
+   XPos3_1 := 0;Posi Dübel 1
+   YPos3_1 := 0;Posi Dübel 1
+   XPos3_2 := 0;Posi Dübel 2
+   YPos3_2 := 0;Posi Dübel 2
+   XPos4_1 := 0;Posi Dübel 1
+   YPos4_1 := 0;Posi Dübel 1
+   XPos4_2 := 0;Posi Dübel 2
+   YPos4_2 := 0;Posi Dübel 2
+   a := 9.5;*VAR*Abstand von Mitte Topf zu Mitte Dübel
+   b := 45;*VAR*Abstand zwischen Dübeln
+   Topf_D := 35mm;*VAR*Topfdurchmesser
+   Topf_T := -13;*VAR*Topftiefe
+   Duebel_D := 8mm;*VAR*Dübeldurchmesser
+   Duebel_T := -13;*VAR*Dübeltiefe
+   esx1 := 1;*VAR*
+   esx2 := 3;*VAR*
+   esx3 := 2;*VAR*
+   esx4 := 1;*VAR*
+   esy1 := 3;*VAR*
+   esy2 := 5;*VAR*
+   esy3 := 4;*VAR*
+   esy4 := 3;*VAR*
+   Use2 := 0;*VAR*
+   Use3 := 0;*VAR*
+   Use4 := 0;*VAR*
+   Dummy := 0;
+START
+;direkt cnc systeme NCHOPS Version3.4
+;Topfbänder für Türfronten  (bis 4 Stück)
+IF Topf_T>0
+Topf_T := -Topf_T
+END
+IF Duebel_T>0
+Duebel_T := -Duebel_T
+END
+Seite := Seite+1
+;Rohteil (600,1300,19,0,0)
+;WZB (27,_VE,_V,_VA,_SD,_ANF)
+;-------------------------------------------------------
+;---- Positionen je nach Seite
+IF Seite=1
+transesxy (Pos1,Dummy,esx1,1)
+transesxy (Pos2,Dummy,esx2,1)
+transesxy (Pos3,Dummy,esx3,1)
+transesxy (Pos4,Dummy,esx4,1)
+XPos1 := Pos1
+YPos1 := Distance
+XPos2 := Pos2
+YPos2 := Distance
+XPos3 := Pos3
+YPos3 := Distance
+XPos4 := Pos4
+YPos4 := Distance
+XPos1_1 := XPos1-b/2
+YPos1_1 := YPos1+a
+XPos1_2 := XPos1+b/2
+YPos1_2 := YPos1+a
+XPos2_1 := XPos2-b/2
+YPos2_1 := YPos2+a
+XPos2_2 := XPos2+b/2
+YPos2_2 := YPos2+a
+XPos3_1 := XPos3-b/2
+YPos3_1 := YPos3+a
+XPos3_2 := XPos3+b/2
+YPos3_2 := YPos3+a
+XPos4_1 := XPos4-b/2
+YPos4_1 := YPos4+a
+XPos4_2 := XPos4+b/2
+YPos4_2 := YPos4+a
+END
+IF Seite=2
+transesxy (Dummy,Pos1,esy1,1)
+transesxy (Dummy,Pos2,esy2,1)
+transesxy (Dummy,Pos3,esy3,1)
+transesxy (Dummy,Pos4,esy4,1)
+XPos1 := Distance
+YPos1 := Pos1
+XPos2 := Distance
+YPos2 := Pos2
+XPos3 := Distance
+YPos3 := Pos3
+XPos4 := Distance
+YPos4 := Pos4
+XPos1_1 := XPos1+a
+YPos1_1 := YPos1-b/2
+XPos1_2 := XPos1+a
+YPos1_2 := YPos1+b/2
+XPos2_1 := XPos2+a
+YPos2_1 := YPos2-b/2
+XPos2_2 := XPos2+a
+YPos2_2 := YPos2+b/2
+XPos3_1 := XPos3+a
+YPos3_1 := YPos3-b/2
+XPos3_2 := XPos3+a
+YPos3_2 := YPos3+b/2
+XPos4_1 := XPos4+a
+YPos4_1 := YPos4-b/2
+XPos4_2 := XPos4+a
+YPos4_2 := YPos4+b/2
+END
+IF Seite=3
+transesxy (Pos1,Dummy,esx1,1)
+transesxy (Pos2,Dummy,esx2,1)
+transesxy (Pos3,Dummy,esx3,1)
+transesxy (Pos4,Dummy,esx4,1)
+XPos1 := Pos1
+YPos1 := _RY-Distance
+XPos2 := Pos2
+YPos2 := _RY-Distance
+XPos3 := Pos3
+YPos3 := _RY-Distance
+XPos4 := Pos4
+YPos4 := _RY-Distance
+XPos1_1 := XPos1-b/2
+YPos1_1 := YPos1-a
+XPos1_2 := XPos1+b/2
+YPos1_2 := YPos1-a
+XPos2_1 := XPos2-b/2
+YPos2_1 := YPos2-a
+XPos2_2 := XPos2+b/2
+YPos2_2 := YPos2-a
+XPos3_1 := XPos3-b/2
+YPos3_1 := YPos3-a
+XPos3_2 := XPos3+b/2
+YPos3_2 := YPos3-a
+XPos4_1 := XPos4-b/2
+YPos4_1 := YPos4-a
+XPos4_2 := XPos4+b/2
+YPos4_2 := YPos4-a
+END
+IF Seite=4
+transesxy (Dummy,Pos1,esy1,1)
+transesxy (Dummy,Pos2,esy2,1)
+transesxy (Dummy,Pos3,esy3,1)
+transesxy (Dummy,Pos4,esy4,1)
+XPos1 := _RX-distance
+YPos1 := Pos1
+XPos2 := _RX-distance
+YPos2 := Pos2
+XPos3 := _RX-distance
+YPos3 := Pos3
+XPos4 := _RX-distance
+YPos4 := Pos4
+XPos1_1 := XPos1-a
+YPos1_1 := YPos1-b/2
+XPos1_2 := XPos1-a
+YPos1_2 := YPos1+b/2
+XPos2_1 := XPos2-a
+YPos2_1 := YPos2-b/2
+XPos2_2 := XPos2-a
+YPos2_2 := YPos2+b/2
+XPos3_1 := XPos3-a
+YPos3_1 := YPos3-b/2
+XPos3_2 := XPos3-a
+YPos3_2 := YPos3+b/2
+XPos4_1 := XPos4-a
+YPos4_1 := YPos4-b/2
+XPos4_2 := XPos4-a
+YPos4_2 := YPos4+b/2
+END
+;-------------------------------------------------------
+;---- Bohrungen absetzen
+;---- Topf immer
+;---- Dübel nur wenn Dübel_D > 0
+;IF Pos1<>0
+Bohrung (XPos1,YPos1,Topf_D,Topf_T,30,0,0)
+IF Duebel_D>0
+Bohrung (XPos1_1,YPos1_1,Duebel_D,Duebel_T,0,0,0)
+Bohrung (XPos1_2,YPos1_2,Duebel_D,Duebel_T,0,0,0)
+END
+;END
+IF Use2<>0
+Bohrung (XPos2,YPos2,Topf_D,Topf_T,30,0,0)
+IF Duebel_D>0
+Bohrung (XPos2_1,YPos2_1,Duebel_D,Duebel_T,0,0,0)
+Bohrung (XPos2_2,YPos2_2,Duebel_D,Duebel_T,0,0,0)
+END
+END
+IF Use3<>0
+Bohrung (XPos3,YPos3,Topf_D,Topf_T,30,0,0)
+IF Duebel_D>0
+Bohrung (XPos3_1,YPos3_1,Duebel_D,Duebel_T,0,0,0)
+Bohrung (XPos3_2,YPos3_2,Duebel_D,Duebel_T,0,0,0)
+END
+END
+IF Use4<>0
+Bohrung (XPos4,YPos4,Topf_D,Topf_T,30,0,0)
+IF Duebel_D>0
+Bohrung (XPos4_1,YPos4_1,Duebel_D,Duebel_T,0,0,0)
+Bohrung (XPos4_2,YPos4_2,Duebel_D,Duebel_T,0,0,0)
+END
+END

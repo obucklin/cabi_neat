@@ -1,0 +1,89 @@
+;MAKROTYP=1
+;BILD=
+;INFO=
+;WZGV=Demo
+;MASCHINE=Simu
+;NCNAME=GetOutlineKontur
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   KName := '';*VAR*
+   EinPX := 0;*VAR*
+   EinPY := 0;*VAR*
+   Winkel := 0;*VAR*
+   Minx := 0;*VAR**REF*
+   Miny := 0;*VAR**REF*
+   Maxx := 0;*VAR**REF*
+   Maxy := 0;*VAR**REF*
+   Anzahl := 0;
+   DR := 0;
+   i := 0;
+   MinxTemp := 0;
+   MinyTemp := 0;
+   MaxxTemp := 0;
+   MaxyTemp := 0;
+   SX := 0;
+   SY := 0;
+   EX := 0;
+   EY := 0;
+   MX := 0;
+   MY := 0;
+   Maxx_ := 0;
+   Maxy_ := 0;
+   Minx_ := 0;
+   Miny_ := 0;
+START
+Anzahl := GetKE_Anzahl(KName)
+;winkel := -winkel
+SX := getkp_x(KName,0)
+SY := getkp_y(KName,0)
+CALL SetRotPara ( VAL MX:=EinPx,MY:=EinPy,RotW:=-Winkel)
+CALL SetPunkt ( VAL X:=SX,Y:=SY)
+CALL RotUmPunkt ()
+SX := _AktPosX
+SY := _AktPosY
+;***
+Minx_ := Sx
+Maxx_ := Sx
+Miny_ := Sy
+Maxy_ := Sy
+FOR i := 1 TO Anzahl STEP 1
+DR := GetKE_Typ(KName,i)
+SX := getkp_x(KName,i-1)
+SY := getkp_y(KName,i-1)
+CALL SetRotPara ( VAL MX:=EinPx,MY:=EinPy,RotW:=-Winkel)
+CALL SetPunkt ( VAL X:=SX,Y:=SY)
+CALL RotUmPunkt ()
+SX := _AktPosX
+SY := _AktPosY
+;***
+EX := getkp_x(KName,i)
+EY := getkp_y(KName,i)
+CALL SetRotPara ( VAL MX:=EinPx,MY:=EinPy,RotW:=-Winkel)
+CALL SetPunkt ( VAL X:=EX,Y:=EY)
+CALL RotUmPunkt ()
+EX := _AktPosX
+EY := _AktPosY
+;***
+MX := getke_mx(KName,i)
+MY := getke_my(KName,i)
+CALL SetRotPara ( VAL MX:=EinPx,MY:=EinPy,RotW:=-Winkel)
+CALL SetPunkt ( VAL X:=MX,Y:=MY)
+CALL RotUmPunkt ()
+MX := _AktPosX
+MY := _AktPosY
+;***
+CALL GetOutline (REF Minx:=MinxTemp,Miny:=MinyTemp,Maxx:=MaxxTemp,Maxy:=MaxyTemp VAL SX:=SX,SY:=SY,EX:=EX,EY:=EY,MX:=MX,MY:=MY,DR:=DR)
+CALL Max (REF W:=Maxx_ VAL W1:=MaxxTemp,W2:=MaxxTemp)
+CALL Max (REF W:=Maxy_ VAL W1:=MaxyTemp,W2:=MaxyTemp)
+CALL Min (REF W:=Minx_ VAL W1:=MinxTemp,W2:=MinxTemp)
+CALL Min (REF W:=Miny_ VAL W1:=MinyTemp,W2:=MinyTemp)
+END
+Minx := Minx_
+Maxx := Maxx_
+Miny := Miny_
+Maxy := Maxy_

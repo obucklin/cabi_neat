@@ -1,0 +1,19 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   APX := 0;*VAR*Startpunkt in X
+   APY := 0;*VAR*Startpunkt in Y
+   EPX := 200;*VAR*Endpunkt in X
+   EPY := 0;*VAR*Endpunkt in Y
+   Mx := 0;*VAR*
+   My := 500;*VAR**REF*
+   OK := 1;*VAR**REF*
+START
+IF (EPy-APy)=0
+OK := 0
+ELSE
+MY := (APy+EPy)/2+((2*Mx-APx-EPx)*(APx-EPx))/(2*(EPy-APy))
+OK := 1
+END

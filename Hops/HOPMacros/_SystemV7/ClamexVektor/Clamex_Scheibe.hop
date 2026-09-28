@@ -1,0 +1,219 @@
+;MAKROTYP=0
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.2
+VARS
+   DX := 800;Länge in x
+   DY := 400;Länge in y
+   DZ := 19;Stärke in Z
+   PX := 100;*VAR*Position X
+   PY := 0;*VAR*Position Y
+   PZ := 10;*VAR*Position Z
+   DW := 0;*VAR*Drehwinkel
+   KW := 90;*VAR*Kippwinkel
+   Fraesen := 1;*VAR*1=Fräsung absetzen
+   Depth := -14;*VAR*Tiefe
+   Seitl_Zust := 1.4;*VAR*Seitliche Zustellung
+   Nx := 0;X-Wert des Normalenvektors
+   Ny := -1;Y-Wert des Normalenvektors
+   Nz := 0;Z-Wert des Normalenvektors
+   SIC := 20;Sicherheit
+   Bohren := 1;*VAR*1=Bohrung absetzen
+   B_Abst := 7.5;*VAR*Abstand der Bohrung vom Referenzpunkt
+   B_Abst_Kante := 9.5;*VAR*Abstand zur Kante / Oberfläche (für Bohrung)
+   B_D := 6;*VAR*Bohrdurchmesser
+   B_Tiefe := 0;wird ermittelt
+   BX := 0;X-Abst Bohrung
+   BZ := 0;Z-Abst Bohrung
+   WKZ_B := 501;*VAR*Bohrer für senkrecht (Fläche)
+   WKZ_B_H := 50006;*VAR*Bohrer für waagrecht (Seite)
+   WKZ_B_S := 50006;*VAR*Bohrer für Schräge
+   WKZ_F := 43300;*VAR*Nutrad für senkrecht (Fläche)
+   WKZ_F_H := 43100;*VAR*Nutrad für waagrecht (Seiten)
+   WKZ_F_S := 43100;*VAR*Nutrad für Schräge
+   XX := 0;
+   YY := 0;
+   _Clamex_STL_Name := '';
+START
+;---------------------------------------------------------------------------------
+;- Clamex mit Nutscheibe
+;- Ueber Eingabe der Winkel
+;---------------------------------------------------------------------------------
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;---------------------------------------------------------------------------------
+;- Bohren immer zuerst, damit keine Splitter im Lamello
+IF Bohren
+IF KW=0
+;- Von Seite bohren
+WZB (WKZ_B_H,_VE,_V,_VA,_SD,_ANF,'1')
+ELSE
+IF KW=90
+;- Von oben bohren
+WZB (WKZ_B,_VE,_V,_VA,_SD,_ANF,'1')
+ELSE
+;- Schräg
+WZB (WKZ_B_S,_VE,_V,_VA,_SD,_ANF,'1')
+END
+END
+;-
+IF _HOPSVERSION=7
+CALL GROUPSTART_V7 ( VAL NAME:='OPTIGROUP_WKZ_BOHR')
+ELSE
+CALL Hauptgruppe_Start ( VAL GROUPNAME:='OPTIGROUP_WKZ_BOHR')
+END
+IF KW=0
+;- Von Seite bohren
+B_Tiefe := B_Abst_Kante
+BX := B_Abst
+BZ := _RZ - PZ
+EbeneF (PX + BX*COS(DW+90),PY + BX*SIN(DW+90),PZ - B_Abst_Kante,90 - KW,DW + 180,0,0)
+Bohrung (0,0,B_D,-ABS(B_Tiefe),10,0,0,0,0,0,0,0)
+ELSE
+IF KW=90
+;- Von oben bohren
+B_Tiefe := B_Abst_Kante
+BX := B_Abst
+BZ := _RZ - PZ
+Bohrung (PX + BX*COS(DW+90),PY + BX*SIN(DW+90),B_D,-ABS(B_Tiefe),10,0,0,0,0,0,0,0)
+ELSE
+;- Schräg
+IF KW>90
+;- Von Unten wird nicht unterstützt
+;Position muss anders berechnet werden
+Hinweismeldung (GetMessageText('47','Kippwinkel > 90 -> Bohren wurde nicht ausgeführt'))
+ELSE
+HGNeu()
+HLineY (0,3)
+HLineY (PZ,3)
+HLineY (_RZ,3)
+IF KW>90
+CALL _hg_para_winkel_V5 ( VAL PARA:=0,X1:=0,Y1:=_RZ,WINKEL:=KW,ESXY1:=0)
+ELSE
+CALL _hg_para_winkel_V5 ( VAL PARA:=0,X1:=0,Y1:=0,WINKEL:=KW,ESXY1:=0)
+END
+;-->  SPX9 = Ref-Clamex
+IF KW>90
+CALL _hg_para_winkel_V5 ( VAL PARA:=B_Abst,X1:=0,Y1:=_RZ,WINKEL:=KW,ESXY1:=0)
+ELSE
+CALL _hg_para_winkel_V5 ( VAL PARA:=B_Abst,X1:=0,Y1:=0,WINKEL:=KW,ESXY1:=0)
+END
+;--->  SPX17 = Ref-Bohrung
+HLineW (_SPX9,_SPY9,KW+90,0)
+CALL _hg_para_winkel_V5 ( VAL PARA:=B_Abst,X1:=0,Y1:=0,WINKEL:=KW,ESXY1:=0)
+CALL Dist2P_V4 (REF DIST:=B_Tiefe VAL P1X:=_SPX17,P1Y:=_SPY17,P2X:=_SPX29,P2Y:=_SPY29)
+BX := ABS(_SPX17-_SPX9)
+BZ := ABS(_SPY17-_SPY9)
+EbeneF (PX + BX*COS(DW+90),PY + BX*SIN(DW+90),0,90 - KW,DW + 180,0,2)
+Bohrung (0,0,_WZD,-ABS(B_Tiefe),10,0,0,0,0,0,0,0)
+END
+END
+END
+Ebene0()
+HGNeuEnd()
+IF _HOPSVERSION=7
+CALL GROUPEND_V7 ( VAL NAME:='OPTIGROUP_WKZ_BOHR')
+ELSE
+CALL Hauptgruppe_Ende ( VAL GROUPNAME:='OPTIGROUP_WKZ_BOHR')
+END
+END
+;---------------------------------------------------------------------------------
+;- Fräsung
+IF Fraesen
+IF KW=90
+;- Von Seite
+WZF (WKZ_F_H,_VE,_V,_VA,_SD,_ANF,'1')
+IF _HOPSVERSION=7
+CALL GROUPSTART_V7 ( VAL NAME:='OPTIGROUP_WKZ_NUT')
+ELSE
+CALL Hauptgruppe_Start ( VAL GROUPNAME:='OPTIGROUP_WKZ_NUT')
+END
+ELSE
+IF KW=0
+;- In Fläche von oben
+WZF (WKZ_F,_VE,_V,_VA,_SD,_ANF,'1')
+IF _HOPSVERSION=7
+CALL GROUPSTART_V7 ( VAL NAME:='OPTIGROUP_WKZ_NUT_O')
+ELSE
+CALL Hauptgruppe_Start ( VAL GROUPNAME:='OPTIGROUP_WKZ_NUT_O')
+END
+ELSE
+;- Schräg
+WZF (WKZ_F_S,_VE,_V,_VA,_SD,_ANF,'1')
+IF _HOPSVERSION=7
+CALL GROUPSTART_V7 ( VAL NAME:='OPTIGROUP_WKZ_NUT_S')
+ELSE
+CALL Hauptgruppe_Start ( VAL GROUPNAME:='OPTIGROUP_WKZ_NUT_S')
+END
+END
+END
+IF KW>90
+;Von unten
+EbeneF (PX,PY,PZ,KW-90,DW,0,0,0)
+SP (0,-(_WZR+SIC),0,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-(-ABS(SIC) - ABS(Depth)),0,0,10,2)
+G01 (0,0,Seitl_Zust,0,10,2)
+G01 (0,0,-Seitl_Zust*2,0,10,2)
+G01 (0,0,Seitl_Zust,0,10,2)
+G01 (0,-(ABS(SIC) + ABS(Depth)),0,0,10,2)
+EP (0,_ANF,0)
+Ebene0()
+ELSE
+EbeneF (PX,PY,PZ,90 - KW,DW + 180,0,0)
+SP (0,_WZR+SIC,0,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-ABS(SIC) - ABS(Depth),0,0,10,2)
+G01 (0,0,Seitl_Zust,0,10,2)
+G01 (0,0,-Seitl_Zust*2,0,10,2)
+G01 (0,0,Seitl_Zust,0,10,2)
+G01 (0,ABS(SIC) + ABS(Depth),0,0,10,2)
+EP (0,_ANF,0)
+Ebene0()
+END
+IF KW=90
+;- Von Seite
+IF _HOPSVERSION=7
+CALL GROUPEND_V7 ( VAL NAME:='OPTIGROUP_WKZ_NUT')
+ELSE
+CALL Hauptgruppe_Ende ( VAL GROUPNAME:='OPTIGROUP_WKZ_NUT')
+END
+ELSE
+IF KW=0
+;- In Fläche von oben
+IF _HOPSVERSION=7
+CALL GROUPEND_V7 ( VAL NAME:='OPTIGROUP_WKZ_NUT_O')
+ELSE
+CALL Hauptgruppe_Ende ( VAL GROUPNAME:='OPTIGROUP_WKZ_NUT_O')
+END
+ELSE
+IF _HOPSVERSION=7
+CALL GROUPEND_V7 ( VAL NAME:='OPTIGROUP_WKZ_NUT_S')
+ELSE
+CALL Hauptgruppe_Ende ( VAL GROUPNAME:='OPTIGROUP_WKZ_NUT_S')
+END
+END
+END
+END
+;---------------------------------------------------------------------------------
+IF _HOPSVERSION=7
+;- In Version 7 inkl. STL
+IF STRLENGTH(_Clamex_STL_Name) > 0
+IF KW>90
+;- Sonderfall Hops kann nicht über KW180
+EbeneF (PX,PY,PZ,180-KW-90,DW+180,0,0)
+ELSE
+EbeneF (PX,PY,PZ,KW+90,DW,0,0)
+END
+zstl (0,0,0,32768,1,_Clamex_STL_Name + '.stl',0,0)
+ELSE
+EbeneF (PX,PY,PZ,KW,DW,0,0)
+zstl (0,0,0,32768,1,'Clamex_Ref_O.stl',0,0)
+END
+Ebene0()
+;--
+;- Zeichnung
+ZLinie (PX-3,PY-3,PX+3,PY+3,32768,0,0,0,0,1)
+ZLinie (PX-3,PY+3,PX+3,PY-3,32768,0,0,0,0,1)
+ZText ('Clamex / Wi: '  + FLOATTOSTR(KW,10,1) + ' / Tiefe: ' + FLOATTOSTR(Depth,10,1),PX,PY,13,DW,4,0,'Times New Roman',0,0,0,0,0,0)
+ELSE
+ZLinie (PX-3,PY-3,PX+3,PY+3,32768,0,0,0,0)
+ZLinie (PX-3,PY+3,PX+3,PY-3,32768,0,0,0,0)
+END
+;---------------------------------------------------------------------------------

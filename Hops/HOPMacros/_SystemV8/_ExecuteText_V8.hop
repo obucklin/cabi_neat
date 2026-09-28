@@ -1,0 +1,111 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.7.11.999[Hops.exe]
+;BILD=_EXECUTETEXT_V8.WMF
+;INFO=_ExecuteText_V8
+;WZGV=DIREKT_DEMO
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=Show_ExecuteText_V8Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   CName := 'TextKontur';
+   Text := '';*VAR*
+   Height := 100;*VAR*
+   CharSpace := 0;*VAR*
+   FontName := '';*VAR*
+   FontStyle := 0;*VAR*
+   Align_H := 0;*VAR*
+   Align_V := 0;*VAR*
+   MirrorInverted := 0;*VAR*
+   AlignmentAt := 0;*VAR*
+   PX := 0;*VAR*
+   PY := 0;*VAR*
+   esxyP := 0;*VAR*
+   SX := 0;*VAR*
+   SY := 0;*VAR*
+   esxySP := 0;*VAR*
+   EX := 0;*VAR*
+   EY := 0;*VAR*
+   esxyEP := 0;*VAR*
+   Angle := 0;*VAR*
+   Length := 0;*VAR*
+   LineType := 0;*VAR*
+   MX := 0;*VAR*
+   MY := 0;*VAR*
+   esxyMP := 0;*VAR*
+   Radius := 0;*VAR*
+   SAngle := 0;*VAR*
+   EAngle := 0;*VAR*
+   Rot_Dir := 0;*VAR*
+   Tolerance := 0.8;*VAR*
+   MillMode := 0;*VAR*
+   Tiefe := ;*VAR*Tiefe
+   esmd := 0;*VAR*
+   MaxZ := 0;*VAR*Maximale Zustelltiefe
+   Anzahl := 0;*VAR*Anzahl Zustellungen
+   PocketAA := 0;*VAR*Abstand Außen/Insel
+   PocketUeberlappung := 67;*VAR*Überlappung in % vom Werkzeugdurchmesser
+   PocketMode := 0;*VAR*0 = Spiral; 1 = Konturparallel; 2 = Parallel
+   PocketAngle := 0;*VAR*Winkel Mode=3
+   PocketRD := 0;*VAR*Richtung umkehren
+   PocketFliegendEintauchen := 0;*VAR*
+   PocketMaxEintauchLaenge := 20;*VAR*
+   RKBArt := 0;*VAR*
+   Para1 := 0;*VAR*
+   Para2 := 0;*VAR*
+   Para3 := 0;*VAR*
+   InterpolDist := 0.5mm;*VAR*Abstand für Interpolationsfräsung
+   TextAnzahl := 0;
+   i := 0;
+   CNamen := '';
+START
+;Easysnap verrechnen
+Transesd (Tiefe,esmd)
+transesxy (PX,PY,esxyP,0)
+transesxy (SX,SY,esxySP,0)
+transesxy (EX,EY,esxyEP,0)
+transesxy (MX,MY,esxyMP,0)
+;Text erzeugen
+createtextcontours (CName,'','',0,Text,Height,CharSpace,FontName,FontStyle,Align_H,Align_V,MirrorInverted,AlignmentAt,PX,PY,SX,SY,EX,EY,Angle,Length,LineType,MX,MY,Radius,SAngle,EAngle,Rot_Dir,Tolerance,TextAnzahl)
+;Konturnamen erzeugen
+FOR i := 1 TO TextAnzahl STEP 1
+CNamen := CNamen+CName+IntToStr(i-1)
+IF i<>TextAnzahl
+CNamen := CNamen+';'
+END
+END
+;Text bearbeiten
+IF MillMode=0
+;Ausräumen
+CALL _ExecutePocket_V8 ( VAL NAMEN:=CNamen,AA:=PocketAA,UEBERLAPPUNG:=PocketUeberlappung,MODE:=PocketMode,ANGLE:=PocketAngle,TIEFE:=Tiefe,ESMD:=0,ANZAHL:=Anzahl,MAXZ:=MaxZ,RD:=PocketRD,FLIEGENDEINTAUCHEN:=PocketFliegendEintauchen,MAXEINTAUCHLAENGE:=PocketMaxEintauchLaenge,INTERPOLDIST:=InterpolDist)
+ELSE
+IF MillMode=1
+;Outline ohne Radiuskorrektur
+CALL _ExecutePocketOutlines_V5 ( VAL NAMEN:=CNamen,TIEFE:=Tiefe,ESMD:=0,MODE:=0,BART:=0,ANZAHL:=Anzahl,MAXZ:=MaxZ,PARA1:=Para1,PARA2:=Para2,PARA3:=Para3)
+ELSE
+IF MillMode=2
+;Outline mit Radiuskorrektur
+CALL _ExecutePocketOutlines_V5 ( VAL NAMEN:=CNamen,TIEFE:=Tiefe,ESMD:=0,MODE:=1,BART:=0,ANZAHL:=Anzahl,MAXZ:=MaxZ,PARA1:=Para1,PARA2:=Para2,PARA3:=Para3)
+ELSE
+IF MillMode=3
+;Outline mit Radiuskorrektur an Maschine
+CALL _ExecutePocketOutlines_V5 ( VAL NAMEN:=CNamen,TIEFE:=Tiefe,ESMD:=0,MODE:=2,BART:=RKBArt,ANZAHL:=Anzahl,MAXZ:=MaxZ,PARA1:=Para1,PARA2:=Para2,PARA3:=Para3)
+ELSE
+;Ausspitzen
+CALL text_ausspitzenV7 ( VAL T:=-Tiefe,ANZI:=i-2)
+/CALL _ExecutePocketOutlines_V5 ( VAL NAMEN:=CNamen,TIEFE:=Tiefe,ESMD:=0,MODE:=3,BART:=0,ANZAHL:=Anzahl,MAXZ:=MaxZ,PARA1:=Para1,PARA2:=Para2,PARA3:=Para3)
+END
+END
+END
+END
+CALL _DeletePocketContours_V5 ( VAL KN:=CName,ANZAHLP:=TextAnzahl,ANZAHLOUTLINEP:=0)

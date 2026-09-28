@@ -1,0 +1,51 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCNAME
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=_NutInY.bmp
+VARS
+   NB := 5;*VAR*Nutbreite
+   NT := -5;*VAR*NutTiefe
+   Ebene := 1;*VAR*Seite: 2->Links, <>2->Rechts
+   ARand := 5;*VAR*Kleinere Abstand von Nut zum Rand
+   AUnten := 0;*VAR*0 -> Rohteilunterkante, <>0 -> Abstand zu Rohteilunterkante mit Einpassen
+   AOben := 0;*VAR*0 -> Rohteiloberkante, <>0 -> Abstand zu Rohteiloberkante mit Einpassen
+   X := 0;
+   Y1 := 0;
+   Y2 := 0;
+   EP1 := 0;Einpassen
+   EP2 := 0;Einpassen
+   Korr := 0;
+START
+;direkt cnc systeme NCHOPS Version3.0
+;Sägenutx V 3.0/SF/01.10.98
+;Rohteil (1000,2000,19,0,0)
+;WZS (13,_VE,_V,_VA,_SD,_ANF)
+IF Ebene=2
+;Linke Rohteilseite
+X := ARand
+Korr := 2
+ELSE
+;Rechte Rohteilseite
+X := _RX-ARand
+Korr := 1
+END
+Y1 := AUnten
+Y2 := _RY-AOben
+;Einpassen bestimmen
+IF AUnten=0
+EP1 := 0
+ELSE
+EP1 := -1
+END
+IF AOben=0
+EP2 := 0
+ELSE
+EP2 := -1
+END
+CALL _nuten (VAL X1:=X,Y1:=Y1,X2:=X,Y2:=Y2,NB:=NB,Tiefe:=NT,LAGE:=Korr,SPEGA:=EP1,EPEGA:=EP2)
+

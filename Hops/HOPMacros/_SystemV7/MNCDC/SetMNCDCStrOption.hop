@@ -1,0 +1,7 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   ID := 0;*VAR*
+   Str := '';*VAR*Text
+START
+CALL SetMNCDCOption ( VAL ID:=ID,IDVALUE:=Str)

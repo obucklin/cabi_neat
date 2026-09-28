@@ -1,0 +1,53 @@
+;MAKROTYP=0
+;INSTVERSION=6.4.0.4
+;EXEVERSION=6.6.2.165[Hops.exe]
+;BILD=TE_240_3D.wmf
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=TE_240_3D
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2500;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   BX_1 := 180;*VAR*Position X Band oben
+   BY_1 := 10;*VAR*Position Y Band oben
+   BX_2 := 1500;*VAR*Position X  Band mitte
+   BY_2 := 10;*VAR*Position Y  Band mitte
+   BX_3 := 2000;*VAR*Position X  Band unten
+   BY_3 := 10;*VAR*Position Y  Band unten
+   Ref_T := 29;*VAR*Referenz Tiefe für Bänder
+   B1 := -1;*VAR*Band oben aktiv
+   B2 := -1;*VAR*Band mitte aktiv
+   B3 := -1;*VAR*Band unten aktiv
+   F_Tool := 116;*VAR*Fräswerkzeug 1
+   F1_Tool := 116;*VAR*Fräswerkzeug 2
+   B_Tool := 501;*VAR*Bohrwerkzeug
+   FA_Zu := 0;*VAR*Zustellung fräser 1
+   FA1_Zu := 0;*VAR*Zustellung Fräser 2
+   P_Abst := 0;*VAR*Parallelversatz  Fräser 1
+   P_Abst1 := 0;*VAR*Parallelversatz  Fräser 2
+   T_R := 1;*VAR*0= Tür / 1=Rahmen oder Futter
+   PG_Name := '';*VAR*PGM Name
+   Snap_XY := 1;*VAR*Easy Snap Band oben
+   Snap_XY1 := 1;*VAR*Easy Snap Band mitte
+   Snap_XY2 := 1;*VAR*Easy Snap Band unten
+   Snap_Z := 1;*VAR*Easy Snap Z-Achse
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+IF T_R = 0
+;Tuer
+ELSE
+;Rahmen
+END

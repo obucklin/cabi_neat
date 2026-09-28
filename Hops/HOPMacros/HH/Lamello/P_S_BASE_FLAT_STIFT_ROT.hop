@@ -1,0 +1,88 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.6.8.49[Hops.exe]
+;BILD=P_S_BASE_FLAT_STIFT_ROT.WMF
+;INFO=
+;WZGV=7225K_565
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=P_S_BASE_FLAT_STIFT_ROT
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   CL_Wkz := 1106;*VAR*Werkzeug
+   CL_Typ := 1;*VAR*Claemx Typ 0= 15 / 1=14 / 2=10
+   PosX := 9.5;*VAR*Position in X
+   PosY := 60;*VAR*Position in Y
+   DW := 90;*VAR*Drehwinkel
+   ESXY := 7;*VAR*Easy Snap XY
+   StartCL := 40.10;Eintritsposition
+   CL_Tief := 15.00;Frästiefe
+   ToolID := -99999;
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+CALL _UserInterface3DG (REF RESULT:=ToolID VAL INPUTTEXT:='GetStandardRouterID')
+;Mit Fingerfräser
+IF _PSystemStift = 1
+WZF (_Clamex_Stiftfraeser_ID,_VE,_V,_VA,_SD,_ANF,'1')
+IF CL_Typ = 0
+;Clamex P15
+StartCL := 40.10
+END
+IF CL_Typ =1
+;Clamex P14
+StartCL := 39.325
+END
+IF CL_Typ =2
+;Clamex P10
+StartCL := 35.79
+END
+EbeneF (PosX,Posy,0,90,DW,ESXY,2)
+SP (-StartCL,5,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0)
+G03R (StartCL,5,0,50.2,0,0,2)
+EP (0,_ANF,0)
+Ebene0()
+CALL _DrehenBBStart_V5 ( VAL DX:=PosX,DY:=PosY,DW:=DW,ESXY1:=ESXY)
+CALL _ZRechteck_2P_V5 ( VAL SX:=PosX - StartCL,SY:=PosY - 3.5,EX:=PosX+StartCL,EY:=PosY + 3.5,FUELLEN:=1,FARBE:=0,ESXY1:=ESXY,ESXY2:=ESXY)
+CALL _DrehenBBEnde ()
+END
+;Mit Aggregat
+IF _PSystemStift = 0
+WZF (_Clamex_Nuter_WKG_ID,_VE,_V,_VA,_SD,_ANF,'1')
+IF CL_Typ = 0
+;Clamex P15
+CL_Tief := 15.00
+END
+IF CL_Typ =1
+;Clamex P14
+CL_Tief := 14.00
+END
+IF CL_Typ =2
+;Clamex P10
+CL_Tief := 10.00
+END
+EbeneF (PosX,Posy,0,90,DW,ESXY,2)
+SP (0,70,0,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,(_Wzr - CL_Tief),0,0,0,2)
+G01 (0,(_Wzr - CL_Tief),-1.4,0,0,2)
+G01 (0,(_Wzr - CL_Tief),2.8,0,0,2)
+G01 (0,(_Wzr - CL_Tief),-1.4,0,0,2)
+G01 (0,70,0,0,0,2)
+EP (0,_ANF,0)
+Ebene0()
+CALL _DrehenBBStart_V5 ( VAL DX:=PosX,DY:=PosY,DW:=DW,ESXY1:=ESXY)
+CALL _ZRechteck_2P_V5 ( VAL SX:=PosX - StartCL,SY:=PosY - 3.5,EX:=PosX+StartCL,EY:=PosY + 3.5,FUELLEN:=1,FARBE:=0,ESXY1:=ESXY,ESXY2:=ESXY)
+CALL _DrehenBBEnde ()
+END
+END

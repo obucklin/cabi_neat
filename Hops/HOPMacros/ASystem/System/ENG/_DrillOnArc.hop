@@ -1,0 +1,58 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCName
+;MASCHINE=demo
+;WZGV=demo
+;BILD=BOGENBOHRENWMF.bmp
+VARS
+   CX := _RX/2;*VAR*centre of arc in x
+   CY := _RY/2;*VAR*centre of arc in y
+   R := _RX/2;*VAR*radius of arc
+   RA := 180;*VAR*rotation angle
+   SA := 0;*VAR*starting angle
+   A := 6;*VAR*number of drillings
+   T := -10;*VAR*depth of drilling
+   DELTA := 0;delta angle
+   X := 0;drilling position in x
+   Y := 0;drilling position in y
+   XB := 0;first position in x
+   YB := 0;first position in y
+   I := 0;
+   AKTW := 0;present angle
+START
+;$B$drilling in arc
+;DIREKT CNC SYSTEME GMBH
+;drillings are arranged on an arc counter-clockwise
+;29.09.98 SF
+;.
+;finished part(1000,2000,19,0,0)
+;WZB(3,_VE,_V,_VA,_SD,_ANF)
+WHILE RA>360
+RA := RA-360
+END
+IF T>0
+T := -T
+END
+IF A>1
+;ZKBCCW(MX,MY,MX+R*COS(AW),MY+R*SIN(AW),MX+R*COS(AW+DW),MY+R*SIN(AW+DW),0)
+DELTA := RA/(A-1)
+AKTW := SA
+XB := CX+R*COS(AKTW)
+YB := CY+R*SIN(AKTW)
+FOR I := 1 TO A STEP 1
+X := CX+R*COS(AKTW)
+Y := CY+R*SIN(AKTW)
+AKTW:=AKTW+DELTA
+IF I=A
+IF (X<>XB)|(Y<>YB)
+DRILLING(X,Y,_WZD,T,0,0,0)
+END
+ELSE
+DRILLING(X,Y,_WZD,T,0,0,0)
+END
+END
+END
+

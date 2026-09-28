@@ -1,0 +1,11 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowMOVEPROCESS_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   MoveX := 0;*VAR*
+   MoveY := 0;*VAR*
+   MoveZ := 0;*VAR*
+START
+nciext (-100247,'NCISys',1,0,0,MoveX,MoveY,MoveZ)

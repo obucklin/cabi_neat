@@ -1,0 +1,46 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   P1 := '';*VAR*
+   KEZ := 0;Konturelementzähler
+   GW := 0;Gesamtwinkel
+   i := 0;Zähler
+   a := 0;
+   b := 0;
+   c := 0;
+   w := 0;
+   orient := 0;
+   dir := ;*VAR**REF*0=CW 1=CCW
+START
+KEZ := GETKE_ANZAHL(P1)
+FOR i := 1 TO KEZ-1 STEP 1
+CALL Dist2P_V4 (REF DIST:=a VAL P1X:=GETKP_X(P1,i-1),P1Y:=GETKP_Y(P1,i-1),P2X:=GETKP_X(P1,i),P2Y:=GETKP_Y(P1,i))
+CALL Dist2P_V4 (REF DIST:=b VAL P1X:=GETKP_X(P1,i),P1Y:=GETKP_Y(P1,i),P2X:=GETKP_X(P1,i+1),P2Y:=GETKP_Y(P1,i+1))
+CALL Dist2P_V4 (REF DIST:=c VAL P1X:=GETKP_X(P1,i-1),P1Y:=GETKP_Y(P1,i-1),P2X:=GETKP_X(P1,i+1),P2Y:=GETKP_Y(P1,i+1))
+w := ARCCOS((SQR(a)+SQR(b)-SQR(c))/(2*a*b))
+orient := ((GETKP_X(P1,i+1)-GETKP_X(P1,i-1))*(GETKP_Y(P1,i)-GETKP_Y(P1,i-1)))-((GETKP_X(P1,i)-GETKP_X(P1,i-1))*(GETKP_Y(P1,i+1)-GETKP_Y(P1,i-1)))
+IF orient<0
+w := -w
+END
+GW := GW+w
+END
+IF (GETCP_X(P1,'KSP')=GETCP_X(P1,'KEP'))&(GETCP_Y(P1,'KSP')=GETCP_Y(P1,'KEP'))
+CALL Dist2P_V4 (REF DIST:=a VAL P1X:=GETKP_X(P1,KEZ-1),P1Y:=GETKP_Y(P1,KEZ-1),P2X:=GETKP_X(P1,KEZ),P2Y:=GETKP_Y(P1,KEZ))
+CALL Dist2P_V4 (REF DIST:=b VAL P1X:=GETKP_X(P1,KEZ),P1Y:=GETKP_Y(P1,KEZ),P2X:=GETKP_X(P1,1),P2Y:=GETKP_Y(P1,1))
+CALL Dist2P_V4 (REF DIST:=c VAL P1X:=GETKP_X(P1,1),P1Y:=GETKP_Y(P1,1),P2X:=GETKP_X(P1,KEZ-1),P2Y:=GETKP_Y(P1,KEZ-1))
+w := ARCCOS((SQR(a)+SQR(b)-SQR(c))/(2*a*b))
+orient := ((GETKP_X(P1,1)-GETKP_X(P1,KEZ-1))*(GETKP_Y(P1,KEZ)-GETKP_Y(P1,KEZ-1)))-((GETKP_X(P1,KEZ)-GETKP_X(P1,KEZ-1))*(GETKP_Y(P1,1)-GETKP_Y(P1,KEZ-1)))
+IF orient<0
+w := -w
+END
+GW := GW+w
+ELSE
+Fehlermeldung ('Kontur nicht geschlossen')
+END
+IF GW>0
+dir := 0
+ELSE
+dir := 1
+END

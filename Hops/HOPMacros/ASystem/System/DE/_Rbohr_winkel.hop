@@ -1,0 +1,36 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=Rbohx
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=_Rbohr_winkel.wmf
+VARS
+   SPx := ;*VAR*StartPunkt (x)
+   spy := ;*VAR*StartPunkt (y)
+   Winkel := 0;*VAR*
+   Raster := 32;*VAR*Rasterwerte
+   Anzahl := 7;*VAR*Anzahl Löcher
+   T := -13;*VAR*Bohrtiefe
+   D := 5;*VAR*Bohrdurchmesser
+   TLF := 0;*VAR*Tieflochflag
+   i := 0;
+   X_Versatz := 0;
+   Y_Versatz := 0;
+START
+;direkt cnc systeme NCHOPS Version 3.4
+;Lochreihe im Winkel / MD/04.01
+IF Winkel<0
+Winkel := winkel+360
+END
+IF T>0
+T := -T
+END
+X_Versatz := cos(winkel)*raster
+Y_Versatz := sin(winkel)*raster
+FOR i := 0 TO anzahl-1 STEP 1
+Bohrung (spx+x_versatz*i,spy+y_versatz*i,D,T,TLF,0,0)
+END
+

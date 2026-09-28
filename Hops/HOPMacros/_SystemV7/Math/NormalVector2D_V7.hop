@@ -1,0 +1,11 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowNormalVector2D_V7Dialog
+VARS
+   Vx := ;*VAR**REF*
+   Vy := ;*VAR**REF*
+   L := 0;
+START
+L := vx
+vx := vy
+vy := -L

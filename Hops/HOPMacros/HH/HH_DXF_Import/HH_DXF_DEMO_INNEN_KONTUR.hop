@@ -1,0 +1,59 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.8.0.2[Hops.exe]
+;BILD=INNEN_KONTUR.WMF
+;INFO=
+;WZGV=7535D_222
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=KONTUR
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   P1 := '';*VAR*Kontur
+   P2 := '';*VAR*Layer Name
+   Fraeser := 20;ID Nutfräser
+   min_x := 0;min_x
+   max_x := 0;max_x
+   min_y := 0;min_y
+   max_y := 0;max_y
+   dreh := 0;Drehrichtung 2 = im Uhrzeiger      3 = gegen Uhrzeiger
+   laenge := 0;Länge der Kontur
+   kn_nummer := 0;Konturnummer längstes element
+START
+;Mustermakro V1_2022
+;
+CALL Call_Extensions_MinMaxContours (REF MINX:=min_x,MINY:=min_y,MAXX:=max_x,MAXY:=max_y VAL CONTOURNAME_CONTOURNAMES:=p1)
+/ChangeVar (min_x)
+;
+CALL Call_Extensions_GetDirContour (REF DIR:=dreh VAL CONTOURNAME_CONTOURNAME:=P1)
+/ChangeVar (dreh)
+;
+CALL Call_Extensions_LengthContour (REF CONTOURLENGTH:=laenge VAL CONTOURNAME_CONTOURNAME:=P1,INDEXSTART:=-9999,INDEXEND:=9999)
+/ChangeVar (laenge)
+;
+CALL GetKonturIndex_Laengstes_Element_V7 (REF STARTELEMENT:=kn_nummer VAL KN:=p1)
+/ChangeVar (kn_nummer)
+CALL BN_NESTKONTUR ()
+;
+CALL GROUPSTART_V7 ( VAL NAME:='Innen_Kontur1')
+WZF (Fraeser,_VE,_V,_VA,_SD,_ANF,'1')
+;Im Uhrzeiger
+IF dreh=2
+KSP ('???','???',-0.2,2,-1,_ANF,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0)
+ELSE
+;Gegen Uhrzeiger
+KSP ('???','???',-0.2,1,-1,_ANF,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0)
+END
+KonturFraesen (P1,kn_nummer-1,kn_nummer-1,0,0,0,0,50,1,50,1)
+EP (1,_ANF,0)
+CALL GROUPEND_V7 ( VAL NAME:='Innen_Kontur1')
+;

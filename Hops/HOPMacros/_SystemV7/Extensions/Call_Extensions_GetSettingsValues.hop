@@ -1,0 +1,17 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowGETSETTINGSVALUESDialog
+;AUTOSCRIPTSTART=0
+VARS
+   ValueID := 0;*VAR*Value ID
+   IniFNKind := 0;*VAR*
+   IniFN := '';*VAR*
+   Section := '';*VAR*
+   Ident := '';*VAR*
+   DefaultString := '';*VAR*
+   DefaultInteger := 0;*VAR*
+   StrValue := '';*VAR**REF*
+   FloatValue := ;*VAR**REF*
+   IntegerValue := ;*VAR**REF*
+START
+CALLDLL GETSETTINGSVALUES(Extensions,DefaultStr,REF STRVALUE:=StrValue,FLOATVALUE:=FloatValue,INTEGERVALUE:=IntegerValue VAL VALUEID:=ValueID,INIFNKIND:=IniFNKind,INIFN:=IniFN,SECTION:=Section,IDENT:=Ident,DEFAULTSTRING:=DefaultString,DEFAULTINTEGER:=DefaultInteger)

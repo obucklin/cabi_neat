@@ -1,0 +1,20 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowCalc_DW_KW_NVDialog
+;AUTOSCRIPTSTART=0
+VARS
+   Nx := 0;*VAR*X-Wert des Normalenvektors
+   Ny := -1;*VAR*Y-Wert des Normalenvektors
+   Nz := 0;*VAR*Z-Wert des Normalenvektors
+   KW := ;*VAR**REF*
+   DW := ;*VAR**REF*
+START
+KW := arccos(Nz)
+CALL GetWinkel2P_V4 (REF WINKEL2P:=DW VAL P1X:=0,P1Y:=0,P2X:=Nx,P2Y:=Ny)
+DW := DW+90
+IF KW=0
+DW := 0
+END
+IF DW>=360
+DW := DW-360
+END

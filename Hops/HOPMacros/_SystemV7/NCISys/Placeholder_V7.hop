@@ -1,0 +1,13 @@
+;MAKROTYP=1
+;\\ DIALOGDLL=DialogeNCISys.Dll
+;\\ Nicht verwenden, da VorProfilieren nicht 0/1 sein darf !!! MUSS 1/2 sein !!! DIALOGPROC=ShowPLACEHOLDER_V7Dialog
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   VorUmspannen := 0;*VAR*
+   VorProfilieren := 0;*VAR*
+START
+nciext (-101111,'NCISys',3,0,0,0,0,0,0,0,0,'',VorUmspannen,0,VorProfilieren)

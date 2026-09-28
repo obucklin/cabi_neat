@@ -1,0 +1,127 @@
+;MAKROTYP=1
+;BILD=L_bohr_winkel.wmf
+;INFO=_Lbohr_winkel
+;WZGV=7123K_021
+;MASCHINE=HOLZHER
+;NCNAME=_L_bohr_winkel
+;KOMMENTAR=
+;DX=0.00
+;DY=0.00
+;DZ=0.00
+;DIALOGDLL=DialogBA_1.Dll
+;DIALOGPROC=ShowLine_BohrenDialog
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   SPx :=0.00;*VAR*StartPunkt (x)
+   SPy :=0.00;*VAR*StartPunkt (y)
+   Tiefe :=-35;*VAR*Bohrtiefe
+   Winkel :=30;*VAR*Drehwinkel
+   Drehung :=0.00;*VAR*Winkel zur Bezugslinie
+   Raster :=32.00;*VAR*Rasterwerte
+   Anzahl :=10;*VAR*Anzahl Löcher
+   Dm :=8.00;*VAR*Bohrdurchmesser
+   TLF :=10;*VAR*Tieflochflag
+   Neig :=0.0;*VAR*Neigung
+   B_Art :=0;*VAR*Bohrart Vertikal oder Horizontal
+   R_Art :=2;*VAR*Rasterart
+   H_LB_Z :=0.0;*VAR*Höhe in Z horizontal
+   Snapxy :=2;*VAR*Easy Snap XY
+   SnapZ :=1;*VAR*Easy Snap Z
+   Snap_HZ :=2;*VAR*Easy Snap Z Horizontal
+   Abstand := 0;*VAR*0=direkter Abstand  1=X   2=Y
+   X_Versatz := 0;
+   Y_Versatz := 0;
+   I := 0;
+START
+;Holz-Her Schweiz AG
+;*********************************************************
+;****                Lochreihe über Winkel             ****
+;*********************************************************
+IF Winkel<-360
+Fehlermeldung (GetMessageText('18','Bitte Winkel nicht kleiner als minus 360 eingeben'))
+END
+IF Winkel<0
+Winkel := winkel+360
+END
+IF Winkel>360
+Fehlermeldung (GetMessageText('19','Bitte Winkel nicht groesser als 360 eingeben'))
+END
+;*** Direkter Abstand
+IF R_Art=0
+X_Versatz := cos(winkel)*raster
+Y_Versatz := sin(winkel)*raster
+END
+;*** Abstand in X
+IF R_Art=1
+X_Versatz := raster
+IF (Winkel=90)|(Winkel=270)
+Fehlermeldung (GetMessageText('20','Abstand in X bei 90 oder 270 Grad nicht möglich'))
+END
+IF (Winkel>=0)&(Winkel<90)
+Y_Versatz := tan(winkel)*raster
+END
+IF (Winkel>90)&(Winkel<180)
+X_Versatz := -raster
+Y_Versatz := tan(winkel)*raster * (-1)
+END
+IF (Winkel=180)
+X_Versatz := -raster
+Y_Versatz := 0
+END
+IF (Winkel>180)&(Winkel<270)
+X_Versatz := -raster
+Y_Versatz := tan(winkel)*raster * (-1)
+END
+IF (Winkel>270)&(Winkel<360)
+Y_Versatz := tan(winkel)*raster
+END
+END
+;*** Abstand in Y
+IF R_Art=2
+Y_Versatz := raster
+IF (Winkel=0)|(Winkel=180)
+Fehlermeldung (GetMessageText('21','Abstand in Y bei 0 oder 180 Grad nicht moeglich'))
+END
+IF (Winkel>0)&(Winkel<90)
+X_Versatz := raster/tan(winkel)
+END
+IF (Winkel=90)
+Y_Versatz := raster
+X_Versatz := 0
+END
+IF (Winkel>90)&(Winkel<180)
+X_Versatz := raster/tan(winkel)
+END
+IF (Winkel>180)&(Winkel<270)
+Y_Versatz := -raster
+X_Versatz := raster/tan(winkel) *(-1)
+END
+IF (Winkel=270)
+Y_Versatz := -raster
+X_Versatz := 0
+END
+IF (Winkel>270)&(Winkel<360)
+X_Versatz := raster/tan(winkel) *(-1)
+Y_Versatz := -raster
+END
+END
+;*** Bohren
+IF B_Art = 0
+FOR I := 0 TO anzahl-1 STEP 1
+Bohrung (spx+x_versatz*i,spy+y_versatz*i,Dm,Tiefe,TLF,0,0,SnapXY,SnapZ,0,0,0)
+END
+END
+IF B_Art = 1  
+Drehung := Drehung + Winkel -90
+FOR I := 0 TO anzahl-1 STEP 1
+HorzB (spx+x_versatz*i,spy+y_versatz*i,H_LB_Z,Dm,Tiefe,TLF,Neig,Drehung,SnapXY,Snap_HZ,0,0)
+END
+END
+IF B_Art = 2
+Drehung := Drehung + Winkel +90
+FOR I := 0 TO anzahl-1 STEP 1
+HorzB (spx+x_versatz*i,spy+y_versatz*i,H_LB_Z,Dm,Tiefe,TLF,Neig,Drehung,SnapXY,Snap_HZ,0,0)
+END
+END

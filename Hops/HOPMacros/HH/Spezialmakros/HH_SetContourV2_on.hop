@@ -1,0 +1,143 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.10.0.57[Hops.exe]
+;BILD=HH_SETCONTOURV2_ON.WMF
+;INFO=
+;WZGV=7235C_188
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=HH_SetContourV2_on
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   CON_Profil := 2;*VAR*Slope Profil
+   CON_DynLevel := 0;*VAR*Dynamiklevel
+   CON_Accel := 100;*VAR*Acceleration
+   CON_Jerk := 100;*VAR*Jerk value
+   CON_Check := 0;*VAR*Contour supervision off
+   CON_Mode := 4;Contour Mode
+   CON_Para1 := 0.5;Contour Parameter 1
+   CON_Para2 := 0.1;Contour Parameter 2
+   CON_Para3 := 0;Contour Parameter 3
+   CON_Para4 := 0;Contour Parameter 4
+   CON_Methode := 0;*VAR*
+   CON_Para5 := 0;Contour Parameter 5
+   CON_Quality := 2;*VAR*Qualitylevel
+   CON_Asymetric := 0;*VAR*Accel and Jerk symetrical adjustment
+   CON_Setting := 2;*VAR*Setting Mode
+   tmpaccel := 0;
+   tmpjerk := 0;
+START
+/CALL Optimierungsstop ()
+CALL OPTISTOP_V7 ( VAL TEXT:='')
+IF CON_Setting=0;BREAKPOINT
+;Maschinen default settings
+IF _HOPSVERSION=7
+;V7
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=0,MODE:=0,STR:='L CYCLE [NAME=CP_CONTOUR_INIT.NC @P1=8]')
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=0,MODE:=0,STR:='V.P.CONTOUR_MODE[1]=0')
+ELSE
+;V6
+NCINFO (200,0,0,0,0,0,0,'L CYCLE [NAME=CP_CONTOUR_INIT.NC @P1=8]',0,0,0)
+END
+END
+IF CON_Setting=1
+;V7
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=0,MODE:=0,STR:='L CYCLE [NAME=CP_CONTOUR_INIT.NC @P1=7]')
+END
+IF CON_Setting=2
+;Individual settings
+CON_Para3 := 0
+CON_Para4 := 0
+CON_Para5 := 0
+;Methode:
+;0=Polynom
+;1=HSC 1
+;2=HSC 2
+;10=BSpline abgerundete Kanten, Qualität 0.01 - 2
+;11=B-Spline scharfe Kanten, Qualität 0.01 - 2
+;12=Surface
+;13=B-Spline
+;14=Akima-Spline
+IF CON_Methode=0
+;0=Polynom, Toleranz 0.1-20 mm
+CON_Para1 := CON_Quality/10
+CON_Mode := 4
+CON_Para2 := 0.1
+END
+IF CON_Methode=1
+;1=HSC 1, Toleranz 0.1-20 mm
+CON_Para1 := CON_Quality/10
+CON_Mode := 1
+END
+IF CON_Methode=2
+;2=HSC 2, Toleranz 0.1-20 mm
+CON_Para1 := CON_Quality/10
+CON_Mode := 2
+END
+IF CON_Methode=10
+;10=BSpline abgerundete Kanten, Toleranz 0.01 - 2
+CON_Para1 := CON_Quality/100
+CON_Mode := 10
+END
+IF CON_Methode=11
+;11=B-Spline scharfe Kanten, Toleranz 0.01 - 2
+CON_Para1 := CON_Quality/100
+CON_Mode := 11
+END
+IF CON_Methode=12
+;12=Surface Mode, Toleranz 0.01 - 2
+CON_Para1 := CON_Quality/100
+CON_Mode := 16
+END
+IF CON_Methode=13
+;13=B-Spline,
+CON_Para1 := CON_Quality/100
+CON_Mode := 7
+END
+IF CON_Methode=14
+;14=Akima-Spline
+CON_Para1 := CON_Quality/100
+CON_Mode := 8
+END
+tmpaccel := CON_Accel
+tmpjerk := CON_Jerk
+IF tmpaccel>400
+tmpaccel := 400
+END
+IF tmpaccel<10
+tmpaccel := 10
+ELSE
+END
+IF tmpjerk>200
+tmpjerk := 200
+END
+IF tmpjerk<10
+tmpjerk := 10
+END
+IF _HOPSVERSION=7
+;V7
+IF _BOXID =0
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=0,MODE:=0,STR:='L CYCLE [NAME=CP_CONTOUR_SET.NC @P1=1 @P2=' + INTTOSTR(CON_Profil) + ' @P3=' + INTTOSTR(CON_Mode)  + ' @P4=' + INTTOSTR(CON_Accel) + ' @P5=' + INTTOSTR(CON_Jerk) + ' @P6=' + INTTOSTR(CON_Check) + ' @P7=' + FLOATTOSTR(CON_Para1,8,2) + ' @P8=' + FLOATTOSTR(CON_Para2,8,2) + ' @P9=' + FLOATTOSTR(CON_Para3,8,2) + ' @P10=' + FLOATTOSTR(CON_Para4,8,2) + ' @P11=' + FLOATTOSTR(CON_Para5,8,2)+']')
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=0,MODE:=0,STR:='L CYCLE [NAME=CP_CONTOUR_INIT.NC @P1=1]')
+ELSE
+NCIExt (70000,'HH7',1,1,1,10,0,0,0,0,'L CYCLE [NAME=CP_CONTOUR_SET.NC @P1=1 @P2=' + INTTOSTR(CON_Profil) + ' @P3=' + INTTOSTR(CON_Mode)  + ' @P4=' + INTTOSTR(CON_Accel) + ' @P5=' + INTTOSTR(CON_Jerk) + ' @P6=' + INTTOSTR(CON_Check) + ' @P7=' + FLOATTOSTR(CON_Para1,8,2) + ' @P8=' + FLOATTOSTR(CON_Para2,8,2) + ' @P9=' + FLOATTOSTR(CON_Para3,8,2) + ' @P10=' + FLOATTOSTR(CON_Para4,8,2) + ' @P11=' + FLOATTOSTR(CON_Para5,8,2)+']')
+NCIExt (70000,'HH7',1,1,1,10,0,0,0,0,'L CYCLE [NAME=CP_CONTOUR_INIT.NC @P1=1]')
+NCIExt (70000,'HH7',1,1,1,50,0,0,0,0,'L CYCLE [NAME=CP_CONTOUR_INIT.NC @P1=8]')
+NCIExt (70000,'HH7',1,1,1,50,0,0,0,0,'V.P.CONTOUR_MODE[1]=0')
+END
+ELSE
+;V6
+NCINFO (200,0,0,0,0,0,0,'L CYCLE [NAME=CP_CONTOUR_SET.NC @P1=1 @P2=' + INTTOSTR(CON_Profil) + ' @P3=' + INTTOSTR(CON_Mode)  + ' @P4=' + INTTOSTR(CON_Accel) + ' @P5=' + INTTOSTR(CON_Jerk) + ' @P6=' + INTTOSTR(CON_Check) + ' @P7=' + FLOATTOSTR(CON_Para1,8,2) + ' @P8=' + FLOATTOSTR(CON_Para2,8,2) + ' @P9=' + FLOATTOSTR(CON_Para3,8,2) + ' @P10=' + FLOATTOSTR(CON_Para4,8,2) + ' @P11=' + FLOATTOSTR(CON_Para5,8,2)+']',0,0,0)
+NCINFO (200,0,0,0,0,0,0,'L CYCLE [NAME=CP_CONTOUR_INIT.NC @P1=1]',0,0,0)
+END
+END
+END

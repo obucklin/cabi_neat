@@ -1,0 +1,58 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_HG_Korb_3R_V5Dialog
+VARS
+   SX := 0;*VAR*Startpunkt in X
+   SY := 0;*VAR*Startpunkt in Y
+   Br := 800;*VAR*Gesamtbreite
+   Stich := 200;*VAR*Stich
+   HolzBr := 50;*VAR*Holzbreite
+   _K3R2 := 0;Radius Gross Aussen
+   _K3R1 := 0;Radius Klein Aussen
+   _K3R4 := 0;Radius Gross Innen
+   _K3R3 := 0;Radius Klein Innen
+   X := 0;Schnittpunkt in X
+   Y := 0;Schnittpunkt in Y
+   a := 0;Variablenberechnung
+   S := 0;Variablenberechnung
+   S1 := 0;Variablenberechnung
+   W1 := 0;Winkel1
+   R1 := 0;Radius erster Bogen
+   b := 0;Variablenberechnung
+   R2 := 0;Radius2
+   S2 := 0;Variablenberechnung
+   W2 := 0;Winkel2
+   esxy1 := 0;*VAR*
+START
+;direkt cnc systeme NCHOPS Version 4
+Rohteil (Br,Stich,1,0,0)
+transesxy (SX,SY,esxy1,0)
+;*********
+a := (Br/2)-(Stich)
+S := sqrt(sqr(Br/2)+sqr(Stich))
+S1 := (S-a)/2
+W1 := arccos((Br/2)/(S))
+R1 := S1/cos(W1)
+b := (Br/2)-R1
+S2 := b/tan(W1)
+R2 := (Stich)+S2
+W2 := 360-90-W1
+X := -cos(W2)*R1
+Y := -sin(W2)*R1
+HLineY (SY)
+HKreismpr (SX+Br/2,SY+Stich-R2,R2)
+ZText ('_K3R2='+ FloatToStr(R2,8,3)+' / _K3R1='+ FloatToStr(R1,8,3),SX+Br/2,SY+Stich+10,12,0,8,0,'',0,0,0,0)
+HKreismpr (SX+R1,SY,R1)
+HKreismpr (SX+Br-R1,SY,R1)
+HKreismpr (SX+Br/2,SY+Stich-R2,R2-HolzBr)
+HKreismpr (SX+R1,SY,R1-HolzBr)
+HKreismpr (SX+Br-R1,SY,R1-HolzBr)
+ZText ('_K3R4='+ FloatToStr(R2-HolzBr,8,3)+' / _K3R3='+ FloatToStr(R1-HolzBr,8,3),SX+Br/2,SY+Stich-HolzBr+10,12,0,8,0,'',0,0,0,0)
+ZLinie (_spx5-5,_spy5+5,_spx5+5,_spy5-5,0)
+ZLinie (_spx5+5,_spy5+5,_spx5-5,_spy5-5,0)
+ZLinie (_spx9-5,_spy9+5,_spx9+5,_spy9-5,0)
+ZLinie (_spx9+5,_spy9+5,_spx9-5,_spy9-5,0)
+_K3R2 := R2
+_K3R1 := R1
+_K3R4 := R2-HolzBr
+_K3R3 := R1-HolzBr

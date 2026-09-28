@@ -1,0 +1,25 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   Offx := 0;*VAR*
+   Offy := 0;*VAR*
+   Offz := 0;*VAR*
+   Vxx := 0;*VAR*
+   Vxy := 0;*VAR*
+   Vxz := 0;*VAR*
+   Vyx := 0;*VAR*
+   Vyy := 0;*VAR*
+   Vyz := 0;*VAR*
+   Vzx := 0;*VAR*
+   Vzy := 0;*VAR*
+   Vzz := 0;*VAR*
+   Vx := 0;*VAR*
+   Vy := 0;*VAR*
+   Vz := 0;*VAR*
+   Ax := 0;*VAR**REF*
+   Ay := 0;*VAR**REF*
+   Az := 0;*VAR**REF*
+START
+ax := Offx+vx*Vxx+vy*Vyx+vz*Vzx
+ay := Offy+vx*Vxy+vy*Vyy+vz*Vzy
+az := Offz+vx*Vxz+vy*Vyz+vz*Vzz

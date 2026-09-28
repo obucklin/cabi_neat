@@ -1,0 +1,96 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.1
+VARS
+   Width := 50;*VAR*
+   Height := -20;*VAR*
+   Viewx := 0;*VAR*
+   Viewy := 0;*VAR*
+   Viewz := 0;*VAR*
+   Viewdw := 45;*VAR*
+   Viewkw := 0;*VAR*
+   OnSurface := 0;*VAR*
+   COLLRADIUS := 7;
+   MaxArcDistArc := 0.1;
+   Radius := 0;
+   GTyp := 0;
+   Mx := 0;
+   My := 0;
+   x := 0;
+   y := 0;
+   z := 0;
+   WB := 0;
+   DeltaW := 180;
+   StepCircle := 0;
+   AnzahlArc := 50;
+   StepArc := 0;
+   i := 0;
+   j := 0;
+   KW := 0;
+   DW := 0;
+   Nx := 0;
+   Ny := 0;
+   Nz := 0;
+   DeltaN := 0;
+   NF := 1;
+   WVerl := 0;
+   a1x := 0;
+   a1y := 0;
+   a1z := 0;
+   a2x := 0;
+   a2y := 0;
+   a2z := 0;
+   KN := 'KN_Clamex_Finger_V7';
+START
+Ebene0()
+Fertigteil (2*Width,2*Width,Height,0,0,0,0,0,'',0,0,0)
+COLLRADIUS := _WZR
+Width := abs(Width)
+NF := Height/abs(Height)
+x := -Width
+y := 0
+CALL _KB_3P (REF GTYP:=GTyp,MX:=Mx,MY:=My VAL SX:=x,SY:=y,P1X:=0,P1Y:=Height,P2X:=Width,P2Y:=0)
+CALL Dist2P_V4 (REF DIST:=Radius VAL P1X:=MX,P1Y:=MY,P2X:=Width,P2Y:=0)
+IF (GTyp=3)&(Radius>0)
+;Bogen um Collisionsradius verlängern
+WVerl := 180*(COLLRADIUS/Radius)/pi
+CALL RotPointXY (REF PX:=x,PY:=y VAL W:=WVerl,MX:=MX,MY:=MY)
+KB (KN,'',x,y,0,'',0,0)
+KG03M ('',-x,y,0,mx,my,'',0,2,0)
+ELSE
+Fehlermeldung ('Error-G3P')
+END
+IF OnSurface
+;Über Oberfächenfräsen
+EbeneF (viewx,viewy,viewz,90,viewdw,0,0)
+KSP ('???','???',0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0)
+KonturFraesen (KN,'KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+ELSE
+;Über Vektorfräsen
+CALL GetWinkelDiff3P_V4 (REF WINKELDIFF3P:=DW VAL P1X:=GETCP_X(KN,0),P1Y:=GETCP_Y(KN,0),MX:=MX,MY:=MY,P3X:=GETCP_X(KN,1),P3Y:=GETCP_Y(KN,1))
+CALL GetSegmentCount (REF COUNT:=AnzahlArc,SINGLESTEP:=StepArc VAL DW:=DeltaW,RADIUS:=Width,MAXARCDIST:=MaxArcDistArc)
+WB := 0
+CALL VxyzToAxyz_V7 (REF AX:=a2x,AY:=a2y,AZ:=a2z VAL OFFX:=Viewx,OFFY:=Viewy,OFFZ:=Viewz,DW:=Viewdw,KW:=Viewkw,VX:=MX,VY:=0,VZ:=MY)
+FOR j := 0 TO AnzahlArc STEP 1
+CALL GetArcPointAt (REF PX:=x,PY:=z VAL SX:=GETCP_X(KN,0),SY:=GETCP_Y(KN,0),EX:=GETCP_X(KN,1),EY:=GETCP_Y(KN,1),MX:=MX,MY:=MY,GTYP:=GTyp,T:=WB)
+y := 0
+CALL VxyzToAxyz_V7 (REF AX:=a1x,AY:=a1y,AZ:=a1z VAL OFFX:=Viewx,OFFY:=Viewy,OFFZ:=Viewz,DW:=Viewdw,KW:=Viewkw,VX:=x,VY:=y,VZ:=z)
+Nx := a2x-a1x
+Ny := a2y-a1y
+Nz := a2z-a1z
+DeltaN := sqrt(sqr(Nx)+sqr(Ny)+sqr(Nz))
+CALL Calc_DW_KW_NV (REF KW:=KW,DW:=DW VAL NX:=Nx/DeltaN,NY:=Ny/DeltaN,NZ:=Nz/DeltaN)
+IF (j=0)
+vsp (a1x,a1y,a1z,DW,KW,0,0,0,0,3,1,0,0)
+vg01 (a1x,a1y,a1z,DW,KW,_VAKT)
+END
+vg01 (a1x,a1y,a1z,DW,KW,_VAKT)
+WB := WB+StepArc/DeltaW
+END
+vep (0)
+END
+deletecontour (KN,0)
+Ebene0()

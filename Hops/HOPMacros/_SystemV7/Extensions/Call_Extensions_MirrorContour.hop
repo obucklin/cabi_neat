@@ -1,0 +1,21 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowCall_Extensions_MirrorContourDialog
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.1
+VARS
+   Name := '';*VAR*
+   P1x := 0;*VAR*
+   P1y := 0;*VAR*
+   P2x := 100;*VAR*
+   P2y := 0;*VAR*
+   esxy1 := 0;*VAR*
+   esxy2 := 0;*VAR*
+   Neuer_Name := '';*VAR*
+   Neuer_Info := '';*VAR*
+   Neuer_Layer := '';*VAR*
+START
+;Kontur spiegeln über DLL
+transesxy (P1x,P1y,esxy1,1)
+transesxy (P2x,P2y,esxy2,1)
+CALLDLL MIRRORCONTOURPARSEREXTCONTOURS(Extensions,DefaultStr, VAL CONTOURNAME_CONTOURNAMES:=Name,P1X:=P1x,P1Y:=P1y,P2X:=P2x,P2Y:=P2y,CONTOURNAME:=Neuer_Name,CONTOURINFO:=Neuer_Info,CONTOURLAYER:=Neuer_Layer)

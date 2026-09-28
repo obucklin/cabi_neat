@@ -1,0 +1,225 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.6.4.165[Hops.exe]
+;BILD=OVVO_KANTE_RE_LI.WMF
+;INFO=
+;WZGV=7405_1030
+;WZGVCONFIG=
+;MASCHINE=SIMU
+;NCNAME=OVVO_Kante_RE_LI
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=HHDialogs_OVVO.Dll
+;DIALOGPROC=ShowOVVO_RELI
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 300;
+   DY := 300;
+   DZ := 30;
+   APV_2 := 1;*VAR*Auswahl Position Verbinder links/mitte
+   EITI := 12.9;*VAR*Eintauchtiefe des Werkzeuges 12.7 - 13.1
+   APV_1 := 1;*VAR*Auswahl Position Verbinder links/oben
+   APV_3 := 1;*VAR*Auswahl Position Verbinder links/unten
+   APV_4 := 1;*VAR*Auswahl Position Verbinder rechts/oben
+   APV_5 := 1;*VAR*Auswahl Position Verbinder rechts/mitte
+   APV_6 := 1;*VAR*Auswahl Position Verbinder rechts/unten
+   PDV_Z_ := 0;Position des Verbinders in Z von der Innenkante
+   PDV := 75;Position des Verbinders X / Y
+   PDV_X_1 := DZ/2;Position des Verbinder in X (links oben)
+   PDV_X_2 := DZ/2;Position des Verbinder in X (links mitte)
+   PDV_X_3 := DZ/2;Position des Verbinder in X (links unten)
+   PDV_X_5 := DZ/2;Position des Verbinder in X (lrechts mitte)
+   PDV_X_4 := DZ/2;Position des Verbinder in X (rechts oben)
+   PDV_X_6 := DZ/2;Position des Verbinder in X (rechts unten)
+   Z_Stum_LI := DZ/2;*VAR*Z-Wert bei stumpfen nuten
+   Z_Stum_Re := DZ/2;*VAR*Z-Wert bei stumpfen nuten
+   PDV_Y_1 := 50;*VAR*Position des Verbinders in Y (links oben)
+   PDV_Y_2 := 0;*VAR*Position des Verbinders in Y (links mitte)
+   PDV_Y_3 := 50;*VAR*Position des Verbinders in Y (links unten)
+   PDV_Y_4 := 50;*VAR*Position des Verbinders in Y (rechts oben)
+   PDV_Y_5 := 0;*VAR*Position des Verbinders in Y (rechts mitte)
+   PDV_Y_6 := 50;*VAR*Position des Verbinders in Y (rechts unten)
+   ZH_R := 20;Z-Höhe auf der Ebene von der Unterkannte
+   ZH_L := 0;Z-Höhe auf der Ebene von der Unterkannte
+   easyZ_Re := 1;*VAR*Easysnap für Z-Position
+   easyZ_Li := 1;*VAR*Easysnap für Z-Position
+   DIST := 40;Travel Distance (ii)
+   WKZ_NUT_LI := 1420;*VAR*WKZ ID Kante Links
+   WKZ_NUT_RE := 1420;*VAR*WKZ ID Kante Rechts
+   WKZ_NUT := 1420;FIX_WERKZEUGNUMMER DES NUTERS
+   FDFE_RE := 0;FLÄCHENHÖHE(die Länge) DER FREIEN EBENE Rechts
+   FDFE_LI := 0;FLÄCHENHÖHE(die Länge) DER FREIEN EBENE LINKS
+   KW_RE := 30;*VAR*Kippwinkel rechts
+   KW_LI := 10;*VAR*Kippwinkel links
+   GEHRUNG_LI := 1;*VAR*Stupf oder Gehrung
+   GEHRUNG_RE := 1;*VAR*Stupf oder Gehrung
+   Z_WINKL_RE := 0;*VAR*Z- Wert auf Ebene
+   Z_WINKL_LI := 0;*VAR*Z- Wert auf Ebene
+   FL_umo_RE := 1;*VAR*Fläche 0=unten 1=mitte 2=oben
+   FL_umo_LI := 2;*VAR*Fläche 0=unten 1=mitte 2=oben
+   OVVO_TYP := 0;*VAR*0=1230 / 1=1240 / 2=free /3=free
+START
+;OVVO_30.10.2020 S.K INDEX 1.2
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+IF OVVO_TYP=0
+DIST := 20.7
+END
+IF OVVO_TYP=1
+DIST := 39.3
+END
+IF OVVO_TYP=2
+/DIST := 20.7
+Fehlermeldung ('_444_Not used, please Check the Makro settings')
+END
+IF OVVO_TYP=3
+/DIST := 20.7
+Fehlermeldung ('_445_Not used, please Check the Makro settings')
+END
+/WZS (102,_VE,_V,_VA,_SD,_ANF,'1')
+/CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=-3,BL:=2,EINPASSEN:=0,EL:=150,AL:=150,PARALLEL:=0,K:=0,KW:=-KW_LI,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=7,ESY:=3)
+/CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=-3,BL:=2,EINPASSEN:=0,EL:=150,AL:=150,PARALLEL:=0,K:=0,KW:=-KW_RE,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=3,ESY:=5)
+;FEHLERMELDUNG wenn EASYSNAP Z= RELATIV
+Ebene0()
+IF (easyZ_Li = 2) | (easyZ_Re = 2)
+Fehlermeldung ('relativ nicht möglich')
+END
+;Easysnap Z LI (oben/unten)
+TransEsD (Z_STUM_LI,easyZ_LI)
+;Easysnap Z RE (oben/unten)
+TransEsD (Z_STUM_Re,easyZ_Re)
+;Berechungen#####################
+;Länger der Fläche links
+FDFE_LI := _rz/cos((KW_LI))
+;Easysnap Fläche unten
+IF FL_umo_LI=0
+ZH_L := Z_WINKL_LI
+END
+;Easysnap Fläche mitte
+IF FL_umo_LI=1
+ZH_L := (FDFE_LI/2)+Z_WINKL_LI
+END
+;Easysnap Fläche oben
+IF FL_umo_LI=2
+ZH_L := FDFE_LI-Z_WINKL_LI
+END
+;****************************
+;Länger der Fläche rechts
+FDFE_RE := _rz/cos((KW_RE))
+;Easysnap Fläche unten
+IF FL_umo_RE=0
+ZH_R := Z_WINKL_RE
+END
+;Easysnap Fläche mitte
+IF FL_umo_RE=1
+ZH_R := (FDFE_RE/2)+Z_WINKL_RE
+END
+;Easysnap Fläche oben
+IF FL_umo_RE=2
+ZH_R := FDFE_RE-Z_WINKL_RE
+END
+;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Kante Rechts XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+;RECHTS_VORNE
+WZF (WKZ_NUT_RE,_VE,_V,_VA,_SD,_ANF,'1')
+IF APV_6=1
+Ebene0()
+ZRechteck (0,PDV_Y_6-(DIST/2),-EITI,DIST,1,16711680,3,0,0)
+IF GEHRUNG_RE=0
+Ebene4()
+SP ((PDV_Y_6-(DIST/2)),_RZ+Z_Stum_Re,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+ELSE
+EbeneF (_RX,_RY,0,90-KW_RE,90,0,0)
+SP (-_ry+PDV_Y_6-(DIST/2),ZH_R,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+END
+END
+;RECHTS_MITTE
+IF APV_5=1
+Ebene0()
+ZRechteck (0,PDV_Y_5+(DIST/2),-EITI,-DIST,1,16711680,4,0,0)
+IF GEHRUNG_RE=0
+Ebene4()
+SP (_ry/2+(PDV_Y_5-(DIST/2)),_RZ+Z_Stum_Re,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+ELSE
+EbeneF (_RX,_RY,0,90-KW_RE,90,0,0)
+SP (-(_ry/2)+PDV_Y_5-(DIST/2),ZH_R,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+END
+END
+;RECHTS_HINTEN
+IF APV_4=1
+Ebene0()
+ZRechteck (0,PDV_Y_4-(DIST/2),-EITI,-DIST,1,16711680,5,0,0)
+IF GEHRUNG_RE=0
+Ebene4()
+SP (_ry-(PDV_Y_4+(DIST/2)),_RZ+Z_Stum_Re,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+ELSE
+EbeneF (_RX,_RY,0,90-KW_RE,90,0,0)
+SP (-PDV_Y_4-(DIST/2),ZH_R,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+END
+END
+;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Kante Links XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+;LINKS HINTEN
+WZF (WKZ_NUT_LI,_VE,_V,_VA,_SD,_ANF,'1')
+IF APV_1=1
+Ebene0()
+ZRechteck (0,PDV_Y_1-(DIST/2),EITI,-DIST,1,16711680,7,0,0)
+IF GEHRUNG_LI=0
+Ebene2()
+SP (-_ry+(PDV_Y_1-(DIST/2)),_RZ+Z_Stum_Li,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+ELSE
+EbeneF (0,0,0,90-KW_LI,270,0,0)
+SP (-_ry+(PDV_Y_1-(DIST/2)),ZH_L,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+END
+END
+;LINKS MITTE
+IF APV_2=1
+Ebene0()
+ZRechteck (0,PDV_Y_2+(DIST/2),EITI,-DIST,1,16711680,8,0,0)
+IF GEHRUNG_LI=0
+Ebene2()
+SP (-_ry/2-(PDV_Y_2+(DIST/2)),_RZ+Z_Stum_Li,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+ELSE
+EbeneF (0,0,0,90-KW_LI,270,0,0)
+SP (-(_ry/2)-(PDV_Y_2+(DIST/2)),ZH_L,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+END
+END
+;LINKS VORNE
+IF APV_3=1
+Ebene0()
+ZRechteck (0,PDV_Y_3-(DIST/2),EITI,DIST,1,16711680,1,0,0)
+IF GEHRUNG_LI=0
+Ebene2()
+SP (-(PDV_Y_3+(DIST/2)),_RZ+Z_Stum_Li,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+ELSE
+EbeneF (0,0,0,90-KW_LI,270,0,0)
+SP (-PDV_Y_3-(DIST/2),ZH_L,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+END
+END
+Ebene0()

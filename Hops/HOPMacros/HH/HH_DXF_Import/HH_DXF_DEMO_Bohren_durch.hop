@@ -1,0 +1,35 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.7.12.80[Hops.exe]
+;BILD=BOHREN_DURCH.WMF
+;INFO=
+;WZGV=7405_967
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Bohren_durch
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   P1 := 0;*VAR*X Position
+   P2 := 0;*VAR*Y Position
+   P3 := 0;*VAR*
+   P4 := 0;*VAR*Durchmesser
+   P5 := '';*VAR*Layername
+START
+/Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+/CALL HH_Park ( VAL PARK:=3,X:=0,Y:=0)
+;
+;Fertigteil & Parken  Deaktivieren
+;
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+Bohrung (P1,P2,P4,-0.2,10,0,0,0,1,0,0,0)
+;
+;

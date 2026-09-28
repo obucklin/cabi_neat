@@ -1,0 +1,62 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=TüREN
+;NCNAME=1
+;MASCHINE=demo
+;WZGV=demo
+;BILD=TaschenFraesen1.WMF
+VARS
+   X := 0;*VAR*starting point in x - centre of pocket (referring to View)
+   Y := 0;*VAR*starting point in y - centre of pocket (referring to View)
+   Z := 0;*VAR*starting point in z (referring of View)
+   Hoehe := 16;*VAR*height of pocket
+   Laenge := 100;*VAR*length of pocket
+   Tiefe := 50;*VAR*complete depth of pocket
+   Anzahl := 3;*VAR*numbers of depth
+   Radius := 0;*VAR*radius to get round curves
+   i := 0;counting variable
+   Z_Zu := 0;depth in z for runs
+START
+;finished part (300,300,100,0,0)
+;WZF (21,_VE,_V,_VA,_SD,_ANF)
+;milling pocket adress HorTasch
+;(c) DiREKT CNC-SYSTEME GmbH [MW] 12.11.97
+IF Radius>Hoehe/2
+Radius := 0
+END
+Z_Zu := Tiefe/Anzahl
+;Nur wenn Anzahl >0 und Werkzeugdurchmesser < Hoehe
+IF (Anzahl>0)&(_WZD<HOEHE)
+;************************************************************************************
+SP(X,Y-HOEHE/2,-Z_ZU,1,0,_ANF,0,0,0)
+FOR i := 1 TO anzahl STEP 1
+G01(_X+LAENGE/2,_Y,_Z,RADIUS)
+G01(_X,_Y+HOEHE,_Z,RADIUS)
+G01(_X-LAENGE,_Y,_Z,RADIUS)
+G01(_X,_Y-HOEHE,_Z,RADIUS)
+G01(_X+LAENGE/2,_Y,_Z,RADIUS)
+IF i<Anzahl
+G01(_X,_Y,_Z-Z_ZU,0)
+END
+END
+EP(0,2,0)
+END
+;************************************************************************************
+;Nur wenn Anzahl >0 und Werkzeugdurchmesser = Hoehe
+IF (Anzahl>0)&(_WZD=HOEHE)
+;************************************************************************************
+SP(X,Y,-Z_ZU,0,0,_ANF,0,0,0)
+FOR i := 1 TO anzahl STEP 1
+G01(_X+LAENGE/2,_Y,_Z,RADIUS)
+G01(_X-LAENGE,_Y,_Z,RADIUS)
+G01(_X+LAENGE/2,_Y,_Z,RADIUS)
+IF i<Anzahl
+G01(_X,_Y,_Z-Z_ZU,0)
+END
+END
+EP(0,2,0)
+;************************************************************************************
+END
+

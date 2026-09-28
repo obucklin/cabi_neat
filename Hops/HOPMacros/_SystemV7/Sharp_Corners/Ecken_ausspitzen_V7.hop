@@ -1,0 +1,76 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_EckenAusspitzen_V7Dialog
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.1
+VARS
+   X_Mitte := 500;*VAR*berechnet
+   Y_Mitte := 1000;*VAR*berechnet
+   esxy := 0;*VAR*
+   Breite := 500;*VAR*Breite des LA
+   Hoehe := 1000;*VAR*Hoehe des LA
+   Drehwinkel := 0;*VAR*Drehwinkel
+   FalzBreite := 0;*VAR*Falzbreite (Schalter)
+   FalzTiefe := 0;*VAR*Falztiefe
+   LU := 1;*VAR*Linke untere Ecke
+   RU := 1;*VAR*Rechte untere Ecke
+   RO := 1;*VAR*Rechte obere Ecke
+   LO := 1;*VAR*Linke obere Ecke
+   Wink1 := 55;*VAR*Kippwinkel Werkzeug
+   Saege_oder_Spitzfraeser := 0;*VAR*0=Spitz   2=Saege
+   Tiefe := -2;*VAR*
+   esmd := 1;*VAR*
+   X := 0;Position der Ecke
+   Y := 0;Position der Ecke
+   DW := 135;Drehwinkel
+   FaktorVonOben := 0.8;Faktor für Z-Fahrt von oben
+   Rueck := 5;Rückzug für Durchstechen
+   Durch := 8;Z Duchstechen
+START
+;------------------------------------------------------------------------
+;- Ecken ausspitzen
+;------------------------------------------------------------------------
+Fertigteil (1000,2000,19,0,0,0,0,0,'',0,0,0)
+;------------------------------------------------------------
+Ebene0()
+transesxy (X_Mitte,Y_Mitte,esxy,1)
+Transesd (Tiefe,esmd)
+;------------------------------------------------------------
+;-
+HGNeu()
+CALL _hg_para_winkel_V5 ( VAL PARA:=Hoehe/2,X1:=X_Mitte,Y1:=Y_Mitte,WINKEL:=0 + Drehwinkel,ESXY1:=0)
+CALL _hg_para_winkel_V5 ( VAL PARA:=Hoehe/2,X1:=X_Mitte,Y1:=Y_Mitte,WINKEL:=180 + Drehwinkel,ESXY1:=0)
+CALL _hg_para_winkel_V5 ( VAL PARA:=Breite/2,X1:=X_Mitte,Y1:=Y_Mitte,WINKEL:=90 + Drehwinkel,ESXY1:=0)
+CALL _hg_para_winkel_V5 ( VAL PARA:=Breite/2,X1:=X_Mitte,Y1:=Y_Mitte,WINKEL:=270 + Drehwinkel,ESXY1:=0)
+;-
+;-
+IF LU
+IF Saege_oder_Spitzfraeser=0
+CALL Eck_Ausspitzen_V7 ( VAL X:=_SPX7,Y:=_SPY7,WINK1:=Wink1,DW:=135 + Drehwinkel,FALZBREITE:=FalzBreite,FALZTIEFE:=FalzTiefe,TIEFE:=Tiefe)
+ELSE
+CALL _ausklinken_V5 ( VAL XPOS:=_SPX7,YPOS:=_SPY7,BASISWINKEL:=Drehwinkel+180,OEFFNUNGSWINKEL:=90,GUTSEITE:=2,OFFSETWINKEL:=0,ESXY:=0)
+END
+END
+IF RU
+IF Saege_oder_Spitzfraeser=0
+CALL Eck_Ausspitzen_V7 ( VAL X:=_SPX3,Y:=_SPY3,WINK1:=Wink1,DW:=135+90 + Drehwinkel,FALZBREITE:=FalzBreite,FALZTIEFE:=FalzTiefe,TIEFE:=Tiefe)
+ELSE
+CALL _ausklinken_V5 ( VAL XPOS:=_SPX3,YPOS:=_SPY3,BASISWINKEL:=Drehwinkel-90,OEFFNUNGSWINKEL:=90,GUTSEITE:=2,OFFSETWINKEL:=0,ESXY:=0)
+END
+END
+IF RO
+IF Saege_oder_Spitzfraeser=0
+CALL Eck_Ausspitzen_V7 ( VAL X:=_SPX5,Y:=_SPY5,WINK1:=Wink1,DW:=135+180 +Drehwinkel,FALZBREITE:=FalzBreite,FALZTIEFE:=FalzTiefe,TIEFE:=Tiefe)
+ELSE
+CALL _ausklinken_V5 ( VAL XPOS:=_SPX5,YPOS:=_SPY5,BASISWINKEL:=Drehwinkel,OEFFNUNGSWINKEL:=90,GUTSEITE:=2,OFFSETWINKEL:=0,ESXY:=0)
+END
+END
+IF LO
+IF Saege_oder_Spitzfraeser=0
+CALL Eck_Ausspitzen_V7 ( VAL X:=_SPX9,Y:=_SPY9,WINK1:=Wink1,DW:=45 + Drehwinkel,FALZBREITE:=FalzBreite,FALZTIEFE:=FalzTiefe,TIEFE:=Tiefe)
+ELSE
+CALL _ausklinken_V5 ( VAL XPOS:=_SPX9,YPOS:=_SPY9,BASISWINKEL:=Drehwinkel+90,OEFFNUNGSWINKEL:=90,GUTSEITE:=2,OFFSETWINKEL:=0,ESXY:=0)
+END
+END
+;-
+HGNeuEnd()

@@ -1,0 +1,23 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCNAME
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=_Kreistaschewmf.bmp
+VARS
+   X := _RX/2;*VAR*KREISTASCHENMITTELPUNKT X
+   Y := _RY/2;*VAR*KREISTASCHENMITTELPUNKT Y
+   R := 15;*VAR*RADIUS
+   Tiefe := 0;*VAR*KREISTASCHENTIEFE
+   Zustellung := 0;*VAR*Zustellung
+START
+;Makro Kreistasche ruft die Tasche mit den richtigen Parametern
+;Rohteil (200,200,20,0,0)
+;WZF (4,_VE,_V,_VA,_SD,_ANF)
+CALL _RecPocket (VAL x_Mitte:=X,Y_Mitte:=Y,Taschenlaenge:=2*R,Taschenbreite:=2*R,Radius:=R,Winkel:=0,Tiefe:=Tiefe,Zustellung:=Zustellung)
+;_PocketMilling (0,0,0,16,100,50,3,0)
+;_RecPocket (_RX/2,_RY/2,_RX/2,_RY/2,0,0,0,0)
+

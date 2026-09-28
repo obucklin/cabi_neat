@@ -1,0 +1,63 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.2.4[Hops.exe]
+;BILD=WINKEL_SAEGE.WMF
+;INFO=
+;WZGV=7735D_101
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Winkel_Saege
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   ToolID := -9999;
+   EinlaufSaege := 100;Säge Einlauf Wert
+   AuslaufSaege := 100;Säge Einlauf Wert
+   Saege_Ueberstand := -0.5;Säge Überstand von Unterkannte
+   Saege_Vorritzen := 2;1 = ohne 2= Vorritz im Gleich\Saegen im Gegen \ 3 = mit Vorritzen  (0+2 = Gleichlauf)
+START
+IF _pVar_NoSaw=0
+WZS (_Saw_Special_ID,_VE,_V,_VA,_SD,_ANF,'1')
+;Sägeüberstand Konsolenmaschine / EVO / C-Achse
+IF (_MaschinenTyp=1) | (_MaschinenTyp=2) | (_MaschinenTyp=5)
+Saege_Ueberstand := -10
+ELSE
+;Sägeüberstand NESTING- Maschinen
+Saege_Ueberstand := -0.5
+END
+;Programme mit U.hop
+IF _Format=1
+EXITMACRO
+ELSE
+IF (_wl>0) & (_intern3wl=0)
+CALL _saege_y_V7 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=Saege_Ueberstand,BL:=2,EINPASSEN:=0,EL:=EinlaufSaege,AL:=AuslaufSaege,PARALLEL:=0,K:=Saege_Vorritzen,KW:=-_WL,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=7,ESY:=3)
+ZText (INTTOSTR(_WL)+'°',0,-200,60,0,4,0,'Times New Roman',0,0,0,0,7,1)
+_intern3wl := 1
+END
+;Neu HB 20.9.2018
+IF (_wl<0) & (_intern3wl=0)
+CALL _saege_y_V7 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=-((_lz-Saege_Ueberstand)/cos(_wl)),BL:=1,EINPASSEN:=0,EL:=EinlaufSaege,AL:=AuslaufSaege,PARALLEL:=0,K:=Saege_Vorritzen,KW:=_WL,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=1,ESY:=5)
+ZText (INTTOSTR(_WL)+'°',0,-200,60,0,4,0,'Times New Roman',0,0,0,0,7,1)
+_intern3wl := 1
+END
+IF (_wr>0) & (_intern4wr=0)
+CALL _saege_y_V7 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=Saege_Ueberstand,BL:=2,EINPASSEN:=0,EL:=EinlaufSaege,AL:=AuslaufSaege,PARALLEL:=0,K:=Saege_Vorritzen,KW:=-_WR,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=3,ESY:=5)
+ZText (INTTOSTR(_WR)+'°',0,-200,60,0,4,0,'Times New Roman',0,0,0,0,5,1)
+_intern4wr := 1
+END
+IF (_wr<0) & (_intern4wr=0)
+CALL _saege_y_V7 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=-((_lz-Saege_Ueberstand)/cos(_wr)),BL:=1,EINPASSEN:=0,EL:=EinlaufSaege,AL:=AuslaufSaege,PARALLEL:=0,K:=Saege_Vorritzen,KW:=_WR,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=5,ESY:=3)
+ZText (INTTOSTR(_WR)+'°',0,-200,60,0,4,0,'Times New Roman',0,0,0,0,5,1)
+_intern4wr := 1
+END
+END
+ELSE
+END

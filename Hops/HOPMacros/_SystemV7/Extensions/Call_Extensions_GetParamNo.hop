@@ -1,0 +1,12 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowGETPARAMNODialog
+VARS
+   Values := '';*VAR*
+   No := 0;*VAR*
+   Separator := '';*VAR*
+   Value := '';*VAR**REF*
+START
+;.
+CALLDLL GETPARAMNO(Extensions,DefaultStr,REF VALUE:=Value VAL VALUES:=Values,NO:=No,SEPARATOR:=Separator)

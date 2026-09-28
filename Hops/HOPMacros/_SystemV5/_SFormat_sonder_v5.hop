@@ -1,0 +1,81 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_SFormat_sonder_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   Schnitt1 := 2;*VAR*1. Schnittseite
+   para1 := 0;*VAR*Parallele für 1. Schnitt
+   Schnitt2 := 1;*VAR*2. Schnittseite
+   para2 := 0;*VAR*Parallele für 2. Schnitt
+   Schnitt3 := 4;*VAR*3. Schnittseite
+   para3 := 0;*VAR*Parallele für 3. Schnitt
+   Schnitt4 := 3;*VAR*4. Schnittseite
+   para4 := 0;*VAR*Parallele für 4. Schnitt
+   Richtung := 1;*VAR*0=GL.1=GGL
+   Einlauf := 30mm;Einlauf in mm
+   Auslauf := 30mm;Auslauf in mm
+START
+;direkt cnc systeme NCHOPS Version 3.4
+;Formatieren mit Säge nur gewählte Seiten / mit Aufmass / MD / 04.01
+;--- Gleiche Schnitte nich möglich ---
+IF ((schnitt1=schnitt2)|(schnitt1=schnitt3)|(schnitt1=schnitt4))&(schnitt1<>0)
+Fehlermeldung (GetMessageText('29','Gleiche Schnitte nicht erlaubt'))
+END
+IF ((schnitt2=schnitt3)|(schnitt2=schnitt4))&(schnitt2<>0)
+Fehlermeldung (GetMessageText('29','Gleiche Schnitte nicht erlaubt'))
+END
+IF (schnitt3=schnitt4)&(schnitt3<>0)
+Fehlermeldung (GetMessageText('29','Gleiche Schnitte nicht erlaubt'))
+END
+;---------------------
+IF schnitt1=1
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para1,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=1,ESXY2:=3)
+END
+IF schnitt1=4
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para1,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=3,ESXY2:=5)
+END
+IF schnitt1=3
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para1,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=5,ESXY2:=7)
+END
+IF schnitt1=2
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para1,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=7,ESXY2:=1)
+END
+;---------------------
+IF schnitt2=1
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para2,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=1,ESXY2:=3)
+END
+IF schnitt2=4
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para2,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=3,ESXY2:=5)
+END
+IF schnitt2=3
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para2,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=5,ESXY2:=7)
+END
+IF schnitt2=2
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para2,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=7,ESXY2:=1)
+END
+;---------------------
+IF schnitt3=1
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para3,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=1,ESXY2:=3)
+END
+IF schnitt3=4
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para3,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=3,ESXY2:=5)
+END
+IF schnitt3=3
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para3,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=5,ESXY2:=7)
+END
+IF schnitt3=2
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para3,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=7,ESXY2:=1)
+END
+;---------------------
+IF schnitt4=1
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para4,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=1,ESXY2:=3)
+END
+IF schnitt4=4
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para4,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=3,ESXY2:=5)
+END
+IF schnitt4=3
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para4,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=5,ESXY2:=7)
+END
+IF schnitt4=2
+CALL _saege_frei_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EY:=0,EZ:=-2mm,BL:=2,EINPASSEN:=0,EL:=Einlauf,AL:=Auslauf,PARALLEL:=Para4,K:=Richtung,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=7,ESXY2:=1)
+END

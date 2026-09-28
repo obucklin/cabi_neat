@@ -1,0 +1,14 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowGetMaxDialog
+;AUTOSCRIPTSTART=0
+VARS
+   Wert1 := 0;*VAR*
+   Wert2 := 0;*VAR*
+   Result := ;*VAR**REF*
+START
+IF Wert1 > Wert2
+Result := Wert1
+ELSE
+Result := Wert2
+END

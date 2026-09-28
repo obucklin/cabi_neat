@@ -1,0 +1,219 @@
+;MAKROTYP=1
+;BILD=_Kreistaschewmf.bmp
+;INFO=_Kreistasche_V4
+;WZGV=NC1000
+;MASCHINE=SIMU
+;NCNAME=_Kreistasche_V4
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   X_Mitte := ;*VAR*KREISTASCHENMITTELPUNKT X
+   Y_Mitte := ;*VAR*KREISTASCHENMITTELPUNKT Y
+   Radius := 100;*VAR*RADIUS
+   Tiefe := 0;*VAR*KREISTASCHENTIEFE
+   Zustellung := 0;*VAR*Zustellung
+   AB := 2;*VAR*Abfahrbewegung
+   ABF := _ANF;*VAR*Abfahrfaktor
+   Interpol := 0;*VAR*Interpolation auf 1. Kreis in der Mitte
+   umkehren := 0;*VAR*Bearbeitung umkehren   0=CW   1=CCW
+   Schleifenzahl := 0;anzahl der Durchläufe
+   UW := 0;Zustellung Breite
+   RM := 0;momentaner Radius
+   Durchlauf := 1;Nummer des Durchlauf
+   RZ := 0;Radiuszustellung pro Durchgang
+   TU := 0;Nötiger fräsweg
+   I := 1;Zähler
+   ANZAHL := 0;
+   TM := 0;Momentane Tiefe
+   FRN := 0;
+   _GKZ := 0;
+   EPX := 1;
+   APX := 2;
+START
+;direkt cnc systeme NCHOPS Version 4.x
+;*** Kreistasche fräsen
+Rohteil (200,200,20,0,0)
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+;*** Fehleingaben abfangen
+IF AB=1
+AB := 2
+END
+IF Tiefe>0
+Tiefe := -Tiefe
+END
+IF Zustellung>0
+Zustellung := -Zustellung
+END
+IF Zustellung=0
+Zustellung := Tiefe
+END
+IF Zustellung<Tiefe
+Fehlermeldung (Zustelltiefe_ist_größer_als_Tiefe)
+ELSE
+END
+;*** Fräserversatz berechnen
+UW := (_WZD/1.55)
+IF UW=0
+Fehlermeldung (Bitte_Werkzeug_definieren)
+END
+;*** Anzahl der Schleifen berechnen
+Schleifenzahl := TU/UW
+Schleifenzahl := (Schleifenzahl DIV 2)+1
+;**** Zustellung anpassen
+UW := TU/Schleifenzahl
+IF umkehren=0
+WHILE TM>Tiefe
+IF TM=1
+TM := 0
+END
+TM := TM+Zustellung
+IF TM<Tiefe
+TM := Tiefe
+END
+IF (_WZR<Radius)&(_WZR>0)&(_WZR*2<Radius)
+_GKZ := (Radius/(_WZR*0.9))/2
+CALL _ROUND ()
+ANZAHL := _GKZ*2+1
+FRN := Radius/ANZAHL
+FOR I := (ANZAHL DIV 2) TO 1 STEP -1
+IF I=(ANZAHL DIV 2)
+IF Interpol=0
+SP (X_Mitte-(Radius-(2*I-1)*FRN),Y_Mitte,TM,2,0,0,0,0,0)
+ELSE
+EPX := X_Mitte-(Radius-(2*I-1)*FRN)
+SP (X_Mitte-(Radius-(2*I-1)*FRN),Y_Mitte,0,2,0,0,0,0,0)
+G02M (EPX,Y_Mitte,_Z+TM/2,X_Mitte,Y_Mitte,0)
+G02M (EPX,Y_Mitte,_Z+TM/2,X_Mitte,Y_Mitte,0)
+END
+END
+IF I<>(ANZAHL DIV 2)
+APX := X_Mitte+(Radius-(2*I+1)*FRN)
+EPX := X_Mitte-(Radius-(2*I-1)*FRN)
+G02M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+END
+APX := X_Mitte-(Radius-(2*I-1)*FRN)
+EPX := X_Mitte+(Radius-(2*I-1)*FRN)
+G02M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+END
+;** Letzte XY-Zustellung auf den original Radius
+IF _X<X_Mitte+Radius
+APX := _X
+EPX := X_Mitte-Radius
+G02M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+APX := X_Mitte-Radius
+EPX := X_Mitte+Radius
+G02M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+G02M (X_Mitte-Radius,Y_Mitte,_Z,x_Mitte,Y_Mitte,0)
+G02M (X_Mitte+Radius,Y_Mitte,_Z,x_Mitte,Y_Mitte,0)
+END
+EP (AB,ABF,0)
+IF (AB=2) & (Radius < (ABF*_WZR))
+Fehlermeldung (Abfahrbewegung_zu_gross)
+END
+ELSE
+IF (_WZR<>0)&(_WZR<Radius)
+;*** Wenn zu kein zum ausräumen
+IF Interpol=0
+SP (X_Mitte+Radius,Y_Mitte,Tiefe,2,0,0,0,0,0)
+G02M (X_Mitte,Y_Mitte-Radius,_Z,X_Mitte,Y_Mitte,0)
+G02M (X_Mitte-Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+G02M (X_Mitte,Y_Mitte+Radius,_Z,X_Mitte,Y_Mitte,0)
+G02M (X_Mitte+Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+ELSE
+SP (X_Mitte+Radius,Y_Mitte,0,2,0,0,0,0,0)
+G02M (X_Mitte,Y_Mitte-Radius,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+G02M (X_Mitte-Radius,Y_Mitte,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+G02M (X_Mitte,Y_Mitte+Radius,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+G02M (X_Mitte+Radius,Y_Mitte,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+G02M (X_Mitte-Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+G02M (X_Mitte+Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+END
+EP (0,_ANF,0)
+ELSE
+;*** Wenn kleiner oder gleich WZR
+Bohrung (x_Mitte,y_Mitte,_WZD,tiefe,0,0,0)
+END
+END
+END
+ELSE
+;********************************************
+;*****               C C W              ********
+;********************************************
+WHILE TM>Tiefe
+IF TM=1
+TM := 0
+END
+TM := TM+Zustellung
+IF TM<Tiefe
+TM := Tiefe
+END
+IF (_WZR<Radius)&(_WZR>0)&(_WZR*2<Radius)
+_GKZ := (Radius/(_WZR*0.9))/2
+CALL _ROUND ()
+ANZAHL := _GKZ*2+1
+FRN := Radius/ANZAHL
+FOR I := (ANZAHL DIV 2) TO 1 STEP -1
+IF I=(ANZAHL DIV 2)
+IF Interpol=0
+SP (X_Mitte-(Radius-(2*I-1)*FRN),Y_Mitte,TM,1,0,0,0,0,0)
+ELSE
+EPX := X_Mitte-(Radius-(2*I-1)*FRN)
+SP (X_Mitte-(Radius-(2*I-1)*FRN),Y_Mitte,0,1,0,0,0,0,0)
+G03M (EPX,Y_Mitte,_Z+TM/2,X_Mitte,Y_Mitte,0)
+G03M (EPX,Y_Mitte,_Z+TM/2,X_Mitte,Y_Mitte,0)
+END
+END
+IF I<>(ANZAHL DIV 2)
+APX := X_Mitte+(Radius-(2*I+1)*FRN)
+EPX := X_Mitte-(Radius-(2*I-1)*FRN)
+G03M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+END
+APX := X_Mitte-(Radius-(2*I-1)*FRN)
+EPX := X_Mitte+(Radius-(2*I-1)*FRN)
+G03M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+END
+;** Letzte XY-Zustellung auf den original Radius
+IF _X<X_Mitte+Radius
+APX := _X
+EPX := X_Mitte-Radius
+G03M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+APX := X_Mitte-Radius
+EPX := X_Mitte+Radius
+G03M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+G03M (X_Mitte-Radius,Y_Mitte,_Z,x_Mitte,Y_Mitte,0)
+G03M (X_Mitte+Radius,Y_Mitte,_Z,x_Mitte,Y_Mitte,0)
+END
+EP (AB,ABF,0)
+IF (AB=2) & (Radius < (ABF*_WZR))
+Fehlermeldung (Abfahrbewegung_zu_gross)
+END
+ELSE
+IF (_WZR<>0)&(_WZR<Radius)
+;*** Wenn zu kein zum ausräumen
+IF Interpol=0
+SP (X_Mitte+Radius,Y_Mitte,Tiefe,1,0,0,0,0,0)
+G03M (X_Mitte,Y_Mitte-Radius,_Z,X_Mitte,Y_Mitte,0)
+G03M (X_Mitte-Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+G03M (X_Mitte,Y_Mitte+Radius,_Z,X_Mitte,Y_Mitte,0)
+G03M (X_Mitte+Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+ELSE
+SP (X_Mitte+Radius,Y_Mitte,0,1,0,0,0,0,0)
+G03M (X_Mitte,Y_Mitte-Radius,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+G03M (X_Mitte-Radius,Y_Mitte,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+G03M (X_Mitte,Y_Mitte+Radius,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+G03M (X_Mitte+Radius,Y_Mitte,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+G03M (X_Mitte-Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+G03M (X_Mitte+Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+END
+EP (0,_ANF,0)
+ELSE
+;*** Wenn kleiner oder gleich WZR
+Bohrung (x_Mitte,y_Mitte,_WZD,tiefe,0,0,0)
+END
+END
+END
+END

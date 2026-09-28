@@ -1,0 +1,54 @@
+;MAKROTYP=0
+;INSTVERSION=6.4.4.2
+;EXEVERSION=6.6.2.207[Hops.exe]
+;BILD=Simons_Band111.wmf
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=SimonsLappe95
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_11.Dll
+;DIALOGPROC=Show_Simons_B_Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   MacroName := '';*VAR*PGM Name
+   BX_1 :=180;*VAR*Position X Band oben
+   BY_1 :=10;*VAR*Position Y Band oben
+   BX_2 :=1500;*VAR*Position X  Band mitte
+   BY_2 :=10;*VAR*Position Y  Band mitte
+   BX_3 :=2000;*VAR*Position X  Band unten
+   BY_3 :=10;*VAR*Position Y  Band unten
+   Ref_T :=29;*VAR*Referenz Tiefe für Bänder
+   B1 :=-1;*VAR*Band oben aktiv
+   B2 :=-1;*VAR*Band mitte aktiv
+   B3 :=-1;*VAR*Band unten aktiv
+   F_Tool :=116;*VAR*Fräswerkzeug 1
+   F1_Tool :=116;*VAR*Fräswerkzeug 2
+   B_Tool :=501;*VAR*Bohrwerkzeug
+   FA_Zu :=0;*VAR*Zustellung fräser 1
+   FA1_Zu :=0;*VAR*Zustellung Fräser 2
+   P_Abst :=0;*VAR*Parallelversatz  Fräser 1
+   P_Abst1 :=0;*VAR*Parallelversatz  Fräser 2
+   T_R :=1;*VAR*0= Tür / 1=Rahmen oder Futter
+   P19 := 0;*VAR*Parameter19
+   P20 := 0;*VAR*Parameter20
+   P21 := 0;*VAR*Parameter21
+   P22 := 0;*VAR*Parameter22
+   P23 := 0;*VAR*Parameter23
+   P24 := 0;*VAR*Parameter24
+   P25 := 0;*VAR*Parameter25
+   P26 := 0;*VAR*Parameter26
+   P27 := 0;*VAR*Parameter27
+   P28 := 0;*VAR*Parameter28
+   P29 := 0;*VAR*Parameter29
+   P30 := 0;*VAR*Parameter30
+   P31 := 0;*VAR*Parameter31
+START
+CALLDLL MACROBYNAME4(MacroExtensions,DefaultStr, VAL MACRONAME:=MacroName,PARAM1:=BX_1,PARAM2:=BY_1,PARAM3:=BX_2,PARAM4:=BY_2,PARAM5:=BX_3,PARAM6:=BY_3,PARAM7:=Ref_T,PARAM8:=B1,PARAM9:=B2,PARAM10:=B3,PARAM11:=F_Tool,PARAM12:=F1_Tool,PARAM13:=B_Tool,PARAM14:=Fa_Zu,PARAM15:=Fa1_Zu,PARAM16:=P_Abst,PARAM17:=P_Abst1,PARAM18:=T_R,PARAM19:=P19,PARAM20:=P20,PARAM21:=P21,PARAM22:=P22,PARAM23:=P23,PARAM24:=P24,PARAM25:=P25,PARAM26:=P26,PARAM27:=P27,PARAM28:=P28,PARAM29:=P29,PARAM30:=P30,PARAM31:=P31);BREAKPOINT

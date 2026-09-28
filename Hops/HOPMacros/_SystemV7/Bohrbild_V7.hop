@@ -1,0 +1,274 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=ShowBohrbild_V7Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   _Reihenfolge := 0;Programmierte Reihenfolge  0=bleibt    >0 = Verschieben auf Platzhalter
+   _MaxDrillingDist := 200;
+   X := 0;*VAR*Referenzpunkt Mitte BB
+   Y := 0;*VAR*Referenzpunkt Mitte BB
+   FlaechenWinkel := 0;*VAR*Winkel der Bohrflaeche
+   Bohr_Wi := 0;*VAR*Absoluter Bohrwinkel
+   B1X := -999;*VAR*Bohrung 1 X-Position
+   B1Z := 10;*VAR*Höhe Bohrung 1
+   B1T := -30;*VAR*Tiefe Bohrung 1
+   TL1 := 0;*VAR*Tiefloch Bohrung 1
+   B2X := -999;*VAR*Bohrung 2 X-Position
+   B2Z := 10;*VAR*Höhe Bohrung 2
+   B2T := -30;*VAR*Tiefe Bohrung 2
+   TL2 := 0;*VAR*Tiefloch Bohrung 2
+   B3X := -999;*VAR*Bohrung 3 X-Position
+   B3Z := 10;*VAR*Höhe Bohrung 3
+   B3T := -30;*VAR*Tiefe Bohrung 3
+   TL3 := 0;*VAR*Tiefloch Bohrung 3
+   B4X := -999;*VAR*Bohrung 4 X-Position
+   B4Z := 10;*VAR*Höhe Bohrung 4
+   B4T := -30;*VAR*Tiefe Bohrung 4
+   TL4 := 0;*VAR*Tiefloch Bohrung 4
+   B5X := -999;*VAR*Bohrung 5  X-Position
+   B5Z := 10;*VAR*Höhe Bohrung 5
+   B5T := -30;*VAR*Tiefe Bohrung 5
+   TL5 := 0;*VAR*Tiefloch Bohrung 5
+   B6X := -999;*VAR*Bohrung 6  X-Position
+   B6Z := 10;*VAR*Höhe Bohrung 6
+   B6T := -30;*VAR*Tiefe Bohrung 6
+   TL6 := 0;*VAR*Tiefloch Bohrung 6
+   PosX := 0;errechnet
+   PosY := 0;errechnet
+   WZ_Kleben := 0;
+   X1 := 0;
+   Y1 := 0;
+   X2 := 0;
+   Y2 := 0;
+   X3 := 0;
+   Y3 := 0;
+   X4 := 0;
+   Y4 := 0;
+   X5 := 0;
+   Y5 := 0;
+   X6 := 0;
+   Y6 := 0;
+   BB_Methode := 0;Bohrbild-Methode  0=achsparallel    1=Lotrecht
+START
+;******************************************************
+;********   Direkt cnc-systeme GmbH   ®  *******
+;******************************************************
+;**********  Eingabe eines Bohrbildes  ***********
+;******************************************************
+;------------    Ä N D E R U N G E N
+;_Reihenfolge wird jetzt am ENDE unten =0 gesetzt MW + SF 4.11.2003
+;--------------------------------------------------------------------
+;--------------------------------------------------------------------
+IF FlaechenWinkel = Bohr_Wi
+Fehlermeldung (GetMessageText('1011','Flächenwinkel ist gleich dem Bohrwinkel'))
+END
+;******************************************************
+;****Define distance****
+CALL STARTVIEWGROUP_V7 ( VAL MAXDIST:=_MaxDrillingDist)
+;******************************************************
+ZLinie (x-2,y-2,x+2,y+2,0,0,0)
+ZLinie (x-2,y+2,x+2,y-2,0,0,0)
+;******************************************************
+IF Bohr_Wi >= 360
+Bohr_Wi := Bohr_Wi-360
+ELSE
+END
+IF Bohr_Wi < 0
+Bohr_Wi := Bohr_Wi+360
+ELSE
+END
+;IF (FlaechenWinkel = Bohr_Wi-90) | (FlaechenWinkel = Bohr_Wi+90) | (FlaechenWinkel = Bohr_Wi+360-90) | (FlaechenWinkel = Bohr_Wi-360+90)
+IF ( ABS(FlaechenWinkel-Bohr_Wi) = 90 ) | ( ABS(FlaechenWinkel-Bohr_Wi) = 270 )
+BB_Methode := 1
+ELSE
+END
+;******************************************************
+IF BB_Methode=1
+CALL Bohrbild_PosXY (REF POSX:=PosX,POSY:=PosY VAL VERSATZ:=B1X,FLÄCHENWINKEL:=FlaechenWinkel,BOHR_WI:=Bohr_Wi,X:=X,Y:=Y)
+EbeneF (X,Y,0,90,Bohr_Wi-90,0,0)
+ELSE
+Ebene0()
+END
+IF B1X<>-999
+IF WZ_Kleben = 1
+IF BB_Methode=0
+CALL GlueProcess_V7 ()
+END
+ELSE
+WZ_Kleben := 1
+END
+IF B1T > 0
+B1T := -B1T
+END
+IF B1Z < 0
+Fehlermeldung (GetMessageText('1012','Negative  Z-Hoehe  Bohrung') +' '+  inttostr(1))
+END
+CALL Bohrbild_PosXY (REF POSX:=PosX,POSY:=PosY VAL VERSATZ:=B1X,FLÄCHENWINKEL:=FlaechenWinkel,BOHR_WI:=Bohr_Wi,X:=X,Y:=Y)
+IF BB_Methode=1
+Bohrung (B1X,B1Z,_WZD,B1T,TL1,0,0,0,0,0,0,0)
+ELSE
+HorzB(PosX,PosY,B1Z,_WZD,B1T,TL1,0,Bohr_Wi)
+END
+x1 := posx
+Y1 := posy
+;ZLinie (x,y,x1,y1,0)
+END
+IF B2X<>-999
+IF WZ_Kleben = 1
+IF BB_Methode=0
+CALL GlueProcess_V7 ()
+END
+ELSE
+WZ_Kleben := 1
+END
+IF B2T > 0
+B2T := -B2T
+END
+IF B2Z < 0
+Fehlermeldung (GetMessageText('1012','Negative  Z-Hoehe  Bohrung') +' '+  inttostr(2))
+END
+CALL Bohrbild_PosXY (REF POSX:=PosX,POSY:=PosY VAL VERSATZ:=B2X,FLÄCHENWINKEL:=FlaechenWinkel,BOHR_WI:=Bohr_Wi,X:=X,Y:=Y)
+IF BB_Methode=1
+Bohrung (B2X,B2Z,_WZD,B2T,TL2,0,0,0,0,0,0,0)
+ELSE
+HorzB(PosX,PosY,B2Z,_WZD,B2T,TL2,0,Bohr_Wi)
+END
+x2 := posx
+Y2 := posy
+;ZLinie (x,y,x2,y2,0)
+END
+IF B3X<>-999
+IF WZ_Kleben = 1
+IF BB_Methode=0
+CALL GlueProcess_V7 ()
+END
+ELSE
+WZ_Kleben := 1
+END
+IF B3T > 0
+B3T := -B3T
+END
+IF B3Z < 0
+Fehlermeldung (GetMessageText('1012','Negative  Z-Hoehe  Bohrung') +' '+  inttostr(3))
+END
+CALL Bohrbild_PosXY (REF POSX:=PosX,POSY:=PosY VAL VERSATZ:=B3X,FLÄCHENWINKEL:=FlaechenWinkel,BOHR_WI:=Bohr_Wi,X:=X,Y:=Y)
+IF BB_Methode=1
+Bohrung (B3X,B3Z,_WZD,B3T,TL3,0,0,0,0,0,0,0)
+ELSE
+HorzB(PosX,PosY,B3Z,_WZD,B3T,TL3,0,Bohr_Wi)
+END
+x3 := posx
+Y3 := posy
+;ZLinie (x,y,x3,y3,0)
+END
+IF B4X<>-999
+IF WZ_Kleben = 1
+IF BB_Methode=0
+CALL GlueProcess_V7 ()
+END
+ELSE
+WZ_Kleben := 1
+END
+IF B4T > 0
+B4T := -B4T
+END
+IF B4Z < 0
+Fehlermeldung (GetMessageText('1012','Negative  Z-Hoehe  Bohrung') +' '+  inttostr(4))
+END
+CALL Bohrbild_PosXY (REF POSX:=PosX,POSY:=PosY VAL VERSATZ:=B4X,FLÄCHENWINKEL:=FlaechenWinkel,BOHR_WI:=Bohr_Wi,X:=X,Y:=Y)
+IF BB_Methode=1
+Bohrung (B4X,B4Z,_WZD,B4T,TL4,0,0,0,0,0,0,0)
+ELSE
+HorzB(PosX,PosY,B4Z,_WZD,B4T,TL4,0,Bohr_Wi)
+END
+x4 := posx
+Y4 := posy
+;ZLinie (x,y,x4,y4,0)
+END
+IF B5X<>-999
+IF WZ_Kleben = 1
+IF BB_Methode=0
+CALL GlueProcess_V7 ()
+END
+ELSE
+WZ_Kleben := 1
+END
+IF B5T > 0
+B5T := -B5T
+END
+IF B5Z < 0
+Fehlermeldung (GetMessageText('1012','Negative  Z-Hoehe  Bohrung') +' '+  inttostr(5))
+END
+CALL Bohrbild_PosXY (REF POSX:=PosX,POSY:=PosY VAL VERSATZ:=B5X,FLÄCHENWINKEL:=FlaechenWinkel,BOHR_WI:=Bohr_Wi,X:=X,Y:=Y)
+IF BB_Methode=1
+Bohrung (B5X,B5Z,_WZD,B5T,TL5,0,0,0,0,0,0,0)
+ELSE
+HorzB(PosX,PosY,B5Z,_WZD,B5T,TL5,0,Bohr_Wi)
+END
+x5 := posx
+Y5 := posy
+;ZLinie (x,y,x5,y5,0)
+END
+IF B6X<>-999
+IF WZ_Kleben = 1
+IF BB_Methode=0
+CALL GlueProcess_V7 ()
+END
+ELSE
+WZ_Kleben := 1
+END
+IF B6T > 0
+B6T := -B6T
+END
+IF B6Z < 0
+Fehlermeldung (GetMessageText('1012','Negative  Z-Hoehe  Bohrung') +' '+  inttostr(6))
+END
+CALL Bohrbild_PosXY (REF POSX:=PosX,POSY:=PosY VAL VERSATZ:=B6X,FLÄCHENWINKEL:=FlaechenWinkel,BOHR_WI:=Bohr_Wi,X:=X,Y:=Y)
+IF BB_Methode=1
+Bohrung (B6X,B6Z,_WZD,B6T,TL6,0,0,0,0,0,0,0)
+ELSE
+HorzB(PosX,PosY,B6Z,_WZD,B6T,TL6,0,Bohr_Wi)
+END
+x6 := posx
+Y6 := posy
+;ZLinie (x,y,x6,y6,0)
+END
+Ebene0()
+Call ENDVIEWGROUP_V7 ()
+;--------------------------------------------------------------------
+IF BB_Methode=1
+IF (X1<>0) | (Y1<>0)
+CALL _DrehenBBStart_V5 ( VAL DX:=X1,DY:=Y1,DW:=Bohr_Wi,ESXY1:=0)
+ZRechteck (X1,Y1-_WZR,-B1T,_WZD,1,32768,0)
+CALL _DrehenBBEnde ()
+END
+IF (X2<>0) | (Y2<>0)
+CALL _DrehenBBStart_V5 ( VAL DX:=X2,DY:=Y2,DW:=Bohr_Wi,ESXY1:=0)
+ZRechteck (X2,Y2-_WZR,-B2T,_WZD,1,32768,0)
+CALL _DrehenBBEnde ()
+END
+IF (X3<>0) | (Y3<>0)
+CALL _DrehenBBStart_V5 ( VAL DX:=X3,DY:=Y3,DW:=Bohr_Wi,ESXY1:=0)
+ZRechteck (X3,Y3-_WZR,-B3T,_WZD,1,32768,0)
+CALL _DrehenBBEnde ()
+END
+IF (X4<>0) | (Y4<>0)
+CALL _DrehenBBStart_V5 ( VAL DX:=X4,DY:=Y4,DW:=Bohr_Wi,ESXY1:=0)
+ZRechteck (X4,Y4-_WZR,-B4T,_WZD,1,32768,0)
+CALL _DrehenBBEnde ()
+END
+IF (X5<>0) | (Y5<>0)
+CALL _DrehenBBStart_V5 ( VAL DX:=X5,DY:=Y5,DW:=Bohr_Wi,ESXY1:=0)
+ZRechteck (X5,Y5-_WZR,-B5T,_WZD,1,32768,0)
+CALL _DrehenBBEnde ()
+END
+IF (X6<>0) | (Y6<>0)
+CALL _DrehenBBStart_V5 ( VAL DX:=X6,DY:=Y6,DW:=Bohr_Wi,ESXY1:=0)
+ZRechteck (X6,Y6-_WZR,-B6T,_WZD,1,32768,0)
+CALL _DrehenBBEnde ()
+END
+END
+;--------------------------------------------------------------------
+;_Reihenfolge wird jetzt =0 gesetzt MW + SF 4.11.2003
+_Reihenfolge := 0
+;--------------------------------------------------------------------

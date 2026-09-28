@@ -1,0 +1,12 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowSwapDialog
+;AUTOSCRIPTSTART=0
+VARS
+   Wert1 := ;*VAR**REF*
+   Wert2 := ;*VAR**REF*
+   dummy := 0;
+START
+dummy := Wert1
+Wert1 := Wert2
+Wert2 := dummy

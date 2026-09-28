@@ -1,0 +1,11 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowBACKPOSDialog
+VARS
+   SubStr := '';*VAR*
+   Str := '';*VAR*
+   Result := ;*VAR**REF*
+START
+;.
+CALLDLL BACKPOS(Extensions,DefaultStr,REF RESULT:=Result VAL SUBSTR:=SubStr,STR:=Str)

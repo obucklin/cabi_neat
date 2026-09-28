@@ -1,0 +1,75 @@
+;MAKROTYP=1
+;BILD=
+;INFO=GetWinkel2P_V4
+;WZGV=demo
+;MASCHINE=demo
+;NCNAME=BT_GetWinkel2P
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   P1X := 0;*VAR*Anfangspunkt
+   P1Y := 0;*VAR*Anfangspunkt
+   P2X := -100;*VAR*Endpunkt
+   P2Y := -100;*VAR*Endpunkt
+   Winkel2P := 0;*VAR**REF*
+   Vx := 0;
+   Vy := 0;
+   Vxabs := 0;
+   Vyabs := 0;
+   Toleranz := 0.0000001;
+START
+;Winkelberechnung anhand von zwei Punkten
+Vx := P2x-P1x
+Vy := P2y-P1y
+Vxabs := Vx
+Vyabs := Vy
+IF Vxabs<0
+Vxabs := -Vxabs
+END
+IF Vyabs<0
+Vyabs := -Vyabs
+END
+IF Vxabs<=Toleranz
+;parallel zur y-Achse
+IF Vy>0
+Winkel2P := 90
+ELSE
+Winkel2P := 270
+END
+ELSE
+;parallel zur x-Achse
+IF Vyabs<=Toleranz
+IF Vx>0
+Winkel2P := 0
+ELSE
+Winkel2P := 180
+END
+ELSE
+;alle anderen Fälle
+winkel2P := arctan(Vx/Vy)
+IF Winkel2P<0
+winkel2P := -winkel2P
+END
+IF Vx>0
+IF Vy>0
+;1. Quadrant
+winkel2P := 90-winkel2P
+ELSE
+;4. Quadrant
+winkel2P := 270+winkel2P
+END
+ELSE
+IF Vy<0
+;3. Quadrant
+winkel2P := 270-winkel2P
+ELSE
+;2. Quadrant
+winkel2P := winkel2P+90
+END
+END
+END
+END

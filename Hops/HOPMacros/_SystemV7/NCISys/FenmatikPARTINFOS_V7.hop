@@ -1,0 +1,18 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowFENMATIKPARTINFOS_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   ClampMinx := 0;*VAR*beliebige Zahl
+   ClampMaxx := 0;*VAR*beliebige Zahl
+   PartTyp := 0;*VAR*beliebige Zahl
+   AnschlagLinie := 0;*VAR*beliebige Zahl
+   LLr5 := 0;*VAR*beliebige Zahl
+   LLr6 := 0;*VAR*beliebige Zahl
+   LLstr := '';*VAR*Zeichenkette
+   LLr7 := 0;*VAR*beliebige Zahl
+   LLr8 := 0;*VAR*beliebige Zahl
+   UseAllTrav := 0;*VAR*= 1 werden in CCPadPos alle Traversen für die Positionierung verwendet
+START
+nciext (-160000,'NCISys',0,0,0,ClampMinx,ClampMaxx,PartTyp,AnschlagLinie,LLr5,LLr6,LLstr,LLr7,LLr8,UseAllTrav)

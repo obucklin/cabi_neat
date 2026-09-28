@@ -1,0 +1,108 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=8.8.0.687[Hops.exe]
+;BILD=KONTUR_RECHTECK.WMF
+;INFO=
+;WZGV=DIREKT_DEMO
+;WZGVCONFIG=
+;MASCHINE=DIREKT_DEMO
+;NCNAME=Kontur_Rechteck
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+;DIALOG8DLL=InterDialogs.Dll
+;DIALOG8PROC=ShowStdDialog
+;DIALOG8KIND=2
+VARS
+   Konturname := 'K1';*VAR*
+   MX := 75;*VAR*Mitte in X
+   MY := 50;*VAR*Mitte in Y
+   Z := -5;*VAR*Z-Höhe
+   Laenge := 150;*VAR*Länge
+   Breite := 100;*VAR*Breite
+   Radius := 8;*VAR*Eckradius
+   DW := 0;*VAR*Drehwinkel
+   abst := 0;*VAR*Abstand. + nach außen
+   CW_CCW := 1;*VAR*0=clockwise 1=counter clockwise
+   Layer := '';*VAR*
+   Info := '';*VAR*
+   esxy := 0;*VAR*
+   esz := 0;*VAR*0=OK 1=UK
+   l := 0;berechnet - halbe Länge + Abstand
+   b := 0;berechnet - halbe Breite + Abstand
+   sp := 0;
+START
+;******************************************************
+;********   Direkt cnc-systeme GmbH   ®  *******
+;*************   KK 14.10.2025 - V 8.9  *************
+;******************************************************
+IF _RX=0
+fertigteil (600,400,20,0,0,0,0,0,'',0,0,0,0)
+WZF (1001,_VE,_V,_VA,_SD,_ANF,'1')
+END
+/CALL _Rechteck_V8 ( VAL X_MITTE:=MX,Y_MITTE:=MY,LAENGE:=Laenge,BREITE:=Breite,RADIUS:=Radius,WINKEL:=DW,TIEFE:=-5,ZUTIEFE:=0,RADIUSKORREKTUR:=2,AB:=2,AUFMASS:=0,ANF:=_ANF,ABF:=_ANF,UMKEHREN:=0,RAMPE:=0,RAMPENLAENGE:=50,QUADRANT:=1,INTERPOL:=0,ESXY:=9,ESMD:=0,LASER:=0,INTERPOLDIST:=0.5)
+deletecontour (Konturname,0)
+;uuuund los
+transesxy (MX,MY,esxy,0)
+Transesd (Z,esz)
+l := Laenge/2+abst
+b := Breite/2+abst
+Radius := CON(Radius=0,0,CON(Radius>0,Radius+abst,Radius-abst))
+sp := 1
+IF CW_CCW=1
+sp := -sp
+END
+;*** 5 ********************** 6 ********************** 7 ***
+;*                                                                                              *
+;4                                                                                             8
+;*                                                                                              *
+;3                                                                                             9
+;*                                                                                              *
+;2                                                                                           10
+;*                                                                                              *
+;*** 1 ********************** 0 ********************* 11 ***
+CALL SetRotPara ( VAL MX:=MX,MY:=MY,ROTW:=DW)
+CALL SetPunkt ( VAL X:=mx,Y:=my-b)
+CALL RotUmPunkt ()
+KB (Konturname,Layer,_AktPosX,_AktPosY,Z,Info,0,0)
+CALL SetPunkt ( VAL X:=mx-l*sp,Y:=my-b)
+CALL RotUmPunkt ()
+KG01 ('',_AktPosX,_AktPosY,0,'',0,2)
+IF Radius<>0
+KVerrundung ('',0,Radius,'',2)
+END
+CALL SetPunkt ( VAL X:=mx-l*sp,Y:=my)
+CALL RotUmPunkt ()
+KG01 ('',_AktPosX,_AktPosY,0,'',0,2)
+CALL SetPunkt ( VAL X:=mx-l*sp,Y:=my+b)
+CALL RotUmPunkt ()
+KG01 ('',_AktPosX,_AktPosY,0,'',0,2)
+IF Radius<>0
+KVerrundung ('',0,Radius,'',2)
+END
+CALL SetPunkt ( VAL X:=mx,Y:=my+b)
+CALL RotUmPunkt ()
+KG01 ('',_AktPosX,_AktPosY,0,'',0,2)
+CALL SetPunkt ( VAL X:=mx+l*sp,Y:=my+b)
+CALL RotUmPunkt ()
+KG01 ('',_AktPosX,_AktPosY,0,'',0,2)
+IF Radius<>0
+KVerrundung ('',0,Radius,'',2)
+END
+CALL SetPunkt ( VAL X:=mx+l*sp,Y:=my)
+CALL RotUmPunkt ()
+KG01 ('',_AktPosX,_AktPosY,0,'',0,2)
+CALL SetPunkt ( VAL X:=mx+l*sp,Y:=my-b)
+CALL RotUmPunkt ()
+KG01 ('',_AktPosX,_AktPosY,0,'',0,2)
+IF Radius<>0
+KVerrundung ('',0,Radius,'',2)
+END
+KG01ZuKB()

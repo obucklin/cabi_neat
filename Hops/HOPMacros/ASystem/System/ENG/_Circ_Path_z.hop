@@ -1,0 +1,192 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=Kreisbahn_neu
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=_Kreisbahn_mit_zustell.wmf
+VARS
+   X_Mitte := 50;*VAR*Mittelpunkt in X
+   Y_Mitte := 50;*VAR*Mittelpunkt in Y
+   Tiefe := 0;*VAR*Gesamte Frästiefe
+   ZuTiefe := 0;*VAR*Frästiefe pro Zustellung (voll Kreis)
+   Radius := 15;*VAR*Radius der Kreisbahn
+   Radiuskorrektur := 2;*VAR*0=Mitte,1=Innerhalb,2=Ausserhalb
+   Anf_bew := 0;*VAR*Anfahrbewegung 0=keine 2=Radial
+   Bearb_umkehren := 0;Bearbeitung umkehren
+   Winkel := 15;Überfahrwinkel (Einstellbar)
+   Übt := 1;Überfahren in Z (Einstellbar)
+   Radius_korrektur := 0;Berechnetet
+   Zustell := 0;Berechnet
+   a := 0;Berechnet
+   tiefea := 0;Berechnet
+START
+FINISHEDPART(100,100,19,0,0)
+;direkt cnc systeme NCHOPS Version3.0
+;Kreisbahn V 4.0/MS/20.04.01
+;WZF (1,_VA,_V,_VE,_SD,_ANF)
+IF Tiefe<0
+Tiefe := Tiefe*(-1)
+END
+IF zuTiefe<0
+zuTiefe := zuTiefe*(-1)
+END
+IF zuTiefe<=0
+;GIVEOUTERROR (NO_DEPTH_PER_PASSING)
+zuTiefe := Tiefe
+END
+IF Tiefe=_rz
+Tiefe := tiefe+übt
+zuTiefe := zutiefe+übt
+END
+IF Radiuskorrektur=0
+Anf_bew := 0
+END
+IF anf_bew=1
+IF Radiuskorrektur=0
+anf_bew := 0
+ELSE
+Anf_bew := 2
+END
+END
+IF (Radius=_WZR)&(Radiuskorrektur=2)
+DRILLING(X_MITTE,Y_MITTE,_WZD,Z,0,0,0)
+ELSE
+IF (_WZR>Radius)&(Radiuskorrektur=2)
+DARCCW(X_MITTE,Y_MITTE,X_MITTE-_WZR,Y_MITTE,X_MITTE-_WZR,Y_MITTE,255)
+GIVEOUTHINT (WRONG_TOOL)
+ELSE
+IF zutiefe=0
+a := 0
+ELSE
+a := (tiefe div zutiefe)
+END
+IF Bearb_umkehren=0
+AGNEW()
+ACIRCLE(X_MITTE,Y_MITTE,RADIUS)
+ALINEA(X_MITTE,Y_MITTE,WINKEL)
+CALL _ag_para_angle (VAL para:=-(_wzd*1.2+0.5),x1:=_spx1,y1:=_spy1,winkel:=winkel+90)
+;_ag_para_angle (50,0,0,45)
+CALL _ag_para_angle (VAL para:=_wzd*1.2+0.5,x1:=_spx1,y1:=_spy1,winkel:=winkel+90)
+ALINEA(X_MITTE,Y_MITTE,0-WINKEL)
+IF zutiefe=tiefe
+IF Radiuskorrektur=0
+SP(_SPX13,_SPY13,0,RADIUSKORREKTUR,ANF_BEW,_ANF,0,0,0)
+ELSE
+SP(X_MITTE+RADIUS,Y_MITTE,0,RADIUSKORREKTUR,-ANF_BEW,_ANF,0,0,0)
+END
+END
+IF zutiefe<>tiefe
+SP(X_MITTE+RADIUS,Y_MITTE,0,RADIUSKORREKTUR,ANF_BEW,_ANF,0,0,0)
+FOR zustell := 1 TO a STEP 1
+G03C(X_MITTE,Y_MITTE+RADIUS,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+G03C(X_MITTE-RADIUS,Y_MITTE,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+G03C(X_MITTE,Y_MITTE-RADIUS,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+G03C(X_MITTE+RADIUS,Y_MITTE,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+tiefea := tiefea+zutiefe
+END
+END
+IF tiefea<tiefe
+zutiefe := tiefe-tiefea
+G03C(X_MITTE,Y_MITTE+RADIUS,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+G03C(X_MITTE-RADIUS,Y_MITTE,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+G03C(X_MITTE,Y_MITTE-RADIUS,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+G03C(X_MITTE+RADIUS,Y_MITTE,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+END
+IF Radiuskorrektur=0
+G03C(X_MITTE,Y_MITTE,-TIEFE,X_MITTE,Y_MITTE,0)
+ELSE
+G03C(X_MITTE,Y_MITTE+RADIUS,_Z,X_MITTE,Y_MITTE,0)
+END
+G03C(X_MITTE-RADIUS,Y_MITTE,_Z,X_MITTE,Y_MITTE,0)
+G03C(X_MITTE,Y_MITTE-RADIUS,_Z,X_MITTE,Y_MITTE,0)
+G03C(X_MITTE+RADIUS,Y_MITTE,_Z,X_MITTE,Y_MITTE,0)
+IF Radiuskorrektur=0
+G03C(_SPX1,_SPY1,0,X_MITTE,Y_MITTE,0)
+ELSE
+G03C(_SPX1,_SPY1,_Z,X_MITTE,Y_MITTE,0)
+END
+IF Radiuskorrektur=0
+EP(0,_ANF,0)
+END
+IF  Radiuskorrektur=1&anf_bew=2
+TANG(_SPX5,_SPY5,_Z,0)
+EP(0,_ANF,0)
+END
+IF Radiuskorrektur=2&anf_bew=2
+TANG(_SPX9,_SPY9,_Z,0)
+EP(0,_ANF,0)
+END
+AGNEWEND()
+ELSE
+AGNEW()
+IF Winkel>0
+winkel := -Winkel
+END
+ACIRCLE(X_MITTE,Y_MITTE,RADIUS)
+ALINEA(X_MITTE,Y_MITTE,WINKEL)
+CALL _hg_para_winkel (VAL para:=-(_wzd*1.2+0.5),x1:=_spx1,y1:=_spy1,winkel:=winkel+90)
+CALL _hg_para_winkel (VAL para:=_wzd*1.2+0.5,x1:=_spx1,y1:=_spy1,winkel:=winkel+90)
+ALINEA(X_MITTE,Y_MITTE,-WINKEL)
+IF Radiuskorrektur=1
+Radius_korrektur := 2
+END
+IF Radiuskorrektur=2
+Radius_korrektur := 1
+END
+IF zutiefe=tiefe
+IF Radiuskorrektur=0
+SP(_SPX13,_SPY13,0,RADIUSKORREKTUR,ANF_BEW,_ANF,0,0,0)
+ELSE
+SP(X_MITTE+RADIUS,Y_MITTE,-TIEFE,RADIUS_KORREKTUR,-ANF_BEW,_ANF,0,0,0)
+END
+ELSE
+SP(X_MITTE+RADIUS,Y_MITTE,0,RADIUS_KORREKTUR,ANF_BEW,_ANF,0,0,0)
+FOR zustell := 1 TO a STEP 1
+G02C(X_MITTE,Y_MITTE-RADIUS,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+G02C(X_MITTE-RADIUS,Y_MITTE,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+G02C(X_MITTE,Y_MITTE+RADIUS,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+G02C(X_MITTE+RADIUS,Y_MITTE,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+tiefea := tiefea+zutiefe
+END
+IF tiefea<tiefe
+tiefe := tiefe-tiefea
+G02C(X_MITTE,Y_MITTE-RADIUS,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+G02C(X_MITTE-RADIUS,Y_MITTE,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+G02C(X_MITTE,Y_MITTE+RADIUS,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+G02C(X_MITTE+RADIUS,Y_MITTE,_Z-ZUTIEFE/4,X_MITTE,Y_MITTE,0)
+END
+END
+IF Radiuskorrektur=0
+G02C(X_MITTE,Y_MITTE,-TIEFE,X_MITTE,Y_MITTE,0)
+ELSE
+G02C(X_MITTE,Y_MITTE-RADIUS,_Z,X_MITTE,Y_MITTE,0)
+END
+G02C(X_MITTE,Y_MITTE-RADIUS,_Z,X_MITTE,Y_MITTE,0)
+G02C(X_MITTE-RADIUS,Y_MITTE,_Z,X_MITTE,Y_MITTE,0)
+G02C(X_MITTE,Y_MITTE+RADIUS,_Z,X_MITTE,Y_MITTE,0)
+G02C(X_MITTE+RADIUS,Y_MITTE,_Z,X_MITTE,Y_MITTE,0)
+IF Radiuskorrektur=0
+G02C(_SPX1,_SPY1,0,X_MITTE,Y_MITTE,0)
+ELSE
+G02C(_SPX1,_SPY1,_Z,X_MITTE,Y_MITTE,0)
+END
+IF Radiuskorrektur=0
+EP(0,_ANF,0)
+END
+IF Radius_korrektur=2
+TANG(_SPX5,_SPY5,_Z,0)
+EP(0,_ANF,0)
+END
+IF Radius_korrektur=1
+TANG(_SPX9,_SPY9,_Z,0)
+EP(0,_ANF,0)
+END
+END
+END
+EP(0,_ANF,0)
+END
+AGNEWEND()
+

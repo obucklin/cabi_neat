@@ -1,0 +1,12 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowMTMGetAdditionDataDialog
+;AUTOSCRIPTSTART=0
+VARS
+   ID := 0;*VAR*ID
+   ValueID := 0;*VAR*Value ID
+   AddID := 0;*VAR*
+   AddValue := '';*VAR**REF*
+   AddExists := ;*VAR**REF*
+START
+CALLDLL MTM_GetAdditionData(HopsMTManagerExt,DefaultStr,REF ADDVALUE:=AddValue,ADDEXISTS:=AddExists VAL ID:=ID,VALUEID:=ValueID,ADDID:=AddID)

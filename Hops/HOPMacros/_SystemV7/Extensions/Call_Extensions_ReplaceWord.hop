@@ -1,0 +1,12 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowREPLACEWORDDialog
+VARS
+   sFind := '';*VAR*
+   sRepl := '';*VAR*
+   Source := '';*VAR*
+   Result := '';*VAR**REF*
+START
+;.
+CALLDLL REPLACEWORD(Extensions,DefaultStr,REF RESULT:=Result VAL SFIND:=sFind,SREPL:=sRepl,SOURCE:=Source)

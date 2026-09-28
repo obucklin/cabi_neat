@@ -1,0 +1,15 @@
+;AUTOSCRIPTSTART=0
+;MAKROTYP=1
+VARS
+   MacroName := '';*VAR*Macroname
+   x := 0;*VAR*Parameter1
+   y := 0;*VAR*Parameter2
+   ProcessAngle := 0;*VAR*Parameter3
+   BohrbildGespiegelt := 0;*VAR*Parameter4
+   TeilGespiegelt := 0;*VAR*Parameter5
+   Vorprofilieren := 0;*VAR*Parameter6
+   FlaechenWinkel := 0;*VAR*Parameter7
+   ProfileSide := '';*VAR*Parameter8
+   CounterWidth := 0;*VAR*Parameter9
+START
+CALLDLL MACROBYNAME3(MacroExtensions,DefaultStr, VAL MACRONAME:=MacroName,PARAM1:=x,PARAM2:=y,PARAM3:=ProcessAngle,PARAM4:=BohrbildGespiegelt,PARAM5:=TeilGespiegelt,PARAM6:=Vorprofilieren,PARAM7:=FlaechenWinkel,PARAM8:=ProfileSide,PARAM9:=CounterWidth)

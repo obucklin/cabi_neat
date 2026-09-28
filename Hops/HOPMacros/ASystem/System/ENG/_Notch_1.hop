@@ -1,0 +1,78 @@
+;MAKROTYP=1
+;DZ=0.00
+;DY=0.00
+;DX=0.00
+;KOMMENTAR=
+;NCNAME=_ausklinken_1
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=_ausklinken_1.bmp
+VARS
+   XPos := 50;*VAR*X-Position der Ausklinkung
+   YPos := 50;*VAR*Y-Position der Ausklinkung
+   BasisWinkel := 0;*VAR*Grundwinkel fürs ausklinken
+   Oeffnungswinkel := 90;*VAR*Oeffnungswinkel
+   Gutseite := 0;*VAR*[0] Oben  [1] Unten  [2] beide
+   OffsetWinkel := 0;*VAR*Vorhaltewinkel
+   Radius := 20;Verrundungsradius
+   StartY := 0;
+   Weg := 0.1;Abfahrweg des Ausklinkung
+   StartX := 0;
+   EndY := 0;
+   EndX := 0;
+START
+;Makro Ausklinken
+;Basiswinkel = Mathematisch gesehen in Richtung des angegeben Punktes
+BasisWinkel := Basiswinkel+OffsetWinkel
+Oeffnungswinkel := Oeffnungswinkel-2*OffsetWinkel
+AGNEW()
+ALINEA(XPOS,YPOS,BASISWINKEL)
+ALINEA(XPOS,YPOS,BASISWINKEL+OEFFNUNGSWINKEL)
+FINISHEDPART(500,500,20,0,0)
+;WZS (55,_VE,_V,_VA,_SD,_ANF)
+;Startpunkt 1. abtauchen berechnen
+weg := _WZD+1
+StartX := XPOS
+StartY := YPOS
+;StartX := XPOS+(_WZR*COS(BasisWinkel+180))
+;StartY := YPOS+(_WZR*SIN(BasisWinkel+180))
+;Endpunkt 1. abtauchen berechnen
+EndX := StartX+(Weg*COS(BasisWinkel+180))
+EndY := StartY+(Weg*SIN(BasisWinkel+180))
+IF GutSeite=0
+;Gutseite oben - eintauchen und dann wegfahren
+SAWING(ENDX,ENDY,-_WZR,STARTX,STARTY,-_WZR,2,1,0,1,0,0)
+END
+IF GutSeite=1
+;Gutseite unten - erst eintauchen und dann ranfahren
+SAWING(ENDX,ENDY,-_WZR,STARTX,STARTY,-_WZR,2,1,0,0,0,0)
+END
+IF GutSeite=2
+;Gutseite oben - eintauchen und dann wegfahren
+SAWING(ENDX,ENDY,-_WZR+_RZ/2,STARTX,STARTY,-_WZR-_WZR+_RZ/2,2,1,0,1,0,0)
+;Gutseite unten - erst eintauchen und dann ranfahren
+SAWING(ENDX,ENDY,-_WZR,STARTX,STARTY,-_WZR,2,1,0,0,0,0)
+END
+;Startpunkt 2. abtauchen berechnen
+weg := _WZD+1
+StartX := XPOS
+StartY := YPOS
+;Endpunkt 2. abtauchen berechnen
+EndX := StartX+(Weg*COS(BasisWinkel+OeffnungsWinkel+180))
+EndY := StartY+(Weg*SIN(BasisWinkel+Oeffnungswinkel+180))
+IF GutSeite=0
+;Gutseite oben - eintauchen und dann wegfahren
+SAWING(STARTX,STARTY,-_WZR,ENDX,ENDY,-_WZR,2,1,0,0,0,0)
+END
+IF GutSeite=1
+;Gutseite unten - erst eintauchen und dann ranfahren
+SAWING(STARTX,STARTY,-_WZR,ENDX,ENDY,-_WZR,2,1,0,1,0,0)
+END
+IF GutSeite=2
+;Gutseite oben - eintauchen und dann wegfahren
+SAWING(STARTX,STARTY,-_WZR+_RZ/2,ENDX,ENDY,-_WZR+_RZ/2,2,1,0,0,0,0)
+;Gutseite unten - erst eintauchen und dann ranfahren
+SAWING(STARTX,STARTY,-_WZR,ENDX,ENDY,-_WZR,2,1,0,1,0,0)
+END
+AGNEWEND()
+

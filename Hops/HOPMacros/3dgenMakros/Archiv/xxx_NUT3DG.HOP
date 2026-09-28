@@ -1,0 +1,65 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.885[Hops.exe]
+;BILD=NUT3DG.WMF
+;INFO=
+;WZGV=7507D_001
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=nut3dg
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   nutsx := 9;*VAR*
+   nutex := 991;*VAR*
+   nuty := 669;*VAR*
+   nutz := 10;*VAR*
+   nutd := 19;*VAR*
+   NutOffset := 0;
+   test := 0;
+   toolID := 0;
+START
+;HOLZHER - Reich Spezialmaschinen GmbH
+;Copyright 2006
+;2006-08-22 - CC-Makros V1.0 KRI
+;NUT3DG
+;Rohteil (1000,700,20,0,0)
+;-----------------------------------------------------------
+IF _pVar_NoProcessV=1
+;Prozessvariable - Keine vertikale Bearbeitungen aktiv
+ELSE
+_pVar_PCount := _pVar_PCount+1
+;Nut Sägen oder Fräsen
+;KEI: Nut bei Nesting wird gefräst oder NUTD> wert
+IF (NUTD>15)
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetGrooveRouterID')
+WZF (toolID,_VE,_V,_VA,_SD,_ANF,'1')
+;CALL _RechteckTasche_V4 ( VAL X_MITTE:=(NUTEX-NUTSX)/2+NUTSX,Y_MITTE:=NUTY+NUTD/2,TASCHENLAENGE:=NUTEX-NUTSX+8,TASCHENBREITE:=NUTD,RADIUS:=0,WINKEL:=0,TIEFE:=NUTZ,ZUSTELLUNG:=0,AB:=1,ABF:=_ANF,INTERPOL:=0,UMKEHREN:=0)
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=(NUTEX-NUTSX)/2+NUTSX,Y_MITTE:=NUTY+NUTD/2,TASCHENLAENGE:=NUTEX-NUTSX+8,TASCHENBREITE:=NUTD,RADIUS:=0,WINKEL:=0,TIEFE:=-NUTZ,ZUSTELLUNG:=0,AB:=1,ABF:=_ANF,INTERPOL:=0,UMKEHREN:=0,ESXY:=0,ESMD:=0,LASER:=0)
+ELSE
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetStandardSawID')
+WZS (toolID,_VE,_V,_VA,_SD,_ANF,'1')
+;-----------------------------------------------------------
+;Berechnung Nutoffset bezogen auf Sägedurchmesser
+;Nutposition X bezogen auf Nuttiefe
+;NutOffset := sqrt(sqr(_WZR)-sqr(_WZR-nutz))
+;Wenn Nut in Y Richtung (Teil ist gedreht)
+;Bearb.richtung beeinflussen, da Säge
+;nur in einer Richtung arbeiten kann
+IF _lx<_ly
+CALL _Nuten_X_V5 ( VAL NB:=nutd,NT:=-nutz,EBENE:=0,ARAND:=_ry-nuty-nutd,ALINKS:=nutsx,ARECHTS:=_lx-nutex,RK:=0,ESMD:=0)
+;CALL _Nuten_X ( VAL NB:=nutd,NT:=nutz,EBENE:=0,ARAND:=_ry-nuty-nutd,ALINKS:=nutsx-NutOffset,ARECHTS:=_rx-nutex-NutOffset,RK:=0)
+ELSE
+CALL _Nuten_X_V5 ( VAL NB:=nutd,NT:=-nutz,EBENE:=0,ARAND:=_ry-nuty-nutd,ALINKS:=nutsx,ARECHTS:=_lx-nutex,RK:=0,ESMD:=0)
+;CALL _Nuten_X ( VAL NB:=nutd,NT:=nutz,EBENE:=0,ARAND:=_ry-nuty-nutd,ALINKS:=nutsx-NutOffset,ARECHTS:=_rx-nutex-NutOffset,RK:=1)
+END
+END
+END

@@ -1,0 +1,12 @@
+;MAKROTYP=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   p1 := '';*VAR*Layer name
+   p2 := '';*VAR*
+   CenterX := 0;*VAR*The X coordinate of the center point
+   CenterY := 0;*VAR*The Y coordinate of the center point
+   Angle := 0;*VAR*Rotation angle
+START
+CALL Clamex_Scheibe ( VAL PX:=CenterX,PY:=CenterY,PZ:=_RZ,DW:=Angle,KW:=0,FRAESEN:=1,DEPTH:=-14,SEITL_ZUST:=1.4,BOHREN:=0,B_ABST:=7.5,B_ABST_KANTE:=9.5,B_D:=6,WKZ_B:=0,WKZ_B_H:=0,WKZ_B_S:=0,WKZ_F:=43100,WKZ_F_H:=43100,WKZ_F_S:=43100)

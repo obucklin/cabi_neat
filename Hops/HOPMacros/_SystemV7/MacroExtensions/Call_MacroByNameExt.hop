@@ -1,0 +1,7 @@
+;MAKROTYP=1
+VARS
+   MacroName := '';*VAR*Macroname
+   Params := '';*VAR*Paramter
+   ErrorMacroName := 'MacroByNameErrorExample';*VAR*MacroName (Errorhandler - optional)
+START
+CALLDLL MACROBYNAMEEXT(MacroExtensions,Dummy, VAL MacroName:=MacroName,Params:=Params,ErrorMacroName:=ErrorMacroName)

@@ -1,0 +1,44 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   KN := '';*VAR*Kontur
+   DZ := 0;*VAR*Tiefe über ges. Kontur
+   i := 0;
+   EleTyp := 0;
+   EleAnz := 0;
+   EleL := 0;
+   L := 0;berechenete Länge
+   AktZ := 0;
+START
+;------------------------------------------------------------------------
+;DIREKT CNC-SYSTEME : NC-HOPS Version 5.x
+;- RechteckTasche : Interpolativ zustellen im kleinsten Rechteck
+;------------------------------------------------------------------------
+;--
+Rohteil (200,200,20,0,0)
+;--
+EleAnz := GETKE_ANZAHL(KN)
+DZ := ABS(DZ)
+;-
+FOR i := 1 TO EleAnz STEP 1
+L := L+(GETKE_LAENGE(KN,i))
+END
+;-
+FOR i := 1 TO EleAnz STEP 1
+EleTyp := GETKE_TYP(KN,i)
+EleL := GETKE_LAENGE(KN,i)
+AktZ := (EleL) / L * Dz
+IF EleL>0
+IF EleTyp = 1
+G01 (GETKP_X(KN,i),GETKP_Y(KN,i),-Aktz,0,0,2)
+END
+IF EleTyp = 2
+g02m (GETKP_X(KN,i),GETKP_Y(KN,i),-AktZ,GETKE_MX(KN,i),GETKE_MY(KN,i),0,0,2,0)
+END
+IF EleTyp = 3
+G03M (GETKP_X(KN,i),GETKP_Y(KN,i),-AktZ,GETKE_MX(KN,i),GETKE_MY(KN,i),0,0,2,0)
+END
+END
+END

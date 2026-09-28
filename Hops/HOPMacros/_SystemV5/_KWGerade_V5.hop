@@ -1,0 +1,13 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopKonturen.Dll
+;DIALOGPROC=Show_KWGerade_V5Dialog
+VARS
+   Name := '';*VAR*Konturelementname
+   Laenge := ;*VAR*Länge der Geraden
+   Winkel := ;*VAR*Winkel gegen X
+   Z := 0;*VAR*Zustelltiefe
+   Info := '';*VAR*Konturelementinfo
+   esd := 2;*VAR*
+START
+transesd (z,esd)
+KG01(Name,_X+laenge*cos(Winkel),_Y+laenge*sin(Winkel),Z,Info)

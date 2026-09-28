@@ -1,0 +1,19 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowCalcVektorDialog
+VARS
+   P1x := 100;*VAR*
+   P1y := 0;*VAR*
+   P1z := 0;*VAR*
+   P2x := 0;*VAR*
+   P2y := 200;*VAR*
+   P2z := 0;*VAR*
+   Vx := ;*VAR**REF*
+   Vy := ;*VAR**REF*
+   Vz := ;*VAR**REF*
+   L := 0;
+START
+;Vektor berechnen
+vx := P2x-P1x
+vy := P2y-P1y
+vz := P2z-P1z

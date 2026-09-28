@@ -1,0 +1,31 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCName
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=WGerade.WMF
+VARS
+   _RotMY := _RY/2;
+   _RotMX := _RX/2;
+   _RotW := 45;
+   _AktPosX := 0;
+   _AktPosY := 0;
+   X := 0;Xposition
+   Y := 0;Yposition
+   Wert := 45;
+START
+X := _AktPosX
+Y := _AktPosY
+X := (X-_RotMX)
+Y := (Y-_RotMY)
+Wert := X
+X := x*cos(_RotW) + y*sin(_RotW)
+Y := - Wert*sin(_RotW) + y*cos(_RotW)
+X := (X+_RotMX)
+Y := (Y+_RotMY)
+_AktPosX := X
+_AktPosY := Y
+

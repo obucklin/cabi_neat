@@ -1,0 +1,87 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_SFormat_V5Dialog
+VARS
+   Tiefe := -2;*VAR*Sägetiefe Vorderkante
+   Richtung := 0;*VAR*0=CW   1=CCW
+   Einlauf := 50;*VAR*Ein - Auslauf
+   L := 1;*VAR*Linker Schnitt
+   V := 1;*VAR*Vorderer Schnitt
+   R := 1;*VAR*Rechter Schnitt
+   H := 1;*VAR*Hinterer Schnitt
+   k := 1;
+   esmd := 1;*VAR*
+   Before := 0;Kennung ob vorher schon gesägt wurde
+START
+;DIREKT CNC Systeme NCHOPS 5.x
+;Sägeformatierung
+;* MM 25.05.2007
+;* Bearbeitungen geklebt, damit evtl. Hauben-NCIs
+;* oder andere vorwirksame Zusätze durch die
+;* ToolOpti immer am ersten Schnitt bleiben !
+;Rohteil (500,300,19,0,0)
+;WZS (2202,_VE,_V,_VA,_SD,_ANF,'')
+;**** Kenner setzen
+Transesd (Tiefe,esmd)
+k := richtung
+;**** Eine Bahn muss mindesten definiert sein
+IF (L=0)&(V=0)&(R=0)&(H=0)
+Fehlermeldung (GetMessageText('30','Bitte Saegebahn definieren'))
+END
+IF Tiefe=0
+Fehlermeldung (GetMessageText('6','Bitte Tiefe eingeben'))
+END
+IF Tiefe<0
+Tiefe := -Tiefe
+END
+IF Richtung=0
+IF V=1
+Saegen (0,0,-Tiefe,_RX,0,-Tiefe,2,0,Einlauf,k,0,_RZ,0,1,0,1,0)
+Before := 1
+END
+IF R=1
+IF Before=1
+Call GLUEPROCESS_V7 ()
+END
+Saegen (_RX,0,-Tiefe,_RX,_RY,-Tiefe,2,0,Einlauf,k,0,_RZ,0,0,0,0,0)
+Before := 1
+END
+IF H=1
+IF Before=1
+Call GLUEPROCESS_V7 ()
+END
+Saegen (_RX,_RY,-Tiefe,0,_RY,-Tiefe,2,0,Einlauf,k,0,_RZ,0,0,0,0,0)
+Before := 1
+END
+IF L=1
+IF Before=1
+Call GLUEPROCESS_V7 ()
+END
+Saegen (0,_RY,-Tiefe,0,0,-Tiefe,2,0,Einlauf,k,0,_RZ,0,0,0,0,0)
+END
+ELSE
+IF V=1
+Saegen (0,0,-Tiefe,_RX,0,-Tiefe,2,0,Einlauf,k,0,_RZ,0,0,0,0,0)
+Before := 1
+END
+IF L=1
+IF Before=1
+Call GLUEPROCESS_V7 ()
+END
+Saegen (0,_RY,-Tiefe,0,0,-Tiefe,2,0,Einlauf,k,0,_RZ,0,0,0,0,0)
+Before := 1
+END
+IF H=1
+IF Before=1
+Call GLUEPROCESS_V7 ()
+END
+Saegen (_RX,_RY,-Tiefe,0,_RY,-Tiefe,2,0,Einlauf,k,0,_RZ,0,0,0,0,0)
+Before := 1
+END
+IF R=1
+IF Before=1
+Call GLUEPROCESS_V7 ()
+END
+Saegen (_RX,0,-Tiefe,_RX,_RY,-Tiefe,2,0,Einlauf,k,0,_RZ,0,0,0,0,0)
+END
+END

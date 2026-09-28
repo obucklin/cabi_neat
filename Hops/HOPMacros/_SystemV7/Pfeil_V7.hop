@@ -1,0 +1,39 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   P1X := 0;*VAR*Punkt1 X Wert
+   P1Y := 0;*VAR*Punkt1 Y Wert
+   P2X := 100;*VAR*Punkt2 X Wert
+   P2Y := 0;*VAR*Punkt2 Y Wert
+   Länge := 10;*VAR*Pfeillänge
+   Farbe := 255;*VAR*
+   Pfeilwinkel := 15;*VAR*
+   WCS := 1;*VAR*WorkCenter Sichtbar
+   Breite := 0;Pfeilbreite
+   dx := 0;
+   dy := 0;
+   Dist := 0;
+   dxn := 0;
+   dyn := 0;
+   dxP1P2 := 0;
+   dyP1P2 := 0;
+START
+dx := P2X-P1X
+dy := P2Y-P1Y
+IF Länge>0
+IF (dx<>0)|(dy<>0)
+Breite := tan(Pfeilwinkel)*Länge
+CALL Dist2P_V4 (REF Dist:=Dist VAL P1X:=P1X,P1Y:=P1Y,P2X:=P2X,P2Y:=P2Y)
+;Normale auf Linie P1 - P2
+dxn := -Breite*dy/Dist
+dyn := Breite*dx/Dist
+;Vektor mil Länge "Länge" von P1 nach P2
+dxP1P2 := Länge*dx/Dist
+dyP1P2 := Länge*dy/Dist
+ZLinie (P1X,P1Y,P1X+dxn+dxP1P2,P1Y+dyn+dyP1P2,Farbe,0,0,0,0,WCS)
+ZLinie (P1X,P1Y,P1X-dxn+dxP1P2,P1Y-dyn+dyP1P2,Farbe,0,0,0,0,WCS)
+/ZLinie (P1X+dxn+dxP1P2,P1Y+dyn+dyP1P2,P1X-dxn+dxP1P2,P1Y-dyn+dyP1P2,Farbe,0,0,0,0,WCS)
+END
+END

@@ -1,0 +1,47 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.13.0.10[Hops.exe]
+;BILD=HH_HORZB.WMF
+;INFO=
+;WZGV=7605_101
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=HH_HorzB
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogsSys.Dll
+;DIALOGPROC=ShowHorzBDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   X := 0;*VAR*X-Position
+   Y := 0;*VAR*Y-Position
+   Z := 0;*VAR*Z-Position von Unterkante
+   D := 8;*VAR*Bohrdurchmesser
+   T := -25;*VAR*Bohrtiefe
+   TL := 0;*VAR*Tieflochflag
+   KW := 0;*VAR*Kippwinkel
+   DW := 0;*VAR*Drehwinkel
+   esxy := 8;*VAR*Easysnap in xy
+   esZ := 1;*VAR*Easysnap z
+   res1 := res1;reserve1
+   res2 := res2;reserve2
+   temp_Z_POS := -999;Abstand OK bis Z POS
+START
+;Power-PIN
+;25.04.2023 HH SK
+IF esZ=1
+temp_Z_POS := _RZ-Z
+END
+IF (DW=90)|(DW=270)
+CALL HH_POWERPIN_EDGE ( VAL PARA1:=2)
+END
+IF (DW=0)|(DW=90)|(DW=180)|(DW=270)
+HorzB (X,Y,Z,D,T,TL,KW,DW,esxy,esZ,0,0)
+ELSE
+Fehlermeldung ('Error Drehwinkel falsch')
+END

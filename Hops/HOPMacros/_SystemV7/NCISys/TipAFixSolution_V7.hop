@@ -1,0 +1,10 @@
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowTipAFixSolution_V7Dialog
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   Hold := 0;*VAR*1 bis zum Werkzeugwechsel verwenden
+   HoldCloneMoveZ := 0;*VAR*1 Fräsbahnen mit mehrfach Z-Zustellung einfügen
+   Kippwinkel := 0;*VAR*
+START
+nciext (-100000,'NCISys',1,Hold,HoldCloneMoveZ,Kippwinkel)

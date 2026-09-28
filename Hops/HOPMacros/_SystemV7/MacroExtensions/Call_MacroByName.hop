@@ -1,0 +1,11 @@
+;AUTOSCRIPTSTART=0
+;MAKROTYP=1
+VARS
+   MacroName := '';*VAR*Macroname
+   Param1 := '';*VAR*Paramter1
+   Param2 := '';*VAR*Paramter2
+   Param3 := 0;*VAR*Paramter3
+   Param4 := 0;*VAR*Paramter4
+   Param5 := 0;*VAR*Paramter5
+START
+CALLDLL MACROBYNAME(MacroExtensions,Dummy, VAL MacroName:=MacroName,Param1:=Param1,Param2:=Param2,Param3:=Param3,Param4:=Param4,Param5:=Param5)

@@ -1,0 +1,128 @@
+;MAKROTYP=1
+;BILD=BWinkel.bmp
+;INFO=BWINKEL_V4
+;WZGV=demo
+;MASCHINE=Simu
+;NCNAME=BWaagrecht
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   P1X := 100;*VAR*Punkt1 X Wert
+   P1Y := 0;*VAR*Punkt1 Y Wert
+   P2X := 0;*VAR*Punkt2 X Wert
+   P2Y := 100;*VAR*Punkt2 Y Wert
+   MX := 0;*VAR*Mittelpunkt in X
+   MY := 0;*VAR*Mittelpunkt in Y
+   Abstand := -100;*VAR*Abstand der Bemaßung
+   AbstandBem := 15;*VAR*Additiver Abstand
+   Farbe := 0;*VAR*
+   Text := '';*VAR*Text zum überschreiben
+   TextHöhe := 20;*VAR*Texthöhe
+   Pfeillänge := 30;*VAR*
+   PfeileInnerhalb := 0;*VAR*Bemaßungspfeile innerhalb
+   _AktDimValue := 0;
+   L2 := 0;
+   L1 := 0;
+   V1XN := 0;
+   V1YN := 0;
+   V2XN := 0;
+   V2YN := 0;
+   V1X := 0;
+   V1Y := 0;
+   V2X := 0;
+   V2Y := 0;
+   TPX := 0;
+   TPY := 0;
+   LTP := 0;
+   WinkelBem := 0;
+   WinkelDiff := 0;
+   EndPos1X := 0;
+   EndPos1Y := 0;
+   EndPos2X := 0;
+   EndPos2Y := 0;
+   HilfsLinienL := Pfeillänge;
+   L := 0;
+   Pfeilwinkel := 15;
+START
+;DIRECT CNC SYSTEME NCHOPS Version 4.x
+Rohteil (1000,2000,19,0,0)
+L1 := sqrt(sqr(MX-P1X)+sqr(MY-P1Y))
+L2 := sqrt(sqr(MX-P2X)+sqr(MY-P2Y))
+Pfeillänge := abs(Pfeillänge)
+IF (L1<>0)&(L2<>0)
+IF Abstand<0
+Abstand := -Abstand
+END
+V1X := -MX+P1X
+V1Y := -MY+P1Y
+V2X := -MX+P2X
+V2Y := -MY+P2Y
+V1XN := V1X/L1
+V1YN := V1Y/L1
+V2XN := V2X/L2
+V2YN := V2Y/L2
+V1X := Abstand*V1XN
+V1Y := Abstand*V1YN
+V2X := Abstand*V2XN
+V2Y := Abstand*V2YN
+IF PfeileInnerhalb
+CALL Pfeil_V4 (REF EndPosX:=EndPos1X,EndPosY:=EndPos1Y VAL P1X:=MX+V1X,P1Y:=MY+V1Y,P2X:=MX+V1X-V1Y,P2Y:=MY+V1Y+V1X,Länge:=Pfeillänge,Farbe:=Farbe,Pfeilwinkel:=Pfeilwinkel)
+CALL Pfeil_V4 (REF EndPosX:=EndPos2X,EndPosY:=EndPos2Y VAL P1X:=MX+V2X,P1Y:=MY+V2Y,P2X:=MX+V2X+V2Y,P2Y:=MY+V2Y-V2X,Länge:=Pfeillänge,Farbe:=Farbe,Pfeilwinkel:=Pfeilwinkel)
+ZKBCCW(MX,MY,EndPos1X,EndPos1Y,EndPos2X,EndPos2Y,Farbe)
+ELSE
+CALL Pfeil_V4 (REF EndPosX:=EndPos1X,EndPosY:=EndPos1Y VAL P1X:=MX+V1X,P1Y:=MY+V1Y,P2X:=MX+V1X+V1Y,P2Y:=MY+V1Y-V1X,Länge:=Pfeillänge,Farbe:=Farbe,Pfeilwinkel:=Pfeilwinkel)
+CALL Pfeil_V4 (REF EndPosX:=EndPos2X,EndPosY:=EndPos2Y VAL P1X:=MX+V2X,P1Y:=MY+V2Y,P2X:=MX+V2X-V2Y,P2Y:=MY+V2Y+V2X,Länge:=Pfeillänge,Farbe:=Farbe,Pfeilwinkel:=Pfeilwinkel)
+ZKBCCW(MX,MY,MX+V1X,MY+V1Y,MX+V2X,MY+V2Y,Farbe)
+CALL Dist2P_V4 (REF Dist:=L VAL P1X:=0,P1Y:=0,P2X:=V1Y,P2Y:=V1X)
+ZLinie(EndPos1X,EndPos1Y,EndPos1X+V1Y*(HilfsLinienL/L),EndPos1Y-V1X*(HilfsLinienL/L),Farbe)
+CALL Dist2P_V4 (REF Dist:=L VAL P1X:=0,P1Y:=0,P2X:=V2Y,P2Y:=V2X)
+ZLinie(EndPos2X,EndPos2Y,EndPos2X-V2Y*(HilfsLinienL/L),EndPos2Y+V2X*(HilfsLinienL/L),Farbe)
+END
+;Winkel berechnen
+CALL GetWinkelDiff3P_V4 (REF WinkelDiff3P:=WinkelDiff VAL P1X:=P1X,P1Y:=P1Y,MX:=MX,MY:=MY,P3X:=P2X,P3Y:=P2Y)
+IF StrLength(Text)=0
+CALL FloatToStr_V4 (REF StrWert:=Text VAL Wert:=WinkelDiff)
+_AktDimValue := WinkelDiff
+Text := Text+'°'
+END
+;Text einfügen
+V1X := V1XN+V2XN
+V1Y := V1YN+V2YN
+IF WinkelDiff>180
+V1X := -V1X
+V1Y := -V1Y
+END
+LTP := sqrt(sqr(V1X)+sqr(V1Y))
+IF LTP>0
+V1XN := V1X/LTP
+V1YN := V1Y/LTP
+ELSE
+V1X := -MX+P1X
+V1Y := -MY+P1Y
+V1XN := -V1Y/L1
+V1YN := V1X/L1
+END
+TPX := MX+(AbstandBem+Abstand)*V1XN
+TPY := MY+(AbstandBem+Abstand)*V1YN
+;Winkel berechnen für Textausrichtung
+CALL GetWinkel2P_V4 (REF Winkel2P:=WinkelBem VAL P1X:=MX,P1Y:=MY,P2X:=TPX,P2Y:=TPY)
+IF ((WinkelBem>180)&(WinkelBem<=360))
+WinkelBem := WinkelBem-90
+WinkelBem := WinkelBem+180
+ELSE
+IF (WinkelBem=0)
+IF V1XN<0
+WinkelBem := WinkelBem-90
+ELSE
+WinkelBem := WinkelBem+90
+END
+ELSE
+WinkelBem := WinkelBem-90
+END
+END
+ZText(Text,TPX,TPY,Texthöhe,WinkelBem,9,Farbe)
+END

@@ -1,0 +1,10 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=Show_EP_5ACHS_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   AB := 0;*VAR*Abfahrbewegung
+   AF := _ANF;*VAR*Abfahrfaktor
+   RD := 0;*VAR*Richtung drehen 0 -> nicht drehen
+START
+EP (AB,AF,RD)

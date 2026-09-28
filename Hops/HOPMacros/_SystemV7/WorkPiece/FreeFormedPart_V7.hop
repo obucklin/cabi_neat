@@ -1,0 +1,141 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=ShowFreeFormedPartDialog
+;AUTOSCRIPTSTART=0
+VARS
+   RawContour := '';*VAR*
+   RawContourHoles := '';*VAR*
+   RawContourOffset := 0;*VAR*
+   FinishedContour := '';*VAR*
+   FinishedContourHoles := '';*VAR*
+   DeleteContours := 0;*VAR*
+   fContour_is_fPart := 0;*VAR*Erzeugt automatisch die Fertigteilkontur aus Rohkontur
+   CalcWPOffset := 0;*VAR*Rohteil Contour zu Fertigteil Contour ergibt Offset
+   RawTop := 0;*VAR*Rohteilaufmass oben
+   rContour := 'Raw';Name der Rohteilkontur evtl. aus Einzelkonturen zusammengefasst
+   fContour := 'Fully';Name der Fertigkontur evtl. aus Einzelkonturen zusammengefasst
+   Count := 0;
+   i := 0;Schleifenzähler
+   C := '';Kontur temporär
+   error := 0;Plausi
+   Direction := 0;Richtung
+   fMinX := 0;
+   rMinX := 0;
+   fMaxX := 0;
+   rMaxX := 0;
+   fMinY := 0;
+   rMinY := 0;
+   fMaxY := 0;
+   rMaxY := 0;
+START
+;-
+;- direkt cnc-systeme gmbh
+;- Mit diesem Makro lassen Werkstuecke in freier Formgebung gestalten
+;- auch mit beliebigen Auschnitte
+;-
+Fertigteil (800,600,50,0,0,0,0,0,'',0,0,0)
+;-
+;$$Erzeugt automatisch die Fertigteilkontur aus Rohkontur
+IF fContour_is_fPart=1
+CALL Call_Extensions_CombineContours ( VAL CONTOURNAME_CONTOURNAMES:=RawContour,CONTOURNAME:='tempK',CONTOURINFO:='',CONTOURLAYER:='')
+FinishedContour := 'tempK'
+END
+;$$Plausibilisierung
+IF (TEXTSAME(RawContour,'')=1) & (TEXTSAME(RawContourHoles,'')<>1)
+error := 1
+END
+IF (TEXTSAME(FinishedContour,'')=1) & (TEXTSAME(FinishedContourHoles,'')<>1)
+error := 2
+END
+IF (CalcWPOffset=1)&(TEXTSAME(RawContour,'')=1)
+error := 3
+END
+IF (TEXTSAME(RawContourHoles,'')<>1)
+;-- Alle Löcher welche im Rohteil sind, sind zwangsweise auch im Fertigteil - (Löcher stopfen können wir noch nicht)
+FinishedContourHoles := RawContourHoles+';'+FinishedContourHoles
+IF (TEXTSAME(FinishedContour,'')=1)
+;-- keine Fertigteil - Kontur übergeben  Raw=Part
+FinishedContour := RawContour
+END
+END
+;$$Rawpart Definition
+IF Error=0
+IF TEXTSAME(RawContour,'')<>1
+CALL Call_Extensions_CombineContours ( VAL CONTOURNAME_CONTOURNAMES:=RawContour,CONTOURNAME:=rContour,CONTOURINFO:='',CONTOURLAYER:='')
+CALL Call_Extensions_GetDirContour (REF DIR:=Direction VAL CONTOURNAME_CONTOURNAME:=rContour)
+IF RawContourOffset<>0
+;-- Offset zur Rohkontur wurde angegeben
+IF Direction=2
+RawContourOffset := -RawContourOffset
+END
+Contour_Parallel (rContour,RawContourOffset,1,0,0,'','','',0)
+END
+definestockprofile (0,65535,'',0,RawContourHoles,rContour,0.1,RawTop,0,0)
+END
+END
+;$$Finishedpart Definition
+IF Error=0
+IF TEXTSAME(FinishedContour,'')<>1
+CALL Call_Extensions_CombineContours ( VAL CONTOURNAME_CONTOURNAMES:=FinishedContour,CONTOURNAME:=fContour,CONTOURINFO:='',CONTOURLAYER:='')
+defineFPProfile (0,65535,'',0,FinishedContourHoles,fContour,0.1,_RZ)
+END
+END
+/END
+;$$Abhandlung Offsets
+IF (Error=0)&(CalcWPOffset=1)
+CALL Call_Extensions_MinMaxContours (REF MINX:=rMinx,MINY:=rMiny,MAXX:=rMaxx,MAXY:=rMaxy VAL CONTOURNAME_CONTOURNAMES:=rContour)
+CALL Call_Extensions_MinMaxContours (REF MINX:=fMinx,MINY:=fMiny,MAXX:=fMaxx,MAXY:=fMaxy VAL CONTOURNAME_CONTOURNAMES:=fContour)
+/ChangeVar (fminx)
+/Fehlermeldung ('Error')
+/ChangeVar (rminx)
+SetRawLRFB (ABS(rMaxY-fMaxY),ABS(rMinX-fMinX),ABS(rMinY-fMinY),ABS(rMaxX-fMaxX))
+END
+;$$Temporäre und übergebene Konturen ablöschen
+;-
+deletecontour (rContour,0)
+deletecontour (fContour,0)
+IF fContour_is_fPart=1
+deletecontour ('tempK',0)
+END
+IF Error=0
+IF DeleteContours;
+;-----------------------------------------------------------------
+;-- RawContours löschen
+CALL Call_Extensions_GetParamCount (REF VALUE:=Count VAL VALUES:=RawContour,SEPARATOR:=';')
+FOR i := 1 TO Count STEP 1
+CALL Call_Extensions_GetParamNo (REF VALUE:=C VAL VALUES:=RawContour,NO:=i,SEPARATOR:=';')
+deletecontour (C,0)
+END
+;-- RawContours Holes löschen
+CALL Call_Extensions_GetParamCount (REF VALUE:=Count VAL VALUES:=RawContourHoles,SEPARATOR:=';')
+FOR i := 1 TO Count STEP 1
+;alle Konturen (holes) löschen
+CALL Call_Extensions_GetParamNo (REF VALUE:=C VAL VALUES:=RawContourHoles,NO:=i,SEPARATOR:=';')
+deletecontour (C,0)
+END
+;-----------------------------------------------------------------
+;-- PartContours löschen
+CALL Call_Extensions_GetParamCount (REF VALUE:=Count VAL VALUES:=FinishedContour,SEPARATOR:=';')
+FOR i := 1 TO Count STEP 1;
+CALL Call_Extensions_GetParamNo (REF VALUE:=C VAL VALUES:=FinishedContour,NO:=i,SEPARATOR:=';')
+deletecontour (C,0)
+END
+;-- FinishedContours Holes löschen
+;-- Konturengesamttrenner berücksichtigen, da auch mehrere Konturen für die Holes kommen können
+CALL Call_Extensions_GetParamCount (REF VALUE:=Count VAL VALUES:=FinishedContourHoles,SEPARATOR:=';')
+FOR i := 1 TO Count STEP 1
+CALL Call_Extensions_GetParamNo (REF VALUE:=C VAL VALUES:=FinishedContourHoles,NO:=i,SEPARATOR:=';')
+deletecontour (C,0)
+END
+END
+END
+;$$Fehlerbehandlung
+IF error=1
+Fehlermeldung (GetMessageText('1006','Rohteildurchbruch ohne Rohteilkontur'))
+END
+IF error=2
+Fehlermeldung (GetMessageText('1007','Fertigteildurchbruch ohne Fertigteilkontur'))
+END
+IF error=3
+Fehlermeldung (GetMessageText('1008','Rohteilkontur fehlt zur Offsetberechnung'))
+END

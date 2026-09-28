@@ -1,0 +1,11 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowCHANGEFILEEXTDialog
+VARS
+   Filename := '';*VAR*
+   Ext := '';*VAR*
+   Result := '';*VAR**REF*
+START
+;.
+CALLDLL CHANGEFILEEXT(Extensions,DefaultStr,REF RESULT:=Result VAL EXT:=Ext,FILENAME:=Filename)

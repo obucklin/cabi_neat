@@ -1,0 +1,33 @@
+;MAKROTYP=1
+;BILD=DRWIKIWI_HL.bmp
+;INFO=NC1000
+;WZGV=ARTIS
+;MASCHINE=HUBER
+;NCNAME=DRWIKIWI_HL
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   ABX := 50;*VAR*Abstand in X
+   ABY := 50;*VAR*Abstand in Y
+   ABZ := _rz;*VAR*Abstand in Z vo unten
+   Tiefe := -20;*VAR*Tiefe der Bohrung
+   WIXZ := 60;*VAR*Winkel in X und Z
+   WIYZ := 80;*VAR*Winkel in Y und Z
+   DRWI := 0;Drehwinkel
+   KIWI := 0;Kipwinkel
+   COSA := 0;Cosinus Alpha zum Quatrat
+   COSB := 0;Cosinus Beta zum Quatrat
+START
+Rohteil (500,500,20,0,3)
+DRWI := ARCTAN((COS(WIXZ)/(COS(WIYZ))))
+COSA := ((COS(WIXZ))*(COS(WIXZ)))
+COSB := ((COS(WIYZ))*(COS(WIYZ)))
+KIWI := ARCSIN(SQRT(1-COSA-COSB))
+CALL _DrehenBBStart ( VAL DX:=abx,DY:=_ry-aby,Dw:=90)
+;WZB (101,_VE,_V,_VA,_SD,_ANF)
+HorzB (ABX,_ry-ABY,ABZ,_WZD,Tiefe,0,KIWI+180,DRWI)
+CALL _DrehenBBEnde ()

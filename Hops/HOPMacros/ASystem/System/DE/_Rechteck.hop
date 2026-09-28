@@ -1,0 +1,55 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=xxx
+;NCNAME=1
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=RechteckWMF.bmp
+VARS
+   x_Mitte := 100;*VAR*Rechteckmitte in X
+   Y_Mitte := 100;*VAR*Rechteckmitte in Y
+   laenge := 120;*VAR*Rechteck in X
+   breite := 70;*VAR*Rechteck in Y
+   Radius := 0;*VAR*Eckenradius
+   Winkel := 0;*VAR*Winkel gegen X-Achse
+   Tiefe := 0;*VAR*Tiefe der Tasche
+   Radiuskorrektur := 1;*VAR*0=Mitte,1=Auserhalb,2=Innerhalb
+   AB := 1;*VAR*0 -> keine Abfahrbewegung, <> 0 -> Abfahrbewegung
+   GX := 0;FW-X
+   GY := 0;FW-Y
+   ANZAHL := 0;
+   ÜberfahrKreisbogen := 2;
+   LängeGeradenstück := 0;
+   KreisEndpunktY := 0;Kreisendpunkt in Y beim Überfahren des Endpunktes
+   MinimalerAbstand := 0.5;
+   UeberfahrwegX := 0.5;Überfahrweg in X
+START
+;direkt cnc systeme NCHOPS Version3.0
+;Rechteck V 3.0/SF/30.09.98
+;Unterschied zum Quadrat
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+;_SDAkt := -_SDAkt
+IF (Laenge<_WZD)|(Breite<_WZD)
+ZKBCW (X_Mitte,Y_Mitte,X_Mitte-_WZR,Y_Mitte,X_Mitte-_WZR,Y_Mitte,255)
+Hinweismeldung (Tasche_zu_klein_für_dieses_Werkzeug)
+ELSE
+IF (breite=_WZD)&(laenge=_WZD)
+Bohrung (X_Mitte,Y_Mitte,_WZD,Tiefe,0,0,0)
+ELSE
+;Wenn Quadrat und Radius= Seitenlänge dann Kreistasche fräsen
+IF (laenge=breite)&(Radius=breite/2)
+;Kreisbahn
+CALL _Kreisbahn (VAL X_Mitte:=x_Mitte,Y_Mitte:=y_Mitte,Z:=Tiefe,Radius:=Radius,Radiuskorrektur:=Radiuskorrektur,AB:=AB)
+ELSE
+;Rechteck
+IF _SDAKT >0
+CALL _RechteckCW (VAL x_Mitte:=x_Mitte,Y_Mitte:=y_Mitte,laenge:=laenge,breite:=breite,Radius:=Radius,Winkel:=Winkel,Tiefe:=Tiefe,Radiuskorrektur:=Radiuskorrektur,AB:=AB)
+ELSE
+CALL _RechteckCCW (VAL x_Mitte:=x_Mitte,Y_Mitte:=y_Mitte,laenge:=laenge,breite:=breite,Radius:=radius,Winkel:=winkel,Tiefe:=tiefe,Radiuskorrektur:=Radiuskorrektur,AB:=AB)
+END
+END
+END
+END
+

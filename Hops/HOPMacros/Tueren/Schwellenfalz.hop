@@ -1,0 +1,200 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.1.948[Hops.exe]
+;BILD=SCHWELLENFALZ.WMF
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Schwellenfalz fräsen
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.00
+;DIALOGDLL=DialogBA.Dll
+;DIALOGPROC=ShowSchwFalzDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2080mm;Dimension X
+   DY := 980mm;Dimension Y
+   DZ := 45mm;Dimension Z
+   Falz_Wkz :=133;*VAR*FalzFräser
+   Fas_Wkz_O :=235;*VAR*FasFräser Fase oben
+   Fas_Wkz_U :=135;*VAR*FasFräser Fase unten
+   Falz1_T :=12.00;*VAR*Falztiefe Schwellenfalz 1
+   Falz1_H :=12.00;*VAR*Falzhöhe Schwellenfalz 1
+   Falz2_T :=15.00;*VAR*Falztiefe Schwellenfalz 2
+   Falz2_H :=12.00;*VAR*Falzhöhe Schwellenfalz 2
+   Fase1 :=1.00;*VAR*1 Fase Mass
+   Fase2 :=1.00;*VAR*2 Fase Mass
+   Fase3 :=1.00;*VAR*3 Fase Mass
+   Fase4 :=1.00;*VAR*4 Fase Mass
+   Check_Falz1 :=-1;*VAR*Schwellenfalz1 ja/nein
+   Check_Falz2 :=-1;*VAR*Schwellenfalz2 ja/nein
+   Check_Fase1 :=-1;*VAR*Fase1 ja/nein
+   Check_Fase2 :=-1;*VAR*Fase2 ja/nein
+   Check_Fase3 :=-1;*VAR*Fase3 ja/nein
+   Check_Fase4 :=-1;*VAR*Fase4 ja/nein
+   Check_Ueber :=-1;*VAR*Überschlag ja oder nein
+   H_Ueber :=2;*VAR*Höhe am Überschlag
+   Reihenfolge :=0;*VAR*0= Fase Formatieren / 1= Formatieren Fasen
+START
+Fertigteil (DX,DY,40,0,0,0,0,0,'',0,0,0)
+;Schwellenfalz1 HolzHer Schweiz AG (c) B. Achermann
+IF Reihenfolge = 1
+IF Check_Falz2=-1
+WZF (Falz_WKZ,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-(_Wzd + 30),-_Wzr,Falz2_H,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz1_T+Falz2_T,- _Wzr,0,0,3,2)
+G01 (Falz1_T+Falz2_T,-_Wzr,0,0,5,2)
+G01 (-(_Wzd + 30),-_Wzr,0,0,5,2)
+EP (0,_ANF,0)
+END
+IF Check_Falz1=-1
+WZF (Falz_WKZ,_VE,_V,_VA,_SD,_ANF,'1')
+IF Check_Falz2=-1
+SP (-(_Wzd + 30),-_Wzr,Falz1_H+Falz2_H,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz1_T,-_Wzr,0,0,3,2)
+G01 (Falz1_T,-_Wzr,0,0,5,2)
+G01 (-(_Wzd+30),-_Wzr,0,0,5,2)
+EP (0,_ANF,0)
+ELSE
+SP (-(_Wzd +30),-_WzD,Falz1_H,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz1_T,-_WzD,0,0,3,2)
+G01 (Falz1_T,-_Wzr,0,0,5,2)
+G01 (Falz1_T,-120,0,0,5,2)
+;G01 (Falz1_T,-_Wzr,0,0,3,2)
+;G01 (-(_Wzd + 30),-_Wzr,0,0,5,2)
+EP (0,_ANF,0)
+END
+END
+;Ueberschlag
+IF Check_Ueber=-1
+WZF (Falz_WKZ,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0.0,-120,H_Ueber,2,0,_ANF,0,0,0,3,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-120,0,0,5,2)
+EP (0,_ANF,0)
+END
+;Fasen  Fase 1
+IF (Check_Falz2=-1)&(Check_Fase1=-1)
+WZF (FAS_WKZ_U,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Falz1_T+ Falz2_T,-120,Fase1,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz1_T+ Falz2_T,-120,0,0,5,2)
+EP (0,_ANF,0)
+END
+;Fasen  Fase 2
+IF Check_Fase2=-1
+WZF (FAS_WKZ_U,_VE,_V,_VA,_SD,_ANF,'1')
+IF Check_Falz2=-1
+SP (Falz1_T,-120,Falz2_H +  Fase2,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz1_T,-120,0,0,5,2)
+EP (0,_ANF,0)
+ELSE
+SP (Falz1_T,-120,Fase2,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz1_T,-120,0,0,5,2)
+EP (0,_ANF,0)
+END
+END
+;Fasen  Fase 3
+IF Check_Fase3=-1
+WZF (FAS_WKZ_U,_VE,_V,_VA,_SD,_ANF,'1')
+IF Check_Falz2=-1
+;Fasen mit 2 Schwellenfalz
+SP (0,-120,Falz1_H+Falz2_H +  Fase3,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-120,0,0,5,2)
+EP (0,_ANF,0)
+ELSE
+;Fasen ohne 2 Schwellenfalz
+SP (0,-120,Falz1_H+Fase3,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-120,0,0,5,2)
+EP (0,_ANF,0)
+END
+END
+;Fasen  Fase 4
+IF Check_Fase4=-1
+WZF (FAS_WKZ_O,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,-120,-Fase4,2,0,_ANF,0,0,0,3,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-120,0,0,5,2)
+EP (0,_ANF,0)
+END
+;Fasen --> Formatieren
+ELSE
+;Fasen  Fase 1
+IF (Check_Falz2=-1)&(Check_Fase1=-1)
+WZF (FAS_WKZ_U,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Falz1_T+ Falz2_T,-120,Fase1,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz1_T+ Falz2_T,-120,0,0,5,2)
+EP (0,_ANF,0)
+END
+;Fasen  Fase 2
+IF Check_Fase2=-1
+WZF (FAS_WKZ_U,_VE,_V,_VA,_SD,_ANF,'1')
+IF Check_Falz2=-1
+SP (Falz1_T,-120,Falz2_H +  Fase2,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz1_T,-120,0,0,5,2)
+EP (0,_ANF,0)
+ELSE
+SP (Falz1_T,-120,Fase2,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz1_T,-120,0,0,5,2)
+EP (0,_ANF,0)
+END
+END
+;Fasen  Fase 3
+IF Check_Fase3=-1
+WZF (FAS_WKZ_U,_VE,_V,_VA,_SD,_ANF,'1')
+IF Check_Falz2=-1
+;Fasen mit 2 Schwellenfalz
+SP (0,-120,Falz1_H+Falz2_H +  Fase3,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-120,0,0,5,2)
+EP (0,_ANF,0)
+ELSE
+;Fasen ohne 2 Schwellenfalz
+SP (0,-120,Falz1_H+Fase3,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-120,0,0,5,2)
+EP (0,_ANF,0)
+END
+END
+;Fasen  Fase 4
+IF Check_Fase4=-1
+WZF (FAS_WKZ_O,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,-120,-Fase4,2,0,_ANF,0,0,0,3,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-120,0,0,5,2)
+EP (0,_ANF,0)
+END
+IF Check_Falz2=-1
+WZF (Falz_WKZ,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-(_Wzd + 30),-_Wzr,Falz2_H,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz1_T+Falz2_T,- _Wzr,0,0,3,2)
+G01 (Falz1_T+Falz2_T,-_Wzr,0,0,5,2)
+G01 (-(_Wzd + 30),-_Wzr,0,0,5,2)
+EP (0,_ANF,0)
+END
+IF Check_Falz1=-1
+WZF (Falz_WKZ,_VE,_V,_VA,_SD,_ANF,'1')
+IF Check_Falz2=-1
+SP (-(_Wzd + 30),-_Wzr,Falz1_H+Falz2_H,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz1_T,-_Wzr,0,0,3,2)
+G01 (Falz1_T,-_Wzr,0,0,5,2)
+G01 (-(_Wzd+30),-_Wzr,0,0,5,2)
+EP (0,_ANF,0)
+ELSE
+SP (-(_Wzd +30),-_WzD,Falz1_H,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz1_T,-_WzD,0,0,3,2)
+G01 (Falz1_T,-_Wzr,0,0,5,2)
+G01 (Falz1_T,-120,0,0,5,2)
+;G01 (Falz1_T,-_Wzr,0,0,3,2)
+;G01 (-(_Wzd + 30),-_Wzr,0,0,5,2)
+EP (0,_ANF,0)
+END
+END
+;Ueberschlag
+IF Check_Ueber=-1
+WZF (Falz_WKZ,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0.0,-120,H_Ueber,2,0,_ANF,0,0,0,3,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-120,0,0,5,2)
+EP (0,_ANF,0)
+END
+END

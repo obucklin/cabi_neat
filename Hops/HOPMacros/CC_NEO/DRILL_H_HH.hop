@@ -1,0 +1,45 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.5.1.14[Hops.exe]
+;BILD=DRILL_H_HH.WMF
+;INFO=
+;WZGV=7225K_V7_DEMO
+;WZGVCONFIG=
+;MASCHINE=HolzHer
+;NCNAME=DRILL_H_HH
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   x := 0;*VAR*X Position
+   y := 0;*VAR*Y Position
+   z := 0;*VAR*Z Position von Unterkante
+   d := 0;*VAR*Durchmesser
+   Tiefe := 0;*VAR*Negativ Wert
+   KW_BO := 0;*VAR*Kippwinkel Bohrung
+   DREHWINKEL := 90;*VAR*Drehwinkel / Seite1(vorne)=90° / Seite2(links)=0° / Seite3(hinten)=270° / Seite4(rechts)=180°
+START
+;HOLZHER GmbH
+;Copyright 15.02.2021
+;Version 15.02.2021 (Freigabe HH)
+;---------Änderungen hier reinschreiben: ----------***
+;Version 15.02.2021
+IF _pVar_NoDrillingH=1
+;Prozessvariable - Keine horizontale Bohrungen aktiv
+ELSE
+_pVar_PCount := _pVar_PCount+1
+IF (KW_BO=0) &((DREHWINKEL=0)|(DREHWINKEL=90) | (DREHWINKEL=180)| (DREHWINKEL=270))
+WZB (_Drill_Standard_ID,_VE,_V,_VA,_SD,_ANF,'51')
+HorzB (X,Y,Z,d,Tiefe,0,KW_BO,DREHWINKEL,0,0,0,0)
+ELSE
+WZB (_Drill_Special_ID,_VE,_V,_VA,_SD,_ANF,'51')
+HorzB (X,Y,Z,d,Tiefe,0,KW_BO,DREHWINKEL,0,0,0,0)
+END
+END

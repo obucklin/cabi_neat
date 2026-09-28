@@ -1,0 +1,168 @@
+;MAKROTYP=1
+;BILD=Gew_Fr.wmf
+;INFO=
+;WZGV=7223K_023
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Gewinde
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_2.Dll
+;DIALOGPROC=Show_Gewinde_Fraesen
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   M_X :=60;*VAR*Mittelpunkt in X
+   M_Y :=25;*VAR*Mittelpunkt in Y
+   Tiefe :=-23.4;*VAR*Gewinde Tiefe
+   Typ :=0;*VAR*Gewinde Typ / Rechts oder Links
+   Gewinde_DM :=4;*VAR*Gewinde DM 0=3/1=4/2=5/3=6/4=8/5=10/6=12/7=14/8=16
+   VorBohren :=-1;*VAR*Vohrbohren Ja/Nein
+   VB_Typ :=20;*VAR*Werkzeugtyp Vohrbohren
+   VB_Speed :=3000;*VAR*Vorschub Vohrbohren
+   VB_Tiefe :=-23.4;*VAR*Tiefe Vohrbohren
+   Kern_DM :=6.75;*VAR*Kerndurchmesser bei Vohrbohren Ja
+   SnapXY :=124;*VAR*Kerndurchmesser bei Vohrbohren Ja
+   G_Wkz_ID :=113;*VAR*Gewinde Wkz ID
+   VB_Wkz_ID :=501;*VAR*Vorbohren Wkz ID
+   Steigung := 1.25;*VAR*Gewinde Steigung
+   Drehzahl :=8000;*VAR*Drehzahl
+   Speed :=500;*VAR*Vorschub in mm pro Min.
+   SenkTiefe :=18.4;*VAR*Senktiefe
+   Material :=0;*VAR*Material 0= Holz/1= Alu
+   Vor1 := Speed / 2;Gewindevorschub
+   GDM := 0.00;GewindeDM
+   ZusT := 5;Zustellung bei ALU
+   Snap_Z :=0;*VAR*Easy Snap in Z
+   Drehung :=0.00;*VAR*Drehung der Ebene
+   Neigung :=0.00;*VAR*Neigung der Ebene
+   Hoehe_Z :=0;*VAR*Höhe in Z
+START
+;*******************************************
+;********* (c) B. Achermann ********************
+;*********Holz-Her Schweiz AG ******************
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+IF Material=0
+;Holz
+Vor1 := Speed / 2
+ELSE
+;Alu
+Vor1 := Speed / 2
+END
+IF Gewinde_Dm=0
+GDM := 3
+END
+IF Gewinde_Dm=1
+GDM := 4
+END
+IF Gewinde_Dm=2
+GDM := 5
+END
+IF Gewinde_Dm=3
+GDM := 6
+END
+IF Gewinde_Dm=4
+GDM := 8
+END
+IF Gewinde_Dm=5
+GDM := 10
+END
+IF Gewinde_Dm=6
+GDM := 12
+END
+IF Gewinde_Dm=7
+GDM := 14
+END
+IF Gewinde_Dm=8
+GDM := 16
+END
+ZKBCCW (M_X,M_Y,M_X- GDM,M_Y,M_X - GDM,M_Y,8388863,SnapXY,SnapXY,SnapXY)
+ZText ('M' + FloatToStr((GDM),1,0),M_X,M_Y,20,0,1,0,'Arial',0,0,0,0,0)
+IF Vorbohren = -1;BREAKPOINT
+WZB (VB_Wkz_ID,_VE,VB_Speed,_VA,_SD,_ANF,'1')
+Bohrung (M_X,M_Y,Kern_DM,VB_Tiefe,VB_Typ,0,0,0,0,0,0,0)
+END
+WZF (G_Wkz_ID,_VE,Speed,_VA,Drehzahl,_ANF,'1')
+;Rechtsgewinde mit EMUGE Gewindefräser
+IF Typ=0;BREAKPOINT
+IF Material = 0
+;Holz
+CALL _DINISO_CALL ( VAL TOOLCALL:=1,SPEED:=1,VIEWCHANGE:=1,LIFTPOS:=0,SX:=M_X,SY:=M_Y,SZ:=Hoehe_Z,EBX:=M_X,EBY:=M_Y,EBZ:=Hoehe_Z,EBKW:=Neigung,EBDW:=Drehung,ESXY:=SnapXY,ESZ:=Snap_Z,ESXYSP:=SnapXY,ESZSP:=Snap_Z,CODESTR:='')
+CALL _DINISO ( VAL CODE:='G90 G01 X0 Y0  Z' + FloatToStr(Tiefe,5,3) + ' F' + FloatToStr(Speed,5,0))
+CALL _DINISO ( VAL CODE:='G04 F0.5')
+CALL _DINISO ( VAL CODE:='G01 G91 Z' + FloatToStr((Steigung / 3),5,3))
+CALL _DINISO ( VAL CODE:='G41 X' + FloatToStr(-(Kern_Dm/2),5,3) + ' Y0 F' + FloatToStr(Vor1,5,3))
+CALL _DINISO ( VAL CODE:='G03 X' + FloatToStr(((GDM + Kern_Dm) / 2),5,3) + ' Y0  Z' + FloatToStr((Steigung / 2),5,3) + ' I' + FloatToStr(((GDM + Kern_DM)/4),5,3) + ' J0')
+CALL _DINISO ( VAL CODE:='G03 X0 Y0 Z' +FloatToStr(Steigung,5,3) + ' I-' + FloatToStr((GDM / 2),5,3) + ' J0')
+CALL _DINISO ( VAL CODE:='G03 X-' + FloatToStr(((GDM + Kern_DM) / 2),5,3) + ' Y0 Z' + FloatToStr((Steigung / 2),5,3) + ' I-' + FloatToStr(((GDM + Kern_DM)/4),5,3) + ' J0')
+CALL _DINISO ( VAL CODE:='G00 G40 X' +FloatToStr((Kern_DM / 2),5,3) + ' Y0')
+CALL _DINISO ( VAL CODE:='G90 Z5')
+END
+IF Material = 1
+;Alu
+CALL _DINISO_CALL ( VAL TOOLCALL:=1,SPEED:=1,VIEWCHANGE:=1,LIFTPOS:=0,SX:=M_X,SY:=M_Y,SZ:=Hoehe_Z,EBX:=M_X,EBY:=M_Y,EBZ:=Hoehe_Z,EBKW:=Neigung,EBDW:=Drehung,ESXY:=SnapXY,ESZ:=Snap_Z,ESXYSP:=SnapXY,ESZSP:=Snap_Z,CODESTR:='')
+ZusT := 0
+WHILE abs(ZusT)  <  abs(Tiefe)
+ZusT := (ZusT + 5)
+IF abs(Zust) > abs(Tiefe)
+;Auf Endtiefe bohren
+CALL _DINISO ( VAL CODE:='G90 G01 X0 Y0 Z' + FloatToStr((Tiefe),5,3) + ' F' + FloatToStr(Speed,5,0))
+ELSE
+CALL _DINISO ( VAL CODE:='G90 G01 X0 Y0 Z' + FloatToStr((ZusT * -1),5,3) + ' F' + FloatToStr(Speed,5,0))
+CALL _DINISO ( VAL CODE:='G90 G01 Z5 F5000')
+END
+END
+CALL _DINISO ( VAL CODE:='G04 F 0.5')
+CALL _DINISO ( VAL CODE:='G01 G91 Z' + FloatToStr((Steigung / 3),5,3))
+CALL _DINISO ( VAL CODE:='G41 X' + FloatToStr(-(Kern_Dm/2),5,3) + 'Y0 F' + FloatToStr(Vor1,5,3))
+CALL _DINISO ( VAL CODE:='G03 X' + FloatToStr(((GDM + Kern_Dm) / 2),5,3) + ' Y0 Z' + FloatToStr((Steigung / 2),5,3) + ' I' + FloatToStr(((GDM + Kern_DM)/4),5,3) + ' J0')
+CALL _DINISO ( VAL CODE:='G03 X0 Y0 Z' +FloatToStr(Steigung,5,3) + ' I-' + FloatToStr((GDM / 2),5,3) + ' J0')
+CALL _DINISO ( VAL CODE:='G03 X-' + FloatToStr(((GDM + Kern_DM) / 2),5,3) + ' Y0 Z' + FloatToStr((Steigung / 2),5,3) + ' I-' + FloatToStr(((GDM + Kern_DM)/4),5,3) + ' J0')
+CALL _DINISO ( VAL CODE:='G00 G40 X' +FloatToStr((Kern_DM / 2),5,3) + ' Y0')
+CALL _DINISO ( VAL CODE:='G90 Z5')
+END
+ELSE
+;Linksgewinde mit EMUGE Gewindefräser
+IF Material = 0
+;Holz
+CALL _DINISO_CALL ( VAL TOOLCALL:=1,SPEED:=1,VIEWCHANGE:=1,LIFTPOS:=0,SX:=M_X,SY:=M_Y,SZ:=Hoehe_Z,EBX:=M_X,EBY:=M_Y,EBZ:=Hoehe_Z,EBKW:=Neigung,EBDW:=Drehung,ESXY:=SnapXY,ESZ:=Snap_Z,ESXYSP:=SnapXY,ESZSP:=Snap_Z,CODESTR:='')
+CALL _DINISO ( VAL CODE:='G90 G01 X0 Y0 Z' + FloatToStr(Tiefe,5,3) + ' F' + FloatToStr(Vor0,5,0))
+CALL _DINISO ( VAL CODE:='G04 F 0.5')
+CALL _DINISO ( VAL CODE:='G01 G91 Z' + FloatToStr((Steigung / 3),5,3))
+CALL _DINISO ( VAL CODE:='G41 X' + FloatToStr((Kern_Dm/2),5,3) + ' Y0 F' + FloatToStr(Vor1,5,3))
+CALL _DINISO ( VAL CODE:='G03 X-' + FloatToStr(((GDM + Kern_Dm) / 2),5,3) + ' Y0 Z' + FloatToStr((Steigung / 2),5,3) + ' I-' + FloatToStr(((GDM + Kern_DM)/4),5,3) + ' J0')
+CALL _DINISO ( VAL CODE:='G03 X0 Y0 Z' +FloatToStr(Steigung,5,3) + ' I' + FloatToStr((GDM / 2),5,3) + ' J0')
+CALL _DINISO ( VAL CODE:='G03 X' + FloatToStr(((GDM + Kern_DM) / 2),5,3) + ' Y0 Z' + FloatToStr((Steigung / 2),5,3) + ' I' + FloatToStr(((GDM + Kern_DM)/4),5,3) + ' J0')
+CALL _DINISO ( VAL CODE:='G00 G40 X-' +FloatToStr((Kern_DM / 2),5,3) + ' Y0')
+CALL _DINISO ( VAL CODE:='G90 Z5')
+END
+IF Material = 1
+;Alu
+CALL _DINISO_CALL ( VAL TOOLCALL:=1,SPEED:=1,VIEWCHANGE:=1,LIFTPOS:=0,SX:=M_X,SY:=M_Y,SZ:=Hoehe_Z,EBX:=M_X,EBY:=M_Y,EBZ:=Hoehe_Z,EBKW:=Neigung,EBDW:=Drehung,ESXY:=SnapXY,ESZ:=Snap_Z,ESXYSP:=SnapXY,ESZSP:=Snap_Z,CODESTR:='')
+ZusT := 0
+WHILE abs(ZusT)  <  abs(Tiefe)
+ZusT := (ZusT + 5)
+IF abs(Zust) > abs(Tiefe)
+;Auf Endtiefe bohren
+CALL _DINISO ( VAL CODE:='G90 G01 X0 Y0 Z' + FloatToStr((Tiefe),5,3) + ' F' + FloatToStr(Vor0,5,0))
+ELSE
+CALL _DINISO ( VAL CODE:='G90 G01 X0 Y0 Z' + FloatToStr((ZusT * -1),5,3) + ' F' + FloatToStr(Vor0,5,0))
+CALL _DINISO ( VAL CODE:='G90 G01 Z2 F5000')
+END
+END
+CALL _DINISO ( VAL CODE:='G04 F 0.5')
+CALL _DINISO ( VAL CODE:='G01 G91 Z' + FloatToStr((Steigung /3),5,3))
+CALL _DINISO ( VAL CODE:='G42 X' + FloatToStr(-(Kern_Dm/2),5,3) + ' F' + FloatToStr(Vor1,5,3))
+CALL _DINISO ( VAL CODE:='G02 X' + FloatToStr(((GDM + Kern_Dm) / 2),5,3) + ' Y0 Z-' + FloatToStr((Steigung / 2),5,3) + ' I' + FloatToStr(((GDM + Kern_DM)/4),5,3) + ' J0')
+CALL _DINISO ( VAL CODE:='G02 X0 Y0 Z-' +FloatToStr(Steigung,5,3) + ' I-' + FloatToStr((GDM / 2),5,3) + ' J0')
+CALL _DINISO ( VAL CODE:='G02 X-' + FloatToStr(((GDM + Kern_DM) / 2),5,3) + ' Y0 Z-' + FloatToStr((Steigung / 2),5,3) + ' I-' + FloatToStr(((GDM + Kern_DM)/4),5,3) + ' J0')
+CALL _DINISO ( VAL CODE:='G00 G40 X' +FloatToStr((Kern_DM / 2),5,3) + ' Y0')
+CALL _DINISO ( VAL CODE:='G90 Z2')
+END
+END

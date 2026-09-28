@@ -1,0 +1,34 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowCollCheckOptions_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   PosZCE := -1;*VAR*Grenzposition in Z von Fertigteilunterkante für Kollision der Schneide bei Bearbeitungen ohne Bohrkopf.
+   ToolMaxLengthMode := 0;*VAR*0=Use tool max length; 1=Don not use tool max length
+   GrenzKippwinkel := 90;*VAR*Grenzwinkel für Kippwinkel. Wird dieser Wert bei einem Standardtool überschritten wird eine Fehlermeldung ausgegeben
+   PosZDHVert := -1;*VAR*Grenzposition in Z von Fertigteilunterkante für Kollision bei vertikalen Bohrungen eines Bohrkopfes.
+   PosZDHHorz := 10;*VAR*Grenzposition in Z von Fertigteilunterkante für Kollision bei horizontalen Bohrungen eines Bohrkopfes.
+   PosZAgg := 1;*VAR*Grenzposition in Z von Fertigteiloberkante für Kollision der Aggs
+   esPosZCE := 1;*VAR*
+   esPosZDHHorz := 1;*VAR*
+   esPosZDHVert := 1;*VAR*
+   esPosZAgg := 0;*VAR*
+START
+IF esPosZCE=0
+;Oberkante
+PosZCE := _RZ+PosZCE
+END
+IF esPosZDHHorz=0
+;Oberkante
+PosZDHHorz := _RZ+PosZDHHorz
+END
+IF esPosZDHVert=0
+;Oberkante
+PosZDHVert := _RZ+PosZDHVert
+END
+IF esPosZAgg=1
+;Unterkante
+PosZAgg := -_RZ+PosZAgg
+END
+nciext (-200201,'NCISys',0,0,0,1,1,PosZCE,ToolMaxLengthMode,GrenzKippwinkel,PosZDHVert,PosZDHHorz,PosZAgg)

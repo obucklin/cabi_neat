@@ -1,0 +1,10 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   Type := 0;*VAR*0: Info  1: Warning  2: Error
+   Message := '';*VAR*
+START
+NCIExt (-200601,'',0,0,0,Type,Message)

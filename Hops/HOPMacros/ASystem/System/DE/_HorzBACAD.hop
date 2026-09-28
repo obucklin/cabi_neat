@@ -1,0 +1,24 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCNAME
+;MASCHINE=nc1000
+;WZGV=nc1000
+;BILD=KreistascheWMF.bmp
+VARS
+   X := 200;*VAR*Taschenmitte in X
+   Y := 100;*VAR*Taschenmitte in Y
+   xf := 0;*VAR*
+   yf := 0;*VAR*
+   Drehwinkel := 0;*VAR*
+   WerkzeugBox := 1;*VAR*
+   ZPos := 10;*VAR*Lage in  Z von Unterkante
+   Durchmesser := 8;*VAR*
+   KippWinkel := 0;*VAR*
+START
+;$F$KREISTASCHE
+WZF (WerkzeugBox,_VE,_V,_VA,_SD,_ANF)
+HorzB (X,Y,ZPos,Durchmesser,-XF,0,KippWinkel,Drehwinkel)
+

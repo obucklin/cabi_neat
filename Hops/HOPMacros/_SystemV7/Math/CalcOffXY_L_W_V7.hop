@@ -1,0 +1,11 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowCalcOffXY_L_W_V7Dialog
+VARS
+   Laenge := ;*VAR*Länge der Geraden
+   Winkel := ;*VAR*Winkel gegen X
+   OffX := ;*VAR**REF*
+   OffY := ;*VAR**REF*
+START
+CALL CalcOffX_L_W_V7 (REF OFFX:=OffX VAL LAENGE:=Laenge,WINKEL:=Winkel)
+CALL CalcOffY_L_W_V7 (REF OFFY:=OffY VAL LAENGE:=Laenge,WINKEL:=Winkel)

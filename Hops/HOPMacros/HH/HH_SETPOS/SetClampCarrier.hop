@@ -1,0 +1,200 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.10.0.57[Hops.exe]
+;BILD=SETCLAMPCARRIER.WMF
+;INFO=
+;WZGV=7335X_103
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=SetClampCarrier
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+START
+IF _Plausibilitaet=1
+IF (_Yakt<_Ya+_SAU_OHNE)&(_Feld=0)
+_Yakt := _Ya+_SAU_OHNE
+;Änderung der Saugerposition wird durch rotes Rechteck angezeigt
+ZRechteck (_Xakt-140,_Yakt-(_SAU_OHNE/2),230,_SAU_OHNE,0,987135,0,5,1,1)
+IF _Sprache=0
+Hinweismeldung ('Kollisionsprüfung aktiv - Neue Saugerposition prüfen')
+ELSE
+Hinweismeldung ('Clamp collision check changed position - Please check Result')
+END
+END
+IF (_Yakt<_Ya)&(_Feld=1)
+_Yakt := _Ya+_SAU_OHNE
+;Änderung der Saugerposition wird durch rotes Rechteck angezeigt
+ZRechteck (_Xakt-90,_Yakt-(_SAU_OHNE/2),230,_SAU_OHNE,0,987135,0,5,1,1)
+IF _Sprache=0
+Hinweismeldung ('Kollisionsprüfung aktiv - Neue Saugerposition prüfen')
+ELSE
+Hinweismeldung ('Clamp collision check changed position - Please check Result')
+END
+END
+END
+CALL Namensfindung_SD ()
+;Mittelpunkt von Sauger zeichnen
+IF (_Zeichnen_Sauger=1)&(_Feld=0)
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt-_D_X_S2,_Yakt)
+ZLinie (-6,0,6,0,0,0,0,0,0,1)
+ZLinie (0,-6,0,6,0,0,0,0,0,1)
+ZKBCW (0,0,-4,0,4,0,0,0,0,0,0,0,1)
+ZKBCW (0,0,4,0,-4,0,0,0,0,0,0,0,1)
+VERXYEND()
+ELSE
+VERXY (_Xakt+_A_X_S1,_Yakt)
+ZLinie (-6,0,6,0,0,0,0,0,0,1)
+ZLinie (0,-6,0,6,0,0,0,0,0,1)
+ZKBCW (0,0,-4,0,4,0,0,0,0,0,0,0,1)
+ZKBCW (0,0,4,0,-4,0,0,0,0,0,0,0,1)
+VERXYEND()
+END
+END
+IF (_Zeichnen_Sauger=1)&(_Feld=1)
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+VERXY (_Xakt+_A_X_S2,_Yakt)
+ZLinie (-6,0,6,0,0,0,0,0,0,1)
+ZLinie (0,-6,0,6,0,0,0,0,0,1)
+ZKBCW (0,0,-4,0,4,0,0,0,0,0,0,0,1)
+ZKBCW (0,0,4,0,-4,0,0,0,0,0,0,0,1)
+VERXYEND()
+ELSE
+VERXY (_Xakt-_D_X_S1,_Yakt)
+ZLinie (-6,0,6,0,0,0,0,0,0,1)
+ZLinie (0,-6,0,6,0,0,0,0,0,1)
+ZKBCW (0,0,-4,0,4,0,0,0,0,0,0,0,1)
+ZKBCW (0,0,4,0,-4,0,0,0,0,0,0,0,1)
+VERXYEND()
+END
+END
+IF (_S1>=0)&(_S2>=0)
+AddMachineComponent (_SZB,-1,3,1,0,0,0,1,_Xakt,1,_Yakt,0,0,'','',0,1,0,0,0,0,0,2,0,0,_Zeichnen_Sauger)
+_count := -1
+_countG := _countG+1
+_count := _count+1
+ChangeMachineComponent (_Tcount,_countG,-1,_count,0,0,1,0,1,0,0,_DWakt_1)
+_count := _count+1
+ChangeMachineComponent (_Tcount,_countG,-1,_count,0,0,1,0,1,0,0,_DWakt_2)
+ELSE
+AddMachineComponent (_SZB,-1,3,1,0,0,0,1,_Xakt,1,_Yakt,0,0,'','',0,1,0,0,0,0,0,2,0,0,_Zeichnen_Sauger)
+_count := -1
+_countG := _countG+1
+_count := _count+1
+ChangeMachineComponent (_Tcount,_countG,-1,_count,0,0,1,0,1,0,0,_DWakt_1)
+_count := _count+1
+ChangeMachineComponent (_Tcount,_countG,-1,_count,0,0,1,0,1,0,0,_DWakt_2)
+END
+IF (_Zeichnen_Sauger=1)&(_Feld=0)
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+ZText (INTTOSTR((((_Tcount*4)+_countG)+1))+' - L',_Xakt-_D_X_S2,_Yakt-20,_Schrift_Saugername,0,9,38390,'Times New Roman',0,0,0,0,0,1);BREAKPOINT
+ZText (INTTOSTR((((_Tcount*4)+_countG)+1))+' - R',_Xakt-_D_X_S1,_Yakt-20,_Schrift_Saugername,0,9,38390,'Times New Roman',0,0,0,0,0,1)
+ELSE
+ZText (INTTOSTR((((_Tcount*4)+_countG)+1))+' - L',_Xakt+_A_X_S1,_Yakt-20,_Schrift_Saugername,0,9,38390,'Times New Roman',0,0,0,0,0,1)
+ZText (INTTOSTR((((_Tcount*4)+_countG)+1))+' - R',_Xakt+_A_X_S2,_Yakt-20,_Schrift_Saugername,0,9,38390,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF (_Zeichnen_Sauger=1)&(_Feld=1)
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+ZText (INTTOSTR((((_Tcount*4)+_countG)+1))+' - R',_Xakt+_A_X_S2,_Yakt-20,_Schrift_Saugername,0,9,38390,'Times New Roman',0,0,0,0,0,1)
+ZText (INTTOSTR((((_Tcount*4)+_countG)+1))+' - L',_Xakt+_A_X_S1,_Yakt-20,_Schrift_Saugername,0,9,38390,'Times New Roman',0,0,0,0,0,1)
+ELSE
+ZText (INTTOSTR((((_Tcount*4)+_countG)+1))+' - R',_Xakt-_D_X_S1,_Yakt-20,_Schrift_Saugername,0,9,38390,'Times New Roman',0,0,0,0,0,1)
+ZText (INTTOSTR((((_Tcount*4)+_countG)+1))+' - L',_Xakt-_D_X_S2,_Yakt-20,_Schrift_Saugername,0,9,38390,'Times New Roman',0,0,0,0,0,1)
+END
+END
+IF (_S1<0)|(_S2<0);BREAKPOINT
+IF _Sprache=0
+Fehlermeldung ('Fehler- Ein Sauger wurde nicht definiert')
+ELSE
+Fehlermeldung ('Error-One Clamp not defined')
+END
+END
+;Kennung des Saugers wird geschrieben
+IF _Zeichnung_Kennung=1;BREAKPOINT
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+_Kennung := INTTOSTR(_S1)
+CALL _DrehenBBStart_V5 ( VAL DX:=_Xakt-_D_X_S2,DY:=_Yakt,DW:=_DWakt_1,ESXY1:=0)
+ZText (_Kennung,_Xakt-_D_X_S2,_Yakt+20,_Schrift_Kennung,_DWakt_1,9,38390,'Times New Roman',0,1,0,0,0,1)
+CALL _DrehenBBEnde ()
+_Kennung := INTTOSTR(_S2)
+CALL _DrehenBBStart_V5 ( VAL DX:=_Xakt-_D_X_S1,DY:=_Yakt,DW:=_DWakt_2,ESXY1:=0)
+ZText (_Kennung,_Xakt-_D_X_S1,_Yakt+20,_Schrift_Kennung,_DWakt_2,9,38390,'Times New Roman',0,1,0,0,0,1)
+CALL _DrehenBBEnde ()
+ELSE
+_Kennung := INTTOSTR(_S1)
+CALL _DrehenBBStart_V5 ( VAL DX:=_Xakt+_A_X_S1,DY:=_Yakt,DW:=_DWakt_1,ESXY1:=0)
+ZText (_Kennung,_Xakt+_A_X_S1,_Yakt+20,_Schrift_Kennung,_DWakt_1,9,38390,'Times New Roman',0,1,0,0,0,1)
+CALL _DrehenBBEnde ()
+_Kennung := INTTOSTR(_S2)
+CALL _DrehenBBStart_V5 ( VAL DX:=_Xakt+_A_X_S2,DY:=_Yakt,DW:=_DWakt_2,ESXY1:=0)
+ZText (_Kennung,_Xakt+_A_X_S2,_Yakt+20,_Schrift_Kennung,_DWakt_2,9,38390,'Times New Roman',0,1,0,0,0,1)
+CALL _DrehenBBEnde ()
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+_Kennung := INTTOSTR(_S1)
+CALL _DrehenBBStart_V5 ( VAL DX:=_Xakt+_A_X_S1,DY:=_Yakt,DW:=_DWakt_1,ESXY1:=0)
+ZText (_Kennung,_Xakt+_A_X_S1,_Yakt+20,_Schrift_Kennung,_DWakt_1,9,38390,'Times New Roman',0,1,0,0,0,1)
+CALL _DrehenBBEnde ()
+_Kennung := INTTOSTR(_S2)
+CALL _DrehenBBStart_V5 ( VAL DX:=_Xakt+_A_X_S2,DY:=_Yakt,DW:=_DWakt_2,ESXY1:=0)
+ZText (_Kennung,_Xakt+_A_X_S2,_Yakt+20,_Schrift_Kennung,_DWakt_2,9,38390,'Times New Roman',0,1,0,0,0,1)
+CALL _DrehenBBEnde ()
+ELSE
+_Kennung := INTTOSTR(_S1)
+CALL _DrehenBBStart_V5 ( VAL DX:=_Xakt-_D_X_S2,DY:=_Yakt,DW:=_DWakt_1,ESXY1:=0)
+ZText (_Kennung,_Xakt-_D_X_S2,_Yakt+20,_Schrift_Kennung,_DWakt_1,9,38390,'Times New Roman',0,1,0,0,0,1)
+CALL _DrehenBBEnde ()
+_Kennung := INTTOSTR(_S2)
+CALL _DrehenBBStart_V5 ( VAL DX:=_Xakt-_D_X_S1,DY:=_Yakt,DW:=_DWakt_2,ESXY1:=0)
+ZText (_Kennung,_Xakt-_D_X_S1,_Yakt+20,_Schrift_Kennung,_DWakt_2,9,38390,'Times New Roman',0,1,0,0,0,1)
+CALL _DrehenBBEnde ()
+END
+END
+IF _Feld=0
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+IF _Sprache=0
+ZText ('Saugerschlitten'+INTTOSTR((((_Tcount*4)+_countG)+1)),_Xakt+25,_Yakt-60,_Schrift_Saugername,0,9,7171437,'Times New Roman',0,0,0,0,0,1)
+ELSE
+ZText ('Clamp Carrier'+INTTOSTR((((_Tcount*4)+_countG)+1)),_Xakt+25,_Yakt-60,_Schrift_Saugername,0,9,7171437,'Times New Roman',0,0,0,0,0,1)
+END
+ELSE
+IF _Sprache=0
+ZText ('Saugerschlitten'+INTTOSTR((((_Tcount*4)+_countG)+1)),_Xakt-25,_Yakt-60,_Schrift_Saugername,0,9,7171437,'Times New Roman',0,0,0,0,0,1)
+ELSE
+ZText ('Clamp Carrier'+INTTOSTR((((_Tcount*4)+_countG)+1)),_Xakt-25,_Yakt-60,_Schrift_Saugername,0,9,7171437,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END
+IF _Feld=1
+IF (_Tcount+1)>(_Anzahl_Konsolen/2)
+IF _Sprache=0
+ZText ('Saugerschlitten'+INTTOSTR((((_Tcount*4)+_countG)+1)),_Xakt-30,_Yakt-60,_Schrift_Saugername,0,9,7171437,'Times New Roman',0,0,0,0,0,1)
+ELSE
+ZText ('Clamp Carrier'+INTTOSTR((((_Tcount*4)+_countG)+1)),_Xakt-30,_Yakt-60,_Schrift_Saugername,0,9,7171437,'Times New Roman',0,0,0,0,0,1)
+END
+ELSE
+IF _Sprache=0
+ZText ('Saugerschlitten'+INTTOSTR((((_Tcount*4)+_countG)+1)),_Xakt+30,_Yakt-60,_Schrift_Saugername,0,9,7171437,'Times New Roman',0,0,0,0,0,1)
+ELSE
+ZText ('Clamp Carrier'+INTTOSTR((((_Tcount*4)+_countG)+1)),_Xakt+30,_Yakt-60,_Schrift_Saugername,0,9,7171437,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END
+END
+_Ya := _Yakt

@@ -1,0 +1,2643 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.8.0.2[Hops.exe]
+;BILD=SAUGERKENNUNGEN.WMF
+;INFO=
+;WZGV=7235C_001
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Saugerkennungen
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   SN := '';Saugername
+   S2 := 0;Auswertung für rotierbarkeit
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   SaugerX := 0;
+   Saugerkennung_akt := 50;*VAR*
+   SK1 := '';Saugerkennung 1
+   SK53 := '';
+   Beta := 0;Berechnungswinkel
+   R := 0;
+   _SB := '';
+   X0 := 0;
+   Y0 := 0;
+   DWhilf := 0;
+   ZMO := 0;Zusatzmaß oben
+   ZMU := 0;Zusatzmaß unten
+START
+_SB := 'x';BREAKPOINT
+;#
+;#
+;#
+;#
+;#
+;#
+;#
+;Bei neuem Sauger:
+;Ab hier kopieren
+;#
+;#
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+/X0 := 0
+/Y0 := 0
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+/ZMO := 85
+/ZMU := 85
+;Zurücksetzen der Übergabevariablen
+/_ZO := 0
+/_ZU := 0
+/DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+/SN := _SB
+/SN := IntToStr(StrPos('_rot',SN))
+/S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+/IF _DWakt<0
+/_DWakt := 360+_DWakt
+/END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+/IF S2>0
+/Beta := ARCTAN((Y0)/(X0))
+/R := Y0/SIN(Beta)
+/IF _DWakt<=90
+/DWhilf := _DWakt
+/END
+/IF _DWakt>270
+/DWhilf := 360-_DWakt
+/END
+/IF (_DWakt>90)&(_DWakt<=180)
+/DWhilf := 180-_DWakt
+/END
+/IF (_DWakt>180)&(_DWakt<=270)
+/DWhilf := _DWakt-180
+/END
+/IF DWhilf>0
+/_ZA := ((SIN(Beta+DWhilf)*R))
+/IF _ZA<0
+/_ZA := 0
+/END
+/END
+/IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+/_ZO := _ZA
+/_ZU := ZMU
+/ELSE
+;ZU für Unterhalb Saugermitte
+/_ZO := ZMO
+/_ZU := _ZA
+/END
+/IF _ZO<ZMO
+/_ZO := ZMO
+/END
+/IF _ZU<ZMU
+/_Z := ZMU
+/END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+/IF _DWakt=0
+/_ZO := ZMO
+/_ZU := ZMU
+/END
+/ELSE
+/_ZO := ZMO
+/_ZU := ZMU
+/IF _DWakt=180
+/_ZU := ZMO
+/_ZO := ZMU
+/END
+/END
+;#
+;#
+;Bis hier kopieren
+;#
+;#
+;#
+IF Saugerkennung_akt=0
+_SB := '130x30x50'
+SK1 := _SB
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=1
+_SB := '120x50x50_rot'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=2
+_SB := '125x75x50'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=3
+_SB := '125x75x50_rot'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=4
+_SB := '114x140x50'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=5
+_SB := '75x125x50'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=6
+_SB := '30x130x50'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=7
+_SB := '115x35x60'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=8
+_SB := '115x50x60'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=9
+_SB := '115x80x60'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=10
+_SB := '130x30x85'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=11
+_SB := '120x50x85_rot'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=12
+_SB := '125x75x85'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=13
+_SB := '125x75x85_rot'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=14
+_SB := '114x140x85'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=15
+_SB := '75x125x85'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=16
+_SB := '30x130x85'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=17
+_SB := '130x30x125'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 130/2
+Y0 := 0
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 57
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=18
+_SB := '115x35x125'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 130/2
+Y0 := 0
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 57
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=19
+_SB := '115x50x125'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 130/2
+Y0 := 0
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 57
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=20
+_SB := '120x50x125'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 60
+Y0 := 58.75
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 57
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=21
+_SB := '120x50x125_rot'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 60
+Y0 := 60
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 60
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=22
+_SB := '125x75x125'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 0
+Y0 := 0
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 63
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=23
+_SB := '125x75x125_rot'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 125/2
+Y0 := 60
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 60
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=24
+_SB := '115x80x125_rot'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 115/2
+Y0 := 58
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 58
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=25
+_SB := '140x114x125'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 0
+Y0 := 0
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 57
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=26
+_SB := '75x125x125'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 0
+Y0 := 0
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 62.5
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=27
+_SB := '30x130x125'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 0
+Y0 := 0
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 65
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=28
+_SB := '114x140x125'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 0
+Y0 := 0
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 83
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=29
+_SB := '115x35x125_rot'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 115/2
+Y0 := 57.5
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 57.5
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=30
+_SB := '115x50x125_rot'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 115/2
+Y0 := 57.5
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 57.5
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=31
+_SB := '125x75x125_massiv'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 0
+Y0 := 0
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 85
+ZMU := 85
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=32
+_SB := '128x170x125_massiv'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+X0 := 0
+Y0 := 0
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 85
+ZMU := 85
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=33
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=34
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=35
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=36
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=37
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=38
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=39
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=40
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=41
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=42
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=43
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=44
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=45
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=46
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=47
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=48
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=49
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=50
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+_SB := '115x35x125_rot_LED'
+X0 := 115/2
+Y0 := 77.5
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 76+2
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=51
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+_SB := '115x50x125_rot_LED'
+X0 := 115/2
+Y0 := 77.5
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 76
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=52;BREAKPOINT
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+_SB := '120x50x125_rot_LED';BREAKPOINT
+X0 := 60
+Y0 := 72.7
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 76
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB;BREAKPOINT
+SN := IntToStr(StrPos('_rot',SN));BREAKPOINT
+S2 := StrtoInt(SN);BREAKPOINT
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0;BREAKPOINT
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END;BREAKPOINT
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=53
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+_SB := '125x75x125_LED'
+X0 := 0
+Y0 := 0
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 84
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=54
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+_SB := '125x75x125_rot_LED'
+X0 := 125/2
+Y0 := 75
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 76
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=55
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+_SB := '115x80x125_rot_LED'
+X0 := 115/2
+Y0 := 77.5
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 76+2
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=56
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+_SB := '114x140x125_LED'
+X0 := 114/2
+Y0 := 0
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 83
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=57
+_SB := '130x30x125_LED'
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+_SB := '130x30x125_LED'
+X0 := 130/2
+Y0 := 0
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 76
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=58
+;Saugername aus MTManager
+;X0 ist halbe Saugerbreite
+;Y0 ist Y-Maß von Saugermitte bis Außenkante Spannfläche
+_SB := '120x50x125_LED'
+X0 := 60
+Y0 := 58.75
+;ZMO beschreibt Überstand der Spannfläche über Grundkörper oben
+;ZMU beschreibt Überstand der Spannfläche über Grundkörper unten
+ZMO := 83
+ZMU := 76-17.25
+;Zurücksetzen der Übergabevariablen
+_ZO := 0
+_ZU := 0
+DWhilf := 0
+;Auswertung ob Sauger drehbar ist (Bedingt durch _rot im Namen)
+SN := _SB
+SN := IntToStr(StrPos('_rot',SN))
+S2 := StrtoInt(SN)
+;negative Winkeleingabe verrechnen
+IF _DWakt<0
+_DWakt := 360+_DWakt
+END
+;Wenn drehbar, dann neue Abstandsberechnung über Ecken des Saugers
+IF S2>0
+Beta := ARCTAN((Y0)/(X0))
+R := Y0/SIN(Beta)
+IF _DWakt<=90
+DWhilf := _DWakt
+END
+IF _DWakt>270
+DWhilf := 360-_DWakt
+END
+IF (_DWakt>90)&(_DWakt<=180)
+DWhilf := 180-_DWakt
+END
+IF (_DWakt>180)&(_DWakt<=270)
+DWhilf := _DWakt-180
+END
+IF DWhilf>0
+_ZA := ((SIN(Beta+DWhilf)*R))
+IF _ZA<0
+_ZA := 0
+END
+END
+IF (_DWakt>90)&(_DWakt<=270)
+;ZO für Oberhalb Saugermitte
+_ZO := _ZA
+_ZU := ZMU
+ELSE
+;ZU für Unterhalb Saugermitte
+_ZO := ZMO
+_ZU := _ZA
+END
+IF _ZO<ZMO
+_ZO := ZMO
+END
+IF _ZU<ZMU
+_Z := ZMU
+END
+;Wenn nicht drehbar, dann normale Maße übernehmen
+IF _DWakt=0
+_ZO := ZMO
+_ZU := ZMU
+END
+ELSE
+_ZO := ZMO
+_ZU := ZMU
+IF _DWakt=180
+_ZU := ZMO
+_ZO := ZMU
+END
+END
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=59
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=60
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=62
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=63
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=64
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=65
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=66
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=67
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=68
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=69
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=70
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=71
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=72
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=73
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=74
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=75
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=76
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=77
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=78
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=79
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=80
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=81
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=82
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=83
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=84
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=85
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=86
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=87
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=88
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=89
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=90
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=91
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=92
+_SB := 'xx'
+END
+;#
+;#
+;#
+;#
+;#
+IF Saugerkennung_akt=93
+_SB := 'xx'
+END

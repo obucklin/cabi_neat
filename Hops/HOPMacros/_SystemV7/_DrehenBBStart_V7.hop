@@ -1,0 +1,20 @@
+;MAKROTYP=0
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_DrehenBBStart_V7Dialog
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.1
+VARS
+   DX := 0;*VAR*Drehpunkt in X
+   DY := 0;*VAR*Drehpunkt in Y
+   esxy1 := 9;*VAR*
+   Dw := 0;*VAR*Drehwinkel
+   OnFreeView := 0;*VAR*0 - Ebene 0 | 1 - auf Ebene
+   _dx := 0;
+   _dy := 0;
+   _drw := 0;
+START
+transesxy (dx,dy,esxy1,1-OnFreeView)
+DrehenBB (OnFreeView)
+_dx := dx
+_dy := dy
+_drw := dw

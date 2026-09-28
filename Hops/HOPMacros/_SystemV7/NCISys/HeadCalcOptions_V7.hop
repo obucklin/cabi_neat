@@ -1,0 +1,20 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowHeadCalcOptions_V7Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   Hold := 0;*VAR*1 bis zum Werkzeugwechsel verwenden
+   HoldCloneMoveZ := 0;*VAR*1 NCIExt bei definierten Mehrfachzustellungen (Startpunkt) einfügen
+   Tol_EquationStandard := 0.00001;*VAR*Tolerenz für Gleichung
+   Tol_EquationSmallTipA := 0.0001;*VAR*Toleranz für Gleichung für kleine Kippwinkel
+   Tol_InfinitelySolutions := 0.0000001;*VAR*Toleranz für Sonderfall unendliche viele Lösungen
+   Tol_Angle := 0.001;*VAR*Toleranz für Winkel
+   SmallTipALimit := 0.1;*VAR*Grenzwinkel für kleine Kippwinkel
+   SelectCBAxisMode := 0;*VAR*0 = scbaTipA0TipAEqualMultiSign | 1 = scbaDeltaRotTipAMin | 2 = scbaDeltaRotAMin
+   Res1 := -999999999;*VAR*
+   Res2 := -999999999;*VAR*
+   Res3 := -999999999;*VAR*
+   Res4 := -999999999;*VAR*
+   Res5 := -999999999;*VAR*
+START
+NCIExt (-107010,'NCISys',1,Hold,HoldCloneMoveZ,Tol_EquationStandard,Tol_EquationSmallTipA,Tol_InfinitelySolutions,Tol_Angle,SmallTipALimit,SelectCBAxisMode,Res1,Res2,Res3,Res4,Res5)

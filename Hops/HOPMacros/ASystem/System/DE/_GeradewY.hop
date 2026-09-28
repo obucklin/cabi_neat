@@ -1,0 +1,35 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=simu
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=Geradewy.wmf
+VARS
+   Y := ;*VAR*Strecke in Y-Richtung
+   Winkel := ;*VAR*Winkel der Strecke gegenüber X-Achse
+   Z := _Z;*VAR*Zustelltiefe
+   R := 0;*VAR*verrundungsradius
+   dx := 0;
+START
+;DIREKT CNC SYSTEME NCHOPS VERSION 3.0
+;Gerade mit y-Wert und Winkel
+WHILE Winkel>360
+Winkel := Winkel-360
+END
+WHILE Winkel<0
+Winkel := Winkel+360
+END
+IF (Winkel=0) | (Winkel=180) | (Winkel=360)
+Hinweismeldung (Gerade_in_Y_kann_nicht_erzeugt_werden_Laenge_ist_0)
+ELSE
+dx := Y/Tan(Winkel)
+IF (Winkel>0)&(Winkel<180)
+G01 (_X+dx,_Y+Y,Z,R)
+ELSE
+G01 (_X-dx,_Y-Y,Z,R)
+END
+END
+

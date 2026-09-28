@@ -1,0 +1,32 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.7.22.43[Hops.exe]
+;BILD=BUENDIG_AGGR_INIT_V7.WMF
+;INFO=
+;WZGV=7225K_606
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Buendig_Aggr_Init_V7
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+START
+;Para1=10 /  Immer vor der Anfahrt auf den 1 Startpunkt
+NCIExt (70000,'HH7',1,0,0,10,-1,-1,-1,-1,'M181','','','','')
+NCIExt (70000,'HH7',1,0,0,10,-1,-1,-1,-1,'M190','','','','')
+;Para2=30 /  Innerhalb der Fräsbahn, unmittelbar nach der gewählten Anfahrtbewegung
+NCIExt (70000,'HH7',1,0,0,30,-1,-1,-1,-1,'M180','','','','')
+NCIExt (70000,'HH7',1,0,0,30,-1,-1,-1,-1,'M191','','','','')
+NCIExt (70000,'HH7',1,0,0,30,-1,-1,-1,-1,'G04 1','','','','')
+;AUF
+;Para1=40 /  Innerhalb der Fräsbahn, unmittelbar vor der gewählten Abfahrtbewegung
+NCIExt (70000,'HH7',1,0,0,40,-1,-1,-1,-1,'M181','','','','')
+NCIExt (70000,'HH7',1,0,0,40,-1,-1,-1,-1,'M190','','','','')

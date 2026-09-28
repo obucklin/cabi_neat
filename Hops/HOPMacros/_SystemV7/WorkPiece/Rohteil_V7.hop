@@ -1,0 +1,27 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=ShowRohteil_V7Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+VARS
+   RB := 0;*VAR*Aufmass hinten
+   RL := 0;*VAR*Aufmass links
+   RF := 0;*VAR*Aufmass vorne
+   RR := 0;*VAR*Aufmass rechts
+   RT := 0;*VAR*Aufmass oben
+START
+;-
+;- direkt cnc-systeme gmbh
+;- Macro zur Erzeugung eines Rohteils ueber Aufmasse um das Fertigteil
+;- 
+;- Im Workcenter findet eine automatische Verschiebung um die angegebenen Maﬂe statt
+;-
+KB ('Hops_Stock','',-RL,-RF,0,'',0,0)
+KG01 ('',-RR,-RF,0,'',3,2)
+KG01 ('',-RR,-RB,0,'',5,2)
+KG01 ('',-RL,-RB,0,'',7,2)
+KG01 ('',-RL,-RF,0,'',0,2)
+definestockprofile (0,65535,'',0,'','Hops_Stock',0.1,RT,0,0)
+SetRawLRFB (RB,RL,RF,RR)
+;.
+deletecontour ('Hops_Stock',0)

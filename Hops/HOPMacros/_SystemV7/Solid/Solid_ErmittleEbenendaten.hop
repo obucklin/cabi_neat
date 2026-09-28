@@ -1,0 +1,21 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   KN_Bogen := '';*VAR*
+   KN_Vektor := '';*VAR*
+   View_X := 0;*VAR**REF*
+   View_Y := 0;*VAR**REF*
+   View_Z := 0;*VAR**REF*
+   View_DW := 0;*VAR**REF*
+   View_KW := 0;*VAR**REF*
+   Nx := 0;
+   Ny := 0;
+   Nz := 0;
+START
+View_X := GETKP_X(KN_Bogen,0)
+View_Y := GETKP_Y(KN_Bogen,0)
+View_Z := _RZ+GETKP_Z(KN_Bogen,0)
+Nx := GETKP_X(KN_Vektor,0)-GETKP_X(KN_Vektor,1)
+Ny := GETKP_Y(KN_Vektor,0)-GETKP_Y(KN_Vektor,1)
+Nz := GETKP_Z(KN_Vektor,0)-GETKP_Z(KN_Vektor,1)
+CALL Calc_DW_KW_NV (REF KW:=View_KW,DW:=View_DW VAL NX:=Nx,NY:=Ny,NZ:=Nz)

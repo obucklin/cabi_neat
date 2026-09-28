@@ -1,0 +1,25 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_HG2PunkteR_V5Dialog
+VARS
+   HP1X := 0;*VAR*Erster Punkt in X
+   HP1Y := 0;*VAR*Erster Punkt in Y
+   HP2X := 0;*VAR*Zweiter Punkt in X
+   HP2Y := 0;*VAR*Zweiter Punkt in Y
+   HRadius := ;*VAR*Radius
+   _HP1X := 0;
+   _HP1Y := 0;
+   _HP2X := 0;
+   _HP2Y := 0;
+   _HRadius := 0;
+   esxy1 := 0;*VAR*
+   esxy2 := 0;*VAR*
+START
+transesxy (HP1x,HP1y,esxy1,0)
+transesxy (HP2x,HP2y,esxy2,0)
+CALLDLL HG2PR(Hilfsgeometrie,Dummy, VAL P1X:=HP1X,P1Y:=HP1Y,P2X:=HP2X,P2Y:=HP2Y,R:=HRadius)
+_HP1X := Hp1x
+_HP1y := Hp1y
+_HP2X := Hp2x
+_HRadius := HRadius
+_HP2Y := Hp2Y

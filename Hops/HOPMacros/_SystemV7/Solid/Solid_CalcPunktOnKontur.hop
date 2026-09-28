@@ -1,0 +1,36 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   K := 'K1';*VAR*
+   Kindex := 1;*VAR*
+   Pos := 0.5;*VAR*
+   P1X := 0;*VAR**REF*
+   P1Y := 0;*VAR**REF*
+   EleTyp := 0;
+   Vx := 0;
+   Vy := 0;
+   DW := 0;
+START
+Fertigteil (500,500,500,0,0,0,0,0,'',0,0,0)
+EleTyp := GetKE_Typ(K,KIndex)
+IF EleTyp=1
+;Linie
+Vx := Pos*(GetKP_X(K,Kindex)-GetKP_X(K,Kindex-1))
+Vy := Pos*(GetKP_Y(K,Kindex)-GetKP_Y(K,Kindex-1))
+P1X := GetKP_X(K,Kindex-1)+Vx
+P1Y := GetKP_Y(K,Kindex-1)+Vy
+ELSE
+;Bogen
+IF EleTyp=2
+CALL GetWinkelDiff3P_V4 (REF WINKELDIFF3P:=DW VAL P1X:=GetKP_X(k,Kindex),P1Y:=GetKP_Y(k,Kindex),MX:=GetKE_MX(k,Kindex),MY:=GetKE_MY(k,Kindex),P3X:=GetKP_X(k,Kindex-1),P3Y:=GetKP_Y(k,Kindex-1))
+DW := -DW
+ELSE
+CALL GetWinkelDiff3P_V4 (REF WINKELDIFF3P:=DW VAL P1X:=GetKP_X(k,Kindex-1),P1Y:=GetKP_Y(k,Kindex-1),MX:=GetKE_MX(k,Kindex),MY:=GetKE_MY(k,Kindex),P3X:=GetKP_X(k,Kindex),P3Y:=GetKP_Y(k,Kindex))
+END
+DW := DW*Pos
+CALL SetPunkt ( VAL X:=GetKP_X(k,Kindex-1),Y:=GetKP_Y(k,Kindex-1))
+CALL SetRotPara ( VAL MX:=GetKE_MX(k,Kindex),MY:=GetKE_MY(k,Kindex),ROTW:=DW)
+CALL RotUmPunkt ()
+P1X := _AktPosX
+P1Y := _AktPosY
+END

@@ -1,0 +1,39 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.11.0.182[Hops.exe]
+;BILD=HH_POWERPIN_EDGE.WMF
+;INFO=
+;WZGV=7605_071222
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=HH_POWERPIN_EDGE
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   Para1 := 2;*VAR*1= Ebene1 / 2=Ebene2 / 3=Ebene3 / 4=Ebene4
+START
+IF Para1=1
+NCIExt (-200300,'',0,0,0,1,0)
+ZText ('Referenz-Kante (1)',0,0,30,0,9,0,'Times New Roman',0,0,0,0,2,1)
+END
+IF Para1=2
+NCIExt (-200300,'',0,0,0,1,1)
+CALL Pfeil_Grafik ( VAL X:=0,WINKEL:=0,Y:=_RY/2)
+/ZText ('Referenz-Kante (2)',0,0,30,0,9,0,'Times New Roman',0,0,0,0,8,1)
+END
+IF Para1=3
+NCIExt (-200300,'',0,0,0,1,2)
+ZText ('Referenz-Kante (3)',0,0,30,0,9,0,'Times New Roman',0,0,0,0,6,1)
+END
+IF Para1=4
+NCIExt (-200300,'',0,0,0,1,3)
+ZText ('Referenz-Kante (4)',0,0,30,0,9,0,'Times New Roman',0,0,0,0,4,1)
+END

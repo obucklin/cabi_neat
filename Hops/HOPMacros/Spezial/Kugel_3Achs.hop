@@ -1,0 +1,114 @@
+;INSTVERSION=5.6.0.0
+;EXEVERSION=5.5.2.142[Hops.exe]
+;MAKROTYP=1
+;BILD=Kugel_3Achs.wmf
+;INFO=
+;WZGV=7123V_656
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Kugel_3Achs
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_2.Dll
+;DIALOGPROC=Show_Kugel_3ADialog
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 400;Dimension X
+   DY := 100;Dimension Y
+   DZ := 25;Dimension Z
+   PosX := 0.00;*VAR*Position in X
+   PosY := 0.00;*VAR*Position in Y
+   PosZ := 10;*VAR*Höhe inz von unten
+   K_RD := 20;*VAR*KugelRadius
+   K_H := 10;*VAR*Kugelhöhe
+   Schrittweite := 1;*VAR*Schrittweite in Grad
+   IA := 1;*VAR*0 = Innen  1= aussen
+   i := 0;Zählvariable
+   Winkel := 0;Sinuswinkel
+   A := 0;Berechneter DM
+   B := 0;BerechneteHöhe
+   Rad := 0;
+   Temp := 0;
+START
+;*******************************************
+;********* (c) B. Achermann ********************
+;*********Holz-Her Schweiz AG ******************
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+Temp := ArcSin((K_Rd-K_h)/ K_Rd)
+IF K_H > K_RD
+Fehlermeldung (GetMessageTextOem('36','Kugelhöhe zu gross <= Kugelradius'))
+ELSE
+IF IA = 1
+IF K_Rd = K_H
+Winkel := 89
+A := cos(Winkel) * K_RD
+B := sin(Winkel) * K_RD
+Rad := ((abs(_X - PosX)) + A  ) / 2
+SP (PosX,PosY,PosZ + B,0,0,_Anf,-_WzR,0,0,1,1,2,0,0,0,0,0,0,0,0,0,0,0)
+WHILE (Winkel >= 0)
+A := cos(Winkel) * K_RD
+B := sin(Winkel) * K_RD
+Rad := ((abs(_X - PosX)) + A  ) / 2
+G03R (PosX + A,PosY,PosZ+ B,Rad,0,1,1)
+Rad := ((abs(_X - PosX)) + A  ) / 2
+G03R ((PosX - A),PosY,PosZ + B,Rad,0,1,1)
+Winkel := Winkel -  Schrittweite
+END
+EP (0,_ANF,0)
+ELSE
+Winkel := 89
+A := cos(Winkel) * K_RD
+B := (sin(Winkel) * K_RD)
+Rad := ((abs(_X- PosX)) + A ) / 2
+SP (PosX,PosY,PosZ +B,0,0,_Anf,-_WzR,0,0,1,1,2,0,0,0,0,0,0,0,0,0,0,0)
+WHILE (Winkel >= Temp)
+A := cos(Winkel) * K_RD
+B := sin(Winkel) * K_RD
+Rad := ((abs(_X - PosX)) + A  ) / 2
+G03R (PosX + A,PosY,PosZ+ B,Rad,0,1,1)
+Rad := ((abs(_X - PosX)) + A  ) / 2
+G03R ((PosX - A),PosY,PosZ + B,Rad,0,1,1)
+Winkel := Winkel -  Schrittweite
+END
+EP (0,_ANF,0)
+END
+;Mulde
+ELSE
+IF K_Rd = K_H
+SP (PosX - ( K_Rd),PosY,PosZ,0,0,_Anf,- _Wzr,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G03R (PosX + K_RD,Posy,0,K_RD,0,1,2)
+G03R (PosX -(K_RD  ),PosY,0,K_RD,0,1,2)
+WHILE (Winkel <=89)
+A := cos(Winkel) * K_RD
+B := (sin(Winkel) * K_RD) * -1
+Rad := ((abs(_X-PosX)) + A  ) / 2
+G03R (PosX + A,PosY,PosZ+B,Rad,0,1,0)
+G03R (PosX - A,PosY,PosZ + B,Rad,0,1,0)
+Winkel := Winkel + Schrittweite
+END
+EP (0,_ANF,0)
+ELSE
+Winkel := Temp
+A := cos(Winkel) * K_RD
+B := (sin(Winkel) * K_RD) * -1
+Rad := ((abs(_X - PosX)) + A ) / 2
+SP (PosX - (A),PosY,B  + PosZ,0,0,_Anf,-_WzR,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G03R (PosX + A,Posy,B + PosZ,A,0,1,0)
+G03R (PosX -(A  ),Posy,B  + PosZ,A,0,1,0)
+WHILE (Winkel <=89)
+A := cos(Winkel) * K_RD
+B := (sin(Winkel) * K_RD)* - 1
+Rad := ((abs(_X - PosX)) + A  ) / 2
+Winkel := Winkel + Schrittweite
+G03R (PosX + A,PosY,B + PosZ,Rad,0,1,0)
+Rad := ((abs(_X-PosX)) + A  ) / 2
+G03R (PosX - A,PosY,B  + PosZ,Rad,0,1,0)
+END
+EP (0,_ANF,0)
+END
+END
+END

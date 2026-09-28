@@ -1,0 +1,46 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowKonturEle_Tang_V7Dialog
+VARS
+   name := '';*VAR*Konturname
+   Nr1 := 0;*VAR*erstes element
+   Nr2 := 0;*VAR*naechstes element
+   Tol := 0.01;*VAR*
+   Tangential := ;*VAR**REF*1 ist tangential
+   Ele_Anz := 0;
+   Vx1 := 0;
+   Vy1 := 0;
+   Vx2 := 0;
+   Vy2 := 0;
+   pex := 0;
+   pey := 0;
+   pax := 0;
+   pay := 0;
+   pmx := 0;
+   pmy := 0;
+   Winkel := 0;
+START
+;******************************************************
+;********   Direkt cnc-systeme GmbH   ®  *******
+;******************************************************
+Tangential := 1
+Ele_Anz := GETKE_ANZAHL(name)
+IF NR1>Ele_Anz
+NR1 := NR1-Ele_Anz
+END
+IF NR2>Ele_Anz
+NR2 := NR2-Ele_Anz
+END
+CALL KonturEle_V_NachHintenEP_V7 (REF VX:=Vx1,VY:=Vy1 VAL NAME:=name,ELENR:=Nr1)
+CALL KonturEle_V_NachVorneAP_V7 (REF VX:=Vx2,VY:=Vy2 VAL NAME:=Name,ELENR:=Nr2)
+pmx := 0
+pmy := 0
+pax := Vx1
+pay := Vy1
+pex := Vx2
+pey := Vy2
+CALL GetWinkelDiff3P_V4 (REF WINKELDIFF3P:=Winkel VAL P1X:=pex,P1Y:=pey,MX:=pmx,MY:=pmy,P3X:=pax,P3Y:=pay)
+IF abs(abs(Winkel)-180)<Tol
+ELSE
+Tangential := 0
+END

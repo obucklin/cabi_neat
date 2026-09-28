@@ -1,0 +1,29 @@
+;MAKROTYP=0
+;BILD=
+;INFO=
+;WZGV=7123K_121
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=UserInterface3DG
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=bild1.bmp
+;DIMENSION_UNIT=0
+VARS
+   DX := 0;*VAR**REF*Textvariable für Funktionsauswertung
+   resulty := 0;*VAR**REF*Rückgabewert
+   resultX := 0;*VAR**REF*Rückgabewert
+   result := 0;*VAR**REF*Rückgabewert
+START
+;HOLZHER - Reich Spezialmaschinen GmbH
+;Copyright 2006
+;2006-08-22 - CC-Makros V1.0 KRI
+;UserInterface
+IF _RX = 404
+result := 58
+End

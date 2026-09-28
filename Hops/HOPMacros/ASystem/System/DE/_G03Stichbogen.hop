@@ -1,0 +1,30 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCNAME
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=_G03Stichbogen.wmf
+VARS
+   Breite := ;*VAR*Breite des Stichbogen
+   Hoehe := ;*VAR*Höhe des Stichbogen
+   Z := _Z;*VAR*Zustelltiefe
+   R := 0;*VAR*Verrundungsradius
+   H := 0;Hilfsvariable
+   Radius := 0;
+START
+;Rohteil (1000,200,40,0,0)
+IF Hoehe<0
+H := -Hoehe
+ELSE
+H := Hoehe
+END
+Radius := (sqr(H)+sqr(Breite)/4)/(2*H)
+IF Hoehe>0
+G03R (_X-Breite,_Y,Z,Radius,R)
+ELSE
+G02R (_X-Breite,_Y,Z,Radius,R)
+END
+

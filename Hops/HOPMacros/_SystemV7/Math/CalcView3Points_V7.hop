@@ -1,0 +1,69 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowCalcView3Points_V7Dialog
+VARS
+   AllwayToTop := 0;*VAR*Die Ebene immer nach oben drehen
+   P1x := 100;*VAR*
+   P1y := 0;*VAR*
+   P1z := 0;*VAR*
+   P2x := 0;*VAR*
+   P2y := 200;*VAR*
+   P2z := 0;*VAR*
+   Offx := 0;*VAR*
+   Offy := 0;*VAR*
+   Offz := 0;*VAR*
+   RotA := ;*VAR**REF*
+   TipA := ;*VAR**REF*
+   Vxx := ;*VAR**REF*
+   Vxy := ;*VAR**REF*
+   Vxz := ;*VAR**REF*
+   Vyx := ;*VAR**REF*
+   Vyy := ;*VAR**REF*
+   Vyz := ;*VAR**REF*
+   Vzx := ;*VAR**REF*
+   Vzy := ;*VAR**REF*
+   Vzz := ;*VAR**REF*
+   NxyzChanged := ;*VAR**REF*
+   P00x := 0;
+   P00y := 0;
+   P00z := 0;
+   x1 := 0;
+   y1 := 0;
+   z1 := 0;
+   x2 := 0;
+   y2 := 0;
+   z2 := 0;
+   Nx := 0;
+   Ny := 0;
+   Nz := 0;
+   L := 0;
+START
+;Vektoren berechnen
+P00x := Offx
+P00y := Offy
+P00z := Offz
+CALL CalcVektor_V7 (REF VX:=x1,VY:=y1,VZ:=Z1 VAL P1X:=P00x,P1Y:=P00y,P1Z:=P00z,P2X:=P1x,P2Y:=P1y,P2Z:=P1z)
+CALL CalcVektor_V7 (REF VX:=x2,VY:=y2,VZ:=Z2 VAL P1X:=P00x,P1Y:=P00y,P1Z:=P00z,P2X:=P2x,P2Y:=P2y,P2Z:=P2z)
+CALL VektorProdukt_V7 (REF NX:=Nx,NY:=Ny,NZ:=Nz VAL V1X:=x1,V1Y:=y1,V1Z:=z1,V2X:=x2,V2Y:=y2,V2Z:=z2)
+;Kipp- und Drehwinkel berechnen
+CALL Calc_DW_KW_NV (REF KW:=TipA,DW:=RotA VAL NX:=Nx,NY:=Ny,NZ:=Nz)
+L := -1
+NxyzChanged := 0
+IF (AllwayToTop=1) & (TipA>90)
+Nx := Nx/L
+Ny := Ny/L
+Nz := Nz/L
+;Kipp- und Drehwinkel berechnen
+CALL Calc_DW_KW_NV (REF KW:=TipA,DW:=RotA VAL NX:=Nx,NY:=Ny,NZ:=Nz)
+NxyzChanged := 1
+END
+;Kippwinkel prüfen
+IF TipA<0
+TipA := -TipA
+RotA := RotA+180
+IF RotA>=360
+RotA := RotA-360
+END
+END
+;Vektoren der Ebene berechnen
+CALL CalcViewVectorsDWKW_V7 (REF VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz VAL DW:=RotA,KW:=TipA)

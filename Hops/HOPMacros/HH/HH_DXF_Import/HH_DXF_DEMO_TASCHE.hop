@@ -1,0 +1,34 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.8.0.2[Hops.exe]
+;BILD=TASCHE.WMF
+;INFO=
+;WZGV=7535D_222
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=TASCHE
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   P1 := '';*VAR*Kontur
+   P2 := '';*VAR*Layer Name
+   Fraeser := 20;Taschenfräser
+   _tasche_tiefe := -10;Taschentiefe von Oberkante -
+START
+;Mustermakro V1_2022
+;
+CALL GROUPSTART_V7 ( VAL NAME:='tasche1')
+;Werkzeugaufruf
+WZF (Fraeser,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _ExecutePocket_V5 ( VAL NAMEN:=p1,AA:=0,UEBERLAPPUNG:=50,MODE:=1,ANGLE:=0,TIEFE:=-_tasche_tiefe,ESMD:=0,ANZAHL:=0,MAXZ:=10,RD:=0,FLIEGENDEINTAUCHEN:=0,MAXEINTAUCHLAENGE:=20)
+CALL GROUPEND_V7 ( VAL NAME:='tasche1')
+;
+;

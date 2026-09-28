@@ -24,6 +24,9 @@ from compas_timber.fabrication import Drilling
 from compas_timber.fabrication import FreeContour
 from compas_timber.geometry import brep_difference_first
 
+from .config import HINGE_DEFAULTS
+from .config import hinge_positions
+
 
 def _refresh_blanks(*plates):
     """Make sure the plates' reference sides include this round of edge extensions.
@@ -739,14 +742,6 @@ class ClamexP14Joint(PlateButtJoint):
 # ==========================================================================
 
 
-def _hinge_count(height):
-    """Number of hinges for a door of ``height``, following the usual cup hinge guideline."""
-    for limit, count in ((900, 2), (1600, 3), (2000, 4)):
-        if height <= limit:
-            return count
-    return 5
-
-
 class CupHingeJoint(Joint):
     """European concealed cup hinges ("Topfband") between a door and the panel it hangs on.
 
@@ -791,22 +786,7 @@ class CupHingeJoint(Joint):
 
     MIN_ELEMENT_COUNT = 2
     MAX_ELEMENT_COUNT = 2
-    PARAMETERS = {
-        "mount": "overlay",
-        "hinge_count": 4,
-        "end_distance": 100.0,
-        "cup_diameter": 35.0,
-        "cup_depth": 13.0,
-        "cup_edge_distance": 5.0,
-        "door_hole_spacing": 48.0,
-        "door_hole_offset": 6.0,
-        "door_hole_diameter": 3.0,
-        "door_hole_depth": 11.0,
-        "plate_offset": 37.0,
-        "plate_hole_spacing": 32.0,
-        "plate_hole_diameter": 5.0,
-        "plate_hole_depth": 12.0,
-    }
+    PARAMETERS = dict({"mount": "overlay"}, **HINGE_DEFAULTS)
     # the processing dimensions, i.e. everything but the hinge type
     DIMENSIONS = tuple(key for key in PARAMETERS if key != "mount")
 
@@ -883,10 +863,7 @@ class CupHingeJoint(Joint):
         across = across - along * dot_vectors(across, along) - into_door * dot_vectors(across, into_door)
         across = across.unitized()
 
-        length = edge.length
-        count = self.hinge_count or _hinge_count(length)
-        end = min(self.end_distance, length / 4.0)
-        positions = [end] if count == 1 else [end + i * (length - 2 * end) / (count - 1) for i in range(count)]
+        positions = hinge_positions(edge.length, self.hinge_count, self.end_distance)
         offset = self.cup_diameter / 2.0 + self.cup_edge_distance
         frames = []
         for t in positions:

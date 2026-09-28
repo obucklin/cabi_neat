@@ -1,0 +1,31 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowAxyzToVxyz_V7Dialog
+VARS
+   OffsetX := 0;*VAR*
+   OffsetY := 0;*VAR*
+   OffsetZ := 0;*VAR*
+   DW := 0;*VAR*
+   KW := 0;*VAR*
+   Ax := 0;*VAR*
+   Ay := 0;*VAR*
+   Az := 0;*VAR*
+   Vx := ;*VAR**REF*
+   Vy := ;*VAR**REF*
+   Vz := ;*VAR**REF*
+   Vzx := 0;
+   Vzy := 0;
+   Vzz := 1;
+   Vxx := 1;
+   Vxy := 0;
+   Vxz := 0;
+   Vyx := 0;
+   Vyy := 1;
+   Vyz := 0;
+   det := 0;
+START
+CALL CalcViewVectorsDWKW_V7 (REF VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz VAL DW:=DW,KW:=KW)
+det := Vxx*Vyy*Vzz+Vyx*Vzy*Vxz+Vzx*Vxy*Vyz-Vzx*Vyy*Vxz-Vxx*Vzy*Vyz-Vyx*Vxy*Vzz
+Vx := Vxx*(ax-OffsetX)/det+Vxy*(ay-OffsetY)/det+Vxz*(az-OffsetZ)/det
+Vy := Vyx*(ax-OffsetX)/det+Vyy*(ay-OffsetY)/det+Vyz*(az-OffsetZ)/det
+Vz := Vzx*(ax-OffsetX)/det+Vzy*(ay-OffsetY)/det+Vzz*(az-OffsetZ)/det

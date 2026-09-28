@@ -1,0 +1,94 @@
+;MAKROTYP=1
+;BILD=Bohgy.WMF
+;INFO=_Bohgy
+;WZGV=demo
+;MASCHINE=Simu
+;NCNAME=_Bohgy_V4
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   SPX := 10;*VAR*Startwert (x)
+   BIY := 64;*VAR*Bohrung1 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIY := 64+37;*VAR*Bohrung2 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIIY := 0;*VAR*Bohrung3 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIIIY := 0;*VAR*Bohrung4 (Wert=0-> Bohrung wird nicht abgesetzt)
+   Spiegeln := 0;*VAR*1=>gespiegelt
+   T := -13;*VAR*Bohrtiefe
+   D := 8;*VAR*Bohrdurchmesser
+   TLF := 0;*VAR*Tieflochflag
+   Inkrement := 0;*VAR*Absolut oder Inkremental
+   B1 := 0;Bohrung 1
+   B2 := 0;Bohrung 2
+   B3 := 0;Bohrung 3
+   B4 := 0;Bohrung 4
+START
+;direkt cnc systeme NCHOPS Version 4.x
+;Stirnseitenbohrungen in Y
+IF T>0
+T := -T
+END
+IF Inkrement=0
+IF (BIY<>0)
+Bohrung (SPX,BIY,D,T,TLF,0,0)
+END
+IF (BIIY<>0)
+Bohrung (SPX,BIIY,D,T,TLF,0,0)
+END
+IF (BIIIY<>0)
+Bohrung (SPX,BIIIY,D,T,TLF,0,0)
+END
+IF (BIIIIY<>0)
+Bohrung (SPX,BIIIIY,D,T,TLF,0,0)
+END
+;Gespiegelte Bohrungen
+IF Spiegeln <> 0
+IF (BIY<>_RY/2)&(BIY<>0)
+Bohrung (SPX,_RY-BIY,D,T,TLF,0,0)
+END
+IF (BIIY<>_RY/2)&(BIIY<>0)
+Bohrung (SPX,_RY-BIIY,D,T,TLF,0,0)
+END
+IF (BIIIY<>_RY/2)&(BIIIY<>0)
+Bohrung (SPX,_RY-BIIIY,D,T,TLF,0,0)
+END
+IF (BIIIIY<>_RY/2)&(BIIIIY<>0)
+Bohrung (SPX,_RY-BIIIIY,D,T,TLF,0,0)
+END
+END
+ELSE
+B1 := BIY
+B2 := BIY+BIIY
+B3 := BIY+BIIY+BIIIY
+B4 := BIY+BIIY+BIIIY+BIIIIY
+IF (BIY<>0)
+Bohrung (SPX,B1,D,T,TLF,0,0)
+END
+IF (BIIY<>0)
+Bohrung (SPX,B2,D,T,TLF,0,0)
+END
+IF (BIIIY<>0)
+Bohrung (SPX,B3,D,T,TLF,0,0)
+END
+IF (BIIIIY<>0)
+Bohrung (SPX,B4,D,T,TLF,0,0)
+END
+;Gespiegelte Bohrungen
+IF Spiegeln <> 0
+IF (BIY<>_RY/2)&(BIY<>0)
+Bohrung (SPX,_RY-B1,D,T,TLF,0,0)
+END
+IF (BIIY<>_RY/2)&(BIIY<>0)
+Bohrung (SPX,_RY-B2,D,T,TLF,0,0)
+END
+IF (BIIIY<>_RY/2)&(BIIIY<>0)
+Bohrung (SPX,_RY-B3,D,T,TLF,0,0)
+END
+IF (BIIIIY<>_RY/2)&(BIIIIY<>0)
+Bohrung (SPX,_RY-B4,D,T,TLF,0,0)
+END
+END
+END

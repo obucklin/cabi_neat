@@ -1,0 +1,294 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=CLAMEX1_GEHRUNG_X.WMF
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Clamex1_Gehrung_X
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_7.Dll
+;DIALOGPROC=ShowTClamex_Gehrung_XDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 30;Dimension Z
+   F_Tool :=1108;*VAR*Clamex WKZ
+   PL_Dicke := 0;
+   B_Tool :=112;*VAR*Clamex Bohrer
+   Bohren_H :=0;*VAR*Bohren hinten Ja/Nein
+   Bohren_V :=0;*VAR*Bohren vorne Ja/Nein
+   Fraesen_H :=-1;*VAR*Fräsen hinten Ja/Nein
+   Fraesen_V :=-1;*VAR*Fräsen vorne Ja/Nein
+   Cla_2Hi :=0;*VAR*2 Clamex hinten ab Plattenstärke 25 Ja/Nein
+   Cla_2Vo :=0;*VAR*2 Clamex vorne ab Plattenstärke 25 Ja/Nein
+   B_Diff :=7.5;*VAR*Diff. zur XPos
+   B_DM :=6.8;*VAR*Bohrer durchmesser
+   hoehe := _Eh_RZ;
+   Winkel_H :=45;*VAR*Ebenen Winkel
+   Winkel_V :=45;*VAR*Ebenen Winkel
+   Winkel_BH := Winkel_H;Winkel merker
+   Winkel_BV := Winkel_V;Winkel merker
+   CL_Typ :=1;*VAR*Typ Clamex 1= 15 / 2= 14
+   C_Tiefe :=14.00;*VAR*Tief je nach Typ Clamex
+   POS1 := 0;*VAR*Position des Clamex
+   POS2 := 0;*VAR*Zweite Clamex in der Ebene
+   X1 :=60.00;*VAR*X_Wert li hinten
+   Y1 :=00.00;*VAR*Y_Wert li hinten
+   X2 :=00.00;*VAR*X_Wert li mi
+   Y2 :=00.00;*VAR*Y_Wert li mi
+   X3 :=60.00;*VAR*X_Wert li vo
+   Y3 :=00.00;*VAR*Y_Wert li vo
+   X4 :=60.00;*VAR*X_Wert Re hi
+   Y4 :=00.00;*VAR*Y_Wert Re hi
+   X5 :=00.00;*VAR*X Wert Re mi
+   Y5 :=00.00;*VAR*Y_Wert Re mi
+   X6 :=60.00;*VAR*X_Wert Re vo
+   Y6 :=00.00;*VAR*Y_Wert Re vo
+   C1 :=-1;*VAR*Clamex hinten links  ja/Nein
+   C2 :=0;*VAR*Clamex mitte hinten  ja/Nein
+   C3 :=-1;*VAR*Clamex hinten rechts  ja/Nein
+   C4 :=-1;*VAR*Clamex vorne rechts  ja/Nein
+   C5 :=0;*VAR*Clamex mitte vorne  ja/Nein
+   C6 :=-1;*VAR*Clamex hinten rechts  ja/Nein
+   Y_Wert := 0.00;
+   B_Diff_Korr := 2.00;Korrektur zu Bohrdifferenz
+   T := T;Tiefe gerechnet 70 - Wzr
+   Pos1_T := 0;Pos Merker
+   Pos2_T := 0;Pos Merker
+   Stl_Typ := 'P14_Of.stl';Clamex Typ
+START
+;Weinig Holzher Schweiz AG B. Achermann
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+PL_Dicke := _RZ
+CALL Clamex_Par (REF POS1:=Pos1,POS2:=Pos2 VAL WINKEL:=Winkel_H,DICKE:=PL_Dicke)
+EbeneF (0,0,0,Winkel_H,-180,5,0)
+hoehe := _EH_RZ
+Y_Wert := (sqrt(sqr(_EH_Rz) - sqr(PL_Dicke))) + B_Diff + B_Diff_Korr
+Winkel_BH := Winkel_H
+Winkel_H := 90 - Winkel_H
+Pos1_T:= Pos1
+Pos2_T := Pos2
+Ebene0()
+WZF (F_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+T := 70 -_WzR
+;Bohren
+WZB (B_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+;Hinten links
+IF (C1= -1) & (Bohren_H= -1)
+IF (Pos2 > 0) & (Cla_2Hi)
+HorzB (X1,Y_Wert + Y1,0,B_Dm,- (Pos2 + 5),0,-Winkel_BH,90,7,2,0,0)
+ELSE
+HorzB (X1,Y_Wert + Y1,0,B_Dm,- (Pos1 + 5),0,-Winkel_BH,90,7,2,0,0)
+END
+END
+;Hinten mitte
+IF (C2= -1) & (Bohren_H= -1)
+IF (Pos2 > 0) & (Cla_2Hi)
+HorzB (X2,Y_Wert + Y1,0,B_Dm,- (Pos2 + 5),0,-Winkel_BH,90,6,2,0,0)
+ELSE
+HorzB (X2,Y_Wert + Y1,0,B_Dm,- (Pos1 + 5),0,-Winkel_BH,90,6,2,0,0)
+END
+END
+;Hinten rechts
+IF (C3= -1) & (Bohren_H= -1)
+IF (Pos2 > 0) & (Cla_2Hi)
+HorzB (X3,Y_Wert + Y1,0,B_Dm,- (Pos2 + 5),0,-Winkel_BH,90,5,2,0,0)
+ELSE
+HorzB (X3,Y_Wert + Y1,0,B_Dm,- (Pos1 + 5),0,-Winkel_BH,90,5,2,0,0)
+END
+END
+CALL Clamex_Par (REF POS1:=Pos1,POS2:=Pos2 VAL WINKEL:=Winkel_V,DICKE:=PL_Dicke)
+EbeneF (0,0,0,Winkel_V,0,1,0)
+hoehe := _EH_RZ
+Y_Wert := (sqrt(sqr(_EH_Rz) - sqr(PL_Dicke))) + B_Diff + B_Diff_Korr
+Winkel_BV := Winkel_V
+Winkel_V := 90 - Winkel_V
+Ebene0()
+;Vorne links
+IF (C4= -1) & (Bohren_V= -1)
+IF (Pos2 > 0) & (Cla_2Vo)
+HorzB (X4,Y_Wert + Y4,0,B_Dm,- (Pos2 + 5),0,-Winkel_BV,270,1,2,0,0)
+ELSE
+HorzB (X4,Y_Wert + Y4,0,B_Dm,- (Pos1 + 5),0,-Winkel_BV,270,1,2,0,0)
+END
+END
+;Vorne mitte
+IF (C5= -1) & (Bohren_V= -1)
+IF (Pos2 > 0) & (Cla_2Vo)
+HorzB (X5,Y_Wert + Y4,0,B_Dm,- (Pos2 + 5),0,-Winkel_BV,270,2,2,0,0)
+ELSE
+HorzB (X5,Y_Wert + Y4,0,B_Dm,- (Pos1 + 5),0,-Winkel_BV,270,2,2,0,0)
+END
+END
+;Vorne Rechts
+IF (C6= -1) & (Bohren_V= -1)
+IF (Pos2 > 0) & (Cla_2Vo)
+HorzB (X6,Y_Wert + Y4,0,B_Dm,- (Pos2 + 5),0,-Winkel_BV,270,3,2,0,0)
+ELSE
+HorzB (X6,Y_Wert + Y4,0,B_Dm,- (Pos1 + 5),0,-Winkel_BV,270,3,2,0,0)
+END
+END
+;Fräsen
+EbeneF (0,0,0,90 - Winkel_H,-180,5,0)
+hoehe := _EH_RZ
+Ebene0()
+VERXY (0,- Y1)
+EbeneF (0,0,0,winkel_H,0,7,0)
+VERXYEND()
+WZF (F_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+IF (C1=-1) & (Fraesen_H =-1)
+ZSTL (X1,0,Hoehe - Pos1,1973790,1,STL_Typ,7,0)
+IF Pos1_T>0
+;hinten links
+SP (X1,-70,Hoehe - Pos1_T,0,0,_ANF,0,0,0,7,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- (T + C_Tiefe),0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,T + C_Tiefe,0,0,10,2)
+EP (0,_ANF,0)
+END
+IF (Pos2_T > 0) & (Cla_2Hi)
+;hinten  links
+SP (X1,-70,Hoehe - Pos2_T,0,0,_ANF,0,0,0,7,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- (T + C_Tiefe),0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,T + C_Tiefe,0,0,10,2)
+EP (0,_ANF,0)
+END
+END
+;Hinten mitte
+IF (C2=-1) & (Fraesen_H = -1)
+ZSTL (X2,0,Hoehe - Pos1,1973790,1,STL_Typ,6,0)
+IF Pos1_T>0
+SP (X2,-70,Hoehe - Pos1_T,0,0,_ANF,0,0,0,6,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- (T + C_Tiefe),0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,T + C_Tiefe,0,0,10,2)
+EP (0,_ANF,0)
+END
+IF (Pos2_T > 0) & (Cla_2Hi)
+;hinten  links
+SP (X2 * -1,-70,Hoehe - Pos2_T,0,0,_ANF,0,0,0,6,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- (T + C_Tiefe),0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,T + C_Tiefe,0,0,10,2)
+EP (0,_ANF,0)
+END
+END
+;Hinten rechts
+IF (C3=-1) & (Fraesen_H = -1)
+ZSTL (X3,0,Hoehe - Pos1,1973790,1,STL_Typ,5,0)
+IF Pos1_T>0
+;hinten links
+SP (X3,-70,Hoehe - Pos1_T,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- (T + C_Tiefe),0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,T + C_Tiefe,0,0,10,2)
+EP (0,_ANF,0)
+END
+IF (Pos2_T > 0) & (Cla_2Hi)
+;hinten  links
+SP (X3,-70,Hoehe - Pos2_T,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- (T + C_Tiefe),0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,T + C_Tiefe,0,0,10,2)
+EP (0,_ANF,0)
+END
+END
+EbeneF (0,0,0,90 - Winkel_V,0,1,0)
+hoehe := _EH_RZ
+Ebene0()
+VERXY (0,Y4)
+EbeneF (0,0,0,winkel_V,-180,3,0)
+VERXYEND()
+;Vorne links
+IF (C4=-1) & (Fraesen_V =-1)
+ZSTL (X4,0,Hoehe - Pos1,1973790,1,STL_Typ,5,0)
+IF Pos1>0
+;Vorne links
+SP (X4,-70,Hoehe - Pos1,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- (T + C_Tiefe),0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,T + C_Tiefe,0,0,10,2)
+EP (0,_ANF,0)
+END
+IF (Pos2 > 0) & (Cla_2Hi)
+;Vorne  links
+SP (X4,-70,Hoehe - Pos2,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- (T + C_Tiefe),0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,T + C_Tiefe,0,0,10,2)
+EP (0,_ANF,0)
+END
+END
+IF (C5=-1) & (Fraesen_V =-1)
+ZSTL (X5 *-1,0,Hoehe - Pos1,1973790,1,STL_Typ,6,0)
+IF Pos1>0
+;Vorne mitte
+SP (X5 * -1,-70,Hoehe - Pos1,0,0,_ANF,0,0,0,6,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- (T + C_Tiefe),0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,T + C_Tiefe,0,0,10,2)
+EP (0,_ANF,0)
+END
+IF (Pos2 > 0) & (Cla_2Hi)
+;Vorne  mitte
+SP (X5 *-1,-70,Hoehe - Pos2,0,0,_ANF,0,0,0,6,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- (T + C_Tiefe),0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,T + C_Tiefe,0,0,10,2)
+EP (0,_ANF,0)
+END
+END
+IF (C6=-1) & (Fraesen_V =-1)
+ZSTL (X6,0,Hoehe - Pos1,1973790,1,STL_Typ,7,0)
+IF Pos1>0
+;Vorne rechts
+SP (X6,-70,Hoehe - Pos1,0,0,_ANF,0,0,0,7,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- (T + C_Tiefe),0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,T + C_Tiefe,0,0,10,2)
+EP (0,_ANF,0)
+END
+IF (Pos2 > 0) & (Cla_2Hi)
+;Vorne  rechts
+SP (X6,-70,Hoehe - Pos2,0,0,_ANF,0,0,0,7,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- (T + C_Tiefe),0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,T + C_Tiefe,0,0,10,2)
+EP (0,_ANF,0)
+END
+END
+Ebene0()

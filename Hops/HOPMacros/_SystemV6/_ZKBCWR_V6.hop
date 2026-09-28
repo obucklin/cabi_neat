@@ -1,0 +1,69 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_ZKBCWR_V6Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   SX := 0;*VAR*Startpunkt in X
+   SY := 0;*VAR*Startpunkt in Y
+   EX := 0;*VAR*Endpunkt in X
+   EY := 0;*VAR*Endpunkt in Y
+   R := 500;*VAR*Radius
+   Farbe := 0;*VAR*
+   MX := 0;Mitte in X errechnet
+   MY := 0;Mitte in Y errechnet
+   FehlerText := '';
+   Toleranz := 0.001;
+   esxy1 := 0;*VAR*
+   esxy2 := 3;*VAR*
+   Thickness := 0;*VAR*Linienbreite
+   ThicknessKind := 0;*VAR*Art der Linienbreite (0=wie früher, 1=Pixel, 2=Unit)
+START
+;**************************************************
+;*******  Zeichne Kreis mit R-Eingabe  *******
+;**************************************************
+transesxy (sx,sy,esxy1,0)
+transesxy (ex,ey,esxy2,0)
+Rohteil (2000,2000,19,0,0)
+;**************************************************
+;///////  Abstand zwischen End- und Startpunkt berechnen
+CALL _LZWIPU ( VAL X1:=SX,Y1:=SY,X2:=EX,Y2:=EY)
+;**************************************************
+;///////  Abstand zwischen End- und Startpunkt
+;///////  über eingegebenen Radius ist nicht konstruierbar
+IF abs(_LZWIPU)<Toleranz
+FehlerText := GetMessageText('9','Start und Endpunkt sind gleich  --  Vollkreis_nicht möglich !!')
+Fehlermeldung (Fehlertext)
+END
+;**************************************************
+;///////  Abstand zwischen End- und Startpunkt zu gross
+IF _LZWIPU > (2*abs(R))
+FehlerText := GetMessageText('10','Nicht konstruierbar  --  Radius zu klein !!')
+Fehlermeldung (Fehlertext)
+END
+;**************************************************
+HGNeu()
+;**************************************************
+;///////  Abstand zwischen End- und Startpunkt exakt 2 mal Radius
+IF abs(_LZWIPU-(2*abs(R)))<Toleranz
+HKreismpr (SX,SY,abs(R))
+HKreismpr (EX,EY,abs(R))
+MX := _SPX1
+MY := _SPY1
+END
+;**************************************************
+;///////  Abstand zwischen End- und Startpunkt exakt 2 mal Radius
+IF _LZWIPU < (2*abs(R))
+HKreismpr (SX,SY,abs(R))
+HKreismpr (EX,EY,abs(R))
+IF R>0
+MX := _SPX1
+MY := _SPY1
+ELSE
+MX := _SPX2
+MY := _SPY2
+END
+END
+;**************************************************
+HGNeuEnd()
+;**************************************************
+ZKBCW (MX,MY,SX,SY,EX,EY,Farbe,0,0,0,Thickness,ThicknessKind)

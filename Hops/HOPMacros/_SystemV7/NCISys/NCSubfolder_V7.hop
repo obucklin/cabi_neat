@@ -1,0 +1,6 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=1
+VARS
+   Subfolder := '';*VAR*
+START
+nciext (-100098,'NCISys',0,0,0,Subfolder)

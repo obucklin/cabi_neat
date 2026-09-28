@@ -1,0 +1,21 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=ShowFormProfileDialog
+;AUTOSCRIPTSTART=0
+VARS
+   Contour := '';*VAR*
+   Profile := '';*VAR*
+   KSP := 0;*VAR*Contour Start
+   KEP := 0;*VAR*Contour End
+   fPart := 0;*VAR*applies for Finishedpart
+   rPart := 0;*VAR*applies for Rawpart
+START
+;-
+;- direkt cnc-systeme gmbh
+;- Mit diesem Makro lassen sich Profile ueber Konturzüge hinweg definieren
+;-
+;-
+Fertigteil (800,100,100,0,0,0,0,0,'',0,0,0)
+;-
+;-
+DefineProfile (Contour,Profile,KSP,KEP,fPart,rPart)

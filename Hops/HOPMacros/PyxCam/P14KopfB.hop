@@ -1,0 +1,30 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.5.3.13[Hops.exe]
+;BILD=P14KOPFB.WMF
+;INFO=B_XP600
+;WZGV=1000024480
+;WZGVCONFIG=
+;MASCHINE=B_MC_V7
+;NCNAME=P14Kopf
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   centerx := 0;*VAR*
+   centery := 0;*VAR*
+   angle := 0;*VAR*
+   length := 0;*VAR*
+   width := 0;*VAR*
+START
+;MAKRO
+Fertigteil (900,400,19,0,0,0,0,0,'',0,0,0,0)
+CALL Clamex_Scheibe_HH ( VAL PX:=centerx,PY:=centery,PZ:=_RZ/2,DW:=angle,KW:=90,FRAESEN:=1,DEPTH:=-14,SEITL_ZUST:=1.4,BOHREN:=1,B_ABST:=7.5,B_ABST_KANTE:=9.5,B_D:=6,WKZ_B:=150,WKZ_B_H:=150,WKZ_B_S:=150,WKZ_F:=151,WKZ_F_H:=151,WKZ_F_S:=151)
+deletecontour ('',1)

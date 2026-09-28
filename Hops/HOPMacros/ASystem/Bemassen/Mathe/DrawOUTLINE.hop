@@ -1,0 +1,48 @@
+;MAKROTYP=1
+;BILD=
+;INFO=
+;WZGV=Demo
+;MASCHINE=Simu
+;NCNAME=DrawOUTLINE
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   KName := '';*VAR*
+   DR := 0;Elementart  1=Linie  2=G2  3=G3
+   SX := 0;
+   SY := 0;
+   EX := 0;
+   EY := 0;
+   MX := 0;
+   MY := 0;
+   Anzahl := 0;Anzahl Elemente
+   i := 0;
+START
+;******************************************************
+;********   Direkt cnc-systeme GmbH   ®  *******
+;******************************************************
+;******** FKM - Frieskonstruktionsmodul ********
+;******************************************************
+Anzahl := GetKE_Anzahl(KName)
+FOR i := 1 TO Anzahl STEP 1
+DR := GetKE_Typ(KName,i)
+SX := getkp_x(KName,i-1)
+SY := getkp_y(KName,i-1)
+EX := getkp_x(KName,i)
+EY := getkp_y(KName,i)
+MX := getke_mx(KName,i)
+MY := getke_my(KName,i)
+IF DR=1
+ZLinie (SX,SY,EX,EY,0)
+END
+IF DR=2
+ZKBCW (MX,MY,SX,SY,EX,EY,0)
+END
+IF DR=3
+ZKBCCW (MX,MY,SX,SY,EX,EY,0)
+END
+END

@@ -1,0 +1,17 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_DrehenBBStart_V5Dialog
+VARS
+   DX := 0;*VAR*Drehpunkt in X
+   DY := 0;*VAR*Drehpunkt in Y
+   Dw := 0;*VAR*Drehwinkel
+   _dx := 0;
+   _dy := 0;
+   _drw := 0;
+   esxy1 := 9;*VAR*
+START
+transesxy (dx,dy,esxy1,1)
+DrehenBB()
+_dx := dx
+_dy := dy
+_drw := dw

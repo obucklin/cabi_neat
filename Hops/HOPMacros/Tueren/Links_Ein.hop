@@ -1,0 +1,52 @@
+;MAKROTYP=1
+;BILD=Links_Ein.wmf
+;INFO=
+;WZGV=STANDARD
+;MASCHINE=HOLZHER
+;NCNAME=Links_Einfahren
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA.Dll
+;DIALOGPROC=ShowFLinksEinDialog
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2080mm;Dimension X
+   DY := 980mm;Dimension Y
+   DZ := 45mm;Dimension Z
+   L_Wkz :=114;*VAR*Linker Fräser
+   L_Tiefe :=42.00;*VAR*Tiefe
+   Feld :=0;*VAR*Feldbelegung 0=A/1=D
+   V_Ein := _VE ;*VAR*Eintauchvorschub
+   V := _V ;*VAR*Vorschub
+   V_Aus := _VA ;*VAR*Austauch Vorschub
+   V_Rot :=_SD ;*VAR*Drehzahl
+START
+;Holzher Schweiz Ag (c) B. Achermann
+;Einfahren mit linkslaufendem Fraeser
+WZF (L_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+;Feld D
+IF _Job_MirX=1
+SP (0,-30,-L_Tiefe,2,0,_ANF,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,20,0,20,7,2)
+G01 (-20,50,0,0,7,2)
+EP (0,_ANF,0)
+SP (0,-30,-L_Tiefe,2,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,20,0,20,3,2)
+G01 (-20,50,0,0,3,2)
+EP (0,_ANF,0)
+ELSE
+;Feld A
+SP (0,-30,-L_Tiefe,1,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,20,0,20,1,2)
+G01 (-20,50,0,0,1,2)
+EP (0,_ANF,0)
+SP (0,-30,-L_Tiefe,1,0,_ANF,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,20,0,20,5,2)
+G01 (-20,50,0,0,5,2)
+EP (0,_ANF,0)
+;Ende Einfahren mit Linkslaufendem Fraeser
+END

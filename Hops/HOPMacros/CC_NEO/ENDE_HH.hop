@@ -1,0 +1,57 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.6.8.49[Hops.exe]
+;BILD=ENDE_HH.WMF
+;INFO=
+;WZGV=7225K_565
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=ENDE_HH
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   ParkMode := 0;
+   ParkPosX := 0;
+   ParkPosY := 0;
+   toolID := 0;Lokale ToolID
+   _wh := 0;
+   _wv := 0;
+START
+;HOLZHER GmbH
+;Copyright 15.02.2021
+;Version 15.02.2021 (Freigabe HH)
+;---------Änderungen hier reinschreiben: ----------***
+;Version 15.02.2021
+IF _pVar_NoProcessV=1
+;Prozessvariable - Keine vertikale Bearbeitungen aktiv
+ELSE
+_pVar_PCount := _pVar_PCount+1
+END
+;Spiegeln, Drehen beenden
+SPIEGELNEND()
+;VCNC
+IF _MaschinenTYP=2
+;keine Drehung ENDE
+ELSE
+;CNC
+;Ende Drehung
+CALL _DrehenBBEnde ()
+END
+;-----------------------------------------------------------
+CALL HH_Park ( VAL PARK:=ParkMode,X:=ParkPosX,Y:=ParkPosY)
+IF _pVar_PreCutID>0
+ZText ('ProcessCount: ' + INTTOSTR(_pVar_PCount),150,-20,10,0,1,8421376,'Arial',0,0,0,0,5)
+ELSE
+END
+IF _pVar_PCount=0
+;Fehlermeldung ('No Process activ')
+ELSE
+END

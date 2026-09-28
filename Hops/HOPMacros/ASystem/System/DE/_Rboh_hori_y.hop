@@ -1,0 +1,54 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=Rbohx
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=_Rboh_hori_y.wmf
+VARS
+   Ebene := 2;*VAR*Ebene  2  oder  4
+   SPX := 0;*VAR*Verschiebung zur Aussenkante
+   SPY := 64;*VAR*Startwert in y
+   SPZ := _RZ/2;*VAR*Position in Z von Auflagefläche
+   Raster := 32;*VAR*Rasterwerte
+   EPY := _RY-64;*VAR*EndPunkt (y)
+   T := -13;*VAR*Bohrtiefe
+   D := 5;*VAR*Bohrdurchmesser
+   TL := 0;Tieflochflag
+   DW := 0;Drehwinkel
+START
+;direkt cnc systeme NCHOPS Version 4
+;horiz. Lochreihe in Y /MD/02.01
+;Rohteil (200,400,30,0,0)
+;EINGABE
+IF T>0
+T := -T
+END
+IF ebene=2
+SPY := SPY
+DW := 0
+;Ebene2()
+END
+IF ebene=4
+SPX := _RX+SPX
+DW := 180
+;Ebene4()
+END
+IF (ebene<>2)&(ebene<>4)
+Fehlermeldung (EBENE_FALSCH)
+END
+IF EPY > SPY
+WHILE SPY <= EPY
+HorzB (SPX,SPY,SPZ,D,T,0,0,DW)
+SPY := SPY + Raster
+END
+ELSE
+WHILE SPY >= EPY
+HorzB (SPX,SPY,SPZ,D,T,0,0,DW)
+SPY := SPY - Raster
+END
+END
+Ebene0()
+

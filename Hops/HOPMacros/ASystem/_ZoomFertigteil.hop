@@ -1,0 +1,16 @@
+;MAKROTYP=1
+;BILD=
+;INFO=Zoom auf Fertigteil einschalten
+;WZGV=demo
+;MASCHINE=simu
+;NCNAME=ZoomFertigteil
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+
+START
+_ZoomAll := 0

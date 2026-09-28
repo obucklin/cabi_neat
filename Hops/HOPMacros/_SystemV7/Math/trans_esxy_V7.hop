@@ -1,0 +1,13 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   xx := ;*VAR**REF*
+   yy := ;*VAR**REF*
+   nr := 1;*VAR*
+START
+xx := 0
+yy := 0
+transesxy (xx,yy,nr,0)
+yy := yy
+xx := xx

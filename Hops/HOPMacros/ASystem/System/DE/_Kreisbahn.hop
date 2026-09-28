@@ -1,0 +1,45 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCName
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=KreisbahnWMF.bmp
+VARS
+   X_Mitte := _RX/2;*VAR*Mittelpunkt in X
+   Y_Mitte := _RY/2;*VAR*Mittelpunkt in Y
+   Z := 0;*VAR*Frästiefe
+   Radius := 50;*VAR*Radius der Kreisbahn
+   Radiuskorrektur := 1;*VAR*0=Mitte,1=Ausen,2=Innen
+   AB := 2;*VAR*0 -> keine An/Abfahrbewegung, <> 0 -> An/Abfahrbewegung
+   KreisEndpunktY := 0;
+   ÜberfahrKreisbogen := 2;
+   alpha := 10;Überfahrwinkel
+   YY := 0;Endpunkt Überfahren
+   XX := 0;Endpunkt Überfahren
+START
+;direkt cnc systeme NCHOPS Version 3.4
+;Kreisbahn V 3.4
+;----- Berechnung Schnittpunkt für Überfahren ----
+;XX := cos(alpha)*Radius
+;YY := (sin(alpha)*Radius)*(-1)
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+;Unterschiedliche Korrektur
+;_SDAkt := -_SDAKt
+IF (Radius=_WZR)&(Radiuskorrektur=2)
+Bohrung (X_Mitte,Y_Mitte,_WZD,Z,0,0,0)
+ELSE
+IF (_WZR>Radius)&(Radiuskorrektur=2)
+ZKBCW (X_Mitte,Y_Mitte,X_Mitte-_WZR,Y_Mitte,X_Mitte-_WZR,Y_Mitte,255)
+Hinweismeldung (Kreisradius_zu_klein_für_dieses_Werkzeug)
+ELSE
+IF _SDAkt>0
+CALL _KreistascheCW (VAL X_Mitte:=X_Mitte,Y_Mitte:=Y_Mitte,Z:=Z,Radius:=Radius,Radiuskorrektur:=Radiuskorrektur,AB:=AB)
+ELSE
+CALL _KreistascheCCW (VAL X_Mitte:=X_Mitte,Y_Mitte:=Y_Mitte,Z:=Z,Radius:=Radius,Radiuskorrektur:=RadiusKorrektur,AB:=AB)
+END
+END
+END
+

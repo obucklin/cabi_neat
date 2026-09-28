@@ -1,0 +1,91 @@
+;MAKROTYP=1
+;BILD=Ext_K_Schru.wmf
+;INFO=1asdfxHKx1x2xL
+;WZGV=7123K_121
+;MASCHINE=HOLZHER
+;NCNAME=Ext_K_Schru
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=50.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   KN := '';*VAR*
+   Ex := 0;*VAR*
+   Ey := 0;*VAR*
+   Ez := 0;*VAR*
+   DW := 0;*VAR*
+   KW := 90;*VAR*
+   Tiefe := -100;*VAR*
+   SchruStep := 5;*VAR*
+   Bogenlänge := 0;
+   LastPosV := 0;
+   AktPosV := 0;
+   LastPosH := 0;
+   AktPosH := 0;
+   Richtung := 1;
+START
+;Fertigteil (1000,2000,19,0,0,0,0,0,'',0,0,0)
+;WZF (10003,_VE,_V,_VA,_SD,_ANF,'2')
+;KB (KN,'',0,0,0,'',0,0)
+;CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=0,EZ:=0,R:=5000,EI:='',ESXY:=3,ESD:=0)
+EbeneF (Ex,Ey,Ez,KW,DW,0,0)
+;KSP ('???','???',Tiefe,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,2,0,0,0)
+;KonturFraesen (KN,'KSP','KEP',0,0,0,0,0,0,0,0)
+;EP (0,_ANF,0)
+KSP ('???','???',Tiefe,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0)
+Bogenlänge := GetKE_Laenge(KN,1)
+IF SchruStep>Bogenlänge
+SchruStep := Bogenlänge
+END
+LastPosV := Bogenlänge/2
+AktPosV := Bogenlänge/2+SchruStep/10
+KonturFraesen (KN,'KSP','KEP',0,0,0,0,LastPosV,0,-(Bogenlänge-AktPosV),0)
+LastPosV := AktPosV
+LastPosH := Bogenlänge/2
+FOR AktPosV := Bogenlänge/2+SchruStep TO Bogenlänge STEP SchruStep
+IF Richtung=0
+G01 (0,0,0,0,10,0)
+ELSE
+G01 (0,0,Tiefe,0,10,0)
+END
+Richtung := 1-Richtung
+KonturFraesen (KN,'KSP','KEP',0,0,0,0,LastPosV,0,-(Bogenlänge-AktPosV),0)
+IF Richtung=0
+G01 (0,0,0,0,10,0)
+ELSE
+G01 (0,0,Tiefe,0,10,0)
+END
+Richtung := 1-Richtung
+LastPosH := (Bogenlänge-AktPosV)
+AktPosH := -(Bogenlänge-AktPosV)
+KonturFraesen (KN,'KEP','KSP',0,0,0,0,LastPosH,0,AktPosH,0)
+LastPosV := LastPosH
+END
+IF Bogenlänge>LastPosV
+IF Richtung=0
+G01 (0,0,0,0,10,0)
+ELSE
+G01 (0,0,Tiefe,0,10,0)
+END
+Richtung := 1-Richtung
+KonturFraesen (KN,'KSP','KEP',0,0,0,0,LastPosV,0,0,0)
+IF Richtung=0
+G01 (0,0,0,0,10,0)
+ELSE
+G01 (0,0,Tiefe,0,10,0)
+END
+Richtung := 1-Richtung
+KonturFraesen (KN,'KEP','KSP',0,0,0,0,0,0,0,0)
+END
+IF Richtung=0
+G01 (0,0,0,0,10,0)
+ELSE
+G01 (0,0,Tiefe,0,10,0)
+END
+EP (0,_ANF,0)
+Ebene0()

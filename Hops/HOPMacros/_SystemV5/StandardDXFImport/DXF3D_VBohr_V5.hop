@@ -1,0 +1,13 @@
+;MAKROTYP=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+P1 := 0;*VAR*x-Position
+P2 := 0;*VAR*y-Position
+P3 := 0;*VAR*z-Position
+P4 := 0;*VAR*Durchmesser
+P5 := '';*VAR*Layer
+START
+WZB (21,_VE,_V,_VA,_SD,_ANF)
+Bohrung (P1,P2,P3,-10,10,0,0)

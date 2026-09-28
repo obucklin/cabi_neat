@@ -1,0 +1,36 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   DX := 10;
+   DY := 10;
+   DZ := 19;
+   Tool := 38;WZ
+   Z := -1;*VAR*
+   Faktor := 2;*VAR*1=10mm
+START
+Fertigteil(DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;$F$Big Letters
+;WZF(Tool,_VE,_V,_VA,_SD,_ANF,'')
+KB ('0','',0,5.0359*Faktor,0,'',0,0)
+KG02M ('',0.2406*Faktor,7.3953*Faktor,_Z,10.0148*Faktor,5.2058*Faktor,'',0,0,0)
+KG02M ('',0.7399*Faktor,8.6421*Faktor,_Z,4.7659*Faktor,6.3063*Faktor,'',0,0,0)
+KG02M ('',1.5986*Faktor,9.5651*Faktor,_Z,3.2297*Faktor,7.1868*Faktor,'',0,0,0)
+KG02M ('',3.1865*Faktor,10.0008*Faktor,_Z,3.0835*Faktor,7.2648*Faktor,'',0,0,0)
+KG02M ('',4.7759*Faktor,9.5644*Faktor,_Z,3.2899*Faktor,7.2648*Faktor,'',0,0,0)
+KG02M ('',5.6341*Faktor,8.6410*Faktor,_Z,3.1437*Faktor,7.1868*Faktor,'',0,0,0)
+KG02M ('',6.1329*Faktor,7.3940*Faktor,_Z,1.6071*Faktor,6.3070*Faktor,'',0,0,0)
+KG02M ('',6.3713*Faktor,4.9679*Faktor,_Z,-3.6423*Faktor,5.2088*Faktor,'',0,0,0)
+KG02M ('',6.1322*Faktor,2.6098*Faktor,_Z,-3.6437*Faktor,4.7922*Faktor,'',0,0,0)
+KG02M ('',5.6338*Faktor,1.3626*Faktor,_Z,1.6061*Faktor,3.6955*Faktor,'',0,0,0)
+KG02M ('',4.7758*Faktor,0.4390*Faktor,_Z,3.1429*Faktor,2.8161*Faktor,'',0,0,0)
+KG02M ('',3.1882*Faktor,0.0021*Faktor,_Z,3.2891*Faktor,2.7382*Faktor,'',0,0,0)
+KG02M ('',1.5984*Faktor,0.4374*Faktor,_Z,3.0828*Faktor,2.7381*Faktor,'',0,0,0)
+KG02M ('',0.7395*Faktor,1.3601*Faktor,_Z,3.2289*Faktor,2.8161*Faktor,'',0,0,0)
+KG02M ('',0.2398*Faktor,2.6068*Faktor,_Z,4.7649*Faktor,3.6971*Faktor,'',0,0,0)
+KG02M ('',0,5.0359*Faktor,_Z,10.0135*Faktor,4.7991*Faktor,'',0,0,0)
+KSP('???','???',Z,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen('0','KSP','KEP',0,0,0,0,0,0,0,0)
+EP(0,_ANF,0)
+deletecontour ('0',0)

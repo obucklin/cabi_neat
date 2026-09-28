@@ -1,0 +1,52 @@
+;MAKROTYP=0
+;INSTVERSION=6.4.9.0
+;EXEVERSION=6.6.2.213[Hops.exe]
+;BILD=falz3dg.wmf
+;INFO=
+;WZGV=7225K_121
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=nut3dg
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   nutsx := -10;*VAR*
+   nutex := 500;*VAR*
+   nuty := 100;*VAR*
+   nutz := 10;*VAR*
+   nutd := 5;*VAR*
+   NutOffset := 0;
+   toolID := 0;
+START
+;HOLZHER - Reich Spezialmaschinen GmbH
+;Copyright 2006
+;2006-08-22 - CC-Makros V1.0 KRI
+;3DG-Falz
+IF _pVar_NoProcessV=1
+;Prozessvariable - Keine vertikale Bearbeitungen aktiv
+ELSE
+_pVar_PCount := _pVar_PCount+1
+IF nutd<10
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetStandardSawID')
+;Rohteil (555,555,20,0,0)
+WZS (toolID,_VE,_V,_VA,_SD,_ANF)
+;Berechnung Nutoffset bezogen auf Sägedurchmesser
+;Nutposition X bezogen auf Nuttiefe
+NutOffset := sqrt(sqr(_WZR)-sqr(_WZR-nutz))
+CALL _Nuten_X ( VAL NB:=nutd,NT:=nutz,EBENE:=0,ARAND:=_ry-nuty-nutd,ALINKS:=nutsx-NutOffset,ARECHTS:=_rx-nutex-NutOffset,RK:=1)
+ELSE
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetStandardRouterID')
+WZF (toolID,_VE,_V,_VA,_SD,_ANF)
+SP (nutsx,nuty,-nutz,1,1,_ANF,0,0,0)
+G01 (nutex,nuty,-nutz,0)
+EP (1,_ANF,0)
+END
+END

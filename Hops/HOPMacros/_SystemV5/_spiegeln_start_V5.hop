@@ -1,0 +1,29 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_spiegeln_start_V5Dialog
+VARS
+   spiegeln := 1;*VAR*Schaletr für Spiegeln
+   Achse := 0;*VAR*X-Achse=0   Y-Achse=1
+   Spiegel_variable := 0;*VAR*
+START
+;direkt cnc systeme NCHOPS Version 3.4.5
+;Spiegeln über X und Y-Achse
+;--------------------------------------------------------------
+;---- Auswerten der spiegel-Variable...
+IF spiegeln=0
+_spiegeln := spiegeln
+END
+IF spiegeln=1
+_spiegeln := spiegeln
+END
+IF spiegeln=2
+_spiegeln := Spiegel_variable
+END
+;--------------------------------------------------------------
+;--- Auswerten der Spiegelachse...
+IF Achse=0
+SPROHY()
+ELSE
+SPROHX()
+END
+

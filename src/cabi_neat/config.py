@@ -121,21 +121,42 @@ BACK_JOINTS = ("rabbet", "butt")
 INTERIOR_JOINTS = ("mortise_tenon", "clamex_p14", "stopped_dado", "butt")
 CARCASS_JOINTS = ("butt", "clamex_p14")
 # the dimensions of door hinges that can be set in CabinetConfig.hinges (see cabi_neat.joints.CupHingeJoint)
-HINGE_DIMENSIONS = (
-    "hinge_count",
-    "end_distance",
-    "cup_diameter",
-    "cup_depth",
-    "cup_edge_distance",
-    "door_hole_spacing",
-    "door_hole_offset",
-    "door_hole_diameter",
-    "door_hole_depth",
-    "plate_offset",
-    "plate_hole_spacing",
-    "plate_hole_diameter",
-    "plate_hole_depth",
-)
+HINGE_DEFAULTS = {
+    "hinge_count": 4,
+    "end_distance": 100.0,
+    "cup_diameter": 35.0,
+    "cup_depth": 13.0,
+    "cup_edge_distance": 5.0,
+    "door_hole_spacing": 48.0,
+    "door_hole_offset": 6.0,
+    "door_hole_diameter": 3.0,
+    "door_hole_depth": 11.0,
+    "plate_offset": 37.0,
+    "plate_hole_spacing": 32.0,
+    "plate_hole_diameter": 5.0,
+    "plate_hole_depth": 12.0,
+}
+HINGE_DIMENSIONS = tuple(HINGE_DEFAULTS)
+
+
+def hinge_count_for(height):
+    """Number of hinges for a door of ``height``, following the usual cup hinge guideline."""
+    for limit, count in ((900, 2), (1600, 3), (2000, 4)):
+        if height <= limit:
+            return count
+    return 5
+
+
+def hinge_positions(length, hinge_count=HINGE_DEFAULTS["hinge_count"], end_distance=HINGE_DEFAULTS["end_distance"], **_):
+    """Positions of the hinges' pots along a door edge of ``length``: ``end_distance`` from both ends, the rest evenly
+    spaced. ``hinge_count=None`` picks the count from the length. Used by both the layout and the hinge joint."""
+    count = hinge_count or hinge_count_for(length)
+    end = min(end_distance, length / 4.0)
+    if count == 1:
+        return [length / 2.0]
+    return [end + i * (length - 2 * end) / (count - 1) for i in range(count)]
+
+
 # the parameters each interior joint type takes, as passed to its joint class
 JOINT_PARAMETERS = {
     "mortise_tenon": ("depth", "tenon_count"),

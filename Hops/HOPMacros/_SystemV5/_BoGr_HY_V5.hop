@@ -1,0 +1,134 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_BoGr_HY_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   BIY := 64;*VAR*Bohrung1 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIY := 64+37;*VAR*Bohrung2 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIIY := 0;*VAR*Bohrung3 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIIIY := 0;*VAR*Bohrung4 (Wert=0-> Bohrung wird nicht abgesetzt)
+   Z := 0;*VAR*Z-Wert von der Unterkante
+   Spiegeln := 0;*VAR*1=>gespiegelt
+   T := -30;*VAR*Bohrtiefe
+   D := 8mm;*VAR*Bohrdurchmesser
+   Ebene := 0;*VAR*Ebene 2 oder Ebene 4
+   TL := 0;Tieflochflag
+   XP := 0;Y Position
+   DW := 90;Drehwinkel
+   Inkrement := 0;*VAR*Absolut oder Inkremental
+   B1 := 0;Bohrung 1
+   B2 := 0;Bohrung 2
+   B3 := 0;Bohrung 3
+   B4 := 0;Bohrung 4
+   esy := 3;*VAR*
+   esz := 1;*VAR*
+   use2 := 1;*VAR*
+   use3 := 0;*VAR*
+   use4 := 0;*VAR*
+   DummyX := 0;
+START
+;direkt cnc systeme NCHOPS Version 4
+;Stirnzeitenbohrung in Y
+Transesz (Z,esz)
+IF T>0
+T := -T
+END
+;*****************  Auswerten Ebenen zwecks Dialog 0/1
+IF ebene=0
+ebene := 2
+ELSE
+ebene := 4
+END
+;*****************************************
+IF (Ebene<>2)&(Ebene<>4)
+Fehlermeldung (GetMessageText('2','Falsche Ebene gewählt'))
+END
+IF Ebene=2
+XP := 0
+DW := 0
+END
+IF Ebene=4
+XP := _RX
+DW := 180
+END
+IF Inkrement=0
+transesxy (DummyX,BIY,esy,1)
+transesxy (DummyX,BIIY,esy,1)
+transesxy (DummyX,BIIIY,esy,1)
+transesxy (DummyX,BIIIIY,esy,1)
+;IF (BIY<>0)
+HorzB (XP,BIY,Z,D,T,TL,0,DW)
+;END
+;IF (BIIY<>0)
+IF (Use2<>0)
+HorzB (XP,BIIY,Z,D,T,TL,0,DW)
+END
+;IF (BIIIY<>0)
+IF (Use3<>0)
+HorzB (XP,BIIIY,Z,D,T,TL,0,DW)
+END
+;IF (BIIIIY<>0)
+IF (Use4<>0)
+HorzB (XP,BIIIIY,Z,D,T,TL,0,DW)
+END
+;Gespiegelte Bohrungen
+IF Spiegeln <> 0
+;IF (BIY<>_RY/2)&(BIY<>0)
+HorzB (XP,_RY-BIY,Z,D,T,TL,0,DW)
+;END
+;IF (BIIY<>_RY/2)&(BIIY<>0)
+IF (Use2<>0)
+HorzB (XP,_RY-BIIY,Z,D,T,TL,0,DW)
+END
+;IF (BIIIY<>_RY/2)&(BIIIY<>0)
+IF (Use3<>0)
+HorzB (XP,_RY-BIIIY,Z,D,T,TL,0,DW)
+END
+;IF (BIIIIY<>_RY/2)&(BIIIIY<>0)
+IF (Use4<>0)
+HorzB (XP,_RY-BIIIIY,Z,D,T,TL,0,DW)
+END
+END
+ELSE
+B1 := BIY
+B2 := BIY+BIIY
+B3 := BIY+BIIY+BIIIY
+B4 := BIY+BIIY+BIIIY+BIIIIY
+transesxy (DummyX,B1,esy,1)
+transesxy (DummyX,B2,esy,1)
+transesxy (DummyX,B3,esy,1)
+transesxy (DummyX,B4,esy,1)
+;IF (BIY<>0)
+HorzB (XP,B1,Z,D,T,TL,0,DW)
+;END
+;IF (BIIY<>0)
+IF (Use2<>0)
+HorzB (XP,B2,Z,D,T,TL,0,DW)
+END
+;IF (BIIIY<>0)
+IF (Use3<>0)
+HorzB (XP,B3,Z,D,T,TL,0,DW)
+END
+;IF (BIIIIY<>0)
+IF (Use4<>0)
+HorzB (XP,B4,Z,D,T,TL,0,DW)
+END
+;Gespiegelte Bohrungen
+IF Spiegeln <> 0
+;IF (BIY<>_RY/2)&(BIY<>0)
+HorzB (XP,_RY-B1,Z,D,T,TL,0,DW)
+;END
+;IF (BIIY<>_RY/2)&(BIIY<>0)
+IF (Use2<>0)
+HorzB (XP,_RY-B2,Z,D,T,TL,0,DW)
+END
+;IF (BIIIY<>_RY/2)&(BIIIY<>0)
+IF (Use3<>0)
+HorzB (XP,_RY-B3,Z,D,T,TL,0,DW)
+END
+;IF (BIIIIY<>_RY/2)&(BIIIIY<>0)
+IF (Use4<>0)
+HorzB (XP,_RY-B4,Z,D,T,TL,0,DW)
+END
+END
+END

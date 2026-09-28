@@ -1,0 +1,58 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   KN := '';*VAR*Konturnamen
+   Tiefe := -10;*VAR*Tiefe
+   BArt := 0;*VAR*
+   Mode := 0;*VAR*
+   Para1 := 0;*VAR*
+   Para2 := 0;*VAR*
+   Para3 := 0;*VAR*
+   LastCall := 0;*VAR*
+   EleAnz := 0;Anzahl Elemente
+   i := 0;Zähler
+   EleLength := 0;Länge des Elements
+   Startelement := 0;Start Element
+START
+;------------------------------------------------------------------------
+;DIREKT CNC-SYSTEME : NC-HOPS Version 5.x
+;- Taschen abarbeiten
+;------------------------------------------------------------------------
+;--
+;-- Längstes Element für Anfahrt suchen...
+;--
+EleAnz := GETKE_ANZAHL(KN)
+FOR i := 1 TO EleAnz STEP 1
+IF EleLength < (GetKE_Laenge(KN,i))
+EleLength := GetKE_Laenge(KN,i)
+Startelement := i
+END
+END
+;--
+IF Mode=1
+KSP ('???','???',Tiefe,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen (KN,Startelement,Startelement-1,0,0,0,0,-50,1,50,1)
+;KonturFraesen (KN,'KSP','KEP',0,0,0,0,50,1,50,1)
+ELSE
+IF Mode=2
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,Bart,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen (KN,Startelement,Startelement-1,0,0,0,0,-50,1,50,1)
+;KonturFraesen (KN,'KSP','KEP',0,0,0,0,50,1,50,1)
+ELSE
+IF Mode=0
+KSP ('???','???',Tiefe,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen (KN,Startelement,Startelement-1,0,0,0,0,-50,1,50,1)
+;KonturFraesen (KN,'KSP','KEP',0,0,0,0,0,0,0,0)
+ELSE
+Fehlermeldung ('Not suported')
+END
+END
+END
+EP (0,_ANF,0)
+IF LastCall
+ELSE
+;Bearebitungen kleben
+Call GLUEPROCESS_V7 ()
+END

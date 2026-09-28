@@ -1,0 +1,193 @@
+;MAKROTYP=1
+;INSTVERSION=6.4.4.2
+;EXEVERSION=6.6.2.207[Hops.exe]
+;BILD=Clamex_Par_12.wmf
+;INFO=
+;WZGV=7225K_105
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Clamex_Par_12
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   Winkel := 0;*VAR*
+   Pos1 := 0;*VAR**REF*
+   Pos2 := 0;*VAR**REF*
+   Dicke := 19;*VAR*Plattendicke
+START
+Fertigteil (1000,1000,19.00,0,0,0,0,0,'',0,0,0)
+;Pos1 = 1 Clamex
+;Pos2 = 2 Clamex
+;Wert 0 = kein Clamex
+;Gehrung für 15 Platte
+IF (Dicke >= 15) & (Dicke <16)
+IF (Winkel >= 15) &  (Winkel <= 70)
+Pos1 := 0
+Pos2 := 0
+END
+IF (Winkel >70) &  (Winkel < 90)
+Pos1 := 0
+Pos2 := 0
+END
+IF Winkel =90
+Pos1 := 7.5
+Pos2 := 0
+END
+END
+;Gehrung für 16 Platte
+IF (Dicke >= 16) & (Dicke <18)
+IF (Winkel >= 15) &  (Winkel <= 60)
+Pos1 :=0
+Pos2 := 0
+END
+IF (Winkel > 60) &  (Winkel <= 70)
+Pos1 := 0
+Pos2 := 0
+END
+IF (Winkel > 70) &  (Winkel <= 90)
+Pos1 := 7
+Pos2 := 0
+END
+IF Winkel =90
+Pos1 := 8
+Pos2 := 0
+END
+END
+;Gehrung für 18 Platte
+IF (Dicke >= 18) & (Dicke <19)
+IF (Winkel >= 15) & (Winkel <= 45)
+Pos1 := 6
+Pos2 := 0
+END
+IF (Winkel > 45) &  (Winkel <= 60)
+Pos1 := 7
+Pos2 := 0
+END
+IF (Winkel > 60) &  (Winkel <= 70)
+Pos1 := 7
+Pos2 := 0
+END
+IF (Winkel > 70) &  (Winkel <= 90)
+Pos1 := 10
+Pos2 := 0
+END
+IF Winkel =90
+Pos1 := 9
+Pos2 := 0
+END
+END
+;Gehrung für 19 Platte
+IF (Dicke >= 19) & (Dicke <22)
+IF (Winkel >= 15)  & (Winkel <= 70)
+Pos1 := 7
+Pos2 := 0
+END
+IF (Winkel > 70) &  (Winkel <= 90)
+Pos1 := 10
+Pos2 := 0
+END
+IF Winkel =90
+Pos1 := 9.5
+Pos2 := 0
+END
+END
+;Gehrung für 22 Platte
+IF (Dicke >= 22) & (Dicke <25)
+IF (Winkel >= 15)  & (Winkel < 20)
+Pos1 := 21
+Pos2 := 0
+END
+IF (Winkel >= 20)  & (Winkel < 30)
+Pos1 := 15
+Pos2 := 0
+END
+IF (Winkel >= 30)  & (Winkel = 90)
+Pos1 := 11
+Pos2 := 0
+END
+END
+;Gehrung für 25 Platte
+IF (Dicke >= 25) & (Dicke < 30)
+IF (Winkel >= 15)  &  (Winkel < 20)
+Pos1 := 7
+Pos2 := 32
+END
+IF (Winkel >= 20)  &  (Winkel < 30)
+Pos1 := 25
+Pos2 := 0
+END
+IF (Winkel >= 30)  &  (Winkel < 45)
+Pos1 := 17
+Pos2 := 0
+END
+IF (Winkel >= 45)  &  (Winkel < 90)
+Pos1 := 14
+Pos2 := 0
+END
+IF Winkel = 90
+Pos1 := 12.5
+Pos2 := 0
+END
+END
+;Gehrung für 30 Platte
+IF (Dicke >= 30) & (Dicke < 40)
+IF (Winkel >= 15)  &  (Winkel < 20)
+Pos1 := 10
+Pos2 := 50
+END
+IF (Winkel >= 20)  &  (Winkel < 30)
+Pos1 := 7
+Pos2 := 24
+END
+IF (Winkel >= 30)  &  (Winkel < 45)
+Pos1 := 15
+Pos2 := 0
+END
+IF (Winkel >= 45)  &  (Winkel < 60)
+Pos1 := 20
+Pos2 := 0
+END
+IF (Winkel >= 60) & (Winkel <= 90)
+Pos1 := 17
+Pos2 := 0
+END
+IF Winkel = 90
+Pos1 := 15.00
+Pos2 := 0
+END
+END
+;Gehrung für 40 Platte
+IF Dicke >= 40
+IF (Winkel >= 15)  &  (Winkel < 20)
+Pos1 := 10
+Pos2 := 90
+END
+IF (Winkel >= 20)  &  (Winkel < 30)
+Pos1 := 10
+Pos2 := 65
+END
+IF (Winkel >= 30)  &  (Winkel < 45)
+Pos1 := 10
+Pos2 := 45
+END
+IF (Winkel >= 45)  &  (Winkel < 60)
+Pos1 := 30
+Pos2 := 0
+END
+IF (Winkel >= 60)  &  (Winkel < 90)
+Pos1 := 25
+Pos2 := 0
+END
+IF Winkel = 90
+Pos1 := 20
+Pos2 := 0
+END
+END

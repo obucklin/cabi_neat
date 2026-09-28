@@ -1,0 +1,1229 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.10.0.57[Hops.exe]
+;BILD=SETPOS_SD.WMF
+;INFO=
+;WZGV=7335X_103
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=SETPOS_V2
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   X1 := 100;*VAR*Position Konsole 1
+   X2 := 400;*VAR*Position Konsole 2
+   X3 := 720;*VAR*Position Konsole 3
+   X4 := 1044;*VAR*Position Konsole 4
+   X5 := 0;*VAR*Position Konsole 5
+   X6 := 0;*VAR*Position Konsole 6
+   X7 := 0;*VAR*Position Konsole 7
+   X8 := 0;*VAR*Position Konsole 8
+   X9 := 0;*VAR*Position Konsole 9
+   X10 := 0;*VAR*Position Konsole 10
+   X11 := 0;*VAR*Position Konsole 11
+   X12 := 0;*VAR*Position Konsole 12
+   Y1 := 150;*VAR*Sauger 1
+   Y2 := 350;*VAR*Sauger 2
+   Y3 := 550;*VAR*Sauger 3
+   Y4 := 0;*VAR*Sauger 4
+   Y5 := 150;*VAR*Sauger 5
+   Y6 := 0;*VAR*Sauger 6
+   Y7 := 0;*VAR*Sauger 7
+   Y8 := 0;*VAR*Sauger 8
+   Y9 := 150;*VAR*Sauger 9
+   Y10 := 0;*VAR*Sauger 10
+   Y11 := 0;*VAR*Sauger 11
+   Y12 := 0;*VAR*Sauger 12
+   Y13 := 150;*VAR*Sauger 13
+   Y14 := 0;*VAR*Sauger 14
+   Y15 := 0;*VAR*Sauger 15
+   Y16 := 0;*VAR*Sauger 16
+   Y17 := 0;*VAR*Sauger 17
+   Y18 := 0;*VAR*Sauger 18
+   Y19 := 0;*VAR*Sauger 19
+   Y20 := 0;*VAR*Sauger 20
+   Y21 := 0;*VAR*Sauger 21
+   Y22 := 0;*VAR*Sauger 22
+   Y23 := 0;*VAR*Sauger 23
+   Y24 := 0;*VAR*Sauger 24
+   Y25 := 0;*VAR*Sauger 25
+   Y26 := 0;*VAR*Sauger 26
+   Y27 := 0;*VAR*Sauger 27
+   Y28 := 0;*VAR*Sauger 28
+   Y29 := 0;*VAR*Sauger 29
+   Y30 := 0;*VAR*Sauger 30
+   Y31 := 0;*VAR*Sauger 31
+   Y32 := 0;*VAR*Sauger 32
+   Y33 := 0;*VAR*Sauger 33
+   Y34 := 0;*VAR*Sauger 34
+   Y35 := 0;*VAR*Sauger 35
+   Y36 := 0;*VAR*Sauger 36
+   Y37 := 0;*VAR*Sauger 37
+   Y38 := 0;*VAR*Sauger 38
+   Y39 := 0;*VAR*Sauger 39
+   Y40 := 0;*VAR*Sauger 40
+   Y41 := 0;*VAR*Sauger 41
+   Y42 := 0;*VAR*Sauger 42
+   Y43 := 0;*VAR*Sauger 43
+   Y44 := 0;*VAR*Sauger 44
+   Y45 := 0;*VAR*Sauger 45
+   Y46 := 0;*VAR*Sauger 46
+   Y47 := 0;*VAR*Sauger 47
+   Y48 := 0;*VAR*Sauger 48
+   DW1_1 := 0;*VAR*Drehwinkel Sauger 1_1
+   DW1_2 := 0;*VAR*Drehwinkel Sauger 1_2
+   DW2_1 := 0;*VAR*Drehwinkel Sauger 2_1
+   DW2_2 := 0;*VAR*Drehwinkel Sauger 2_2
+   DW3_1 := 0;*VAR*Drehwinkel Sauger 3_1
+   DW3_2 := 0;*VAR*Drehwinkel Sauger 3_2
+   DW4_1 := 0;*VAR*Drehwinkel Sauger 4_1
+   DW4_2 := 0;*VAR*Drehwinkel Sauger 4_2
+   DW5_1 := 0;*VAR*Drehwinkel Sauger 5_1
+   DW5_2 := 0;*VAR*Drehwinkel Sauger 5_2
+   DW6_1 := 0;*VAR*Drehwinkel Sauger 6_1
+   DW6_2 := 0;*VAR*Drehwinkel Sauger 6_2
+   DW7_1 := 0;*VAR*Drehwinkel Sauger 7_1
+   DW7_2 := 0;*VAR*Drehwinkel Sauger 7_2
+   DW8_1 := 0;*VAR*Drehwinkel Sauger 8_1
+   DW8_2 := 0;*VAR*Drehwinkel Sauger 8_2
+   DW9_1 := 0;*VAR*Drehwinkel Sauger 9_1
+   DW9_2 := 0;*VAR*Drehwinkel Sauger 9_2
+   DW10_1 := 0;*VAR*Drehwinkel Sauger 10_1
+   DW10_2 := 0;*VAR*Drehwinkel Sauger 10_2
+   DW11_1 := 0;*VAR*Drehwinkel Sauger 11_1
+   DW11_2 := 0;*VAR*Drehwinkel Sauger 11_2
+   DW12_1 := 0;*VAR*Drehwinkel Sauger 12_1
+   DW12_2 := 0;*VAR*Drehwinkel Sauger 12_2
+   DW13_1 := 0;*VAR*Drehwinkel Sauger 13_1
+   DW13_2 := 0;*VAR*Drehwinkel Sauger 13_2
+   DW14_1 := 0;*VAR*Drehwinkel Sauger 14_1
+   DW14_2 := 0;*VAR*Drehwinkel Sauger 14_2
+   DW15_1 := 0;*VAR*Drehwinkel Sauger 15_1
+   DW15_2 := 0;*VAR*Drehwinkel Sauger 15_2
+   DW16_1 := 0;*VAR*Drehwinkel Sauger 16_1
+   DW16_2 := 0;*VAR*Drehwinkel Sauger 16_2
+   DW17_1 := 0;*VAR*Drehwinkel Sauger 17_1
+   DW17_2 := 0;*VAR*Drehwinkel Sauger 17_2
+   DW18_1 := 0;*VAR*Drehwinkel Sauger 18_1
+   DW18_2 := 0;*VAR*Drehwinkel Sauger 18_2
+   DW19_1 := 0;*VAR*Drehwinkel Sauger 19_1
+   DW19_2 := 0;*VAR*Drehwinkel Sauger 19_2
+   DW20_1 := 0;*VAR*Drehwinkel Sauger 20_1
+   DW20_2 := 0;*VAR*Drehwinkel Sauger 20_2
+   DW21_1 := 0;*VAR*Drehwinkel Sauger 21_1
+   DW21_2 := 0;*VAR*Drehwinkel Sauger 21_2
+   DW22_1 := 0;*VAR*Drehwinkel Sauger 22_1
+   DW22_2 := 0;*VAR*Drehwinkel Sauger 22_2
+   DW23_1 := 0;*VAR*Drehwinkel Sauger 23_1
+   DW23_2 := 0;*VAR*Drehwinkel Sauger 23_2
+   DW24_1 := 0;*VAR*Drehwinkel Sauger 24_1
+   DW24_2 := 0;*VAR*Drehwinkel Sauger 24_2
+   DW25_1 := 0;*VAR*Drehwinkel Sauger 25_1
+   DW25_2 := 0;*VAR*Drehwinkel Sauger 25_2
+   DW26_1 := 0;*VAR*Drehwinkel Sauger 26_1
+   DW26_2 := 0;*VAR*Drehwinkel Sauger 26_2
+   DW27_1 := 0;*VAR*Drehwinkel Sauger 27_1
+   DW27_2 := 0;*VAR*Drehwinkel Sauger 27_2
+   DW28_1 := 0;*VAR*Drehwinkel Sauger 28_1
+   DW28_2 := 0;*VAR*Drehwinkel Sauger 28_2
+   DW29_1 := 0;*VAR*Drehwinkel Sauger 29_1
+   DW29_2 := 0;*VAR*Drehwinkel Sauger 29_2
+   DW30_1 := 0;*VAR*Drehwinkel Sauger 30_1
+   DW30_2 := 0;*VAR*Drehwinkel Sauger 30_2
+   DW31_1 := 0;*VAR*Drehwinkel Sauger 31_1
+   DW31_2 := 0;*VAR*Drehwinkel Sauger 31_2
+   DW32_1 := 0;*VAR*Drehwinkel Sauger 32_1
+   DW32_2 := 0;*VAR*Drehwinkel Sauger 32_2
+   DW33_1 := 0;*VAR*Drehwinkel Sauger 33_1
+   DW33_2 := 0;*VAR*Drehwinkel Sauger 33_2
+   DW34_1 := 0;*VAR*Drehwinkel Sauger 34_1
+   DW34_2 := 0;*VAR*Drehwinkel Sauger 34_2
+   DW35_1 := 0;*VAR*Drehwinkel Sauger 35_1
+   DW35_2 := 0;*VAR*Drehwinkel Sauger 35_2
+   DW36_1 := 0;*VAR*Drehwinkel Sauger 36_1
+   DW36_2 := 0;*VAR*Drehwinkel Sauger 36_2
+   DW37_1 := 0;*VAR*Drehwinkel Sauger 37_1
+   DW37_2 := 0;*VAR*Drehwinkel Sauger 37_2
+   DW38_1 := 0;*VAR*Drehwinkel Sauger 38_1
+   DW38_2 := 0;*VAR*Drehwinkel Sauger 38_2
+   DW39_1 := 0;*VAR*Drehwinkel Sauger 39_1
+   DW39_2 := 0;*VAR*Drehwinkel Sauger 39_2
+   DW40_1 := 0;*VAR*Drehwinkel Sauger 40_1
+   DW40_2 := 0;*VAR*Drehwinkel Sauger 40_2
+   DW41_1 := 0;*VAR*Drehwinkel Sauger 41_1
+   DW41_2 := 0;*VAR*Drehwinkel Sauger 41_2
+   DW42_1 := 0;*VAR*Drehwinkel Sauger 42_1
+   DW42_2 := 0;*VAR*Drehwinkel Sauger 42_2
+   DW43_1 := 0;*VAR*Drehwinkel Sauger 43_1
+   DW43_2 := 0;*VAR*Drehwinkel Sauger 43_2
+   DW44_1 := 0;*VAR*Drehwinkel Sauger 44_1
+   DW44_2 := 0;*VAR*Drehwinkel Sauger 44_2
+   DW45_1 := 0;*VAR*Drehwinkel Sauger 45_1
+   DW45_2 := 0;*VAR*Drehwinkel Sauger 45_2
+   DW46_1 := 0;*VAR*Drehwinkel Sauger 46_1
+   DW46_2 := 0;*VAR*Drehwinkel Sauger 46_2
+   DW47_1 := 0;*VAR*Drehwinkel Sauger 47_1
+   DW47_2 := 0;*VAR*Drehwinkel Sauger 47_2
+   DW48_1 := 0;*VAR*Drehwinkel Sauger 48_1
+   DW48_2 := 0;*VAR*Drehwinkel Sauger 48_2
+   S1_1 := 5;*VAR*Saugertyp Sauger 1_1
+   S1_2 := 5;*VAR*Saugertyp Sauger 1_2
+   S2_1 := 5;*VAR*Saugertyp Sauger 2_1
+   S2_2 := 5;*VAR*Saugertyp Sauger 2_2
+   S3_1 := 6;*VAR*Saugertyp Sauger 3_1
+   S3_2 := 0;*VAR*Saugertyp Sauger 3_2
+   S4_1 := 0;*VAR*Saugertyp Sauger 4_1
+   S4_2 := 0;*VAR*Saugertyp Sauger 4_2
+   S5_1 := 0;*VAR*Saugertyp Sauger 5_1
+   S5_2 := 0;*VAR*Saugertyp Sauger 5_2
+   S6_1 := 0;*VAR*Saugertyp Sauger 6_1
+   S6_2 := 0;*VAR*Saugertyp Sauger 6_2
+   S7_1 := 0;*VAR*Saugertyp Sauger 7_1
+   S7_2 := 0;*VAR*Saugertyp Sauger 7_2
+   S8_1 := 0;*VAR*Saugertyp Sauger 8_1
+   S8_2 := 0;*VAR*Saugertyp Sauger 8_2
+   S9_1 := 0;*VAR*Saugertyp Sauger 9_1
+   S9_2 := 0;*VAR*Saugertyp Sauger 9_2
+   S10_1 := 0;*VAR*Saugertyp Sauger 10_1
+   S10_2 := 0;*VAR*Saugertyp Sauger 10_2
+   S11_1 := 0;*VAR*Saugertyp Sauger 11_1
+   S11_2 := 0;*VAR*Saugertyp Sauger 11_2
+   S12_1 := 0;*VAR*Saugertyp Sauger 12_1
+   S12_2 := 0;*VAR*Saugertyp Sauger 12_2
+   S13_1 := 0;*VAR*Saugertyp Sauger 13_1
+   S13_2 := 0;*VAR*Saugertyp Sauger 13_2
+   S14_1 := 0;*VAR*Saugertyp Sauger 14_1
+   S14_2 := 0;*VAR*Saugertyp Sauger 14_2
+   S15_1 := 0;*VAR*Saugertyp Sauger 15_1
+   S15_2 := 0;*VAR*Saugertyp Sauger 15_2
+   S16_1 := 0;*VAR*Saugertyp Sauger 16_1
+   S16_2 := 0;*VAR*Saugertyp Sauger 16_2
+   S17_1 := 0;*VAR*Saugertyp Sauger 17_1
+   S17_2 := 0;*VAR*Saugertyp Sauger 17_2
+   S18_1 := 0;*VAR*Saugertyp Sauger 18_1
+   S18_2 := 0;*VAR*Saugertyp Sauger 18_2
+   S19_1 := 0;*VAR*Saugertyp Sauger 19_1
+   S19_2 := 0;*VAR*Saugertyp Sauger 19_2
+   S20_1 := 0;*VAR*Saugertyp Sauger 20_1
+   S20_2 := 0;*VAR*Saugertyp Sauger 20_2
+   S21_1 := 0;*VAR*Saugertyp Sauger 21_1
+   S21_2 := 0;*VAR*Saugertyp Sauger 21_2
+   S22_1 := 0;*VAR*Saugertyp Sauger 22_1
+   S22_2 := 0;*VAR*Saugertyp Sauger 22_2
+   S23_1 := 0;*VAR*Saugertyp Sauger 23_1
+   S23_2 := 0;*VAR*Saugertyp Sauger 23_2
+   S24_1 := 0;*VAR*Saugertyp Sauger 24_1
+   S24_2 := 0;*VAR*Saugertyp Sauger 24_2
+   S25_1 := 0;*VAR*Saugertyp Sauger 25_1
+   S25_2 := 0;*VAR*Saugertyp Sauger 25_2
+   S26_1 := 0;*VAR*Saugertyp Sauger 26_1
+   S26_2 := 0;*VAR*Saugertyp Sauger 26_2
+   S27_1 := 0;*VAR*Saugertyp Sauger 27_1
+   S27_2 := 0;*VAR*Saugertyp Sauger 27_2
+   S28_1 := 0;*VAR*Saugertyp Sauger 28_1
+   S28_2 := 0;*VAR*Saugertyp Sauger 28_2
+   S29_1 := 0;*VAR*Saugertyp Sauger 29_1
+   S29_2 := 0;*VAR*Saugertyp Sauger 29_2
+   S30_1 := 0;*VAR*Saugertyp Sauger 30_1
+   S30_2 := 0;*VAR*Saugertyp Sauger 30_2
+   S31_1 := 0;*VAR*Saugertyp Sauger 31_1
+   S31_2 := 0;*VAR*Saugertyp Sauger 31_2
+   S32_1 := 0;*VAR*Saugertyp Sauger 32_1
+   S32_2 := 0;*VAR*Saugertyp Sauger 32_2
+   S33_1 := 0;*VAR*Saugertyp Sauger 33_1
+   S33_2 := 0;*VAR*Saugertyp Sauger 33_2
+   S34_1 := 0;*VAR*Saugertyp Sauger 34_1
+   S34_2 := 0;*VAR*Saugertyp Sauger 34_2
+   S35_1 := 0;*VAR*Saugertyp Sauger 35_1
+   S35_2 := 0;*VAR*Saugertyp Sauger 35_2
+   S36_1 := 0;*VAR*Saugertyp Sauger 36_1
+   S36_2 := 0;*VAR*Saugertyp Sauger 36_2
+   S37_1 := 0;*VAR*Saugertyp Sauger 37_1
+   S37_2 := 0;*VAR*Saugertyp Sauger 37_2
+   S38_1 := 0;*VAR*Saugertyp Sauger 38_1
+   S38_2 := 0;*VAR*Saugertyp Sauger 38_2
+   S39_1 := 0;*VAR*Saugertyp Sauger 39_1
+   S39_2 := 0;*VAR*Saugertyp Sauger 39_2
+   S40_1 := 0;*VAR*Saugertyp Sauger 40_1
+   S40_2 := 0;*VAR*Saugertyp Sauger 40_2
+   S41_1 := 0;*VAR*Saugertyp Sauger 41_1
+   S41_2 := 0;*VAR*Saugertyp Sauger 41_2
+   S42_1 := 0;*VAR*Saugertyp Sauger 42_1
+   S42_2 := 0;*VAR*Saugertyp Sauger 42_2
+   S43_1 := 0;*VAR*Saugertyp Sauger 43_1
+   S43_2 := 0;*VAR*Saugertyp Sauger 43_2
+   S44_1 := 0;*VAR*Saugertyp Sauger 44_1
+   S44_2 := 0;*VAR*Saugertyp Sauger 44_2
+   S45_1 := 0;*VAR*Saugertyp Sauger 45_1
+   S45_2 := 0;*VAR*Saugertyp Sauger 45_2
+   S46_1 := 0;*VAR*Saugertyp Sauger 46_1
+   S46_2 := 0;*VAR*Saugertyp Sauger 46_2
+   S47_1 := 0;*VAR*Saugertyp Sauger 47_1
+   S47_2 := 0;*VAR*Saugertyp Sauger 47_2
+   S48_1 := 0;*VAR*Saugertyp Sauger 48_1
+   S48_2 := 0;*VAR*Saugertyp Sauger 48_2
+   _Xa := 0;X-Wert von vorheriger Konsole
+   _Ya := 0;Y-Wert von vorherigem Sauger
+   _ZAa := 0;Ehemaliger Zusatzabstand
+   _Xakt := 0;Variable für aktuelle X-Pos
+   _Yakt := 0;Variable für aktuelle Y-Pos
+   _Kakt := -1;Übergabevariable für Traversenbestückung
+   _Ka := -1;Übergabevariable für vorherige Traversenbestückung
+   _DWakt_1 := 0;Variable für aktuellen Drehwinkel Sauger links
+   _DWakt_2 := 0;Variable für aktuellen Drehwinkel Sauger rechts
+   _SZB := '';Saugername zusammenbauen
+   _S1 := 0;Übergabevariable Saugerkennung Sauger 1
+   _S2 := 0;Übergabevariable Saugername
+   _SN := '';Übergabevariable Saugername
+   _ZA := 0;Übergabevariable für zusätzlichen Absatdn bei überragender Saugerfläche über Grundkörper
+   _ZOalt := 0;Ehemaliger Zusatzabstand oben
+   _ZO := 0;Übergabe für Zusatz bei gedrehten Saugern Oberhalb Y-Pos
+   _ZU := 0;Übergabe für Zusatz bei gedrehten Saugern unterhalb Y-Pos
+   DX := 1200;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   _K1 := 1;1=Konsole ohne Anbauteil;2=Konsole mit Beschickungshilfe rechts;3= Konsole mit Beschickungshilfe links;
+   _K3 := 1;1=Konsole ohne Anbauteil;2=Konsole mit Beschickungshilfe rechts;3= Konsole mit Beschickungshilfe links;
+   _K4 := 1;1=Konsole ohne Anbauteil;2=Konsole mit Beschickungshilfe rechts;3= Konsole mit Beschickungshilfe links;
+   _K5 := 1;1=Konsole ohne Anbauteil;2=Konsole mit Beschickungshilfe rechts;3= Konsole mit Beschickungshilfe links;
+   _K6 := 1;1=Konsole ohne Anbauteil;2=Konsole mit Beschickungshilfe rechts;3= Konsole mit Beschickungshilfe links;
+   _K7 := 1;1=Konsole ohne Anbauteil;2=Konsole mit Beschickungshilfe rechts;3= Konsole mit Beschickungshilfe links;
+   _K8 := 1;1=Konsole ohne Anbauteil;2=Konsole mit Beschickungshilfe rechts;3= Konsole mit Beschickungshilfe links;
+   _K9 := 1;1=Konsole ohne Anbauteil;2=Konsole mit Beschickungshilfe rechts;3= Konsole mit Beschickungshilfe links;
+   _K10 := 1;1=Konsole ohne Anbauteil;2=Konsole mit Beschickungshilfe rechts;3= Konsole mit Beschickungshilfe links;
+   _K11 := 1;1=Konsole ohne Anbauteil;2=Konsole mit Beschickungshilfe rechts;3= Konsole mit Beschickungshilfe links;
+   _K12 := 1;1=Konsole ohne Anbauteil;2=Konsole mit Beschickungshilfe rechts;3= Konsole mit Beschickungshilfe links;
+   _K2 := 1;1=Konsole ohne Anbauteil;2=Konsole mit Beschickungshilfe rechts;3= Konsole mit Beschickungshilfe links;
+   _Feld := 1;FeldIndex 0=Feld A; 1=Feld D
+   _KON_A_1 := 0;X-Pos Konsole 1
+   _KON_A_B := 0;Konsolenabstand mit Beschickungshilfe
+   _KON_A_X := 0;Konsolenabstand ohne Beschickungshilfe
+   _KON_A_D := 0;Konsolenabstand zwischen Mittelkonsolen
+   _SAU_1 := 0;Y-Abstand Sauger 1
+   _SAU_OHNE := 0;Sauger Outline Y
+   _D_X_S2 := 31.5;Versatz Saugernullpunkt zu Traversennullpunkt in X
+   _D_X_S1 := -80.5;Versatz Saugernullpunkt zu Traversennullpunkt in X
+   _A_X_S2 := 31.5;Versatz Saugernullpunkt zu Traversennullpunkt in X
+   _A_X_S1 := -80.5;Versatz Saugernullpunkt zu Traversennullpunkt in X
+   _Anzahl_Konsolen := 6;Anzahl Konsolen auf Maschine
+   _countG := -1;Zähler für Grundkörper index
+   _count := -1;Zähler für Sauger index
+   _countS := -1;Zähler für Saugerindex
+   _Tcount := -1;Traversen-count
+   _Kennung := '';
+   Zeichnen := 1;*VAR*Zeichnen Spannkontur
+   Plausibilitaet := 1;*VAR*Plausibilitäts und Kollissionsprüfung
+   Zeichnen_Sauger := 1;*VAR*Sauger zeichnen
+   _Zeichnen := 1;Zeichnen Spannkontur ja/nein
+   _Plausibilitaet := 1;Plausibilitäts und Kollissionsprüfung ja/nein
+   _Zeichnen_Sauger := 1;Sauger Zeichnen ja/nein
+   _Zeichnung_Kennung := 1;Saugerkennung anzeigen ja/nein
+   _Schrift_Kennung := 30;Schriftgröße Saugerkennung
+   _Schrift_Saugername := 10;
+   Sprache := 0;*VAR*0=Deutsch. 1=Englisch
+   _Sprache := 0;0=Deutsch; 1=Englisch
+   Schrift_Kennung := 40;*VAR*Schriftgröße Saugerkennung
+   Schrift_Saugername := 30;*VAR*Schriftgröße Saugername
+   Zeichnung_Kennung := 1;*VAR*Saugerkennung Zeichnen ja/nein
+   Strichstaerke := 2;*VAR*Strichstärke Saugerkontaktfläche
+   _Strich := 0;Strichstärke Saugerkontaktfläche
+   Feld := 0;*VAR*
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0,0)
+;*******************************************
+;*******************************************
+;Makroeinstellungen bei Inbetriebnahme an Maschine anpassen!
+;Adapt macro settings to machine during commissioning!
+;*******************************************
+;*******************************************
+_Anzahl_Konsolen := 8
+;#
+;Konsolenkonfiguration einstellen
+;2=Konsole ohne Beschickungshilfe
+;3=Konsole mit Beschickungshilfe
+;#
+_K1 := 2
+_K2 := 2
+_K3 := 3
+_K4 := 2
+_K5 := 3
+_K6 := 3
+_K7 := 2
+_K8 := 2
+_K9 := 2
+_K10 := 2
+_K11 := 3
+_K12 := 2
+IF (_Anzahl_Konsolen<0)|(_K1<0)|(_K2<0)|(_K3<0)|(_K4<0)|(_K5<0)|(_K6<0)|(_K7<0)|(_K8<0)|(_K9<0)|(_K10<0)|(_K11<0)|(_K12<0)
+END
+;#
+;Konsolenabstände einstellen
+;_KON_A_1= Konsolenabstand erste Konsole ab Werkstückanschlag
+;_KON_A_X= Konsolenabstand zwischen zwei Konsolen ohne Beschickungshilfe dazwischen
+;_KON_A_B= Konsolenabstand zwischen zwei Konsolen mit Beschickungshilfe dazwischen
+;_KON_A_D= Konsolenabstand zwischen den beiden mittleren Konsolen (Wichtig für Tischkopplung)
+;#
+_KON_A_1 := 149
+_KON_A_X := 220
+_KON_A_B := 255
+_KON_A_D := 260
+;#
+;Saugerschlittenabstände einstellen
+;_SAU_1= Min. Abstand Mitte Saugerschlitten zu Anschlag vorne
+;_SAU_OHNE= Min. Abstand zweier Saugerschlitten Mitte bis Mitte
+;#
+_SAU_1 := 114
+_SAU_OHNE := 109
+;*******************************************
+;*******************************************
+;Ende der Makroeinstellungen
+;End of macro settings
+;*******************************************
+;*******************************************
+;*******************************************
+;*******************************************
+;Zurücksetzen von Zählern und Speichervariablen
+;*******************************************
+;*******************************************
+_Xa := -1
+_Ya := -1
+_ZAa := -1
+_countG := -1
+_count := -1
+_countS := -1
+_Tcount := -1
+_Strich := Strichstaerke
+_Zeichnen := Zeichnen
+_Plausibilitaet := Plausibilitaet
+_Zeichnen_Sauger := Zeichnen_Sauger
+_Zeichnung_Kennung := Zeichnung_Kennung
+_Sprache := Sprache
+_Schrift_Kennung := Schrift_Kennung
+_Schrift_Saugername := Schrift_Saugername
+_Feld := Feld
+;#
+;*******************************************
+;*******************************************
+;Zurücksetzen Ende
+;*******************************************
+;*******************************************
+;*******************************************
+;*******************************************
+;Errechnen der tatsächlichen Konsolen ID
+;*******************************************
+;*******************************************
+_K1 := 50+_K1
+_K2 := 50+_K2
+_K3 := 50+_K3
+IF _Anzahl_Konsolen=6
+_K4 := 100+_K4
+_K5 := 100+_K5
+_K6 := 100+_K6
+END
+IF _Anzahl_Konsolen=8
+_K4 := 50+_K4
+_K5 := 100+_K5
+_K6 := 100+_K6
+END
+IF _Anzahl_Konsolen=10
+_K4 := 50+_K4
+_K5 := 50+_K5
+_K6 := 100+_K6
+END
+IF _Anzahl_Konsolen=12
+_K4 := 50+_K4
+_K5 := 50+_K5
+_K6 := 50+_K6
+END
+_K7 := 100+_K7
+_K8 := 100+_K8
+_K9 := 100+_K9
+_K10 := 100+_K10
+_K11 := 100+_K11
+_K12 := 100+_K12
+;*******************************************
+;*******************************************
+;Ende Konsolen ID Berechnung
+;*******************************************
+;*******************************************
+IF _JOB_FIELDID=_Feld
+/_Feld := _JOB_FIELDID
+ELSE
+IF _Sprache=0
+Hinweismeldung ('Programm auf falschem Feld aufgelegt')
+END
+IF _Sprache=1
+Hinweismeldung ('Program placed on the wrong field')
+END
+END
+IF (_Feld<0)|(_FELD>1)
+_FELD := 0
+END
+;#
+;Positionierung Konsole
+IF X1>0
+IF _Feld=0
+_Xakt := X1-_A_X_S1
+END
+IF _Feld=1
+_Xakt := _RX-X1+_D_X_S1
+END
+_Kakt := _K1
+CALL SetConsole ()
+;#
+;Positionierung Sauger
+IF Y1>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y1
+_DWakt_1 := DW1_1
+_DWakt_2 := DW1_2
+_S1 := S1_1
+_S2 := S1_2
+END;BREAKPOINT
+CALL SetClampCarrier ()
+END;BREAKPOINT
+IF Y2>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y2
+_DWakt_1 := DW2_1
+_DWakt_2 := DW2_2
+_S1 := S2_1
+_S2 := S2_2
+END
+CALL SetClampCarrier ()
+END
+IF Y3>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y3
+_DWakt_1 := DW3_1
+_DWakt_2 := DW3_2
+_S1 := S3_1
+_S2 := S3_2
+END
+CALL SetClampCarrier ()
+END
+IF Y4>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y4
+_DWakt_1 := DW4_1
+_DWakt_2 := DW4_2
+_S1 := S4_1
+_S2 := S4_2
+END
+CALL SetClampCarrier ()
+END
+END
+_Ya := 0
+_countG := -1
+_count := 0
+_countS := 0
+;#
+;Positionierung Konsole
+IF X2>0
+IF _Feld=0
+_Xakt := X2-_A_X_S1
+END
+IF _Feld=1
+_Xakt := _RX-X2+_D_X_S1
+END
+_Kakt := _K2
+CALL SetConsole ();BREAKPOINT
+;#
+;Positionierung Sauger
+IF Y5>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y5
+_DWakt_1 := DW5_1
+_DWakt_2 := DW5_2
+_S1 := S5_1
+_S2 := S5_2
+END
+CALL SetClampCarrier ()
+END
+IF Y6>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y6
+_DWakt_1 := DW6_1
+_DWakt_2 := DW6_2
+_S1 := S6_1
+_S2 := S6_2
+END
+CALL SetClampCarrier ()
+END
+IF Y7>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y7
+_DWakt_1 := DW7_1
+_DWakt_2 := DW7_2
+_S1 := S7_1
+_S2 := S7_2
+END
+CALL SetClampCarrier ()
+END
+IF Y8>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y8
+_DWakt_1 := DW8_1
+_DWakt_2 := DW8_2
+_S1 := S8_1
+_S2 := S8_2
+END
+CALL SetClampCarrier ()
+END
+END
+;#
+;#
+;#
+;#
+;#
+;#
+;#
+;#
+;#
+;#
+;#
+;#
+;#
+;#
+_Ya := 0
+_countG := -1
+_count := 0
+_countS := 0
+;#
+;Positionierung Konsole
+IF X3>0
+IF _Feld=0
+_Xakt := X3-_A_X_S1
+END
+IF _Feld=1
+_Xakt := _RX-X3+_D_X_S1
+END
+_Kakt := _K3
+CALL SetConsole ();BREAKPOINT
+;#
+;Positionierung Sauger
+IF Y9>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y9
+_DWakt_1 := DW9_1
+_DWakt_2 := DW9_2
+_S1 := S9_1
+_S2 := S9_2
+END
+CALL SetClampCarrier ()
+END
+IF Y10>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y10
+_DWakt_1 := DW10_1
+_DWakt_2 := DW10_2
+_S1 := S10_1
+_S2 := S10_2
+END
+CALL SetClampCarrier ()
+END
+IF Y11>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y11
+_DWakt_1 := DW11_1
+_DWakt_2 := DW11_2
+_S1 := S11_1
+_S2 := S11_2
+END
+CALL SetClampCarrier ()
+END
+IF Y12>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y12
+_DWakt_1 := DW12_1
+_DWakt_2 := DW12_2
+_S1 := S12_1
+_S2 := S12_2
+END
+CALL SetClampCarrier ()
+END
+END
+_Ya := 0
+_countG := -1
+_count := 0
+_countS := 0
+;#
+;Positionierung Konsole
+IF X4>0
+IF _Feld=0
+_Xakt := X4-_A_X_S1
+END
+IF _Feld=1
+_Xakt := _RX-X4+_D_X_S1
+END
+_Kakt := _K4
+CALL SetConsole ();BREAKPOINT
+;#
+;Positionierung Sauger
+IF Y13>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y13
+_DWakt_1 := DW13_1
+_DWakt_2 := DW13_2
+_S1 := S13_1
+_S2 := S13_2
+END
+CALL SetClampCarrier ()
+END
+IF Y14>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y14
+_DWakt_1 := DW14_1
+_DWakt_2 := DW14_2
+_S1 := S14_1
+_S2 := S14_2
+END
+CALL SetClampCarrier ()
+END
+IF Y15>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y15
+_DWakt_1 := DW15_1
+_DWakt_2 := DW15_2
+_S1 := S15_1
+_S2 := S15_2
+END
+CALL SetClampCarrier ()
+END
+IF Y16>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y16
+_DWakt_1 := DW16_1
+_DWakt_2 := DW16_2
+_S1 := S16_1
+_S2 := S16_2
+END
+CALL SetClampCarrier ()
+END
+END
+_Ya := 0
+_countG := -1
+_count := 0
+_countS := 0
+;#
+;Positionierung Konsole
+IF X5>0
+IF _Feld=0
+_Xakt := X5-_A_X_S1
+END
+IF _Feld=1
+_Xakt := _RX-X5+_D_X_S1
+END
+_Kakt := _K5
+CALL SetConsole ();BREAKPOINT
+;#
+;Positionierung Sauger
+IF Y17>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y17
+_DWakt_1 := DW17_1
+_DWakt_2 := DW17_2
+_S1 := S17_1
+_S2 := S17_2
+END
+CALL SetClampCarrier ()
+END
+IF Y18>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y18
+_DWakt_1 := DW18_1
+_DWakt_2 := DW18_2
+_S1 := S18_1
+_S2 := S18_2
+END
+CALL SetClampCarrier ()
+END
+IF Y19>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y19
+_DWakt_1 := DW19_1
+_DWakt_2 := DW19_2
+_S1 := S19_1
+_S2 := S19_2
+END
+CALL SetClampCarrier ()
+END
+IF Y20>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y20
+_DWakt_1 := DW20_1
+_DWakt_2 := DW20_2
+_S1 := S20_1
+_S2 := S20_2
+END
+CALL SetClampCarrier ()
+END
+END
+_Ya := 0
+_countG := -1
+_count := 0
+_countS := 0
+;#
+;Positionierung Konsole
+IF X6>0
+IF _Feld=0
+_Xakt := X6-_A_X_S1
+END
+IF _Feld=1
+_Xakt := _RX-X6+_D_X_S1
+END
+_Kakt := _K6
+CALL SetConsole ();BREAKPOINT
+;#
+;Positionierung Sauger
+IF Y21>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y21
+_DWakt_1 := DW21_1
+_DWakt_2 := DW21_2
+_S1 := S21_1
+_S2 := S21_2
+END
+CALL SetClampCarrier ()
+END
+IF Y22>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y22
+_DWakt_1 := DW22_1
+_DWakt_2 := DW22_2
+_S1 := S22_1
+_S2 := S22_2
+END
+CALL SetClampCarrier ()
+END
+IF Y23>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y23
+_DWakt_1 := DW23_1
+_DWakt_2 := DW23_2
+_S1 := S23_1
+_S2 := S23_2
+END
+CALL SetClampCarrier ()
+END
+IF Y24>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y24
+_DWakt_1 := DW24_1
+_DWakt_2 := DW24_2
+_S1 := S24_1
+_S2 := S24_2
+END
+CALL SetClampCarrier ()
+END
+END
+_Ya := 0
+_countG := -1
+_count := 0
+_countS := 0
+;#
+IF _Anzahl_Konsolen>6
+;Positionierung Konsole
+IF X7>0
+IF _Feld=0
+_Xakt := X7-_A_X_S1
+END
+IF _Feld=1
+_Xakt := _RX-X7+_D_X_S1
+END
+_Kakt := _K7
+CALL SetConsole ();BREAKPOINT
+;#
+;Positionierung Sauger
+IF Y25>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y25
+_DWakt_1 := DW25_1
+_DWakt_2 := DW25_2
+_S1 := S25_1
+_S2 := S25_2
+END
+CALL SetClampCarrier ()
+END
+IF Y26>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y26
+_DWakt_1 := DW26_1
+_DWakt_2 := DW26_2
+_S1 := S26_1
+_S2 := S26_2
+END
+CALL SetClampCarrier ()
+END
+IF Y27>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y27
+_DWakt_1 := DW27_1
+_DWakt_2 := DW27_2
+_S1 := S27_1
+_S2 := S27_2
+END
+CALL SetClampCarrier ()
+END
+IF Y28>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y28
+_DWakt_1 := DW28_1
+_DWakt_2 := DW28_2
+_S1 := S28_1
+_S2 := S28_2
+END
+CALL SetClampCarrier ()
+END
+END
+_Ya := 0
+_countG := -1
+_count := 0
+_countS := 0
+;#
+;Positionierung Konsole
+IF X8>0
+IF _Feld=0
+_Xakt := X8-_A_X_S1
+END
+IF _Feld=1
+_Xakt := _RX-X8+_D_X_S1
+END
+_Kakt := _K8
+CALL SetConsole ();BREAKPOINT
+;#
+;Positionierung Sauger
+IF Y29>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y29
+_DWakt_1 := DW29_1
+_DWakt_2 := DW29_2
+_S1 := S29_1
+_S2 := S29_2
+END
+CALL SetClampCarrier ()
+END
+IF Y30>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y30
+_DWakt_1 := DW30_1
+_DWakt_2 := DW30_2
+_S1 := S30_1
+_S2 := S30_2
+END
+CALL SetClampCarrier ()
+END
+IF Y31>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y31
+_DWakt_1 := DW31_1
+_DWakt_2 := DW31_2
+_S1 := S31_1
+_S2 := S31_2
+END
+CALL SetClampCarrier ()
+END
+IF Y32>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y32
+_DWakt_1 := DW32_1
+_DWakt_2 := DW32_2
+_S1 := S32_1
+_S2 := S32_2
+END
+CALL SetClampCarrier ()
+END
+END
+_Ya := 0
+_countG := -1
+_count := 0
+_countS := 0
+;#
+IF _Anzahl_Konsolen>8
+;Positionierung Konsole
+IF X9>0
+IF _Feld=0
+_Xakt := X9-_A_X_S1
+END
+IF _Feld=1
+_Xakt := _RX-X9+_D_X_S1
+END
+_Kakt := _K9
+CALL SetConsole ();BREAKPOINT
+;#
+;Positionierung Sauger
+IF Y33>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y33
+_DWakt_1 := DW33_1
+_DWakt_2 := DW33_2
+_S1 := S33_1
+_S2 := S33_2
+END
+CALL SetClampCarrier ()
+END
+IF Y34>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y34
+_DWakt_1 := DW34_1
+_DWakt_2 := DW34_2
+_S1 := S34_1
+_S2 := S34_2
+END
+CALL SetClampCarrier ()
+END
+IF Y35>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y35
+_DWakt_1 := DW35_1
+_DWakt_2 := DW35_2
+_S1 := S35_1
+_S2 := S35_2
+END
+CALL SetClampCarrier ()
+END
+IF Y36>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y36
+_DWakt_1 := DW36_1
+_DWakt_2 := DW36_2
+_S1 := S36_1
+_S2 := S36_2
+END
+CALL SetClampCarrier ()
+END
+END
+_Ya := 0
+_countG := -1
+_count := 0
+_countS := 0
+;#
+;Positionierung Konsole
+IF X10>0
+IF _Feld=0
+_Xakt := X10-_A_X_S1
+END
+IF _Feld=1
+_Xakt := _RX-X10+_D_X_S1
+END
+_Kakt := _K10
+CALL SetConsole ();BREAKPOINT
+;#
+;Positionierung Sauger
+IF Y37>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y37
+_DWakt_1 := DW37_1
+_DWakt_2 := DW37_2
+_S1 := S37_1
+_S2 := S37_2
+END
+CALL SetClampCarrier ()
+END
+IF Y38>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y38
+_DWakt_1 := DW38_1
+_DWakt_2 := DW38_2
+_S1 := S38_1
+_S2 := S38_2
+END
+CALL SetClampCarrier ()
+END
+IF Y39>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y39
+_DWakt_1 := DW39_1
+_DWakt_2 := DW39_2
+_S1 := S39_1
+_S2 := S39_2
+END
+CALL SetClampCarrier ()
+END
+IF Y40>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y40
+_DWakt_1 := DW40_1
+_DWakt_2 := DW40_2
+_S1 := S40_1
+_S2 := S40_2
+END
+CALL SetClampCarrier ()
+END
+END
+_Ya := 0
+_countG := -1
+_count := 0
+_countS := 0
+;#
+IF _Anzahl_Konsolen>10
+;Positionierung Konsole
+IF X11>0
+IF _Feld=0
+_Xakt := X11-_A_X_S1
+END
+IF _Feld=1
+_Xakt := _RX-X11+_D_X_S1
+END
+_Kakt := _K11
+CALL SetConsole ();BREAKPOINT
+;#
+;Positionierung Sauger
+IF Y41>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y41
+_DWakt_1 := DW41_1
+_DWakt_2 := DW41_2
+_S1 := S41_1
+_S2 := S41_2
+END
+CALL SetClampCarrier ()
+END
+IF Y42>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y42
+_DWakt_1 := DW42_1
+_DWakt_2 := DW42_2
+_S1 := S42_1
+_S2 := S42_2
+END
+CALL SetClampCarrier ()
+END
+IF Y43>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y43
+_DWakt_1 := DW43_1
+_DWakt_2 := DW43_2
+_S1 := S43_1
+_S2 := S43_2
+END
+CALL SetClampCarrier ()
+END
+IF Y44>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y44
+_DWakt_1 := DW44_1
+_DWakt_2 := DW44_2
+_S1 := S44_1
+_S2 := S44_2
+END
+CALL SetClampCarrier ()
+END
+END
+_Ya := 0
+_countG := -1
+_count := 0
+_countS := 0
+;#
+;Positionierung Konsole
+IF X12>0
+IF _Feld=0
+_Xakt := X12-_A_X_S1
+END
+IF _Feld=1
+_Xakt := _RX-X12+_D_X_S1
+END
+_Kakt := _K12
+CALL SetConsole ();BREAKPOINT
+;#
+;Positionierung Sauger
+IF Y45>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y45
+_DWakt_1 := DW45_1
+_DWakt_2 := DW45_2
+_S1 := S45_1
+_S2 := S45_2
+END
+CALL SetClampCarrier ()
+END
+IF Y46>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y46
+_DWakt_1 := DW46_1
+_DWakt_2 := DW46_2
+_S1 := S46_1
+_S2 := S46_2
+END
+CALL SetClampCarrier ()
+END
+IF Y47>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y47
+_DWakt_1 := DW47_1
+_DWakt_2 := DW47_2
+_S1 := S47_1
+_S2 := S47_2
+END
+CALL SetClampCarrier ()
+END
+IF Y48>0
+;Variablen auf aktuelle Saugerauswahl umschreiben
+IF (_Feld=0)|(_Feld=1)
+_Yakt := Y48
+_DWakt_1 := DW48_1
+_DWakt_2 := DW48_2
+_S1 := S48_1
+_S2 := S48_2
+END
+CALL SetClampCarrier ()
+END
+END
+END
+END
+END

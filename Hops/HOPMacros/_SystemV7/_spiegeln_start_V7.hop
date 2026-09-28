@@ -1,0 +1,40 @@
+;MAKROTYP=0
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_spiegeln_start_V7Dialog
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.3
+VARS
+   spiegeln := 1;*VAR*Schaletr für Spiegeln
+   Achse := 0;*VAR*X-Achse=0   Y-Achse=1 freie Achse=2
+   x1 := 0;*VAR*
+   y1 := 0;*VAR*
+   esxy1 := 1;*VAR*
+   x2 := 0;*VAR*
+   y2 := 0;*VAR*
+   esxy2 := 5;*VAR*
+   _MirrorFlag := 0;0 -> aus 1 -> an
+START
+;direkt cnc systeme gmbh
+;Spiegeln über X, Y und Freie-Achse
+;--------------------------------------------------------------
+;---- Auswerten der spiegel-Variable...
+_spiegeln := spiegeln
+;--------------------------------------------------------------
+;--- Auswerten der Spiegelachse...
+IF Achse=0
+SPROHY()
+_MirrorFlag := 1
+ELSE
+IF Achse=1
+SPROHX()
+_MirrorFlag := 2
+ELSE
+transesxy (x1,y1,esxy1,1)
+transesxy (x2,y2,esxy2,1)
+mirrorLine (x1,y1,x2,y2)
+_MirrorFlag := 3
+END
+END
+IF spiegeln=0
+_MirrorFlag := 0
+END

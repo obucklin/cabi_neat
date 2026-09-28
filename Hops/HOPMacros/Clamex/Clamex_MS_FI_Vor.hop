@@ -1,0 +1,76 @@
+;MAKROTYP=1
+;INSTVERSION=6.4.0.4
+;EXEVERSION=6.6.2.165[Hops.exe]
+;BILD=Clamex_MS_FI_Vor.wmf
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Clamex_MS_FI
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_7.Dll
+;DIALOGPROC=ShowClamexMSFI_VorDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   CL_Wkz := 128;*VAR*Werkzeug
+   CL_Typ := 1;*VAR*Clamex Typ 1= 15 / 2=14 / 3=10
+   PosX := 9.5;*VAR*Position in X
+   PosY := 60;*VAR*Position in Y
+   DW := 90;*VAR*Drehwinkel
+   ESXY := 7;*VAR*Easy Snap XY
+   StartCL := 40.10;Eintritsposition
+   CL_Tief := 15.00;Frästiefe
+   Vers := (3.5 - _WzR);Diferenz Zw. Fraeser DM und Nutbreite (7mm)
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+WZB (CL_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+Vers := (3.5 - _WzR);BREAKPOINT
+;Mit Fingerfräser
+IF CL_Typ = 0
+;Clamex P15
+StartCL := 40.10
+END
+IF CL_Typ =1
+;Clamex P14
+StartCL := 39.325
+END
+IF CL_Typ =2
+;Clamex P10
+StartCL := 35.79
+END
+IF _WzD > 7
+Fehlermeldung (GetMessageTextOem('50','WerkzeugDm zu gross >7 mm'))
+END
+;Wenn Werkzeug Ø = 7 mm (1 Durchgang)
+IF _WzD =7
+EbeneF (PosX,Posy,0,90,DW,ESXY,2)
+SP (-StartCL,5,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0)
+G03R (StartCL,5,0,50.2,0,0,2)
+EP (0,_ANF,0)
+Ebene0()
+CALL _DrehenBBStart_V5 ( VAL DX:=PosX,DY:=PosY,DW:=DW,ESXY1:=ESXY)
+CALL _ZRechteck_2P_V5 ( VAL SX:=PosX - StartCL,SY:=PosY - 3.5,EX:=PosX+StartCL,EY:=PosY + 3.5,FUELLEN:=1,FARBE:=0,ESXY1:=ESXY,ESXY2:=ESXY)
+CALL _DrehenBBEnde ()
+END
+IF _WzD <7
+EbeneF (PosX,Posy,0,90,DW,ESXY,2);BREAKPOINT
+SP (-StartCL,5,- Vers,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0)
+G03R (StartCL,5,0,50.2,0,0,2)
+EP (0,_ANF,0)
+SP (-StartCL,5,Vers,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0)
+G03R (StartCL,5,0,50.2,0,0,2)
+EP (0,_ANF,0)
+Ebene0()
+CALL _DrehenBBStart_V5 ( VAL DX:=PosX,DY:=PosY,DW:=DW,ESXY1:=ESXY)
+CALL _ZRechteck_2P_V5 ( VAL SX:=PosX - StartCL,SY:=PosY - 3.5,EX:=PosX+StartCL,EY:=PosY + 3.5,FUELLEN:=1,FARBE:=0,ESXY1:=ESXY,ESXY2:=ESXY)
+CALL _DrehenBBEnde ()
+END

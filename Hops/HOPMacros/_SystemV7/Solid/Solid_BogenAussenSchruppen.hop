@@ -1,0 +1,61 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   KN := '';*VAR*
+   Ex := 0;*VAR*
+   Ey := 0;*VAR*
+   Ez := 0;*VAR*
+   DW := 0;*VAR*
+   KW := 90;*VAR*
+   Tiefe := -2000;*VAR*
+   SchruStep := 5;*VAR*
+   UeberstandV := 20;*VAR*
+   UeberstandH := 20;*VAR*
+   Bogenlänge := 0;
+   LastPos := 0;
+   AktPos := 0;
+   Richtung := 0;
+   BL := 0;
+START
+/Fertigteil (1000,2000,19,0,0,0,0,0,'',0,0,0)
+/WZF (1,_VE,_V,_VA,_SD,_ANF,'1')
+/KB (KN,'',0,0,0,'',0,0)
+/CALL _KG03R_V5 ( VAL EN:='',EX:=0,EY:=0,EZ:=0,R:=2000,EI:='',ESXY:=3,ESD:=0)
+/CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=0,EZ:=0,R:=2000,EI:='',ESXY:=3,ESD:=0)
+/KB (KN,'',0,0,0,'',3,0)
+/CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=0,EZ:=0,R:=2000,EI:='',ESXY:=1,ESD:=0)
+/CALL _KG03R_V5 ( VAL EN:='',EX:=0,EY:=0,EZ:=0,R:=2000,EI:='',ESXY:=1,ESD:=0)
+IF GETKP_X(KN,0)<GETKP_X(KN,1)
+BL := 1
+ELSE
+BL := 2
+END
+Tiefe := -(abs(Tiefe)+UeberstandH)
+Bogenlänge := GetKE_Laenge(KN,1)
+IF SchruStep>Bogenlänge
+SchruStep := Bogenlänge
+END
+EbeneF (Ex,Ey,Ez,KW,DW,0,0,0)
+KSP ('???','???',Tiefe,BL,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0)
+LastPos := SchruStep/10
+KonturFraesen (KN,'KSP','KEP',0,0,0,0,0,0,-Bogenlänge+LastPos,0,0)
+FOR AktPos := SchruStep TO Bogenlänge STEP SchruStep
+IF Richtung=0
+G01 (0,0,UeberstandV,0,10,0)
+ELSE
+G01 (0,0,Tiefe,0,10,0)
+END
+KonturFraesen (KN,'KSP','KEP',0,0,0,0,LastPos,0,-Bogenlänge+AktPos,0,0)
+LastPos := AktPos
+Richtung := 1-Richtung
+END
+IF Bogenlänge>LastPos
+IF Richtung=0
+G01 (0,0,UeberstandV,0,10,0)
+ELSE
+G01 (0,0,Tiefe,0,10,0)
+END
+KonturFraesen (KN,'KSP','KEP',0,0,0,0,LastPos,0,0,0,0)
+END
+EP (0,_ANF,0)
+Ebene0()

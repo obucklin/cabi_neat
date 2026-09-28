@@ -1,0 +1,151 @@
+;MAKROTYP=1
+;INSTVERSION=6.4.0.4
+;EXEVERSION=6.6.2.165[Hops.exe]
+;BILD=SK_Fraesen.WMF
+;INFO=_TaschenFraesen1
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=Simu
+;NCNAME=SK_Fraesen_Bruno
+;KOMMENTAR=TüREN
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   X := 0;*VAR*Startpostion in X Taschenmitte (auf die Ebene bezogen)
+   Y := 0;*VAR*Startposition in Y-TaschenMitte (auf die Ebene bezogen)
+   Z := 0;*VAR*StartTiefe in Z (auf die Ebene bezogen)
+   Hoehe := 16;*VAR*Hoehe der Tasche
+   Laenge := 100;*VAR*Länge der Tasche
+   Tiefe := 50;*VAR*GesamtTiefe der Tasche
+   Radius := 0;*VAR*Rundungsradius
+   a := 0;Laufvariable
+   a_last := 0;letzte Zustellung
+   Zustell := 0;errechnet
+   Zutiefe := 0;*VAR*Zustellung pro Fräsung
+   ABF := _ANF;*VAR*Abfahrfaktor
+   umkehren := 0;*VAR*Bearbeitung umkehren
+   Interpol := 0;*VAR*Interpolation auf Anfahrbewegung
+   Pendeln := 0;*VAR*Pendeln = in Linien abzeilen
+   b := 0;INTERN
+   CW := 0;Fahrtrichtung intern
+   Radiuskorrektur := 1;Radiuskorrektur
+   k := 1;Pendeln mit senkrechter Zustellung
+   Versatz := 0.1;*VAR*Versatz in der länge
+   Versatz1 := 0;
+START
+;******* Anzahl Zustellungen errechnen *******
+a := trunc(tiefe/zutiefe)
+;******* Letzte Zustellung in mm *******
+a_last := (tiefe - zutiefe*a)
+;****************************
+IF umkehren=1
+Radiuskorrektur := 1
+CW := 1
+ELSE
+Radiuskorrektur := 2
+CW := -1
+END
+;************************************************************************************
+IF Pendeln=0
+;*** Senkrechte Zustellung
+IF Interpol=0
+SP (X,Y+Hoehe/2,-ZuTiefe,Radiuskorrektur,0,_ANF,0,0,0)
+FOR b := 1 TO a STEP 1
+G01 (_X - ((Laenge/2)-(Versatz1 / 2))*CW,_Y,_Z,Radius,0,0)
+G01 (_X,_Y - Hoehe,_Z,Radius)
+G01 (_X + (Laenge -Versatz1)*CW,_Y,_Z,Radius,0,0)
+G01 (_X,_Y+Hoehe,_Z,Radius)
+G01 (_X -((Laenge/2)-(Versatz1/2))*CW,_Y,_Z,Radius,0,0)
+;IF (b<a) & (a_last>0)
+IF (b<a)
+G01 (_X,_Y,_Z-ZuTiefe,0)
+END
+k := -k
+Versatz1 := Versatz1+Versatz
+END
+IF a_last>0
+G01 (_X,_Y,-Tiefe,0)
+G01 (_X - ((Laenge/2)-(Versatz1 / 2))*CW,_Y,_Z,Radius,0,0)
+G01 (_X,_Y - Hoehe,_Z,Radius)
+G01 (_X + (Laenge - Versatz1)*CW,_Y,_Z,Radius,0,0)
+G01 (_X,_Y + Hoehe,_Z,Radius)
+G01 (_X - ((Laenge/2)- (Versatz1/2))*CW,_Y,_Z,Radius,0,0)
+END
+EP (0,ABF,0)
+END
+;*********************************************
+;*** Interpolative Zustellung
+IF Interpol=-1
+SP (X,Y + Hoehe/2,0,Radiuskorrektur,0,_ANF,0,0,0)
+FOR b := 1 TO a STEP 1
+G01 (_X - ((Laenge/2)-(Versatz1/2))*CW,_Y,_Z-ZuTiefe/4,Radius,0,0)
+G01 (_X,_Y - Hoehe,_Z,Radius)
+G01 (_X + (Laenge-Versatz1)*CW,_Y,_Z-ZuTiefe/2,Radius,0,0)
+G01 (_X,_Y + Hoehe,_Z,Radius)
+G01 (_X - ((Laenge/2)-(Versatz1 / 2))*CW,_Y,_Z-ZuTiefe/4,0,0,0)
+Versatz1 := Versatz1+Versatz
+END
+IF a_last>0
+G01 (_X - ((Laenge/2)-(Versatz1 / 2))*CW,_Y,_Z-a_Last/4,Radius,0,0)
+G01 (_X,_Y - Hoehe,_Z,Radius)
+G01 (_X + (Laenge - Versatz1 )*CW,_Y,_Z-A_Last/2,Radius,0,0)
+G01 (_X,_Y + Hoehe,_Z,Radius)
+G01 (_X - ((Laenge/2)-(Versatz1 / 2))*CW,_Y,_Z-A_Last/4,0,0,0)
+END
+G01 (_X - ((Laenge/2) -(Versatz1/2))*CW,_Y,_Z,Radius,0,0)
+G01 (_X,_Y - Hoehe,_Z,Radius)
+G01 (_X + (Laenge - Versatz1 ) *CW,_Y,_Z,Radius,0,0)
+G01 (_X,_Y + Hoehe,_Z,Radius)
+G01 (_X - ((Laenge/2) - (Versatz1/2))*CW,_Y,_Z,0,0,0)
+EP (0,ABF,0)
+END
+END
+;************************************************************************************
+;************************************************************************************
+;************************************************************************************
+;************************************************************************************
+;**** Pendeln mit Z-Zustellung
+IF Pendeln=1;BREAKPOINT
+IF Interpol=0
+SP (X-Laenge/2,Y,-ZuTiefe,0,0,_ANF,0,0,0)
+FOR b := 1 TO a STEP 1
+G01 (_X + (Laenge*k) - (Versatz1 *k),_Y,_Z,0,0,0)
+IF (b<a)
+G01 (_X,_Y,_Z-ZuTiefe,0,0,0)
+END
+k := -k
+Versatz1 := Versatz1+Versatz
+END
+IF a_last>0
+G01 (_X,_Y,_Z-a_Last,0)
+G01 (_X + Laenge*k -(Versatz1*k),_Y,_Z,0,0,0)
+END
+EP (0,ABF,0)
+END
+IF Interpol=-1
+SP (X,Y,0,0,0,_ANF,0,0,0)
+FOR b := 1 TO a STEP 1
+G01 (_X +((Laenge/2) - Versatz1),_Y,_Z-ZuTiefe/4,0,0,0)
+G01 (_X-(Laenge -(Versatz1*2)),_Y,_Z-ZuTiefe/2,0,0,0)
+G01 (_X+((Laenge/2) - Versatz1),_Y,_Z-ZuTiefe/4,0,0,0)
+Versatz1 := Versatz1 + Versatz
+END
+IF a_last>0
+G01 (_X+((Laenge/2) - Versatz1),_Y,_Z-A_last/4,0,0,0)
+G01 (_X -( Laenge - (Versatz1*2)),_Y,_Z-A_last/2,0,0,0)
+G01 (_X + ((Laenge/2) -Versatz1),_Y,_Z-A_last/4,0,0,0)
+END
+G01 (_X+((Laenge/2) - Versatz1),_Y,_Z,0,0,0)
+G01 (_X - (Laenge - (Versatz1*2)),_Y,_Z,0,0,0)
+G01 (_X + ((Laenge/2) -Versatz1),_Y,_Z,0,0,0)
+EP (0,ABF,0)
+END
+END
+;************************************************************************************

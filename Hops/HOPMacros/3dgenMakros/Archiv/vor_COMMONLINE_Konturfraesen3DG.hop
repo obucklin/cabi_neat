@@ -1,0 +1,63 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.830[Hops.exe]
+;BILD=KONTURFRAESEN3DG.WMF
+;INFO=
+;WZGV=7505D_001
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Konturfraesen3DG
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   KV := 0;
+   KVM := '';
+   KH := 0;
+   KHM := '';
+   KR := 0;
+   KRM := '';
+   KL := 0;
+   KLM := '';
+   MATERIAL := '';
+   RICHTUNG := 0;
+   ToolID := 0;
+START
+;HOLZHER GmbH
+;Copyright 2016
+;2016-05-04 - CC-Makros V2.0 KRI
+;2014-02-21 - CC-Makros V1.1 HB KEI
+;2006-08-22 - CC-Makros V1.0 KRI
+;3DG-Konturfräsen
+;EVO mit Formatmakro = 21.2.14
+IF _pVar_NoFormat=1
+;Prozessvariable - Keine Formatierung aktiv
+ELSE
+_pVar_PCount := _pVar_PCount+1
+CALL _UserInterface3DG (REF RESULT:=ToolID VAL INPUTTEXT:='GetStandardRouterID')
+WZF (toolID,_VE,_V,_VA,_SD,_ANF,'1')
+;VCNC
+IF _MaschinenTYP=2
+CALL _Format_V5 ( VAL ECKENVERRUNDUNG:=0,TIEFE:=-_rz-0.1,AUFMASS:=0,ANF:=_ANF,ESMD:=0,GGL:=0,LASER:=0,DEPTH:=0)
+ELSE
+;CNC
+IF _pVar_FormatRadial=1
+KSP ('???','???',-_rz-0.1,2,2,_ANF,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0)
+ELSE
+KSP ('???','???',-_rz-0.1,2,-1,_ANF,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0)
+END
+KonturFraesen ('a','KSP','KEP',0,0,0,0,45,1,50,1)
+IF _pVar_FormatRadial=1
+EP (2,_ANF,0)
+ELSE
+EP (1,_ANF,0)
+END
+END
+END

@@ -1,0 +1,92 @@
+;MAKROTYP=1
+;INSTVERSION=6.3.0.3
+;EXEVERSION=6.6.1.59[Hops.exe]
+;BILD=Fläche_fräsen.wmf
+;INFO=
+;WZGV=7225K_105
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Fläche fräsen
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_6.Dll
+;DIALOGPROC=ShowTEbene_Fraesen_Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 200;Dimension X
+   DY := 200;Dimension Y
+   DZ := 100;Dimension Z
+   Ritz_Tool :=118;*VAR*Vorritz Tool
+   Schrupp_Tool :=114;*VAR*Tool  Tasche
+   Vorritzen := 5;*VAR*Vorritz Mass
+   X :=0.00;*VAR*X Pos. der Drehung
+   Y :=0.00;*VAR*Y  Pos. der Drehung
+   Pos_Z :=0;*VAR*Position in Z
+   DW :=90;*VAR*Drehwinkel
+   KW :=45;*VAR*Kippwinkel
+   Z_Zu :=0;*VAR*Z Zustellung
+   Z_Zu1 :=10;*VAR*Zustellung Tasche
+   Ueberlappung :=67;*VAR*Überlappung des Fräsers
+   Dreh_R :=1;*VAR*Fräsrichtung drehen
+   ES_XY :=3;*VAR*Easy Snap XY
+   Ebene_Null :=1;*VAR*Ebene zurückstellen
+   Anz := 1;Zählvar
+   i := 0;Zählvar
+   Temp_Z := 0;
+   Rest := 0;Rest
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+EbeneF (X,Y,Pos_Z,KW,DW,ES_XY,0);BREAKPOINT
+IF Vorritzen > 0
+WZF (Ritz_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+IF Z_Zu <=0
+Anz := 1
+Z_Zu := 0
+Temp_Z := 0
+ELSE
+Anz := ROUND((_RZ - Pos_Z) / Z_Zu)
+Z_Zu := (_RZ - Pos_Z) / Anz
+Temp_Z := _RZ - Z_Zu
+END
+FOR I := 1 TO Anz STEP 1
+EbeneF (X,Y,Temp_Z,KW,DW,ES_XY,0)
+SP (-_WzD,Vorritzen,0,2,1,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Vorritzen,Vorritzen,0,0,3,2)
+G01 (Vorritzen,Vorritzen,0,0,5,2)
+G01 (Vorritzen,Vorritzen,0,0,7,2)
+G01 (Vorritzen,-_WzD,0,0,1,2)
+EP (0,_ANF,0)
+Temp_Z := Temp_Z - Z_Zu
+END
+END
+;Tasche definieren
+EbeneF (X,Y,Pos_Z,KW,DW,ES_XY,0)
+WZF (Schrupp_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+IF Z_Zu1 <=0
+Anz := 1
+Z_Zu1 := 0
+Temp_Z := 0
+ELSE
+Anz := ROUND((_RZ - Pos_Z) / Z_Zu1)
+Z_Zu1 := (_RZ - Pos_Z) / Anz
+Temp_Z := _RZ - Z_Zu1
+END
+FOR I := 1 TO Anz STEP 1
+EbeneF (X,Y,Temp_Z,KW,DW,ES_XY,0)
+KB ('K1','',-_WzD,-_WzR,0,'',1,0)
+KG01 ('',-_WzD,-_WzR,0,'',3,2)
+KG01 ('',-_WzD,-_WzR,0,'',5,2)
+KG01 ('',-_WzD,-_WzR,0,'',7,2)
+KG01 ('',-_WzD,-_WzR,0,'',1,2)
+CALL _ExecutePocket_V5 ( VAL NAMEN:='K1',AA:=-_WzR,UEBERLAPPUNG:=Ueberlappung,MODE:=0,ANGLE:=0,TIEFE:=0,ESMD:=0,ANZAHL:=0,MAXZ:=0,RD:=Dreh_R,FLIEGENDEINTAUCHEN:=1,MAXEINTAUCHLAENGE:=20)
+deletecontour ('k1',0)
+Temp_Z := Temp_Z - Z_Zu1
+END
+IF Ebene_Null = 0
+Ebene0()
+END

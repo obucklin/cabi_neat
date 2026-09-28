@@ -1,0 +1,10 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowGETPARAMCOUNTDialog
+VARS
+   Values := '';*VAR*
+   Separator := '';*VAR*
+   Value := 0;*VAR**REF*
+START
+;.
+CALLDLL GETPARAMCOUNT(MNCDC,DefaultStr,REF VALUE:=Value VAL VALUES:=Values,SEPARATOR:=Separator)

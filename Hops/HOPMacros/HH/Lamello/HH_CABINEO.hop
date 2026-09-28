@@ -1,0 +1,613 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.5.3.10[Hops.exe]
+;BILD=HH_CABINEO.WMF
+;INFO=
+;WZGV=7535D_132
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=HH_CABINEO
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_7.Dll
+;DIALOGPROC=ShowTCabineo_Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   Ca_Tool := 113;*VAR*Werkzeug
+   CA_Tool_B := 501;*VAR*Bohrung
+   B_DM := 15.00;Bohrdurchmesser
+   B_Typ := 30;*VAR*Bohr_Typ
+   B_Typ1 := 10;*VAR*Bohr_Typ Bohrung 5
+   X1 := 60.00;*VAR*Posx1
+   X1_1 := -1;*VAR*Posx1 Ja_Nein
+   X2 := 0.00;*VAR*Posx2
+   X2_1 := -1;*VAR*Posx2 Ja_Nein
+   X3 := 60.00;*VAR*Posx3
+   X3_1 := -1;*VAR*Posx3 Ja_Nein
+   X4 := 60.00;*VAR*Posx4
+   X4_1 := -1;*VAR*Posx4 Ja_Nein
+   X5 := 0.00;*VAR*Posx5
+   X5_1 := 0;*VAR*Posx5 Ja_Nein
+   X6 := 60.00;*VAR*Posx6
+   X6_1 := -1;*VAR*Posx6 Ja_Nein
+   Y1 := 60.00;*VAR*PosY1
+   Y1_1 := 0;*VAR*PosY1 Ja_Nein
+   Y2 := 0.00;*VAR*PosY2
+   Y2_1 := -1;*VAR*PosY2 Ja_Nein
+   Y3 := 60.00;*VAR*PosY3
+   Y3_1 := 0;*VAR*PosY3 Ja_Nein
+   Y4 := 60.00;*VAR*PosY4
+   Y4_1 := 0;*VAR*PosY4 Ja_Nein
+   Y5 := 0.00;*VAR*PosY5
+   Y5_1 := -1;*VAR*PosY5 Ja_Nein
+   Y6 := 60.00;*VAR*PosY6
+   Y6_1 := 0;*VAR*PosY6 Ja_Nein
+   Tiefe := 11.00;*VAR*Tiefe  Spanner
+   Tiefe1 := - 12.00;*VAR*Tiefe  Schraubenloch
+   Typ := 0;*VAR*0= Spanner / 1= Loch
+   ToolID := 9999;
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;Spanner fraesen oder bohren
+IF Tiefe>0
+Tiefe := -tiefe
+END
+IF Typ=0
+WZF (Ca_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+IF (_Wzd >= 10) & (_Wzd <= 7.5) &  (_Wzd <> 12)
+Fehlermeldung (GetMessageTextOem('60','DM falsch muss  zw. 7.5 + 10 mm sein'))
+END
+;-------
+IF (Ca_Tool = 501) | (Ca_Tool = 601)
+;Links hinten
+IF Y1_1 = 0
+Bohrung (3.6,Y1,B_Dm,Tiefe,B_Typ,0,0,7,0,0,0,0)
+Bohrung (3.6 +11.2,Y1,B_Dm,Tiefe,B_Typ,0,0,7,0,0,0,0)
+Bohrung (3.6+11.2+11.2,Y1,B_Dm,Tiefe,B_Typ,0,0,7,0,0,0,0)
+END
+;mitte links
+IF Y2_1 = 0
+Bohrung (3.6,Y2,B_Dm,Tiefe,B_Typ,0,0,8,0,0,0,0)
+Bohrung (3.6 +11.2,Y2,B_Dm,Tiefe,B_Typ,0,0,8,0,0,0,0)
+Bohrung (3.6+11.2+11.2,Y2,B_Dm,Tiefe,B_Typ,0,0,8,0,0,0,0)
+END
+;Vorne links
+IF Y3_1 = 0
+Bohrung (3.6,Y3,B_Dm,Tiefe,B_Typ,0,0,1,0,0,0,0)
+Bohrung (3.6 +11.2,Y3,B_Dm,Tiefe,B_Typ,0,0,1,0,0,0,0)
+Bohrung (3.6+11.2+11.2,Y3,B_Dm,Tiefe,B_Typ,0,0,1,0,0,0,0)
+END
+;Hinten rechts
+IF Y4_1 = 0
+Bohrung (3.6,Y4,B_Dm,Tiefe,B_Typ,0,0,5,0,0,0,0)
+Bohrung (3.6 +11.2,Y4,B_Dm,Tiefe,B_Typ,0,0,5,0,0,0,0)
+Bohrung (3.6+11.2+11.2,Y4,B_Dm,Tiefe,B_Typ,0,0,5,0,0,0,0)
+END
+;mitte rechts
+IF Y5_1 = 0
+Bohrung (3.6,Y5,B_Dm,Tiefe,B_Typ,0,0,4,0,0,0,0)
+Bohrung (3.6 +11.2,Y5,B_Dm,Tiefe,B_Typ,0,0,4,0,0,0,0)
+Bohrung (3.6+11.2+11.2,Y5,B_Dm,Tiefe,B_Typ,0,0,4,0,0,0,0)
+END
+;Vorne Rechts
+IF Y6_1 = 0
+Bohrung (3.6,Y6,B_Dm,Tiefe,B_Typ,0,0,3,0,0,0,0)
+Bohrung (3.6 +11.2,Y6,B_Dm,Tiefe,B_Typ,0,0,3,0,0,0,0)
+Bohrung (3.6+11.2+11.2,Y6,B_Dm,Tiefe,B_Typ,0,0,3,0,0,0,0)
+END
+;in X
+;Links hinten
+IF X1_1 = 0
+Bohrung (X1,3.6,B_Dm,Tiefe,B_Typ,0,0,7,0,0,0,0)
+Bohrung (X1,3.6 +11.2,B_Dm,Tiefe,B_Typ,0,0,7,0,0,0,0)
+Bohrung (X1,3.6+11.2+11.2,B_Dm,Tiefe,B_Typ,0,0,7,0,0,0,0)
+END
+;mitte Hinten
+IF X2_1 = 0
+Bohrung (X2,3.6,B_Dm,Tiefe,B_Typ,0,0,6,0,0,0,0)
+Bohrung (X2,3.6 +11.2,B_Dm,Tiefe,B_Typ,0,0,6,0,0,0,0)
+Bohrung (X2,3.6+11.2+11.2,B_Dm,Tiefe,B_Typ,0,0,6,0,0,0,0)
+END
+;Hinten rechts
+IF X3_1 = 0
+Bohrung (X3,3.6,B_Dm,Tiefe,B_Typ,0,0,5,0,0,0,0)
+Bohrung (X3,3.6 +11.2,B_Dm,Tiefe,B_Typ,0,0,5,0,0,0,0)
+Bohrung (X3,3.6+11.2+11.2,B_Dm,Tiefe,B_Typ,0,0,5,0,0,0,0)
+END
+;Links Vorne
+IF X4_1 = 0
+Bohrung (X4,3.6,B_Dm,Tiefe,B_Typ,0,0,1,0,0,0,0)
+Bohrung (X4,3.6 +11.2,B_Dm,Tiefe,B_Typ,0,0,1,0,0,0,0)
+Bohrung (X4,3.6+11.2+11.2,B_Dm,Tiefe,B_Typ,0,0,1,0,0,0,0)
+END
+;mitte Hinten
+IF X5_1 = 0
+Bohrung (X5,3.6,B_Dm,Tiefe,B_Typ,0,0,2,0,0,0,0)
+Bohrung (X5,3.6 +11.2,B_Dm,Tiefe,B_Typ,0,0,2,0,0,0,0)
+Bohrung (X5,3.6+11.2+11.2,B_Dm,Tiefe,B_Typ,0,0,2,0,0,0,0)
+END
+;Vorne rechts
+IF X6_1 = 0
+Bohrung (X6,3.6,B_Dm,Tiefe,B_Typ,0,0,3,0,0,0,0)
+Bohrung (X6,3.6 +11.2,B_Dm,Tiefe,B_Typ,0,0,3,0,0,0,0)
+Bohrung (X6,3.6+11.2+11.2,B_Dm,Tiefe,B_Typ,0,0,3,0,0,0,0)
+END
+END
+;Fraesen Ø <=10
+IF (_Wzd <= 10) & (_Wzd >= 7.5)
+;Links oben
+IF Y1_1 = 0
+KB ('K1','',-5,Y1 - 6.6,Tiefe,'',7,0)
+KG01 ('',0,Y1-6.6,0,'',7,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=9.2,EY:=Y1 -5,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=20.4,EY:=Y1 - 5,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+KG02M ('',20.4,Y1 + 5,0,26,Y1,'',7,2,7)
+CALL _KG02R_V5 ( VAL EN:='',EX:=9.2,EY:=Y1 + 5,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=Y1 + 6.6,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+KG01 ('',-5,Y1 + 6.6,0,'',7,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Links mitte
+IF Y2_1 = 0
+KB ('K1','',-5,Y2 + 6.6,Tiefe,'',8,0)
+KG01 ('',0,Y2 + 6.6,0,'',8,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=9.2,EY:=Y2 + 5,EZ:=0,R:=7.5,EI:='',ESXY:=8,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=20.4,EY:=Y2 + 5,EZ:=0,R:=7.5,EI:='',ESXY:=8,ESD:=0)
+KG02M ('',20.4,Y2- 5,0,26,Y2,'',8,2,8)
+CALL _KG02R_V5 ( VAL EN:='',EX:=9.2,EY:=Y2 - 5,EZ:=0,R:=7.5,EI:='',ESXY:=8,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=Y2 - 6.6,EZ:=0,R:=7.5,EI:='',ESXY:=8,ESD:=0)
+KG01 ('',-5,Y2 - 6.6,0,'',8,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Links vorne
+IF Y3_1 = 0
+KB ('K1','',-5,Y3 + 6.6,Tiefe,'',1,0)
+KG01 ('',0,Y3 + 6.6,0,'',1,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=9.2,EY:=Y3 + 5,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=20.4,EY:=Y3+ 5,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+KG02M ('',20.4,Y3- 5,0,26,Y3,'',1,2,1)
+CALL _KG02R_V5 ( VAL EN:='',EX:=9.2,EY:=Y3 - 5,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=Y3 - 6.6,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+KG01 ('',-5,Y3 - 6.6,0,'',1,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Rechts hinten
+IF Y4_1 = 0
+KB ('K1','',-5,Y4 + 6.6,Tiefe,'',5,0)
+KG01 ('',0,Y4 + 6.6,0,'',5,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=9.2,EY:=Y4 + 5,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=20.4,EY:=Y4+ 5,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+KG02M ('',20.4,Y4- 5,0,26,Y4,'',5,2,5)
+CALL _KG02R_V5 ( VAL EN:='',EX:=9.2,EY:=Y4 - 5,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=Y4 - 6.6,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+KG01 ('',-5,Y4 - 6.6,0,'',5,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Rechts mitte
+IF Y5_1 = 0
+KB ('K1','',-5,Y5 - 6.6,Tiefe,'',4,0)
+KG01 ('',0,Y5 - 6.6,0,'',4,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=9.2,EY:=Y5 - 5,EZ:=0,R:=7.5,EI:='',ESXY:=4,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=20.4,EY:=Y5 - 5,EZ:=0,R:=7.5,EI:='',ESXY:=4,ESD:=0)
+KG02M ('',20.4,Y5 + 5,0,26,Y5,'',4,2,4)
+CALL _KG02R_V5 ( VAL EN:='',EX:=9.2,EY:=Y5 + 5,EZ:=0,R:=7.5,EI:='',ESXY:=4,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=Y5 + 6.6,EZ:=0,R:=7.5,EI:='',ESXY:=4,ESD:=0)
+KG01 ('',-5,Y5 + 6.6,0,'',4,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Rechts vorne
+IF Y6_1 = 0
+KB ('K1','',-5,Y6 - 6.6,Tiefe,'',3,0)
+KG01 ('',0,Y6 - 6.6,0,'',3,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=9.2,EY:=Y6 - 5,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=20.4,EY:=Y6 - 5,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+KG02M ('',20.4,Y6 + 5,0,26,Y6,'',3,2,3)
+CALL _KG02R_V5 ( VAL EN:='',EX:=9.2,EY:=Y6 + 5,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=Y6 + 6.6,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+KG01 ('',-5,Y6 + 6.6,0,'',3,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Links hinten
+IF X1_1 = 0
+KB ('K1','',X1 + 6.6,-5,Tiefe,'',7,0)
+KG01 ('',X1 + 6.6,0,0,'',7,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X1 + 5,EY:=9.2,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X1 + 5,EY:=20.4,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+KG02M ('',X1- 5,20.4,0,X1,26,'',7,2,7)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X1 - 5,EY:=9.2,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X1 - 6.6,EY:=0,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+KG01 ('',X1-6.6,-5,0,'',7,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Mitte hinten
+IF X2_1 = 0
+KB ('K1','',X2 + 6.6,-5,Tiefe,'',6,0)
+KG01 ('',X2 + 6.6,0,0,'',6,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X2 + 5,EY:=9.2,EZ:=0,R:=7.5,EI:='',ESXY:=6,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X2+ 5,EY:=20.4,EZ:=0,R:=7.5,EI:='',ESXY:=6,ESD:=0)
+KG02M ('',X2- 5,20.4,0,X2,26,'',6,2,6)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X2 - 5,EY:=9.2,EZ:=0,R:=7.5,EI:='',ESXY:=6,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X2 - 6.6,EY:=0,EZ:=0,R:=7.5,EI:='',ESXY:=6,ESD:=0)
+KG01 ('',X2-6.6,-5,0,'',6,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Rechts hinten
+IF X3_1 = 0
+KB ('K1','',X3 - 6.6,-5,Tiefe,'',5,0)
+KG01 ('',X3 - 6.6,0,0,'',5,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X3 - 5,EY:=9.2,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X3 - 5,EY:=20.4,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+KG02M ('',X3 + 5,20.4,0,X3,26,'',5,2,5)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X3 + 5,EY:=9.2,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X3 + 6.6,EY:=0,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+KG01 ('',X3 +6.6,-5,0,'',5,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Links vorne
+IF X4_1 = 0
+KB ('K1','',X4 - 6.6,-5,Tiefe,'',1,0)
+KG01 ('',X4 - 6.6,0,0,'',1,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X4 - 5,EY:=9.2,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X4 - 5,EY:=20.4,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+KG02M ('',X4 + 5,20.4,0,X4,26,'',1,2,1)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X4 + 5,EY:=9.2,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X4 + 6.6,EY:=0,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+KG01 ('',X4 +6.6,-5,0,'',1,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Mitte vorne
+IF X5_1 = 0
+KB ('K1','',X5 - 6.6,-5,Tiefe,'',2,0)
+KG01 ('',X5 - 6.6,0,0,'',2,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X5 - 5,EY:=9.2,EZ:=0,R:=7.5,EI:='',ESXY:=2,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X5 - 5,EY:=20.4,EZ:=0,R:=7.5,EI:='',ESXY:=2,ESD:=0)
+KG02M ('',X5 + 5,20.4,0,X5,26,'',2,2,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X5 + 5,EY:=9.2,EZ:=0,R:=7.5,EI:='',ESXY:=2,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X5 + 6.6,EY:=0,EZ:=0,R:=7.5,EI:='',ESXY:=2,ESD:=0)
+KG01 ('',X5 +6.6,-5,0,'',2,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Rechts vorne
+IF X6_1 = 0
+KB ('K1','',X6 + 6.6,-5,Tiefe,'',3,0)
+KG01 ('',X6 + 6.6,0,0,'',3,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X6  +  5,EY:=9.2,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X6 + 5,EY:=20.4,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+KG02M ('',X6 - 5,20.4,0,X6,26,'',3,2,3)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X6 - 5,EY:=9.2,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X6 - 6.6,EY:=0,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+KG01 ('',X6 - 6.6,-5,0,'',3,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+END
+;12 mm Fraeser
+IF (_Wzd = 12);BREAKPOINT
+;+++++++++++++++++
+;+++++++++++++++++
+;+++++++++++++++++++
+;+++++++++++++++++++
+;Links oben
+IF Y1_1 = 0
+KB ('K1','',-6,Y1 - 6.6,Tiefe,'',7,0)
+KG01 ('',0,Y1-6.6,0,'',7,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=8.1,EY:=Y1 -6,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+KG01 ('',10.3,Y1 - 6,0,'',7,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=19.3,EY:=Y1 - 6,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+KG01 ('',21.5,Y1 - 6,0,'',7,2)
+KG02M ('',21.5,Y1 + 6,0,26,Y1,'',7,2,7)
+KG01 ('',19.3,Y1 + 6,0,'',7,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=10.3,EY:=Y1 + 6,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+KG01 ('',8.1,Y1 + 6,0,'',7,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=Y1 + 6.6,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+KG01 ('',-6,Y1 + 6.6,0,'',7,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Links mitte
+IF Y2_1 = 0
+KB ('K1','',-6,Y2 + 6.6,Tiefe,'',8,0)
+KG01 ('',0,Y2 + 6.6,0,'',8,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=8.1,EY:=Y2 + 6,EZ:=0,R:=7.5,EI:='',ESXY:=8,ESD:=0)
+KG01 ('',10.3,Y2 + 6,0,'',8,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=19.3,EY:=Y2 + 6,EZ:=0,R:=7.5,EI:='',ESXY:=8,ESD:=0)
+KG01 ('',21.5,Y2 + 6,0,'',8,2)
+KG02M ('',21.5,Y2 - 6,0,26,Y2,'',8,2,8)
+KG01 ('',19.3,Y2 - 6,0,'',8,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=10.3,EY:=Y2 - 6,EZ:=0,R:=7.5,EI:='',ESXY:=8,ESD:=0)
+KG01 ('',8.1,Y2 - 6,0,'',8,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=Y2 - 6.6,EZ:=0,R:=7.5,EI:='',ESXY:=8,ESD:=0)
+KG01 ('',-6,Y2 - 6.6,0,'',8,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Links vorne
+IF Y3_1 = 0
+KB ('K1','',-6,Y3 + 6.6,Tiefe,'',1,0)
+KG01 ('',0,Y3 + 6.6,0,'',1,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=8.1,EY:=Y3 + 6,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+KG01 ('',10.3,Y3 + 6,0,'',1,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=19.3,EY:=Y3 + 6,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+KG01 ('',21.5,Y3 + 6,0,'',1,2)
+KG02M ('',21.5,Y3 - 6,0,26,Y3,'',1,2,1)
+KG01 ('',19.3,Y3 - 6,0,'',1,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=10.3,EY:=Y3- 6,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+KG01 ('',8.1,Y3 - 6,0,'',1,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=Y3 - 6.6,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+KG01 ('',-6,Y3 - 6.6,0,'',1,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Rechts hinten
+IF Y4_1 = 0
+KB ('K1','',-6,Y4 + 6.6,Tiefe,'',5,0)
+KG01 ('',0,Y4 + 6.6,0,'',5,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=8.1,EY:=Y4 + 6,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+KG01 ('',10.3,Y4 + 6,0,'',5,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=19.3,EY:=Y4+ 6,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+KG01 ('',21.5,Y4 + 6,0,'',5,2)
+KG02M ('',21.5,Y4 - 6,0,26,Y4,'',5,2,5)
+KG01 ('',19.3,Y4 - 6,0,'',5,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=10.3,EY:=Y4- 6,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+KG01 ('',8.1,Y4 - 6,0,'',5,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=Y3 - 6.6,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+KG01 ('',-6,Y4- 6.6,0,'',5,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Rechts mitte
+IF Y5_1 = 0
+KB ('K1','',-6,Y5 - 6.6,Tiefe,'',4,0)
+KG01 ('',0,Y5 - 6.6,0,'',4,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=8.1,EY:=Y5 - 6,EZ:=0,R:=7.5,EI:='',ESXY:=4,ESD:=0)
+KG01 ('',10.3,Y5 - 6,0,'',4,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=19.3,EY:=Y5 -  6,EZ:=0,R:=7.5,EI:='',ESXY:=4,ESD:=0)
+KG01 ('',21.5,Y5 -  6,0,'',4,2)
+KG02M ('',21.5,Y5 + 6,0,26,Y5,'',4,2,4)
+KG01 ('',19.3,Y5 + 6,0,'',4,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=10.3,EY:=Y5 +6,EZ:=0,R:=7.5,EI:='',ESXY:=4,ESD:=0)
+KG01 ('',8.1,Y5 +6,0,'',4,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=Y5 + 6.6,EZ:=0,R:=7.5,EI:='',ESXY:=4,ESD:=0)
+KG01 ('',-6,Y5 +  6.6,0,'',4,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Rechts vorne
+IF Y6_1 = 0
+KB ('K1','',-6,Y6 - 6.6,Tiefe,'',3,0)
+KG01 ('',0,Y6 - 6.6,0,'',3,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=8.1,EY:=Y6 - 6,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+KG01 ('',10.3,Y6 - 6,0,'',3,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=19.3,EY:=Y6 -  6,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+KG01 ('',21.5,Y6 -  6,0,'',3,2)
+KG02M ('',21.5,Y6 + 6,0,26,Y6,'',3,2,3)
+KG01 ('',19.3,Y6 + 6,0,'',3,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=10.3,EY:=Y6 +6,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+KG01 ('',8.1,Y6 +6,0,'',3,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=Y6 + 6.6,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+KG01 ('',-6,Y6 +  6.6,0,'',3,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Links hinten
+IF X1_1 = 0
+KB ('K1','',X1 + 6.6,-6,Tiefe,'',7,0)
+KG01 ('',X1 + 6.6,0,0,'',7,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X1 + 6,EY:=8.1,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+KG01 ('',X1 + 6,10.3,0,'',7,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X1 + 6,EY:=19.3,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+KG01 ('',X1 + 6,21.5,0,'',7,2)
+KG02M ('',X1- 6,21.5,0,X1,26,'',7,2,7)
+KG01 ('',X1 - 6,19.3,0,'',7,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X1 - 6,EY:=10.3,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+KG01 ('',X1 - 6,8.1,0,'',7,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X1 - 6.6,EY:=0,EZ:=0,R:=7.5,EI:='',ESXY:=7,ESD:=0)
+KG01 ('',X1-6.6,-6,0,'',7,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Mitte hinten
+IF X2_1 = 0
+KB ('K1','',X2 + 6.6,-6,Tiefe,'',6,0)
+KG01 ('',X2 + 6.6,0,0,'',6,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X2 + 6,EY:=8.1,EZ:=0,R:=7.5,EI:='',ESXY:=6,ESD:=0)
+KG01 ('',X2 + 6,10.3,0,'',6,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X2 + 6,EY:=19.3,EZ:=0,R:=7.5,EI:='',ESXY:=6,ESD:=0)
+KG01 ('',X2 + 6,21.5,0,'',6,2)
+KG02M ('',X2- 6,21.5,0,X2,26,'',6,2,6)
+KG01 ('',X2 - 6,19.3,0,'',6,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X2 - 6,EY:=10.3,EZ:=0,R:=7.5,EI:='',ESXY:=6,ESD:=0)
+KG01 ('',X2 - 6,8.1,0,'',6,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X2 - 6.6,EY:=0,EZ:=0,R:=7.5,EI:='',ESXY:=6,ESD:=0)
+KG01 ('',X2-6.6,-6,0,'',6,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Rechts hinten
+IF X3_1 = 0
+KB ('K1','',X3 - 6.6,-6,Tiefe,'',5,0)
+KG01 ('',X3 - 6.6,0,0,'',5,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X3 - 6,EY:=8.1,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+KG01 ('',X3 -  6,10.3,0,'',5,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X3 - 6,EY:=19.3,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+KG01 ('',X3 - 6,21.5,0,'',5,2)
+KG02M ('',X3 + 6,21.5,0,X3,26,'',5,2,5)
+KG01 ('',X3 + 6,19.3,0,'',5,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X3 + 6,EY:=10.3,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+KG01 ('',X3 + 6,8.1,0,'',5,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X3  + 6.6,EY:=0,EZ:=0,R:=7.5,EI:='',ESXY:=5,ESD:=0)
+KG01 ('',X3 + 6.6,-6,0,'',5,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Links vorne
+IF X4_1 = 0
+KB ('K1','',X4 - 6.6,-6,Tiefe,'',1,0)
+KG01 ('',X4 - 6.6,0,0,'',1,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X4 - 6,EY:=8.1,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+KG01 ('',X4 -  6,10.3,0,'',1,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X4 - 6,EY:=19.3,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+KG01 ('',X4 - 6,21.5,0,'',1,2)
+KG02M ('',X4 + 6,21.5,0,X4,26,'',1,2,1)
+KG01 ('',X4 + 6,19.3,0,'',1,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X4 + 6,EY:=10.3,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+KG01 ('',X4 + 6,8.1,0,'',1,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X4  + 6.6,EY:=0,EZ:=0,R:=7.5,EI:='',ESXY:=1,ESD:=0)
+KG01 ('',X4 + 6.6,-6,0,'',1,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Mitte vorne
+IF X5_1 = 0
+KB ('K1','',X5 - 6.6,-6,Tiefe,'',2,0)
+KG01 ('',X5 - 6.6,0,0,'',2,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X5 - 6,EY:=8.1,EZ:=0,R:=7.5,EI:='',ESXY:=2,ESD:=0)
+KG01 ('',X5 -  6,10.3,0,'',2,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X5- 6,EY:=19.3,EZ:=0,R:=7.5,EI:='',ESXY:=2,ESD:=0)
+KG01 ('',X5 - 6,21.5,0,'',2,2)
+KG02M ('',X5 + 6,21.5,0,X5,26,'',2,2,2)
+KG01 ('',X5 + 6,19.3,0,'',2,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X5 + 6,EY:=10.3,EZ:=0,R:=7.5,EI:='',ESXY:=2,ESD:=0)
+KG01 ('',X5+ 6,8.1,0,'',2,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X5 + 6.6,EY:=0,EZ:=0,R:=7.5,EI:='',ESXY:=2,ESD:=0)
+KG01 ('',X5+ 6.6,-6,0,'',2,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+;Rechts vorne
+IF X6_1 = 0
+KB ('K1','',X6 +  6.6,-6,Tiefe,'',3,0)
+KG01 ('',X6 + 6.6,0,0,'',3,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X6 + 6,EY:=8.1,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+KG01 ('',X6 +  6,10.3,0,'',3,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X6 + 6,EY:=19.3,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+KG01 ('',X6 + 6,21.5,0,'',3,2)
+KG02M ('',X6 -  6,21.5,0,X6,26,'',3,2,3)
+KG01 ('',X6 - 6,19.3,0,'',3,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X6 - 6,EY:=10.3,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+KG01 ('',X6 -  6,8.1,0,'',3,2)
+CALL _KG02R_V5 ( VAL EN:='',EX:=X6 - 6.6,EY:=0,EZ:=0,R:=7.5,EI:='',ESXY:=3,ESD:=0)
+KG01 ('',X6 - 6.6,-6,0,'',3,2)
+KSP ('???','???',Tiefe,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K1',0)
+END
+END
+ELSE
+WZF (Ca_Tool_B,_VE,_V,_VA,_SD,_ANF,'1')
+;Links oben
+IF Y1_1 = 0
+Bohrung (_Rz -5,Y1,5,Tiefe1,B_Typ1,0,0,7,0,0,0,0)
+END
+;Links mitte
+IF Y2_1 = 0
+Bohrung (_Rz -5,Y2,5,Tiefe1,B_Typ1,0,0,8,0,0,0,0)
+END
+;Links vorne
+IF Y3_1 = 0
+Bohrung (_Rz -5,Y3,5,Tiefe1,B_Typ1,0,0,1,0,0,0,0)
+END
+;Rechts hinten
+IF Y4_1 = 0
+Bohrung (_Rz -5,Y4,5,Tiefe1,B_Typ1,0,0,5,0,0,0,0)
+END
+;Rechts mitte
+IF Y5_1 = 0
+Bohrung (_Rz -5,Y5,5,Tiefe1,B_Typ1,0,0,4,0,0,0,0)
+END
+;Rechts vorne
+IF Y6_1 = 0
+Bohrung (_Rz -5,Y6,5,Tiefe1,B_Typ1,0,0,3,0,0,0,0)
+END
+;Links hinten
+IF X1_1 = 0
+Bohrung (X1,_Rz -5,5,Tiefe1,B_Typ1,0,0,7,0,0,0,0)
+END
+;Mitte hinten
+IF X2_1 = 0
+Bohrung (X2,_Rz -5,5,Tiefe1,B_Typ1,0,0,6,0,0,0,0)
+END
+;Rechts hinten
+IF X3_1 = 0
+Bohrung (X3,_Rz -5,5,Tiefe1,B_Typ1,0,0,5,0,0,0,0)
+END
+;Links vorne
+IF X4_1 = 0
+Bohrung (X4,_Rz -5,5,Tiefe1,B_Typ1,0,0,1,0,0,0,0)
+END
+;Mitte vorne
+IF X5_1 = 0
+Bohrung (X5,_Rz -5,5,Tiefe1,B_Typ1,0,0,2,0,0,0,0)
+END
+;Rechts vorne
+IF X6_1 = 0
+Bohrung (X6,_Rz -5,5,Tiefe1,B_Typ1,0,0,3,0,0,0,0)
+END
+END
+END

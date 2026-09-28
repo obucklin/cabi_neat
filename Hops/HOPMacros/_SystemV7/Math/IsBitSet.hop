@@ -1,0 +1,32 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowIsBitSetDialog
+;AUTOSCRIPTSTART=0
+VARS
+   Value := 128;*VAR*Wert
+   BitNr := 1;*VAR*1 bis 8
+   Result := ;*VAR**REF*0-Bit OFF. 1-Bit ON
+   dummy := 0;
+   binstr := '';
+   ii := 0;
+   searchvalue := 0;
+START
+Fertigteil (500,300,19,0,0,0,0,0,'',0,0,0)
+;Binäres string kalkulieren
+binstr := ''
+searchvalue := 0
+FOR ii := 7 TO 0 STEP -1
+CALL PowerOfTwo (REF RESULT:=dummy VAL PWR:=ii)
+IF dummy <= value
+IF (dummy + searchvalue) <= value
+searchvalue := searchvalue + dummy
+binstr := binstr + '1'
+ELSE
+binstr := binstr + '0'
+END
+ELSE
+binstr := binstr + '0'
+END
+END
+;ZText (binstr,10,-10,30,0,1,0,'Times New Roman',0,0,0,0,7)
+Result := StrToInt(STRCOPY(binstr, 9-BitNr, 1))

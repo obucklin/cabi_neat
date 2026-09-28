@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   Load := 0;*VAR*Einlegen
+   MoveToAnotherPos := 0;*VAR*Umheben
+   Unload := 0;*VAR*Abholen
+   MoveMode := 0;*VAR*0=Machine 1= User
+START
+nciext (-100086,'NCISys',0,0,0,Load,MoveToAnotherPos,Unload,MoveMode)

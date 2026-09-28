@@ -1,0 +1,20 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCName
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=WGerade.WMF
+VARS
+   X := 0;*VAR*Xposition
+   Y := 0;*VAR*Yposition
+   _AktPosX := 0;
+   _AktPosY := 0;
+   _AktPosSaveX := 0;
+   _AktPosSaveY := 0;
+START
+_AktPosX := X
+_AktPosY := Y
+

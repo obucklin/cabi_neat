@@ -1,0 +1,15 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowVektorNormieren_V7Dialog
+VARS
+   Nx := ;*VAR**REF*
+   Ny := ;*VAR**REF*
+   Nz := ;*VAR**REF*
+   L := 0;
+START
+L := sqrt(sqr(Nx)+sqr(Ny)+sqr(Nz))
+IF L<>0
+Nx := Nx/L
+Ny := Ny/L
+Nz := Nz/L
+END

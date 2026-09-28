@@ -1,0 +1,142 @@
+;MAKROTYP=0
+;INSTVERSION=6.4.4.2
+;EXEVERSION=6.6.2.207[Hops.exe]
+;BILD=Lappenschliessblech.wmf
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Lappenschliessblech
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_11.Dll
+;DIALOGPROC=Show_Lappen_SB_Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 1500;Dimension X
+   DY := 200;Dimension Y
+   DZ := 44;Dimension Z
+   K_Tool :=116;*VAR*Konturwerkzeug
+   T_Tool :=116;*VAR*Taschenwerkzeug
+   B_Tool :=108;*VAR*Bohrwerkzeug
+   Ebene :=0;*VAR*Arbeitsebene
+   MX :=100;*VAR*Drueckerhoehe
+   MY :=12;*VAR*Schloss Tiefe
+   Tiefe :=- 17;*VAR*Fraestiefe
+   T_Tiefe :=- (17+20);*VAR*Kastentiefe
+   Versatz :=0.0;*VAR*Paralelversatz
+   Zustell :=10;*VAR*Zustellung der Kontur
+   Zu_T :=10;*VAR*Zustellung der Tasche
+   VB :=-1;*VAR*Vorbohren Ja / nein
+   VB_DM :=3;*VAR*Vorbohren Ø
+   VB_Typ :=10;*VAR*Bohrtyp
+   VB_Tiefe :=- (17 +10);*VAR*Bohrtiefe
+   Bearb_Art :=-1;*VAR*Bearbeitungsrichtung drehen
+   Laser :=-1;*VAR*Laser Ja nein
+   SnapXY :=1;*VAR*Laser Ja nein
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+WZF (K_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+IF _WzD >= 20
+Fehlermeldung ('Werkzeug Ø zu gross: WKz '  +  INTTOSTR(K_Tool))
+END
+IF Ebene = 0
+;von Oben
+Ebene0()
+deletecontour ('SB',0)
+KB ('SB','',(MX - 45),- _WzR,Tiefe,'',SnapXY,0)
+KG01 ('',(MX - 45),MY,0,'',SnapXY,2)
+KG01 ('',(MX -  60),MY,0,'',SnapXY,2)
+KVerrundung ('',0,10,'',2)
+KG01 ('',(MX - 60),MY + 20,0,'',SnapXY,2)
+KVerrundung ('',0,10,'',2)
+KG01 ('',MX + 100,MY + 20,0,'',SnapXY,2)
+KVerrundung ('',0,10,'',2)
+KG01 ('',MX + 100,MY,0,'',SnapXY,2)
+KVerrundung ('',0,10,'',2)
+KG01 ('',MX + 10,MY,0,'',SnapXY,2)
+KG01 ('',MX + 10,- _WzR,0,'',SnapXY,2)
+KG01 ('',(MX - 45),- _WzR,0,'',SnapXY,2)
+CALL _ExecutePocket_V5 ( VAL NAMEN:='SB',AA:=0,UEBERLAPPUNG:=67,MODE:=0,ANGLE:=0,TIEFE:=Tiefe,ESMD:=0,ANZAHL:=0,MAXZ:=0,RD:=Bearb_Art,FLIEGENDEINTAUCHEN:=0,MAXEINTAUCHLAENGE:=20)
+;Taschen fraesen
+WZF (T_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _Rechteck_V5 ( VAL X_MITTE:=MX + 60,Y_MITTE:=MY + 8.5,LAENGE:=48,BREITE:=14,RADIUS:=0,WINKEL:=0,TIEFE:=T_Tiefe,ZUTIEFE:=Zustell,RADIUSKORREKTUR:=2,AB:=0,AUFMASS:=0,ANF:=_ANF,ABF:=_ANF,UMKEHREN:=0,RAMPE:=0,RAMPENLAENGE:=50,QUADRANT:=1,INTERPOL:=0,ESXY:=SnapXY,ESMD:=0,LASER:=0)
+CALL _Rechteck_V5 ( VAL X_MITTE:=MX -  17.5,Y_MITTE:=MY +  8.5,LAENGE:=48,BREITE:=14,RADIUS:=0,WINKEL:=0,TIEFE:=T_Tiefe,ZUTIEFE:=Zu_T,RADIUSKORREKTUR:=2,AB:=0,AUFMASS:=0,ANF:=_ANF,ABF:=_ANF,UMKEHREN:=0,RAMPE:=0,RAMPENLAENGE:=50,QUADRANT:=1,INTERPOL:=0,ESXY:=SnapXY,ESMD:=0,LASER:=0)
+;Schrauben vorbohren
+IF VB = -1
+WZB (B_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+/CALL _Bohgx_V5 ( VAL SPY:=MY + 10,BIX:=MX - 51,BIIX:=71.5,BIIIX:=71.5,BIIIIX:=0,SPIEGELN:=0,T:=VB_Tiefe,D:=VB_DM,TLF:=VB_Typ,INKREMENT:=1,ESXY:=1,ESD:=0,USE2:=1,USE3:=1,USE4:=0)
+Bohrung (MX - 51,MY + 10,VB_DM,VB_Tiefe,VB_Typ,0,0,SnapXY,0,0,0,0)
+Bohrung (MX - 51 + 71.5,MY + 10,VB_DM,VB_Tiefe,VB_Typ,0,0,SnapXY,0,0,0,0)
+Bohrung (MX - 51 + 71.5 +71.5,MY + 10,VB_DM,VB_Tiefe,VB_Typ,0,0,SnapXY,0,0,0,0)
+END
+Ebene0()
+END
+IF Ebene = 1
+;von Vorne
+Ebene1()
+deletecontour ('SB',0)
+KB ('SB','',(MX - 45),- _WzR,Tiefe,'',SnapXY,0)
+KG01 ('',(MX - 45),MY,0,'',SnapXY,2)
+KG01 ('',(MX -  60),MY,0,'',SnapXY,2)
+KVerrundung ('',0,10,'',2)
+KG01 ('',(MX - 60),MY + 20,0,'',SnapXY,2)
+KVerrundung ('',0,10,'',2)
+KG01 ('',MX + 100,MY + 20,0,'',SnapXY,2)
+KVerrundung ('',0,10,'',2)
+KG01 ('',MX + 100,MY,0,'',SnapXY,2)
+KVerrundung ('',0,10,'',2)
+KG01 ('',MX + 10,MY,0,'',SnapXY,2)
+KG01 ('',MX + 10,- _WzR,0,'',SnapXY,2)
+KG01 ('',(MX - 45),- _WzR,0,'',SnapXY,2)
+CALL _ExecutePocket_V5 ( VAL NAMEN:='SB',AA:=0,UEBERLAPPUNG:=67,MODE:=0,ANGLE:=0,TIEFE:=Tiefe,ESMD:=0,ANZAHL:=0,MAXZ:=0,RD:=Bearb_Art,FLIEGENDEINTAUCHEN:=0,MAXEINTAUCHLAENGE:=20)
+;Taschen fraesen
+WZF (T_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _Rechteck_V5 ( VAL X_MITTE:=MX + 60,Y_MITTE:=MY + 8.5,LAENGE:=48,BREITE:=14,RADIUS:=0,WINKEL:=0,TIEFE:=T_Tiefe,ZUTIEFE:=Zustell,RADIUSKORREKTUR:=2,AB:=0,AUFMASS:=0,ANF:=_ANF,ABF:=_ANF,UMKEHREN:=0,RAMPE:=0,RAMPENLAENGE:=50,QUADRANT:=1,INTERPOL:=0,ESXY:=SnapXY,ESMD:=0,LASER:=0)
+CALL _Rechteck_V5 ( VAL X_MITTE:=MX -  17.5,Y_MITTE:=MY +  8.5,LAENGE:=48,BREITE:=14,RADIUS:=0,WINKEL:=0,TIEFE:=T_Tiefe,ZUTIEFE:=Zu_T,RADIUSKORREKTUR:=2,AB:=0,AUFMASS:=0,ANF:=_ANF,ABF:=_ANF,UMKEHREN:=0,RAMPE:=0,RAMPENLAENGE:=50,QUADRANT:=1,INTERPOL:=0,ESXY:=SnapXY,ESMD:=0,LASER:=0)
+;Schrauben vorbohren
+IF VB = -1
+WZB (B_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+Bohrung (MX - 51,MY + 10,VB_DM,VB_Tiefe,VB_Typ,0,0,SnapXY,0,0,0,0)
+Bohrung (MX - 51 + 71.5,MY + 10,VB_DM,VB_Tiefe,VB_Typ,0,0,SnapXY,0,0,0,0)
+Bohrung (MX - 51 + 71.5 +71.5,MY + 10,VB_DM,VB_Tiefe,VB_Typ,0,0,SnapXY,0,0,0,0)
+END
+/Ebene0()
+END
+IF Ebene = 2
+;von hinten
+Ebene3()
+deletecontour ('SB',0)
+KB ('SB','',(MX - 45),- _WzR,Tiefe,'',SnapXY,0)
+KG01 ('',(MX - 45),MY,0,'',SnapXY,2)
+KG01 ('',(MX -  60),MY,0,'',SnapXY,2)
+KVerrundung ('',0,10,'',2)
+KG01 ('',(MX - 60),MY + 20,0,'',SnapXY,2)
+KVerrundung ('',0,10,'',2)
+KG01 ('',MX + 100,MY + 20,0,'',SnapXY,2)
+KVerrundung ('',0,10,'',2)
+KG01 ('',MX + 100,MY,0,'',SnapXY,2)
+KVerrundung ('',0,10,'',2)
+KG01 ('',MX + 10,MY,0,'',SnapXY,2)
+KG01 ('',MX + 10,- _WzR,0,'',SnapXY,2)
+KG01 ('',(MX - 45),- _WzR,0,'',SnapXY,2)
+CALL _ExecutePocket_V5 ( VAL NAMEN:='SB',AA:=0,UEBERLAPPUNG:=67,MODE:=0,ANGLE:=0,TIEFE:=Tiefe,ESMD:=0,ANZAHL:=0,MAXZ:=0,RD:=Bearb_Art,FLIEGENDEINTAUCHEN:=0,MAXEINTAUCHLAENGE:=20)
+;Taschen fraesen
+WZF (T_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _Rechteck_V5 ( VAL X_MITTE:=MX + 60,Y_MITTE:=MY + 8.5,LAENGE:=48,BREITE:=14,RADIUS:=0,WINKEL:=0,TIEFE:=T_Tiefe,ZUTIEFE:=Zustell,RADIUSKORREKTUR:=2,AB:=0,AUFMASS:=0,ANF:=_ANF,ABF:=_ANF,UMKEHREN:=0,RAMPE:=0,RAMPENLAENGE:=50,QUADRANT:=1,INTERPOL:=0,ESXY:=SnapXY,ESMD:=0,LASER:=0)
+CALL _Rechteck_V5 ( VAL X_MITTE:=MX -  17.5,Y_MITTE:=MY +  8.5,LAENGE:=48,BREITE:=14,RADIUS:=0,WINKEL:=0,TIEFE:=T_Tiefe,ZUTIEFE:=Zu_T,RADIUSKORREKTUR:=2,AB:=0,AUFMASS:=0,ANF:=_ANF,ABF:=_ANF,UMKEHREN:=0,RAMPE:=0,RAMPENLAENGE:=50,QUADRANT:=1,INTERPOL:=0,ESXY:=SnapXY,ESMD:=0,LASER:=0)
+;Schrauben vorbohren
+IF VB = -1
+WZB (B_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+Bohrung (MX - 51,MY + 10,VB_DM,VB_Tiefe,VB_Typ,0,0,SnapXY,0,0,0,0)
+Bohrung (MX - 51 + 71.5,MY + 10,VB_DM,VB_Tiefe,VB_Typ,0,0,SnapXY,0,0,0,0)
+Bohrung (MX - 51 + 71.5 +71.5,MY + 10,VB_DM,VB_Tiefe,VB_Typ,0,0,SnapXY,0,0,0,0)
+END
+/Ebene0()
+END
+END

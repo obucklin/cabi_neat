@@ -1,0 +1,115 @@
+;BILD=
+;INFO=
+;WZGV=7123K_021
+;MASCHINE=HOLZHER
+;NCNAME=Rahmen
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA.Dll
+;DIALOGPROC=ShowRahmenDialog
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2000;*VAR*Dimension X
+   DY := 80;*VAR*Dimension Y
+   DZ := 45;*VAR*Dimension Z
+   Druecker_H := 1000;Kasten Oben
+   Falz_T := 15;*VAR*Falztiefe
+   Falz_H := 29;*VAR*Falz hoehe
+   Loch_Dm := 15.00;Dübellochdurchmesser
+   Fase := 1.00;Fase
+   S_Blech := 1;*VAR*Schliessblech Ja=1 / Nein=0
+START
+;Ablaengen
+WZS (200,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _saege_y_V5 ( VAL SX:=0,SY:=-50,SZ:=-3,EY:=-50,EZ:=-50,BL:=1,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=0,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=1,ESY:=5)
+CALL _saege_y_V5 ( VAL SX:=0,SY:=-50,SZ:=-3,EY:=-50,EZ:=-50,BL:=1,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=0,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=3,ESY:=5)
+;Schruppen von Verbindung
+WZF (5,_VE,_V,_VA,_SD,_ANF,'1')
+SP (DY,-30,-2,1,0,_ANF,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (DY,Falz_T,0,10,1,2)
+G01 (-40,Falz_T,0,10,1,2)
+EP (0,_ANF,0)
+;Bohren links
+Ebene1()
+WZF (116,_VE,_V,_VA,_SD,_ANF,'1')
+;Erste Bohrung
+SP (20,(DZ/2)-(Loch_Dm/2),0,2,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+;10mm Tief
+g02m (20,(DZ/2)-(Loch_Dm/2),-10,20,DZ/2,0,1,2,1)
+;20mm Tief
+g02m (20,(DZ/2)-(Loch_Dm/2),-10,20,DZ/2,0,1,2,1)
+;30mm Tief
+g02m (20,(DZ/2)-(Loch_Dm/2),-10,20,DZ/2,0,1,2,1)
+;40mm Tief
+g02m (20,(DZ/2)-(Loch_Dm/2),-10,20,DZ/2,0,1,2,1)
+g02m (20,(DZ/2)-(Loch_Dm/2),0,20,DZ/2,0,1,2,1)
+EP (0,_ANF,0)
+;Zweite Bohrung
+SP (DY-30,(DZ/2)-(Loch_Dm/2),0,2,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+;10mm Tief
+g02m (DY-30,(DZ/2)-(Loch_Dm/2),-10,DY-30,DZ/2,0,1,2,1)
+;20mm Tief
+g02m (DY-30,(DZ/2)-(Loch_Dm/2),-10,DY-30,DZ/2,0,1,2,1)
+;30mm Tief
+g02m (DY-30,(DZ/2)-(Loch_Dm/2),-10,DY-30,DZ/2,0,1,2,1)
+;40mm Tief
+g02m (DY-30,(DZ/2)-(Loch_Dm/2),-10,DY-30,DZ/2,0,1,2,1)
+g02m (DY-30,(DZ/2)-(Loch_Dm/2),0,DY-30,DZ/2,0,1,2,1)
+EP (0,_ANF,0)
+Ebene0()
+IF S_Blech=1
+WZF (17,_VE,_V,_VA,_SD,_ANF,'1')
+;Kasten oben
+SP (Druecker_H -758,-50,-21,2,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Druecker_H-758,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H-658,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H-658,-50,0,0,1,2)
+EP (0,_ANF,0)
+;Kasten mitte
+SP (Druecker_H -87,-50,-21,2,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Druecker_H-87,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H+130,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H+130,-50,0,0,1,2)
+EP (0,_ANF,0)
+;Kasten unten
+SP (Druecker_H +735,-50,-21,2,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Druecker_H+735,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H+835,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H+835,-50,0,0,1,2)
+EP (0,_ANF,0)
+END
+;Falz
+WZF (1,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-150,Falz_T,-Falz_H,2,0,_ANF,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-150,Falz_T,0,0,3,2)
+EP (0,_ANF,0)
+;Formatieren hinten
+WZF (12,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-100,0,-2,1,0,_ANF,0,0,0,7,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-100,0,0,0,5,2)
+EP (0,_ANF,0)
+;Fasen Vorne im Falz
+WZF (11,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,-100,-Fase,2,0,_ANF,0,0,0,7,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,Falz_T,0,0,1,2)
+G01 (-100,Falz_T,0,0,3,2)
+EP (0,_ANF,0)
+;Fasen hinten
+WZF (11,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-50,0,-Fase,1,0,_ANF,0,0,0,7,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,5,2)
+EP (0,_ANF,0)
+;Formatieren mit Fase unten
+WZF (12,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-100,0,Fase,2,0,_ANF,0,0,0,1,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-100,0,0,0,3,2)
+EP (0,_ANF,0)
+;Fasen hinten
+WZF (11,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-50,0,-(Falz_H + Fase),2,0,_ANF,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,3,2)
+EP (0,_ANF,0)

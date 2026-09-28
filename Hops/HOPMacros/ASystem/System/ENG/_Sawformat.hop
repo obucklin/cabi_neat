@@ -1,0 +1,20 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=xxx
+;NCNAME=1
+;MASCHINE=demo
+;WZGV=demo
+;BILD=SFORMATWMF.bmp
+VARS
+
+START
+;DIREKT CNC Systeme NCHOPS 3.0
+;formate finished part by sawing V 3.0/SF/09.98
+;WZS (99,_VE,_V,_VA,_SD,_ANF)
+SAWING(0,0,-_RZ,_RX,0,-_RZ,2,0,20,0,0,_RZ)
+SAWING(_X,_Y,_Z,_X,_RY,_Z,2,0,20,0,0,_RZ)
+SAWING(_X,_Y,_Z,0,_Y,_Z,2,0,20,0,0,_RZ)
+SAWING(_X,_Y,_Z,0,0,_Z,2,0,20,0,0,_RZ)
+

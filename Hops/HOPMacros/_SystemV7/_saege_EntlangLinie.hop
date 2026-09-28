@@ -1,0 +1,313 @@
+;MAKROTYP=1
+;BILD=_SAEGE_ENTLANGLINIE.WMF
+;INFO=_SAEGE_ENTLANGLINIE
+;WZGV=VISION_MNR_4798_H7
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   SX := ;*VAR*Startpkt. in x
+   SY := ;*VAR*Startpkt. in y
+   SZ := ;*VAR*Startpkt. in z
+   EX := ;*VAR*EndPkt. in x
+   EY := ;*VAR*EndPkt. in Y
+   EZ := ;*VAR*EndPkt. in Z
+   ST := 0;*VAR*Schnitttiefe
+   SPO := 1;*VAR*Startpunkt offen  0/1
+   EPO := 1;*VAR*Endpunkt offen  0/1
+   AL := 0;*VAR*Auslauf
+   BC_Nx := ;*VAR*X-Wert des Normalenvektors
+   BC_Ny := ;*VAR*Y-Wert des Normalenvektors
+   BC_Nz := ;*VAR*Z-Wert des Normalenvektors
+   AbsViewPointX := ;*VAR*
+   AbsViewPointY := ;*VAR*
+   AbsViewPointZ := ;*VAR*
+   res1 := 0;*VAR*Konventionelles Sägen aufrufen --> 1
+   res2 := 0;*VAR*reserve2
+   temp := '';
+   UseNewCut := 0;
+   VecX := 0;
+   VecY := 0;
+   VecZ := 0;
+   Vec1X := 0;
+   Vec1Y := 0;
+   Vec1Z := 0;
+   BH := 0;
+   DW := 0;
+   KW := 0;
+   LotPx := 0;
+   LotPy := 0;
+   LotPz := 0;
+   Vx := 0;
+   Vy := 0;
+   Vz := 0;
+   EVX := 0;
+   EVY := 0;
+   EVZ := 0;
+   Dist := 0;
+   dx := 0;
+   dy := 0;
+   dz := 0;
+   asxu := 100;
+   asyu := 100;
+   aszu := 10;
+   asxo := -500;
+   asyo := 100;
+   aszo := 10;
+   aexu := 100;
+   aeyu := 200;
+   aezu := 10;
+   aexo := -500;
+   aeyo := 200;
+   aezo := 10;
+   SicherHorz := 20;
+   SicherTop := 20;
+   SicherBottom := 20;
+   Text := '';
+   IsSawSBBMitte := 0;
+   SBBdx := 0;
+   SBBdy := 0;
+   SBBdz := 0;
+   ValueStr := '';
+   OK := 0;
+   WZRdx := 0;
+   WZRdy := 0;
+   WZRdz := 0;
+   BLChanged := 0;=1 falls Säge zu weit nach unten kippt
+   MaxKW := 90;
+   KWView := 0;
+   DWView := 0;
+START
+FinishedPart3D (17327.6,1480,480,0,0,0,0,0,'',0,0,0,0,0,0,17327.6,1480,480,0,0,0,0,'',0)
+/WZS (23,_VE,_V,_VA,_SD,_ANF,'1')
+;To use the new saw cut, more options are needed!
+;--> Vektro milling
+;--> Lead In/Out with no saftey
+;.
+;To activate the new saw cut add the following Key/Value in the Hops.ini file.
+;UseNewSawCut=1
+CALL Call_Extensions_GetSettingsValues (REF STRVALUE:=temp,FLOATVALUE:=UseNewCut,INTEGERVALUE:=UseNewCut VAL VALUEID:=0,INIFNKIND:=0,INIFN:='',SECTION:='HOPS',IDENT:='UseNewSawCut',DEFAULTSTRING:='0',DEFAULTINTEGER:=0)
+IF (UseNewCut = 0) | (res1 = 1)
+;Kipp- und Drehwinkel berechnen
+CALL CalcEinheitsVektor_V7 (REF VX:=BC_Nx,VY:=BC_Ny,VZ:=BC_Nz VAL P1X:=0,P1Y:=0,P1Z:=0,P2X:=BC_Nx,P2Y:=BC_Ny,P2Z:=BC_Nz)
+CALL Calc_DW_KW_NV (REF KW:=KW,DW:=DW VAL NX:=BC_Nx,NY:=BC_Ny,NZ:=BC_Nz)
+KW := KW-90
+/KW := KW+15
+IF (SZ <> EZ) & (KW <> 0)
+Fehlermeldung ('Start und Endhöhe sind ungleich!')
+ELSE
+END
+CALL CalcVektor_V7 (REF VX:=VecX,VY:=VecY,VZ:=VecZ VAL P1X:=SX,P1Y:=SY,P1Z:=SZ,P2X:=EX,P2Y:=EY,P2Z:=EZ)
+CALL CalcVektor_V7 (REF VX:=Vec1X,VY:=Vec1Y,VZ:=Vec1Z VAL P1X:=SX,P1Y:=SY,P1Z:=SZ,P2X:=AbsViewPointX,P2Y:=AbsViewPointY,P2Z:=AbsViewPointZ)
+CALL VektorNormieren_V7 (REF NX:=VecX,NY:=VecY,NZ:=VecZ)
+CALL VektorNormieren_V7 (REF NX:=Vec1X,NY:=Vec1Y,NZ:=Vec1Z)
+CALL VektorProdukt_V7 (REF NX:=VecX,NY:=VecY,NZ:=VecZ VAL V1X:=VecX,V1Y:=VecY,V1Z:=VecZ,V2X:=Vec1X,V2Y:=Vec1Y,V2Z:=Vec1Z)
+IF KW = 0
+IF SZ > EZ;BREAKPOINT
+BH := EZ
+EZ := BH - EZ
+;-- ma/mw 11.11.2022 - beide Z-Werte verrechnen
+SZ := SZ - BH
+ELSE
+BH := SZ
+SZ := BH - SZ
+;-- ma/mw 11.11.2022 - beide Z-Werte verrechnen
+EZ := EZ - BH
+END
+IF VecX <> 0
+IF (BC_Nx = VecX)
+Saegen (SX,SY,SZ,EX,EY,EZ,2,0,AL,0,KW,BH,0,0,0,0,0)
+EXITMACRO
+ELSE
+END
+IF (BC_Nx = -VecX)
+Saegen (SX,SY,SZ,EX,EY,EZ,1,0,AL,0,KW,BH,0,0,0,0,0)
+EXITMACRO
+ELSE
+END
+ELSE
+END
+IF VecY <> 0
+IF (BC_Ny = VecY)
+Saegen (SX,SY,SZ,EX,EY,EZ,2,0,AL,0,KW,BH,0,0,0,0,0)
+EXITMACRO
+ELSE
+END
+IF (BC_Ny = -VecY)
+Saegen (SX,SY,SZ,EX,EY,EZ,1,0,AL,0,KW,BH,0,0,0,0,0)
+EXITMACRO
+ELSE
+END
+ELSE
+END
+ELSE
+END
+IF VecZ > 0
+IF BC_Nz > 0
+Saegen (SX,SY,0,EX,EY,SZ-EZ,2,0,AL,0,KW,SZ,0,0,0,0,0)
+ELSE
+Saegen (SX,SY,0,EX,EY,SZ-EZ,1,0,AL,0,-KW,SZ,0,0,0,0,0)
+END
+EXITMACRO
+ELSE
+IF BC_Nz < 0
+Saegen (SX,SY,0,EX,EY,SZ-EZ,2,0,AL,0,KW,SZ,0,0,0,0,0)
+ELSE
+Saegen (SX,SY,0,EX,EY,SZ-EZ,1,0,AL,0,-KW,SZ,0,0,0,0,0)
+END
+END
+/CALL _saege_frei_V7 ( VAL SX:=sx,SY:=sy,SZ:=-3,EX:=ex,EY:=ex,EZ:=-2,BL:=0,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=0,KW:=-50.910372,BH:=sz,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=0,ESXY2:=0)
+EXITMACRO
+ELSE
+END
+;Kipp- und Drehwinkel berechnen
+CALL CalcEinheitsVektor_V7 (REF VX:=BC_Nx,VY:=BC_Ny,VZ:=BC_Nz VAL P1X:=0,P1Y:=0,P1Z:=0,P2X:=BC_Nx,P2Y:=BC_Ny,P2Z:=BC_Nz)
+CALL Calc_DW_KW_NV (REF KW:=KW,DW:=DW VAL NX:=BC_Nx,NY:=BC_Ny,NZ:=BC_Nz)
+KWView := KW
+DWView := DW
+IF BC_Nz<0
+CALL _MTM_GetAdditionData (REF ADDVALUE:=ValueStr,ADDEXISTS:=OK VAL ID:=StrToFloat(_AT_HEADID),VALUEID:=8,ADDID:=-12121212)
+IF OK
+MaxKW := 90+STRTOFLOAT(ValueStr)
+END
+IF abs(KW)>MaxKW
+BC_Nx := -BC_Nx
+BC_Ny := -BC_Ny
+BC_Nz := -BC_Nz
+BLChanged := 1
+CALL CalcEinheitsVektor_V7 (REF VX:=BC_Nx,VY:=BC_Ny,VZ:=BC_Nz VAL P1X:=0,P1Y:=0,P1Z:=0,P2X:=BC_Nx,P2Y:=BC_Ny,P2Z:=BC_Nz)
+CALL Calc_DW_KW_NV (REF KW:=KW,DW:=DW VAL NX:=BC_Nx,NY:=BC_Ny,NZ:=BC_Nz)
+END
+END
+;Berechnung des Lotpunktes auf die Linie (absoluter Ebenenpunkt gibt Seite der Ebene an)
+CALL AxyzToVxyz_V7 (REF VX:=Vx,VY:=Vy,VZ:=Vz VAL OFFSETX:=SX,OFFSETY:=SY,OFFSETZ:=SZ,DW:=DW,KW:=KW,AX:=AbsViewPointX,AY:=AbsViewPointY,AZ:=AbsViewPointZ)
+CALL AxyzToVxyz_V7 (REF VX:=EVX,VY:=EVY,VZ:=EVZ VAL OFFSETX:=SX,OFFSETY:=SY,OFFSETZ:=SZ,DW:=DW,KW:=KW,AX:=EX,AY:=EY,AZ:=EZ)
+HGNeu()
+HLine2P (0,0,EVX,EVY,0,0)
+CALL _hg_lot_V5 ( VAL PARA:=0,X1:=0,Y1:=0,X2:=EVX,Y2:=EVY,X3:=Vx,Y3:=Vy,EINGABE_ART:=0,WINKEL:=0,ESXY1:=0,ESXY2:=0,ESXY3:=0)
+CALL VxyzToAxyz_V7 (REF AX:=LotPx,AY:=LotPy,AZ:=LotPz VAL OFFX:=SX,OFFY:=SY,OFFZ:=SZ,DW:=DW,KW:=KW,VX:=_SPx1,VY:=_SPy1,VZ:=0)
+HGNeuEnd()
+;Berechnung des Vektors in deren Richtung der Schnitt versetzt sein muss
+CALL CalcVektor_V7 (REF VX:=Vx,VY:=Vy,VZ:=Vz VAL P1X:=LotPX,P1Y:=LotPY,P1Z:=LotPZ,P2X:=AbsViewPointx,P2Y:=AbsViewPointy,P2Z:=AbsViewPointz)
+CALL Dist2P_3D_V7 (REF DIST:=Dist VAL P1X:=LotPx,P1Y:=LotPy,P1Z:=LotPz,P2X:=AbsViewPointX,P2Y:=AbsViewPointY,P2Z:=AbsViewPointZ)
+IF AL < 0
+Hinweismeldung ('AL < 0 --> AL = 0')
+AL := 0
+END
+IF AL > 0
+;Verrechnen des Ein/Auslaufs
+CALL CalcEinheitsVektor_V7 (REF VX:=VecX,VY:=VecY,VZ:=VecZ VAL P1X:=SX,P1Y:=SY,P1Z:=SZ,P2X:=EX,P2Y:=EY,P2Z:=EZ)
+CALL MovePoint3D_V7 (REF P1X:=SX,P1Y:=SY,P1Z:=SZ VAL FACTOR:=AL,VX:=-VecX,VY:=-VecY,VZ:=-VecZ)
+CALL MovePoint3D_V7 (REF P1X:=EX,P1Y:=EY,P1Z:=EZ VAL FACTOR:=AL,VX:=VecX,VY:=VecY,VZ:=VecZ)
+END
+asxu := SX
+asyu := SY
+aszu := SZ
+asxo := SX
+asyo := SY
+aszo := SZ
+aexu := EX
+aeyu := EY
+aezu := EZ
+aexo := EX
+aeyo := EY
+aezo := EZ
+IF Dist>0.000000001
+Vx := Vx/Dist
+Vy := Vy/Dist
+Vz := Vz/Dist
+Dist := _RZ
+IF _RY>Dist
+Dist := _RY
+END
+IF _RX>Dist
+Dist := _RX
+END
+Dist := Dist*2
+dx := Dist*Vx
+dy := Dist*Vy
+dz := Dist*Vz
+asxo := asxo+dx
+asyo := asyo+dy
+aszo := aszo+dz
+aexo := aexo+dx
+aeyo := aeyo+dy
+aezo := aezo+dz
+CALL _MTM_GetToolData (REF STRVALUE:=Text,FLOATVALUE:=SicherHorz VAL TOOLID:=_BOXID,VALUEID:=13)
+SicherTop := 0
+CALL _MTM_GetToolData (REF STRVALUE:=Text,FLOATVALUE:=SicherTop VAL TOOLID:=_BOXID,VALUEID:=14)
+SicherBottom := 0
+CALL _MTM_GetToolData (REF STRVALUE:=Text,FLOATVALUE:=SicherBottom VAL TOOLID:=_BOXID,VALUEID:=15)
+SicherBottom := abs(SicherBottom)
+CALL LimitLinesFinishedpart (REF ASXU:=asxu,ASYU:=asyu,ASZU:=aszu,ASXO:=asxo,ASYO:=asyo,ASZO:=aszo,AEXU:=aexu,AEYU:=aeyu,AEZU:=aezu,AEXO:=aexo,AEYO:=aeyo,AEZO:=aezo VAL LUX:=0,LUY:=0,ROX:=_RX,ROY:=_RY,UZ:=0,OZ:=_RZ,SICHERHORZ:=SicherHorz,SICHERTOP:=SicherTop,SICHERBOTTOM:=SicherBottom,RADIUS:=_WZr,SBB:=_SBB,KW:=KWView,DW:=DWView)
+;Schnitttiefe verrechnen
+Dist := ST
+dx := Dist*Vx
+dy := Dist*Vy
+dz := Dist*Vz
+asxu := asxu+dx
+asyu := asyu+dy
+aszu := aszu+dz
+aexu := aexu+dx
+aeyu := aeyu+dy
+aezu := aezu+dz
+;.
+;_wzr := 0
+WZRdx := _WZR*Vx
+WZRdy := _WZR*Vy
+WZRdz := _WZR*Vz
+dx := WZRdx
+dy := WZRdy
+dz := WZRdz
+CALL _MTM_GetToolData (REF STRVALUE:=Text,FLOATVALUE:=IsSawSBBMitte VAL TOOLID:=_BOXID,VALUEID:=19)
+IF IsSawSBBMitte=1
+;Sägeblatthalbe verrechnen
+SBBdx := _SBB*BC_Nx/2
+SBBdy := _SBB*BC_Ny/2
+SBBdz := _SBB*BC_Nz/2
+END
+IF BLChanged=1
+;Kippwinkel wurde geändert Säge steht auf der falschen Seite SBB verrechnen
+SBBdx := SBBdx-_SBB*BC_Nx
+SBBdy := SBBdy-_SBB*BC_Ny
+SBBdz := SBBdz-_SBB*BC_Nz
+END
+dx := dx+SBBdx
+dy := dy+SBBdy
+dz := dz+SBBdz
+;.
+asxu := asxu+dx
+asyu := asyu+dy
+aszu := aszu+dz
+asxo := asxo+dx
+asyo := asyo+dy
+aszo := aszo+dz
+aexu := aexu+dx
+aeyu := aeyu+dy
+aezu := aezu+dz
+aexo := aexo+dx
+aeyo := aeyo+dy
+aezo := aezo+dz
+;.
+VSP (asxo,asyo,aszo,DW,KW,0,0,0,0,3,1,0,6)
+VG01 (asxu,asyu,aszu,DW,KW,_V)
+VG01 (aexu,aeyu,aezu,DW,KW,_V)
+VG01 (aexo,aeyo,aezo,DW,KW,_V)
+VEP (6)
+;Schnittkante zeichnen
+draw3dObject (3,asxo-SBBdx-WZRdx,asyo-SBBdy-WZRdy,aszo-SBBdz-WZRdz,asxu-SBBdx-WZRdx,asyu-SBBdy-WZRdy,aszu-SBBdz-WZRdz,aexu-SBBdx-WZRdx,aeyu-SBBdy-WZRdy,aezu-SBBdz-WZRdz,aexo-SBBdx-WZRdx,aeyo-SBBdy-WZRdy,aezo-SBBdz-WZRdz,2741017,1)
+ELSE
+Fehlermeldung ('Ebenenpunkt nicht korrekt')
+END
+/CALL _saege_frei_V7 ( VAL SX:=sx,SY:=sy,SZ:=-3,EX:=ex,EY:=ex,EZ:=-2,BL:=0,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=0,KW:=-50.910372,BH:=sz,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=0,ESXY2:=0)
+/EbeneF (SX,SY,SZ,KW,DW,0,0,0)

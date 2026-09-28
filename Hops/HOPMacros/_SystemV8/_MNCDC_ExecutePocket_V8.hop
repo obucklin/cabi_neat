@@ -1,0 +1,62 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.7.11.999[Hops.exe]
+;BILD=_MNCDC_EXECUTEPOCKET_V8.WMF
+;INFO=_MNCDC_ExecutePocket
+;WZGV=DIREKT_DEMO
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=_MNCDC_ExecutePocket_V8
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   Namen := '';*VAR*Konturnamen
+   AA := 0;*VAR*Abstand Außen/Insel
+   Ueberlappung := 67;*VAR*Überlappung in % vom Werkzeugdurchmesser
+   Mode := 0;*VAR*0 = Spiral; 1 = Konturparallel; 2 = Parallel
+   Angle := 0;*VAR*Winkel Mode=3
+   Tiefe := ;*VAR*Tiefe
+   esmd := 0;*VAR*
+   Anzahl := 0;*VAR*Anzahl Zustellungen
+   MaxZ := 0;*VAR*Maximale Zustelltiefe
+   RD := 0;*VAR*Richtung umkehren
+   FliegendEintauchen := 0;*VAR*
+   MaxEintauchLaenge := 20;*VAR*
+   InClampArea := 0;*VAR*
+   InterpolDist := 0.5mm;*VAR*Abstand für Interpolationsfräsung
+   NewContourNames := '';
+   NewContoursCount := 0;
+   j := 0;
+   i := 0;
+   Contours := '';
+   SK := 0;
+   ContoursCount := 0;
+   Contour := '';
+START
+;--
+;-- (c) DiREKT
+;--
+Call MNCDCLOCKSPLIT_V7 ( VAL Mode:=0)
+CALL _MNCDC_SplitContours (REF NEWCONTOURNAMES:=NewContourNames,NEWCONTOURSCOUNT:=NewContoursCount VAL CONTOURNAME_CONTOURNAMES:=Namen,CONTOURNAME:='ExecutePocket_Split',CONTOURINFO:='',CONTOURLAYER:='',TIEFE:=Tiefe,TOOLID:=_BOXID,INCLAMPAREA:=InClampArea,VIEW_OFFX:=_AV_OFFSETX,VIEW_OFFY:=_AV_OFFSETY,VIEW_OFFZ:=_AV_OFFSETZ,VIEW_ROTA:=_AV_ROTA,VIEW_TIPA:=_AV_TIPA,MAXARCTOL:=0.1mm)
+;--
+SK := _MNCDC_SplitKind
+_MNCDC_SplitKind := -2
+FOR i := 1 TO NewContoursCount STEP 1
+CALL _MNCDC_GetParamNo (REF VALUE:=Contours VAL VALUES:=NewContourNames,NO:=i,SEPARATOR:='|')
+CALL _ExecutePocket_V8 ( VAL NAMEN:=Contours,AA:=AA,UEBERLAPPUNG:=Ueberlappung,MODE:=Mode,ANGLE:=ANGLE,TIEFE:=Tiefe,ESMD:=ESMD,ANZAHL:=Anzahl,MAXZ:=MaxZ,RD:=RD,FLIEGENDEINTAUCHEN:=FliegendEintauchen,MAXEINTAUCHLAENGE:=MAXEINTAUCHLAENGE,INTERPOLDIST:=InterpolDist)
+CALL _MNCDC_GetParamCount (REF VALUE:=ContoursCount VAL VALUES:=Contours,SEPARATOR:=';')
+FOR j := 1 TO ContoursCount STEP 1
+CALL _MNCDC_GetParamNo (REF VALUE:=Contour VAL VALUES:=Contours,NO:=j,SEPARATOR:=';')
+deletecontour (Contour,0)
+END
+END
+_MNCDC_SplitKind := SK
+Call MNCDCUNLOCKSPLIT_V7 ( VAL Mode:=0,VerkleinerungAktivieren:=0)

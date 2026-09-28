@@ -1,0 +1,15 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   CADKN := '';*VAR**REF*Konturname Bogen
+   CADKN2 := '';*VAR**REF*Konturname Vektor
+   Count := 0;
+START
+CALL Call_Extensions_GetParamCount (REF VALUE:=Count VAL VALUES:=CADKN,SEPARATOR:=';')
+IF Count=0
+CADKN := ''
+CADKN2 := ''
+ELSE
+CALL Call_Extensions_GetParamNo (REF VALUE:=CADKN2 VAL VALUES:=CADKN,NO:=2,SEPARATOR:=';')
+CALL Call_Extensions_GetParamNo (REF VALUE:=CADKN VAL VALUES:=CADKN,NO:=1,SEPARATOR:=';')
+END

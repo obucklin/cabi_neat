@@ -1,0 +1,64 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.5.3.13[Hops.exe]
+;BILD=P14GEHRUNG_DF_01.WMF
+;INFO=B_XP600
+;WZGV=1000024480
+;WZGVCONFIG=
+;MASCHINE=B_MC_V7
+;NCNAME=Pyxcam_Clamex_Scheibe
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   centerx := 0;*VAR*
+   centery := 0;*VAR*
+   angle := 0;*VAR*
+   length := 0;*VAR*
+   width := 0;*VAR*
+   old_AV_OFFSETX := 0;
+   old_AV_OFFSETY := 0;
+   old_AV_OFFSETZ := 0;
+   old_AV_ROTA := 0;
+   old_AV_TIPA := 0;
+   px := 0;
+   py := 0;
+   pz := 0;
+   dw := 0;
+   kw := 0;
+START
+;MAKRO
+Fertigteil (900,400,19,0,0,0,0,0,'',0,0,0,0)
+;alte Ebene speichern
+old_AV_OFFSETX := _AV_OFFSETX
+old_AV_OFFSETY := _AV_OFFSETY
+old_AV_OFFSETZ := _AV_OFFSETZ
+old_AV_ROTA := _AV_ROTA
+old_AV_TIPA := _AV_TIPA
+;Clamex Positionierung berechnen
+px := _AV_OFFSETX - COS(_AV_TIPA) * SIN(_AV_ROTA) * centery + COS(_AV_ROTA) * centerx
+py := _AV_OFFSETY + COS(_AV_TIPA) * COS(_AV_ROTA) * centery + SIN(_AV_ROTA) * centerx
+pz := _AV_OFFSETZ + SIN(_AV_TIPA) * centery
+kw := _AV_TIPA
+IF (_AV_TIPA = 0)
+dw := _AV_ROTA + angle
+ELSE
+;auf der Gehrung wird die Rotation des Makros ignoriert
+dw := _AV_ROTA
+END
+;Standard-Ebene setzen (weil Clamex_Scheibe nicht in benutzerdefinierter Ebene funktioniert)
+Ebene0()
+;Clamex aufrufen - die Werkzeugparameter müssen hier angepasst werden!
+CALL Clamex_Scheibe ( VAL PX:=px,PY:=py,PZ:=pz,DW:=dw,KW:=kw,FRAESEN:=1,DEPTH:=-14,SEITL_ZUST:=1.4,BOHREN:=0,B_ABST:=7.5,B_ABST_KANTE:=9.5,B_D:=6,WKZ_B:=150,WKZ_B_H:=150,WKZ_B_S:=150,WKZ_F:=151,WKZ_F_H:=151,WKZ_F_S:=151)
+;alte Ebene wiederherstellen
+IF (old_AV_OFFSETX <> _AV_OFFSETX) | (old_AV_OFFSETY <> _AV_OFFSETY) | (old_AV_OFFSETZ <> _AV_OFFSETZ) | (old_AV_ROTA <> _AV_ROTA) | (old_AV_TIPA <> _AV_TIPA)
+EbeneF (old_AV_OFFSETX,old_AV_OFFSETY,old_AV_OFFSETZ,old_AV_TIPA,old_AV_ROTA,0,0,0)
+ELSE
+END

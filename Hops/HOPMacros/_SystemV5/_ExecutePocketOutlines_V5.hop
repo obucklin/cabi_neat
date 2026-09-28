@@ -1,0 +1,60 @@
+;MAKROTYP=1
+
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=Show_EXECUTEPOCKETOutlines_V5Dialog
+
+;AUTOSCRIPTSTART=0
+
+VARS
+   Namen := '';*VAR*Konturnamen
+   Tiefe := -5;*VAR*Tiefe
+   esmd := 0;*VAR*
+   Mode := 2;*VAR*
+   BArt := 0;*VAR*
+   Anzahl := 0;*VAR*Anzahl Zustellungen
+   MaxZ := _AT_MAXDEPTH;*VAR*Maximale Zustelltiefe
+   Para1 := 0;*VAR*
+   Para2 := 0;*VAR*
+   Para3 := 0;*VAR*
+   AnzahlP := 0;
+   AnzahlOutlineP := 0;
+   PocketKonturName := 'Pocket';
+   AA := 0;
+   i := 0;
+   PocketMode := 0;
+   Z_Index := 0;
+   Z_Anzahl := 0;
+   Z_Step := 0;
+   Z_AktTiefe := 0;
+START
+;-- HH_EXTS
+;Bei Mode=0 kann _WZR 0 sein (Stichel)
+IF (_WZR<>0) | (Mode=0)
+;Easysnap verrechnen
+Transesd (Tiefe,esmd)
+AA := _WZR
+PocketMode := 0
+IF (Mode=2)|(Mode=0)
+PocketMode := 4
+AA := 0
+END
+CreatePocketContour (Namen,AA,0,0,PocketMode,0,PocketKonturName,'','',AnzahlP,AnzahlOutlineP)
+IF (AnzahlOutlineP=0)
+;SF Fehler ausgeben 13.03.2009
+Fehlermeldung (GetMessageText('1001','Keine Fräskonturen vorhanden. Text vermutlich zu klein.'))
+ELSE
+;Zustellparameter berechnen
+CALL _Calc_Count_Step_V5 (REF Z_ANZAHL:=Z_Anzahl,Z_STEP:=Z_Step VAL TIEFE:=Tiefe,ANZAHL:=Anzahl,MAXZ:=MaxZ)
+;Taschenkonturen abarbeiten
+FOR i := 1 TO AnzahlOutlineP STEP 1
+Z_AktTiefe := Z_Step
+FOR Z_Index := 1 TO Z_Anzahl STEP 1
+CALL _ExecutePocketOutlinesContour_V5 ( VAL KN:=PocketKonturName+'_Outline'+IntToStr(i-1),TIEFE:=Z_AktTiefe,BART:=BArt,MODE:=Mode,PARA1:=Para1,PARA2:=Para2,PARA3:=Para3,LASTCALL:=((Z_Index=Z_Anzahl) & (i=AnzahlOutlineP)) | (Z_Anzahl=1))
+Z_AktTiefe := Z_AktTiefe+Z_Step
+END
+END
+CALL _DeletePocketContours_V5 ( VAL KN:=PocketKonturName,ANZAHLP:=AnzahlP,ANZAHLOUTLINEP:=AnzahlOutlineP)
+END
+ELSE
+Fehlermeldung (GetMessageText('17','Bitte Werkzeug definieren'))
+END

@@ -1,0 +1,6 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   HaveToSplit := 0;*VAR**REF*
+START
+HaveToSplit := 1-((_MNCDC_SplitKind=-1)|((_RX<=_MNCDC_MaxWidthSmallPart)&(_MNCDC_ZeroScoreKind<>1)))

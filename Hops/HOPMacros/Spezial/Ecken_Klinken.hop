@@ -1,0 +1,68 @@
+;MAKROTYP=1
+;BILD=Ecken_Klinken.wmf
+;INFO=
+;WZGV=7223K_023
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Ecken_Klinken
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_5.Dll 
+;DIALOGPROC=ShowE_KlinkenDialog
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 400;Dimension X
+   DY := 400;Dimension Y
+   DZ := 50;Dimension Z
+   PosX :=0;*VAR*Pos Ecke
+   PosY :=0;*VAR*Pos  Ecke
+   S_Tiefe :=0;*VAR*Starttiefe in Z
+   E_Tiefe :=dz;*VAR*Endtiefe in Z
+   Vers :=2;*VAR*Versatz
+   y1 :=0;*VAR*Länge der Fräsung
+   Winkel :=0;*VAR*Drehwinkel
+   Neig :=45;*VAR*Neigung
+   Tool :=1114;*VAR*Werkzeug ID
+   CB_Lang:=-1;*VAR*Fräslänge gerechnet oder Eingabe
+   Ver_Lang:=0;*VAR*Fräsunf verlängert
+   x1 := 0;
+   x2 := 0;
+   x3 := 0;
+   y2 := 0;
+   z1 := 0;
+   Vers1 := 0.1;Berechneter versatz
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+WZF (Tool,_VE,_V,_VA,_SD,_ANF,'1');BREAKPOINT
+Y1 := ((E_Tiefe - S_Tiefe))/Tan(Neig)+10
+X3 := ((E_Tiefe - S_Tiefe))/Tan(Neig)+10
+CALL _DrehenBBStart_V5 ( VAL DX:=PosX,DY:=PosY,DW:=Winkel,ESXY1:=0)
+VERXY (PosX,PosY)
+;Links unten
+Vers1 := VERS / TAN(Neig)
+SP (x1+_WzR,y1,z1,0,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (x1+_WzR,y2+_WzR,0,0,1,2)
+G01 (x3,y2+_WzR,0,0,1,2);BREAKPOINT
+y2 := y2 + Vers1 +_WzR
+x2 := x2 + vers1+_WzR
+WHILE abs(Z1) < E_Tiefe
+z1 := (z1 - (vers/1))
+G01 (x3,y2,z1,0,1,0)
+G01 (x2,y2,z1,0,1,0)
+G01 (x2,y1,z1,0,1,0)
+x2 := x2 + vers1
+z1 := (z1 - (vers/1))
+G01 (x2,y1,z1,0,1,0)
+y2 := y2 + vers1
+G01 (x2,y2,z1,0,1,0)
+G01 (x3,y2,z1,0,1,0)
+y2 := y2 + vers1
+x2 := x2 + vers1
+END
+EP (0,_ANF,0)
+VERXYEND()
+CALL _DrehenBBEnde ()

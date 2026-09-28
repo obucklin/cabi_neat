@@ -1,0 +1,535 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=CLAMEX1_STUMPF.WMF
+;INFO=
+;WZGV=7225K_135
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Clamex1_Stumpf_1
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_7.Dll
+;DIALOGPROC=ShowTClamex_FDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   CLAMEX_ID :=136;*VAR*Fräswkz
+   CLAMEX_ID_H :=108;*VAR*Fräswkz horizontal
+   Clamex_B_ID :=501;*VAR*Bohrwkz
+   Art :=1;*VAR*0 = stirnseitig (mitLoch) / 1 = Flachseitig (Ohne Loch)
+   B_Pos := 7.5;*VAR*Bohrposition
+   B_DM :=6.8;*VAR*BohrungsDM
+   C_TIEFE :=14.00;*VAR*Clamex Tiefe
+   ESXY1 := 7;Easy Snap li hi
+   ESXY2 := 8;Easy Snap li mi
+   ESXY3 := 1;Easy Snap li vo
+   ESXY4 := 5;Easy Snap re hi
+   ESXY5 := 4;Easy Snap re mi
+   ESXY6 := 3;Easy Snap re vo
+   EX1 :=_RZ/2;*VAR*Pos X
+   EY1 :=60.00;*VAR*Pos Y
+   EX2 :=_RZ/2;*VAR*Pos X
+   EY2 :=00.00;*VAR*Pos Y
+   EX3 :=_RZ/2;*VAR*Pos X
+   EY3 :=60.00;*VAR*Pos Y
+   EX4 :=_RZ/2;*VAR*Pos X
+   EY4 :=60.00;*VAR*Pos Y
+   EX5 :=_RZ/2;*VAR*Pos X
+   EY5 :=00.00;*VAR*Pos Y
+   EX6 :=_RZ/2;*VAR*Pos X
+   EY6 :=60.00;*VAR*Pos Y
+   C1 :=-1;*VAR*Clamex1
+   C2 :=-1;*VAR*Clamex2
+   C3 :=-1;*VAR*Clamex3
+   C4 :=-1;*VAR*Clamex4
+   C5 :=-1;*VAR*Clamex5
+   C6 :=-1;*VAR*Clamex6
+   RIL :=0;*VAR*Richtlamelle
+   C_Typ :=3;*VAR*Clamex Typ
+   Tenso :=-1;*VAR*Clamex Tenso ja nein
+   T := 0;Tiefe fräsung
+   Absenken :=0;*VAR*Ohne absenken zwische den Fräsungen
+   Stl_Typ := 'P14_Of.stl';Clamex Typ
+START
+Fertigteil (500,500,19,0,0,0,0,0,'',0,0,0)
+;Stinrseitig
+WZF (CLAMEX_ID_H,_VE,_V,_VA,_SD,_ANF,'1')
+IF (Art=1) & ((C_Typ=4)|(C_Typ=2))
+T := _WzR - 10
+ELSE
+T := _WzR - C_Tiefe
+END
+IF Art = 0
+IF Tenso = 0
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+IF C1=-1
+;Linke Seite hi bohren
+Bohrung(B_Pos,EY1,B_DM,-(_Rz/2),10,0,0,ESXY1,0,0,0,0)
+END
+IF C2=-1
+;Linke Seite mi bohren
+;Richtlamelle ohne Bohrung
+IF Ril = 0
+Bohrung(B_Pos,EY2,B_DM,-(_Rz/2),10,0,0,ESXY2,0,0,0,0)
+END
+END
+IF C3=-1
+;Linke Seite vo bohren
+Bohrung(B_Pos,EY3,B_DM,-(_Rz/2),10,0,0,ESXY3,0,0,0,0)
+END
+IF C4=-1
+;Rechte Seite hi bohren
+Bohrung(B_Pos,EY4,B_DM,-(_Rz/2),10,0,0,ESXY4,0,0,0,0)
+END
+IF C5=-1
+;Rechte Seite mi bohren
+;Richtlamelle ohne Bohrung
+IF Ril = 0
+Bohrung(B_Pos,EY5,B_DM,-(_Rz/2),10,0,0,ESXY5,0,0,0,0)
+END
+END
+IF C6=-1
+;Rechte Seite vo bohren
+Bohrung(B_Pos,EY6,B_DM,-(_Rz/2),10,0,0,ESXY6,0,0,0,0)
+END
+;Ende Bohren
+END
+;Bild einfügen
+IF C1= -1
+;Links hinten
+EbeneF (0,0,0,0,90,1,2)
+ZSTL (EY1,0,-EX1,2105376,1,STL_Typ,5,0)
+Ebene0()
+END
+IF C2= -1
+;Links mitte
+EbeneF (0,0,0,0,90,1,2)
+ZSTL (EY2,0,-EX2,1973790,1,STL_Typ,6,0)
+Ebene0()
+END
+IF C3= -1
+;Links vorne
+EbeneF (0,0,0,0,90,1,2)
+ZSTL (EY3,0,-EX3,1973790,1,STL_Typ,7,0)
+Ebene0()
+END
+IF C4= -1
+;Rechts hinten
+EbeneF (0,0,0,0,-90,5,2)
+ZSTL (EY4,0,-EX4,1973790,1,STL_Typ,7,0)
+Ebene0()
+END
+IF C5= -1
+;Rechts  mitte
+EbeneF (0,0,0,0,-90,5,2)
+ZSTL (EY5 * -1,0,-EX5,1973790,1,STL_Typ,6,0)
+Ebene0()
+END
+IF C6= -1
+;Rechts vorne
+EbeneF (0,0,0,0,-90,5,2)
+ZSTL (EY6,0,-EX6,1973790,1,STL_Typ,5,0)
+Ebene0()
+END
+WZF (CLAMEX_ID_H,_VE,_V,_VA,_SD,_ANF,'1')
+IF C1=-1
+;Links hinten
+SP (-70,EY1,-EX1,0,0,_ANF,0,0,0,7,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (-T,EY1,0,0,7,2)
+G01 (-T,EY1,-1.4,0,7,2)
+G01 (-T,EY1,2.8,0,7,2)
+G01 (-T,EY1,-1.4,0,7,2)
+G01 (-70,EY1,0,0,7,2)
+IF Absenken = -1
+IF C2=-1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V*5)
+IF RIL= -1
+G01 (-70,EY2,- EX2,0,8,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (-T,EY2,0,0,8,2)
+G01 (-70,EY2,0,0,8,2)
+C2 := 0
+ELSE
+G01 (-70,EY2,- EX2,0,8,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (-T,EY2,0,0,8,2)
+G01 (-T,Ey2,- 1.4,0,8,2)
+G01 (-T,EY2,2.8,0,8,2)
+G01 (-T,EY2,-1.4,0,8,2)
+G01 (-70,EY2,0,0,8,2)
+C2 := 0
+END
+END
+IF C3=-1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V*5)
+G01 (-70,EY3,-EX3,0,1,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (-T,EY3,0,0,1,2)
+G01 (-T,EY3,-1.4,0,1,2)
+G01 (-T,EY3,2.8,0,1,2)
+G01 (-T,Ey3,-1.4,0,1,2)
+G01 (-70,Ey3,0,0,1,2)
+C3 := 0
+END
+END
+EP (0,_ANF,0)
+END
+IF C2=-1
+;Links mitte
+IF RIL= -1
+G01 (-70,EY2,- EX2,0,8,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (-T,EY2,0,0,8,2)
+G01 (-70,EY2,0,0,8,2)
+SP (-70,EY2,-EX2,0,0,_ANF,0,0,0,8,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (-T,EY2,0,0,8,2)
+G01 (-70,EY2,0,0,8,2)
+C2 := 0
+ELSE
+SP (-70,EY2,-EX2,0,0,_ANF,0,0,0,8,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (-T,EY2,0,0,8,2)
+G01 (-T,EY2,-1.4,0,8,2)
+G01 (-T,EY2,2.8,0,8,2)
+G01 (-T,EY2,-1.4,0,8,2)
+G01 (-70,EY2,0,0,8,2)
+END
+IF Absenken = -1
+IF C3=-1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V*5)
+G01 (-70,EY3,- EX3,0,1,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (-T,EY3,0,0,1,2)
+G01 (-T,EY3,-1.4,0,1,2)
+G01 (-T,EY3,2.8,0,1,2)
+G01 (-T,Ey3,-1.4,0,1,2)
+G01 (-70,Ey3,0,0,1,2)
+C3 := 0
+END
+END
+EP (0,_ANF,0)
+END
+IF C3=-1
+;Links vorne
+SP (-70,EY3,-EX3,0,0,_ANF,0,0,0,1,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (-T,EY3,0,0,1,2)
+G01 (-T,EY3,-1.4,0,1,2)
+G01 (-T,EY3,2.8,0,1,2)
+G01 (-T,EY3,-1.4,0,1,2)
+G01 (-70,EY3,0,0,1,2)
+EP (0,_ANF,0)
+END
+IF C4=-1
+;Rechts hinten
+SP (-70,EY4,-EX4,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (-T,EY4,0,0,5,2)
+G01 (-T,EY4,-1.4,0,5,2)
+G01 (-T,EY4,2.8,0,5,2)
+G01 (-T,EY4,-1.4,0,5,2)
+G01 (-70,EY4,0,0,5,2)
+IF Absenken = -1
+IF C5=-1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V*5)
+IF RIL= -1
+G01 (-70,EY5,-EX5,0,4,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (-T,EY5,0,0,4,2)
+G01 (-70,EY5,0,0,4,2)
+C5 := 0
+ELSE
+G01 (-70,EY5,-EX5,0,4,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (-T,EY5,0,0,4,2)
+G01 (-T,Ey5,- 1.4,0,4,2)
+G01 (-T,EY5,2.8,0,4,2)
+G01 (-T,EY5,-1.4,0,4,2)
+G01 (-70,EY5,0,0,4,2)
+C5 := 0
+END
+END
+IF C6=-1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V*5)
+G01 (-70,EY6,-EX6,0,3,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (-T,EY6,0,0,3,2)
+G01 (-T,EY6,-1.4,0,3,2)
+G01 (-T,EY6,2.8,0,3,2)
+G01 (-T,Ey6,-1.4,0,3,2)
+G01 (-70,Ey6,0,0,3,2)
+C6 := 0
+END
+END
+EP (0,_ANF,0)
+END
+IF C5=-1
+;Rechts mitte
+IF RIL= -1
+SP (-70,EY5,-Ex5,0,0,_ANF,0,0,0,4,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (-T,EY5,0,0,4,2)
+G01 (-70,EY5,0,0,4,2)
+ELSE
+SP (-70,EY5,-Ex5,0,0,_ANF,0,0,0,4,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (-T,EY5,0,0,4,2)
+G01 (-T,EY5,-1.4,0,4,2)
+G01 (-T,EY5,2.8,0,4,2)
+G01 (-T,EY5,-1.4,0,4,2)
+G01 (-70,EY5,0,0,4,2)
+END
+IF Absenken = -1
+IF C6=-1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V*5)
+G01 (-70,EY6,-Ex6,0,3,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (-T,EY6,0,0,3,2)
+G01 (-T,EY6,-1.4,0,3,2)
+G01 (-T,EY6,2.8,0,3,2)
+G01 (-T,Ey6,-1.4,0,3,2)
+G01 (-70,Ey6,0,0,3,2)
+C6 := 0
+END
+END
+EP (0,_ANF,0)
+END
+IF C6=-1
+SP (-70,EY6,-Ex6,0,0,_ANF,0,0,0,3,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (-T,EY6,0,0,3,2)
+G01 (-T,EY6,-1.4,0,3,2)
+G01 (-T,EY6,2.8,0,3,2)
+G01 (-T,EY6,-1.4,0,3,2)
+G01 (-70,EY6,0,0,3,2)
+EP (0,_ANF,0)
+END
+ELSE
+;Flachseitig
+IF C1= -1
+;Links hinten
+Ebene0()
+ZRechteck (EX1-3.5,EY1 + 35.8,7,71.6,0,32896,7)
+Ebene2()
+ZSTL (EY1,0,-EX1,1973790,1,STL_Typ,7,0)
+Ebene0()
+END
+IF C2= -1
+;Links mitte
+Ebene0()
+ZRechteck (EX2 - 3.5,EY2 - 35.8,7,71.6,0,32896,8)
+Ebene2()
+ZSTL (EY2 * -1,0,-EX2,1973790,1,STL_Typ,6,0)
+Ebene0()
+END
+IF C3= -1
+;Links vorne
+Ebene0()
+ZRechteck (EX3-3.5,EY3 -  35.8,7,71.6,0,32896,1)
+Ebene2()
+ZSTL (EY3,0,-EX3,1973790,1,STL_Typ,5,0)
+Ebene0()
+END
+IF C4= -1
+;Rechts hinten
+Ebene0()
+ZRechteck (EX4+3.5,EY4 +35.8,7,71.6,0,32896,5,0,0)
+Ebene4()
+ZSTL (EY4,0,-EX4,1973790,1,STL_Typ,5,0)
+Ebene0()
+END
+IF C5= -1
+;Rechts  mitte
+Ebene0()
+ZRechteck (EX5+3.5,EY5 - 35.8,7,71.6,0,32896,4,0,0)
+Ebene4()
+ZSTL (EY5,0,-EX5,1973790,1,STL_Typ,6,0)
+Ebene0()
+END
+IF C6= -1
+;Rechts vorne
+Ebene0()
+ZRechteck (EX6+3.5,EY6 - 35.8,7,71.6,0,32896,3)
+Ebene4()
+ZSTL (EY6,0,-EX6,1973790,1,STL_Typ,7,0)
+Ebene0()
+END
+WZF (Clamex_ID,_VE,_V,_VA,_SD,_ANF,'1')
+IF C1=-1
+;Links hinten
+Ebene2()
+SP (EY1,-70,- EX1,0,0,_ANF,0,0,0,7,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (EY1,-T,- EX1,0,7,0)
+G01 (EY1,-T,- (EX1 - 1.4),0,7,0)
+G01 (EY1,-T,- (EX1 + 1.4),0,7,0)
+G01 (EY1,-T,- (EX1),0,7,0)
+G01 (EY1,-70,- (EX1),0,7,0)
+C1 := 0
+IF Absenken = -1
+IF C2=-1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V*5)
+IF RIL= -1
+G01 (EY2 * (-1),-70,- (EX2 ),0,6,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (EY2 * (-1),-T,- (EX2 ),0,6,0)
+G01 (EY2 * (-1),-70,- (EX2 ),0,6,0)
+C2 := 0
+ELSE
+G01 (EY2 * (-1),-70,- (EX2 ),0,6,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (EY2 * (-1),-T,- (EX2 ),0,6,0)
+G01 (EY2 * (-1),-T,- (EX2 -1.4),0,6,0)
+G01 (EY2 * (-1),-T,- (EX2+1.4),0,6,0)
+G01 (EY2 * (-1),-T,- (EX2 ),0,6,0)
+G01 (EY2 * (-1),-70,- (EX2 ),0,6,0)
+C2 := 0
+END
+END
+IF C3=-1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V*5)
+G01 (EY3,-70,- (EX3),0,5,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (EY3,-T,- (EX3 ),0,5,0)
+G01 (EY3,-T,- (EX3-1.4 ),0,5,0)
+G01 (EY3,-T,- (EX3 +1.4),0,5,0)
+G01 (EY3,-T,- (EX3 ),0,5,0)
+G01 (EY3,-70,- (EX3 ),0,5,0)
+C3 := 0
+END
+END
+EP (0,_ANF,0)
+Ebene0()
+END
+IF C2=-1
+;Links mitte easy snap -2
+IF RIL= -1
+Ebene2()
+SP (EY2 * (-1),-70,- EX2,0,0,_ANF,0,0,0,6,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (EY2 * (-1),-T,- EX2,0,6,0)
+G01 (EY2 * (-1),-70,- (EX2),0,6,0)
+ELSE
+Ebene2()
+SP (EY2 * (-1),-70,- EX2,0,0,_ANF,0,0,0,6,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (EY2 * (-1),-T,- EX2,0,6,0)
+G01 (EY2 * (-1),-T,- (EX2-1.4),0,6,0)
+G01 (EY2 * (-1),-T,- (EX2+1.4),0,6,0)
+G01 (EY2 * (-1),-T,- (EX2),0,6,0)
+G01 (EY2 * (-1),-70,- (EX2),0,6,0)
+END
+IF Absenken = -1
+IF C3=-1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V*5)
+G01 (EY3,-70,- (EX3),0,5,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (EY3,-T,- (EX3),0,5,0)
+G01 (EY3,-T,- (EX3-1.4),0,5,0)
+G01 (EY3,-T,- (EX3+1.4),0,5,0)
+G01 (EY3,-T,- (EX3),0,5,0)
+G01 (EY3,-70,- (EX3),0,5,0)
+C3 := 0
+END
+END
+EP (0,_ANF,0)
+Ebene0()
+END
+IF C3=-1
+;Links vorne
+Ebene2()
+SP (EY3,-70,- EX3,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (EY3,-T,- EX3,0,5,0)
+G01 (EY3,-T,- (EX3-1.4),0,5,0)
+G01 (EY3,-T,- (EX3 + 1.4),0,5,0)
+G01 (EY3,-T,- EX3,0,5,0)
+G01 (EY3,-70,- EX3,0,5,0)
+EP (0,_ANF,0)
+END
+IF C4=-1
+;Rechts hinten
+Ebene4()
+SP (EY4,-70,- EX4,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (EY4,-T,- EX4,0,5,0)
+G01 (EY4,-T,- (EX4 - 1.4),0,5,0)
+G01 (EY4,-T,- (EX4 + 1.4),0,5,0)
+G01 (EY4,-T,- EX4,0,5,0)
+G01 (EY4,-70,- EX4,0,5,0)
+C4 := 0
+IF Absenken = -1
+IF C5=-1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V*5)
+IF RIL= -1
+G01 (EY5,-70,-EX5,0,6,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (EY5,-T,-EX5,0,6,0)
+G01 (EY5,-T,-EX5,0,6,0)
+G01 (EY5,-70,-EX5,0,6,0)
+C5 := 0
+ELSE
+G01 (EY5,-70,-EX5,0,6,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (EY5,-T,-EX5,0,6,0)
+G01 (EY5,-T,- (EX5 -1.4),0,6,0)
+G01 (EY5,-T,- (EX5 + 1.4),0,6,0)
+G01 (EY5,-T,-EX5,0,6,0)
+G01 (EY5,-70,-EX5,0,6,0)
+C5 := 0
+END
+END
+IF C6=-1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V*5)
+G01 (EY6,-70,-EX6,0,7,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (EY6,-T,-EX6,0,7,0)
+G01 (EY6,-T,- (EX6 - 1.4),0,7,0)
+G01 (EY6,-T,-(EX6 + 1.4),0,7,0)
+G01 (EY6,-T,-EX6,0,7,0)
+G01 (EY6,-70,-EX6,0,7,0)
+C6 := 0
+END
+END
+EP (0,_ANF,0)
+Ebene0()
+END
+IF C5=-1
+;Rechts mitte
+Ebene4()
+IF RIL= -1
+SP (EY5,-70,- EX5,0,0,_ANF,0,0,0,6,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (EY5,-T,- EX5,0,6,0)
+G01 (EY5,-T,- EX5,0,6,0)
+G01 (EY5,-70,- EX5,0,6,0)
+ELSE
+SP (EY5,-70,- EX5,0,0,_ANF,0,0,0,6,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (EY5,-T,- EX5,0,6,0)
+G01 (EY5,-T,- (EX5 -1.4),0,6,0)
+G01 (EY5,-T,- (EX5 +1.4),0,6,0)
+G01 (EY5,-T,- EX5,0,6,0)
+G01 (EY5,-70,- EX5,0,6,0)
+END
+IF Absenken = -1
+IF C6=-1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V*5)
+G01 (EY6,-70,- EX6,0,7,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (EY6,-T,- EX6,0,7,0)
+G01 (EY6,-T,- (EX6 - 1.4),0,7,0)
+G01 (EY6,-T,- (EX6 +1.4),0,7,0)
+G01 (EY6,-T,- EX6,0,7,0)
+G01 (EY6,-70,- EX6,0,7,0)
+C6 := 0
+END
+END
+EP (0,_ANF,0)
+Ebene0()
+END
+IF C6=-1
+;Rechts vorne
+Ebene4()
+SP (EY6,-70,- EX6,0,0,_ANF,0,0,0,7,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (EY6,-T,- EX6,0,7,0)
+G01 (EY6,-T,- (EX6 -1.4),0,7,0)
+G01 (EY6,-T,- (EX6 + 1.4),0,7,0)
+G01 (EY6,-T,- EX6,0,7,0)
+G01 (EY6,-70,- EX6,0,7,0)
+EP (0,_ANF,0)
+END
+END
+Ebene0()

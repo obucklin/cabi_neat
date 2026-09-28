@@ -1,0 +1,90 @@
+;MAKROTYP=1
+;BILD=KT_B.Wmf
+;INFO=
+;WZGV=7123K_021
+;MASCHINE=HOLZHER
+;NCNAME=KT_B
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_1.Dll
+;DIALOGPROC=Show_KTDialog
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;*VAR*Dimension X
+   DY := 400;*VAR*Dimension Y
+   DZ := 40;*VAR*Dimension Z
+   Spx := 75;*VAR*Zentrum in X
+   Spy := 75;*VAR*Zentrum in Y
+   TDM := 150;*VAR*Taschen Durchmesser
+   Drehricht := 0;*VAR*Drehrichtung (0= CCW / 1= CW)
+   Vers := _WZD * 1.55;Versatz
+   EX := 0;End X-Wert
+   MX := 0;Mittelpunkt in X
+   Tour := 10;Schleife
+   I := 2;Zählvariable
+   Z := 0;ZählVar
+   Tiefe := -20;*VAR*Tiefe der Tasche
+   Zustellung := 5;*VAR*Zustellung der Tasche
+   AnzZ := 0;Zählvariable
+   VersZ := 0;Zustellung in Z
+   Z_Wert := 0;Z_Wert
+   esxy := 1;
+   esmd := 0;
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+WZF (5,_VE,_V,_VA,_SD,_ANF,'1')
+transesxy (SpX,SpY,esxy,0)
+Transesd (Tiefe,esmd)
+Vers := _WZD /1.55
+Tour := Round((TDM / Vers) / 2)
+Vers := (TDM / Tour) / 2
+IF Zustellung = 0
+AnzZ := 1
+VersZ := Abs(Tiefe)
+ELSE
+AnzZ := Round((abs(Tiefe)) / Zustellung)
+VersZ := (Abs(Tiefe)) / AnzZ
+END
+Z_Wert := VersZ * (-1)
+;Im Uhrzeiger
+IF Drehricht = 1
+SP (SpX +Vers,Spy,Z_Wert,2,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+g02m (Spx -Vers,Spy,Z_Wert,SPX,Spy,0,0,0,0)
+FOR Z := 1 TO AnzZ STEP 1
+FOR I := 2 TO Tour STEP 1
+EX := SpX + (Vers * I)
+g02m (EX,Spy,Z_Wert,Spx+(Vers/2),Spy,0,0,0,0)
+EX := SpX - (Vers * I)
+g02m (EX,Spy,Z_Wert,Spx,Spy,0,0,0,0)
+END
+;Letzte Runde auf Kreis
+g02m (EX,Spy,Z_Wert,Spx,Spy,0,0,0,0)
+g02m (SpX+Vers,Spy,Z_Wert,(Spx - (TDM / 4)),Spy,0,0,0,0);BREAKPOINT
+g02m (Spx -Vers,Spy,Z_Wert,SPX,Spy,0,0,0,0)
+Z_Wert := (Z_Wert - VersZ)
+END
+EP (0,_ANF,0)
+;Im Gegenuhrzeiger
+ELSE
+SP (SpX -Vers,Spy,Z_Wert,1,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G03M (Spx + Vers,SpY,Z_Wert,SpX,SpY,0,0,0,0)
+FOR I := 2 TO Tour STEP 1
+EX := SpX - (Vers * I)
+G03M (Ex,SpY,Z_Wert,Spx - (Vers / 2),SpY,0,0,0,0)
+EX := SpX + (Vers * I)
+G03M (Ex,SpY,Z_Wert,Spx,SpY,0,0,0,0)
+END
+;Letzte Runde auf Kreis
+G03M (Ex,SpY,Z_Wert,Spx,SpY,0,0,0,0)
+G03M (SpX -Vers,SpY,Z_Wert,Spx+(TDM / 4),SpY,0,0,0,0)
+G03M (SpX + Vers,SpY,Z_Wert,Spx,SpY,0,0,0,0)
+Z_Wert := (Z_Wert - VersZ)
+END
+EP (0,_ANF,0)
+HLineX (50,1)
+HLineY (50,3)
+HLineX (25,1)

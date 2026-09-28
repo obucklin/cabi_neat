@@ -1,0 +1,21 @@
+;MAKROTYP=1
+;BILD=
+;INFO=_LZWIPU
+;WZGV=nc1000
+;MASCHINE=nc1000
+;NCNAME=NCNAME
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   X1 := 1500;*VAR*Punkt 1 in X
+   Y1 := 50;*VAR*Punkt 1 in Y
+   X2 := 500;*VAR*Punkt 2 in X
+   Y2 := 50;*VAR*Punkt 2 in Y
+   _lzwipu := 0;Ergebnis
+START
+;Berechnet die Distanz zwischen den beiden übergebenen Punkten
+_LZWIPU := SQRT(SQR(X1-X2)+SQR(Y1-Y2))

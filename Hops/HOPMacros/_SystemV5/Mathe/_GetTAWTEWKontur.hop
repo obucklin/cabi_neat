@@ -1,0 +1,95 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   KName := '';*VAR*Konturname
+   TAW := 0;*VAR**REF*Tangentenwinkel am Anfang
+   TEW := 0;*VAR**REF*Tangentenwinkel am Ende
+   Anz := 0;
+   EleArt := 0;Elementart
+   X1A := 0;
+   Y1A := 0;
+   X2A := 0;
+   Y2A := 0;
+   X1E := 0;
+   Y1E := 0;
+   X2E := 0;
+   Y2E := 0;
+   DW := 0;*VAR*Drehwinkel des Bauteils
+START
+;******************************************************
+;********   Direkt cnc-systeme GmbH   ®  *******
+;******************************************************
+Anz := GetKE_Anzahl(KName)
+;********************************************
+;Erstes Element für Anfangswinkel
+EleArt := GetKE_Typ(kName,1)
+;**
+IF EleArt=1
+;1=Linie
+X1A := getkp_x(KName,'KSP')
+Y1A := getkp_y(KName,'KSP')
+X2A := getkp_x(KName,1)
+Y2A := getkp_y(KName,1)
+CALL GetWinkel2P_V4 (REF WINKEL2P:=TAW VAL P1X:=X1A,P1Y:=Y1A,P2X:=X2A,P2Y:=Y2A)
+ELSE
+;Bogen
+X1A := getkp_x(KName,'KSP')
+Y1A := getkp_y(KName,'KSP')
+X2A := getke_mx(KName,1)
+Y2A := getke_my(KName,1)
+CALL GetWinkel2P_V4 (REF WINKEL2P:=TAW VAL P1X:=X1A,P1Y:=Y1A,P2X:=X2A,P2Y:=Y2A)
+IF EleArt=2
+;* G02
+TAW := TAW+90
+ELSE
+;* G03
+TAW := TAW-90
+END
+END
+;******************************************
+;Letztes Element für Endwinkel
+EleArt := GetKE_Typ(kName,Anz)
+;**
+IF EleArt=1
+;1=Linie
+X1E := getkp_x(KName,'KEP')
+Y1E := getkp_y(KName,'KEP')
+X2E := getkp_x(KName,Anz-1)
+Y2E := getkp_y(KName,Anz-1)
+CALL GetWinkel2P_V4 (REF WINKEL2P:=TEW VAL P1X:=X2E,P1Y:=Y2E,P2X:=X1E,P2Y:=Y1E)
+ELSE
+;Bogen
+X1E := getkp_x(KName,'KEP')
+Y1E := getkp_y(KName,'KEP')
+X2E := getke_mx(KName,Anz)
+Y2E := getke_my(KName,Anz)
+CALL GetWinkel2P_V4 (REF WINKEL2P:=TEW VAL P1X:=X2E,P1Y:=Y2E,P2X:=X1E,P2Y:=Y1E)
+IF EleArt=2
+;* G02
+TEW := TEW-90
+ELSE
+;* G03
+TEW := TEW+90
+END
+END
+;**
+;**
+TAW := TAW-DW
+TEW := TEW-DW
+IF TAW >=360
+TAW := TAW-360
+ELSE
+IF TAW < 0
+TAW := TAW+360
+END
+END
+IF TEW >=360
+TEW := TEW-360
+ELSE
+IF TEW < 0
+TEW := TEW+360
+END
+END
+;**

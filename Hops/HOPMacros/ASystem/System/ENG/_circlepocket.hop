@@ -1,0 +1,21 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCNAME
+;MASCHINE=demo
+;WZGV=demo
+;BILD=_Kreistasche.wmf
+VARS
+   X := _RX/2;*VAR*centre of circle pocket in x
+   Y := _RY/2;*VAR*centre of circle pocket in y
+   R := 19;*VAR*radius
+   depth := 20;*VAR*depth of circle pocket
+   Ddepth := 0;*VAR*Maximum depth
+START
+;makro circle pocket calls for the pocket with the right parameters
+;finished part (200,200,20,0,0)
+;WZF (4,_VE,_V,_VA,_SD,_ANF)
+CALL _recPocket (VAL x_centre:=X,Y_centre:=Y,PLength:=2*R,Pwidth:=2*R,Radius:=R,Angle:=0,depth:=depth,DeltaZ:=DDepth)
+

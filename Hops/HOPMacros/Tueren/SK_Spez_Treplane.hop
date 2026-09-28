@@ -1,0 +1,129 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.1.948[Hops.exe]
+;BILD=SK_SPEZ_TREPLANE.WMF
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=SK_Spez_Treplane
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2000;Dimension X
+   DY := 400;Dimension Y
+   DZ := 45;Dimension Z
+   DR_Hoehe := DR_Hoehe;*VAR*Drueckerhoehe
+   Falz_T := Falz_T;*VAR*Falztiefe
+   Falz_H := Falz_H;*VAR*Falzhöhe
+   Dist_Falz_Stu := Dist_Falz_Stu;*VAR*Distanz Falz Stulp
+   Stulp_B := Stulp_B;*VAR*Stulpbreite
+   K1_L := K1_L;*VAR*Kasten1_Länge
+   K2_L := K2_L;*VAR*Kasten2_Länge
+   BR_1 := BR_1;*VAR*Kasten1_Breite
+   BR_2 := BR_2;*VAR*Kasten2_Breite
+   T_1 := T_1;*VAR*Tiefe Kasten1
+   T_2 := T_2;*VAR*Tiefe Kasten2
+   ZU_1 := ZU_1;*VAR*Zustellung Kasten 1
+   ZU_2 := ZU_2;*VAR*Zustellen Kasten 2
+   Vers_K1_K2 := Vers_K1_K2;*VAR*Versatz Kasten 1 gegen Kasten 2 oben
+   Diff_K_Stulp := Diff_K_Stulp;*VAR*Versatz Kasten gegen Stulp
+   Ver_X := Ver_X;*VAR*Zusammenfahren im Kasten
+   Vers := 1;
+   Pendeln := 0;Pendeln Ja Nein
+   Zustellen := 0;Temp_Var
+   Z_X := 0;Zustellung X zusammenfahren
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+IF (Zu_1  > _AT_MAXDEPTH) & (_AT_MAXDEPTH <> 0)
+Zu_1 := _AT_MAXDEPTH
+END
+IF (Zu_2  > _AT_MAXDEPTH) & (_AT_MAXDEPTH <> 0)
+Zu_2 := _AT_MAXDEPTH
+END
+IF _WzD >= BR_2
+Pendeln := 1
+ELSE
+Pendeln := 0
+END
+Ebene3()
+SP (DR_Hoehe+30,Falz_H - Dist_Falz_Stu - Stulp_B + _WzR + Diff_K_Stulp,-(Falz_T ),0,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0)
+WHILE Zustellen < T_1;BREAKPOINT
+G01 (0,0,(Zu_1  * -1),0,10,2)
+G01 (-((K1_L / 2)  -(_Wzr +Z_X )),0,0,0,10,2)
+G01 (0,(Br_1 -_WzD),0,0,10,2)
+G01 ((K1_L - _WzD- (Z_X*2)),0,0,0,10,2)
+G01 (0,- (Br_1 -_WzD),0,0,10,2)
+G01 (-((K1_L / 2) -(_WzR +Z_X)),0,0,0,10,2)
+Zustellen := Zustellen + Zu_1
+Z_X := Z_X + Ver_X
+;Letzte Runde
+IF Zustellen >  (T_1 - Zu_1)
+G01 (0,0,- (Falz_T + T_1),0,10,0)
+G01 (-((K1_L / 2)  -(_WzR +Z_X)),0,0,0,10,2)
+G01 (0,(Br_1 -_WzD),0,0,10,2)
+G01 ((K1_L -_WzD-(Z_X*2)),0,0,0,10,2)
+G01 (0,- (Br_1 -_WzD),0,0,10,2)
+G01 (- ((K1_L / 2) -( _WzR +Z_X)),0,0,0,10,2)
+Zustellen := Zustellen + Zu_1
+END
+END
+G01 (0,(Br_1 - Vers_K1_K2 -_WzD ),0,0,10,2)
+Z_X := 0.00
+IF Pendeln=0
+WHILE Zustellen < T_2
+G01 (0,0,(Zu_2  * -1),0,10,2)
+G01 ((K2_L / 2)  - (_Wzr +Z_X),0,0,0,10,2)
+G01 (0,- (Br_2 -_WzD),0,0,10,2)
+G01 (-((K2_L )  -_WzD - (Z_X *2)),0,0,0,10,2)
+G01 (0,(Br_2 -_WzD),0,0,10,2)
+G01 ((K2_L / 2) -(_WzR+Z_X),0,0,0,10,2)
+Zustellen := Zustellen + Zu_2
+Z_X := Z_X + Ver_X
+;Letzte Runde
+IF Zustellen >  (T_2 - Zu_2)
+G01 (0,0,- (Falz_T + T_2),0,10,0)
+G01 ((K2_L / 2)  -(_Wzr +Z_X),0,0,0,10,2)
+G01 (0,- (Br_2 -_WzD),0,0,10,2)
+G01 (-((K2_L )  -_WzD - (Z_X *2)),0,0,0,10,2)
+G01 (0,(Br_2 -_WzD),0,0,10,2)
+G01 ((K2_L / 2)  -(_Wzr + Z_X),0,0,0,10,2)
+END
+END
+;2 Kasten mit pendeln
+ELSE
+Z_X := 0.00
+WHILE Zustellen < T_2
+G01 (0,0,(Zu_2  * -1),0,10,2)
+G01 ((K2_L / 2)  -(_Wzr + Z_X),0,0,0,10,2)
+G01 (-((K2_L )  -_WzD-(Z_X * 2)),0,0,0,10,2)
+G01 ((K2_L / 2)  -(_Wzr +Z_X),0,0,0,10,2)
+Zustellen := Zustellen + Zu_2
+Z_X := Z_X + Ver_X
+;Letzte Runde
+IF Zustellen >  (T_2 - Zu_2)
+G01 (0,0,- (Falz_T + T_2),0,10,0)
+G01 ((K2_L / 2)  -(_Wzr+Z_X),0,0,0,10,2)
+G01 (-((K2_L )  -_WzD-(Z_X *2)),0,0,0,10,2)
+G01 ((K2_L / 2)  -(_Wzr +Z_X),0,0,0,10,2)
+END
+END
+END
+EP (0,_ANF,0)
+Ebene0()
+ZLinie (DR_Hoehe -(K1_L /2) +30,Falz_T,DR_Hoehe -(K1_L /2) +30,Falz_T +T_1,0,7,7,0,0)
+ZLinie (DR_Hoehe -(K1_L /2) +30,Falz_T +T_1,DR_Hoehe -(K2_L/2) +30,Falz_T +T_1,0,7,7,0,0)
+ZLinie (DR_Hoehe -(K2_L/2) +30,Falz_T +T_1,DR_Hoehe -(K2_L/2) +30,Falz_T +T_2,0,7,7,0,0)
+ZLinie (DR_Hoehe -(K2_L/2) +30,Falz_T +T_2,DR_Hoehe + (K2_L/2) +30,Falz_T +T_2,0,7,7,0,0)
+ZLinie (DR_Hoehe + (K2_L/2) +30,Falz_T +T_2,DR_Hoehe + (K2_L/2) +30,Falz_T +T_1,0,7,7,0,0)
+ZLinie (DR_Hoehe + (K2_L/2) +30,Falz_T +T_1,DR_Hoehe + (K1_L/2) +30,Falz_T +T_1,0,7,7,0,0)
+ZLinie (DR_Hoehe + (K1_L/2) +30,Falz_T +T_1,DR_Hoehe + (K1_L/2) +30,Falz_T,0,7,7,0,0)
+ZLinie (DR_Hoehe+ (K1_L/2) +30,Falz_T,DR_Hoehe - (K1_L/2) +30,Falz_T,0,7,7,0,0)

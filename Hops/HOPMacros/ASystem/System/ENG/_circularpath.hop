@@ -1,0 +1,40 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCName
+;MASCHINE=demo
+;WZGV=demo
+;BILD=Kreisbahn.WMF
+VARS
+   X_centre := _RX/2;*VAR*centre in x
+   Y_centre := _RY/2;*VAR*centre in y
+   Z := _Z;*VAR*depth in z
+   Radius := 20;*VAR*radius of circular path
+   Tool_radius_comp := 2;*VAR*0=centre,1=outside,2=inside
+   AB := 1;*VAR*0 = no lead in or out, 1 = lead in and out
+   KreisEndpunktY := 0;
+   ÜberfahrKreisbogen := 2;
+START
+;direkt cnc systeme NCHOPS Version3.0
+;circular path V 3.0/SF/30.09.98
+;finished part (100,100,19,0,0)
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+;diffrent correction
+;_SDAkt := -_SDAKt
+IF (Radius=_WZR)&(Tool_radius_comp=2)
+DRILLING (X_centre,Y_centre,_WZD,Z,0,0,0)
+ELSE
+IF (_WZR>Radius)&(Tool_radius_comp=2)
+DARCCW (X_centre,Y_centre,X_centre-_WZR,Y_centre,X_centre-_WZR,Y_centre,255)
+GIVEOUTHINT(radius_of_the_circle_is_to_small_for_this_tool)
+ELSE
+IF _SDAkt>0
+CALL _circlepocketCW (VAL X_Mitte:=X_centre,Y_Mitte:=Y_centre,Z:=Z,Radius:=Radius,Radiuskorrektur:=Tool_radius_comp,AB:=AB)
+ELSE
+CALL _circlepocketCCW (VAL X_Mitte:=X_centre,Y_Mitte:=Y_centre,Z:=Z,Radius:=Radius,Radiuskorrektur:=Tool_radius_comp,AB:=AB)
+END
+END
+END
+

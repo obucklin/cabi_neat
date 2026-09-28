@@ -1,0 +1,69 @@
+;MAKROTYP=1
+
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_Ellipse_voll_V5Dialog
+
+VARS
+   mx := 0;*VAR*Mitte in X
+   my := 0;*VAR*Mitte in Y
+   dw := 0;*VAR*Drehwinkel
+   a := _RX;*VAR*X-Achse
+   b := _RY;*VAR*Y-Achse
+   z := -5;*VAR*Tiefe
+   BL := 2;*VAR*Lage   0=mittig    1=links   2=rechts
+   anf_bew := 2;*VAR*Anfahrbewegung
+   Aufmass := 0;*VAR*Abstand zur Kontur
+   ANF := _ANF;*VAR*Anfahrfaktor
+   depth := _AT_MAXDEPTH;*VAR*Zustellung pro Umfahrung
+   tt := 0;intern
+   t := 0;intern
+   Interpol := 1;*VAR*Interpolation auf Anfahrbewegung
+   esxy := 9;*VAR*
+   esmd := 0;*VAR*
+   laser := 0;*VAR*
+   ggl := 0;*VAR*
+START
+;-- HH_EXTS
+;DIREKT CNC SYSTEME NCHOPS
+;****** Ellipse fraesen komplett *****
+Rohteil (500,300,20,0,0)
+;WZF (2,_VE,_V,_VA,_SD,_ANF)
+transesxy (mx,my,esxy,0)
+Transesd (z,esmd)
+;14.01.2009
+;mathematisch nicht richtig SF
+;Aufmass auf Abstand zur Kontur
+;a := a/2+Aufmass
+;b := b/2+Aufmass
+a := a/2
+b := b/2
+IF BL=1
+Aufmass := -Aufmass
+END
+;****************************
+IF BL=0
+anf_bew := 0
+END
+IF (BL=1) & (anf_bew=1)
+anf_bew := 2
+END
+;****************************
+IF Interpol = 1
+anf_bew := -anf_bew
+END
+;****************************
+;******* Anzahl Zustellungen errechnen *******
+;******* Letzte Zustellung in mm *******
+;Drehen auf Ebene ermöglichen SF 17.03.2008
+DrehenBB(1)
+;CALL _DrehenBBStart (VAL DX:=mx,DY:=my,Dw:=dw)
+IF a>=b
+SP (mx,my+b,z,BL,anf_bew,ANF,Aufmass,0,0,0,0,ggl,0,depth,0,0,laser,0,0,0,0,0,0)
+CALLDLL ELLIPSENBOGEN03(Fraesen,Dummy, VAL mx:=mx,my:=my,a:=a,b:=b,ew:=90,Z:=_z,dw:=0,r:=0)
+ELSE
+SP (mx+a,my,z,BL,anf_bew,ANF,Aufmass,0,0,0,0,ggl,0,depth,0,0,laser,0,0,0,0,0,0)
+CALLDLL ELLIPSENBOGEN03(Fraesen,Dummy, VAL mx:=mx,my:=my,a:=a,b:=b,ew:=0,Z:=_z,dw:=0,r:=0)
+END
+EP (ANF_BEW,ANF,0)
+drehenEB (mx,my,dw)
+;CALL _DrehenBBEnde ()

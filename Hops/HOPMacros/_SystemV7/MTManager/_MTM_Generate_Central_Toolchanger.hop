@@ -1,0 +1,103 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.948[Hops.exe]
+;BILD=_GENERATE_CENTRAL_TOOLCHANGER_.WMF
+;INFO=
+;WZGV=7125K_139_5A_REF
+;WZGVCONFIG=
+;MASCHINE=HH7
+;NCNAME=Generate_Central_Toolchanger_
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   D := 540;*VAR*Durchmesser Wechsler Platz Mitte/Mitte
+   Places := 16;*VAR*Anzahl der Plätze
+   P_Wink := 270;*VAR*Platzwinkel für Platz1 [0]=rechts [90]=oben [180]=links [270]=unten
+   clock := 1;*VAR*[1] ccw [-1] cw
+   ToolHolderType := 1;*VAR*Abhängig von den eingetragenen Werkzeughaltertypen im MTM
+   ValTool := '0;1;2';*VAR*Fräser;Bohrer;Säge;Spezial
+   HeadID := 999;
+   DescriptionPlatz := 'PlatzNr:';*VAR*Description vom Platz + Platz Nummer
+   dxf_name := 'ch16_1';Name der Zeichnung (ohne Erweiterung .dxf)
+   i := 0;
+   w := 0;
+   x := 0;
+   y := 0;
+   z := 0;
+   p_angle := 0;
+   w_step := 0;Winkelstep
+   strl_ID := -1;Stringlist-Nummer
+START
+;--
+;-- 2017/12/12 (mw)
+;-- Makro erzeugt Werkzeugwechseler (Teller) .mac
+;-- Zielverzeichnis = \MData
+;--
+w_step := 360/Places
+;--
+;--
+StringListCreate (strl_ID)
+;--
+StringListAdd (strl_ID,'[HeadsCount]')
+StringListAdd (strl_ID,'Heads=0')
+StringListAdd (strl_ID,'ToolChangerHeads=1')
+StringListAdd (strl_ID,'DrillingHeads=0')
+StringListAdd (strl_ID,'ProcessHeads=0')
+StringListAdd (strl_ID,'')
+;--
+StringListAdd (strl_ID,'[ToolChangerHead0]')
+StringListAdd (strl_ID,'ChangerType=1')
+StringListAdd (strl_ID,'InternalID=0')
+StringListAdd (strl_ID,'HeadID='+INTTOSTR(HeadID))
+StringListAdd (strl_ID,'Description=Tool-Changer'+INTTOSTR(Places)+'_D'+INTTOSTR(D))
+StringListAdd (strl_ID,'Drawing=Components\Changer\'+dxf_name+'.dxf')
+StringListAdd (strl_ID,'CenterX=0')
+StringListAdd (strl_ID,'CenterY=0')
+StringListAdd (strl_ID,'CenterZ=0')
+StringListAdd (strl_ID,'DispPosX=0')
+StringListAdd (strl_ID,'DispPosY=0')
+StringListAdd (strl_ID,'DispPosZ=0')
+StringListAdd (strl_ID,'DispPosC=0')
+StringListAdd (strl_ID,'ToolPlaceCount='+INTTOSTR(Places))
+;--
+FOR i := 0 TO Places-1 STEP 1
+;-- alle Werkzeugplätze
+;------------------------------------------------------------------
+w := (i*w_step)+(90-P_Wink)
+;-- ccw oder cw
+w := w * clock
+x := 0
+y := D/2
+CALL Rot3D_V7 (REF X:=x,Y:=y,Z:=z VAL KWGRAD:=0,DWGRAD:=w)
+CALL GetWinkel2P_V7 (REF WINKEL2P:=p_angle VAL P1X:=x,P1Y:=y,P2X:=0,P2Y:=0)
+;------------------------------------------------------------------
+Hinweismeldung ('Platz #'+INTTOSTR(i+1)+ '  X:'+FLOATTOSTR(X,4,3)+'    -    Y:'+FLOATTOSTR(Y,4,3)+ '         AngleFixPin:'+FLOATTOSTR(p_angle,4,3))
+StringListAdd (strl_ID,'')
+StringListAdd (strl_ID,'[ToolChangerHead0ToolPlace'+INTTOSTR(I)+']')
+StringListAdd (strl_ID,'InternalID='+INTTOSTR(I+1))
+StringListAdd (strl_ID,'PlaceID='+INTTOSTR(I+1))
+StringListAdd (strl_ID,'Description='+DescriptionPlatz+INTTOSTR(I+1))
+StringListAdd (strl_ID,'OffsetX='+FLOATTOSTR(x,4,3))
+StringListAdd (strl_ID,'OffsetY='+FLOATTOSTR(y,4,3))
+StringListAdd (strl_ID,'OffsetZ=0')
+StringListAdd (strl_ID,'RotAngle=0')
+StringListAdd (strl_ID,'TipAngle=0')
+StringListAdd (strl_ID,'ReverseRotDirection=0')
+StringListAdd (strl_ID,'GearRate=0')
+StringListAdd (strl_ID,'ToolHolderType='+INTTOSTR(ToolHolderType))
+StringListAdd (strl_ID,'ValTool='+ValTool)
+StringListAdd (strl_ID,'AddCount=0')
+StringListAdd (strl_ID,'ToolNo=-1')
+StringListAdd (strl_ID,'AngleFixPin='+FLOATTOSTR(p_angle,4,3))
+END
+Hinweismeldung ('Datei '+_PATH_TOOLTABLES+'ToolChanger_'+INTTOSTR(Places)+'_D'+INTTOSTR(D)+'.mac - erzeugt!!!')
+StringListSaveToFile (strl_ID,_PATH_TOOLTABLES+'\ToolChanger_'+INTTOSTR(Places)+'_D'+INTTOSTR(D)+'.mac','')
+;--

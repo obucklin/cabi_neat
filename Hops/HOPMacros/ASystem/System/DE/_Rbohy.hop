@@ -1,0 +1,35 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=Rbohy
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=RBohy.WMF
+VARS
+   SPX := 37;*VAR*StartPunkt (x)
+   SPY := 64;*VAR*StartPunkt (y)
+   Raster := 32;*VAR*Rasterwerte
+   EPY := _RY-64;*VAR*EndPunkt (y)
+   T := -13;*VAR*Bohrtiefe
+   D := 5;*VAR*Bohrdurchmesser
+   TL := 0;Tieflochflag
+START
+;direkt cnc systeme NCHOPS Version3.0
+;Lochreihe in Y V 3.0/SF/09.98
+IF T>0
+T := -T
+END
+IF EPY > SPY
+WHILE   SPY <= EPY
+Bohrung (SPX,SPY,D,T,TL,0,0)
+SPY  :=  SPY + Raster
+END
+ELSE
+WHILE    SPY >= EPY
+Bohrung (SPX,SPY,D,T,TL,0,0)
+SPY   :=   SPY - Raster
+END
+END
+

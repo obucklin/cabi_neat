@@ -1,0 +1,30 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   LUX := 0;*VAR*
+   LUY := 0;*VAR*
+   ROX := 0;*VAR*
+   ROY := 0;*VAR*
+   UZ := 0;*VAR*
+   OZ := 0;*VAR*
+   SicherHorz := 0;*VAR*
+   SicherTop := 0;*VAR*
+   SicherBottom := 0;*VAR*
+   Radius := 100;*VAR*
+   SBB := 4;*VAR*
+   KW := 0;*VAR*
+   DW := 0;*VAR*
+   asxu := 0;*VAR**REF*
+   asyu := 0;*VAR**REF*
+   aszu := 0;*VAR**REF*
+   asxo := 0;*VAR**REF*
+   asyo := 0;*VAR**REF*
+   aszo := 0;*VAR**REF*
+   aexu := 0;*VAR**REF*
+   aeyu := 0;*VAR**REF*
+   aezu := 0;*VAR**REF*
+   aexo := 0;*VAR**REF*
+   aeyo := 0;*VAR**REF*
+   aezo := 0;*VAR**REF*
+START
+CALLDLL MATH_LIMITLLINESFP(MathFunctionsExt,DefaultStr,REF ASXU:=asxu,ASYU:=asyu,ASZU:=aszu,ASXO:=asxo,ASYO:=asyo,ASZO:=aszo,AEXU:=aexu,AEYU:=aeyu,AEZU:=aezu,AEXO:=aexo,AEYO:=aeyo,AEZO:=aezo VAL LUX:=LUX,LUY:=LUY,ROX:=ROX,ROY:=ROY,UZ:=UZ,OZ:=OZ,SICHERHORZ:=SicherHorz,SICHERTOP:=SicherTop,SICHERBOTTOM:=SicherBottom,RADIUS:=Radius,SBB:=SBB,KW:=KW,DW:=DW)

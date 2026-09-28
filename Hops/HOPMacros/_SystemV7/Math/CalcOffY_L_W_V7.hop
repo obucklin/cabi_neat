@@ -1,0 +1,10 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowCalcOffY_L_W_V7Dialog
+
+VARS
+   Laenge := ;*VAR*Länge der Geraden
+   Winkel := ;*VAR*Winkel gegen X
+   OffY := ;*VAR**REF*
+START
+OffY := laenge*sin(Winkel)

@@ -1,0 +1,28 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.5.5.93[Hops.exe]
+;BILD=HH_NCIEXT_70000_BEFORE.WMF
+;INFO=
+;WZGV=7225K_617
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=HH_NCIExt_70000_BEFORE
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+START
+;HH_DINISO LINE --> Nachwirksam / Nach der Bearbeitung
+;[80000] - Schreibt alle uebergebene Strings zu einem definierten Zeitpunkt ins NC-Programm -
+;Nachwirksam
+;Der Aufruf erfolgt unmittelbar nach dem Ende
+;der Bearbeitung
+;P6 = Code
+NCIExt (70000,'HH7',2,0,0,10,-1,-1,-1,-1,'DEMO_BEVORE_MILLING','','','','')

@@ -1,0 +1,7 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowActivateConfig_V7Dialog
+VARS
+   ConfigName := '';*VAR*
+START
+SetTooltable ('',ConfigName,1)

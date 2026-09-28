@@ -1,0 +1,17 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowCalcEinheitsVektor_V7Dialog
+VARS
+   P1x := 100;*VAR*
+   P1y := 0;*VAR*
+   P1z := 0;*VAR*
+   P2x := 0;*VAR*
+   P2y := 200;*VAR*
+   P2z := 0;*VAR*
+   Vx := ;*VAR**REF*
+   Vy := ;*VAR**REF*
+   Vz := ;*VAR**REF*
+   L := 0;
+START
+CALL CalcVektor_V7 (REF VX:=Vx,VY:=Vy,VZ:=Vz VAL P1X:=P1x,P1Y:=P1y,P1Z:=P1z,P2X:=P2x,P2Y:=P2y,P2Z:=P2z)
+CALL VektorNormieren_V7 (REF NX:=vx,NY:=vy,NZ:=vz)

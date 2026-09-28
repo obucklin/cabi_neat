@@ -1,0 +1,91 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.1.948[Hops.exe]
+;BILD=BUENDIG.WMF
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Buendig
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA.Dll
+;DIALOGPROC=ShowBuendig_Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2000;Dimension X
+   DY := 294;Dimension Y
+   DZ := 40;Dimension Z
+   Format_Wkz :=109;*VAR*Werkzeug zum Formatieren
+   Fase_O_Wkz :=235;*VAR*Werkzeug Fase unten
+   Fase_U_Wkz :=135;*VAR*Werkzeug Fase oben
+   Rad_O :=2;*VAR*Radius  oben im  Ueberschlag
+   Fase_UL :=1;*VAR*Fase unten laengs
+   Fase_OL :=1;*VAR*Fase oben laengs
+   Tiefe :=-2;*VAR*Formattiefe von unten
+   CB_Fase_O :=-1;*VAR*Fase oben Ja/Nein
+   CB_Fase_U :=-1;*VAR*Fase unten Ja/Nein
+   Reihenfolge :=0;*VAR*0= Fase Formatieren / 1= Formatieren Fasen
+START
+;Weinig-Holz-Her Schweiz AG B. Achermann
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+IF Reihenfolge = 1
+;Formatieren --> Fasen
+;3 Seiten
+WZF (Format_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-50,0,Tiefe,1,1,_ANF,0,0,0,3,1,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,Rad_O,1,2)
+G01 (0,0,0,Rad_O,7,2)
+G01 (-50,0,0,0,5,2)
+EP (1,_ANF,0)
+;Fase Unten
+IF CB_Fase_U = -1
+WZF (Fase_U_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-50,0,Fase_UL,1,1,_ANF,0,0,0,3,1,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0);BREAKPOINT
+G01 (0,0,0,Rad_O,1,2)
+G01 (0,0,0,Rad_O,7,2)
+G01 (-50,0,0,0,5,2)
+EP (1,_ANF,0)
+END
+;Fase oben
+IF CB_Fase_O = -1
+WZF (Fase_O_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-50,0,Fase_OL *-1,1,1,_ANF,0,0,0,3,0,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,Rad_O,1,2)
+G01 (0,0,0,Rad_O,7,2)
+G01 (-50,0,0,0,5,2)
+EP (1,_ANF,0)
+END
+ELSE
+;Fasen --> Formatieren
+;Fase Unten
+IF CB_Fase_U = -1
+WZF (Fase_U_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-50,0,Fase_UL,1,1,_ANF,0,0,0,3,1,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,Rad_O,1,2)
+G01 (0,0,0,Rad_O,7,2)
+G01 (-50,0,0,0,5,2)
+EP (1,_ANF,0)
+END
+;Fase oben
+IF CB_Fase_O = -1
+WZF (Fase_O_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-50,0,Fase_OL *-1,1,1,_ANF,0,0,0,3,0,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,Rad_O,1,2)
+G01 (0,0,0,Rad_O,7,2)
+G01 (-50,0,0,0,5,2)
+EP (1,_ANF,0)
+END
+;3 Seiten
+WZF (Format_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-50,0,Tiefe,1,1,_ANF,0,0,0,3,1,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,Rad_O,1,2)
+G01 (0,0,0,Rad_O,7,2)
+G01 (-50,0,0,0,5,2)
+EP (1,_ANF,0)
+END

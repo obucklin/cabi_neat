@@ -1,0 +1,20 @@
+;MAKROTYP=1
+;BILD=DXF3D_VBohr.wmf
+;INFO=DEMO
+;WZGV=DEMO
+;MASCHINE=SIMU
+;NCNAME=DXF3D_VBohr
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   P1 := 0;*VAR*x-Position
+   P2 := 0;*VAR*y-Position
+   P3 := 0;*VAR*Durchmesser
+   P4 := '';*VAR*Layer
+START
+WZB (21,_VE,_V,_VA,_SD,_ANF)
+Bohrung (P1,P2,P3,-10,10,0,0)

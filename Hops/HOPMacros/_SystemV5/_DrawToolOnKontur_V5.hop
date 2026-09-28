@@ -1,0 +1,29 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   KN := '';*VAR*Konturnamen
+   KStep := 1000;
+   Anzahl := 10;
+   i := 0;
+   j := 0;
+   AktPos := 0;
+   P1X := 0;
+   P1Y := 0;
+   Z_Anzahl := 0;
+   Z_Step := 0;
+START
+FOR i := 1 TO GetKE_Anzahl(KN) STEP 1
+CALL _Calc_Count_Step_V5 (REF Z_ANZAHL:=Z_Anzahl,Z_STEP:=Z_Step VAL TIEFE:=GetKE_Laenge(KN,i),ANZAHL:=0,MAXZ:=KStep)
+FOR j := 0 TO Z_Anzahl STEP 1
+IF Z_Anzahl=0
+AktPos := 0
+ELSE
+AktPos := j/Z_Anzahl
+END
+CALL _CalcPunktOnKontur_V5 (REF P1X:=P1X,P1Y:=P1Y VAL K:=KN,KINDEX:=i,POS:=AktPos)
+ZKBCW (P1X,P1Y,P1X-_WZR,P1Y,P1X+_WZR,P1Y,0,0,0,0)
+ZKBCCW(P1X,P1Y,P1X-_WZR,P1Y,P1X+_WZR,P1Y,0,0,0,0)
+END
+END

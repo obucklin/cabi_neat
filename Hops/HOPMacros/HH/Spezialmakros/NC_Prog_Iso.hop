@@ -1,0 +1,59 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.884[Hops.exe]
+;BILD=NC_PROG_ISO.WMF
+;INFO=
+;WZGV=7225K_470
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=NC_Prog_Iso
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_5.Dll
+;DIALOGPROC=ShowTEXT_CAll_FDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   xMode := 0;alt
+   ToolCall :=-1;*VAR*
+   Speed :=-1;*VAR*Drehzahl
+   ViewChange :=-1;*VAR*
+   LiftPos :=0;*VAR*[-1]=ohne [0]=default [1]=pos1 [2]=pos2
+   SX :=500;*VAR*Startpunkt X
+   SY :=100;*VAR*Startpunkt Y
+   SZ :=100;*VAR*Startpunkt Z
+   ebx :=0;*VAR*Einfügepunkt der Ebene in X
+   eby :=0;*VAR*Einfügepunkt der Ebene in Y
+   ebz :=0;*VAR*Einfügepunkt der Ebene in Z
+   ebkw :=0;*VAR*Kippwinkel der Ebene
+   ebdw :=0;*VAR*Drehwinkel der Ebene
+   esxy :=0;*VAR*Easysnap ebene
+   esz :=2;*VAR*Easysnap Ebene Z
+   esxysp :=0;*VAR*Easysnap Startpunkt
+   eszsp :=0;*VAR*Easysnap Startpunkt Z
+   CodeStr := '';*VAR*
+START
+Fertigteil (1000,1000,40,0,0,0,0,0,'',0,0,0)
+;only EXTCALL
+;Mode=1 mit Werkzeugaufruf aber ohne Ebenenwechsel/
+;Mode=2 mit Werkzeugewechsen und Ebenenwechsel
+Transesz (SZ,eszsp)
+transesxy (SX,SY,esxySP,1)
+Transesz (EBZ,esz)
+transesxy (ebx,eby,esxy,1)
+;V7 not used (MW SK)
+/NCINFO (7710,xMode,LiftPos,ToolCall,Speed,Viewchange,0,Dummy,0,0,0)
+IF (_BoxID<=0)
+Fehlermeldung ('NC_Prog_ISO - tool call missing')
+END
+IF Viewchange=1
+EbeneF (ebx,eby,ebz,ebkw,ebdw,0,0)
+END
+NCInfoProcess (77710,SX,SY,SZ,SX,SY,SZ,CodeStr,'',0,ToolCall,ViewChange,Speed,LiftPos,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4)
+;V7 not used (MW SK)
+/NCINFO (8711,xMode,LiftPos,ToolCall,Speed,Viewchange,0,codestr,0,0,0)
+Ebene0()

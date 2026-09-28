@@ -1,0 +1,69 @@
+;MAKROTYP=1
+;BILD=SFORMATWMF.bmp
+;INFO=_Sformat
+;WZGV=demo
+;MASCHINE=Simu
+;NCNAME=_Sformat_V4
+;KOMMENTAR=xxx
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   Tiefe := -_RZ-2;*VAR*Sägetiefe Vorderkante
+   Richtung := 0;*VAR*0=CW   1=CCW
+   Einlauf := 50;*VAR*Ein - Auslauf
+   L := 1;*VAR*Linker Schnitt
+   V := 1;*VAR*Vorderer Schnitt
+   R := 1;*VAR*Rechter Schnitt
+   H := 1;*VAR*Hinterer Schnitt
+   k := 1;
+START
+;DIREKT CNC Systeme NCHOPS 4.x
+;Sägeformatierung
+;Rohteil (500,300,19,0,0)
+;WZS (13,_VE,_V,_VA,_SD,_ANF)
+;**** Kenner setzen
+IF Richtung=0
+K := 0
+ELSE
+K := 1
+END
+;**** Eine Bahn muss mindesten definiert sein
+IF (L=0)&(V=0)&(R=0)&(H=0)
+Fehlermeldung (Bitte_Sägebahn_definieren)
+END
+IF Tiefe=0
+Fehlermeldung (Bitte_Tiefe_eingeben)
+END
+IF Tiefe<0
+Tiefe := -Tiefe
+END
+IF Richtung=0
+IF V=1
+Saegen (0,0,-Tiefe,_RX,0,-Tiefe,2,0,Einlauf,k,0,_RZ)
+END
+IF R=1
+Saegen (_RX,0,-Tiefe,_RX,_RY,-Tiefe,2,0,Einlauf,k,0,_RZ)
+END
+IF H=1
+Saegen (_RX,_RY,-Tiefe,0,_RY,-Tiefe,2,0,Einlauf,k,0,_RZ)
+END
+IF L=1
+Saegen (0,_RY,-Tiefe,0,0,-Tiefe,2,0,Einlauf,k,0,_RZ)
+END
+ELSE
+IF V=1
+Saegen (0,0,-Tiefe,_RX,0,-Tiefe,2,0,Einlauf,k,0,_RZ)
+END
+IF L=1
+Saegen (0,_RY,-Tiefe,0,0,-Tiefe,2,0,Einlauf,k,0,_RZ)
+END
+IF H=1
+Saegen (_RX,_RY,-Tiefe,0,_RY,-Tiefe,2,0,Einlauf,k,0,_RZ)
+END
+IF R=1
+Saegen (_RX,0,-Tiefe,_RX,_RY,-Tiefe,2,0,Einlauf,k,0,_RZ)
+END
+END

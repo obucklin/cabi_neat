@@ -1,0 +1,143 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.10.0.57[Hops.exe]
+;BILD=SETCONSOLE.WMF
+;INFO=
+;WZGV=7335X_103
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=SetConsole
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+START
+IF _Plausibilitaet=1
+IF _Feld=0
+IF _Tcount<0
+IF _Xakt<_KON_A_1
+_Xakt := _KON_A_1
+;Änderung der Konsolenposition wird durch rotes Rechteck angezeigt
+ZRechteck (_Xakt-128.5,0,205,1500,0,987135,0,5,1,1)
+IF _Sprache=0
+Hinweismeldung ('Traverse: Plausibilitätsprüfung erkennt Kollission - Bitte neue Position überprüfen')
+ELSE
+Hinweismeldung ('Konsole: collision check changed position - Please check Result')
+END
+END
+ELSE
+IF STRPOS('2',INTTOSTR(_Ka))>1
+IF _Xakt<_Xa+_KON_A_X
+_Xakt := _Xa+_KON_A_X
+;Änderung der Konsolenposition wird durch rotes Rechteck angezeigt
+ZRechteck (_Xakt-128.5,0,205,1500,0,987135,0,5,1,1)
+IF _Sprache=0
+Hinweismeldung ('Traverse: Plausibilitätsprüfung erkennt Kollission - Bitte neue Position überprüfen')
+ELSE
+Hinweismeldung ('Konsole: collision check changed position - Please check Result')
+END
+END
+ELSE
+IF STRPOS('3',INTTOSTR(_Ka))>1
+IF _Xakt<_Xa+_KON_A_B
+_Xakt := _Xa+_KON_A_B
+;Änderung der Konsolenposition wird durch rotes Rechteck angezeigt
+ZRechteck (_Xakt-128.5,0,205,1500,0,987135,0,5,1,1)
+IF _Sprache=0
+Hinweismeldung ('Traverse: Plausibilitätsprüfung erkennt Kollission - Bitte neue Position überprüfen')
+ELSE
+Hinweismeldung ('Konsole: collision check changed position - Please check Result')
+END
+END
+END
+END
+IF _Tcount=(_Anzahl_Konsolen/2)
+IF _Xakt<_Xa+_KON_A_D
+_Xakt := _Xa+_KON_A_D
+;Änderung der Konsolenposition wird durch rotes Rechteck angezeigt
+ZRechteck (_Xakt-128.5,0,205,1500,0,987135,0,5,1,1)
+IF _Sprache=0
+Hinweismeldung ('Traverse: Plausibilitätsprüfung erkennt Kollission - Bitte neue Position überprüfen')
+ELSE
+Hinweismeldung ('Konsole: collision check changed position - Please check Result')
+END
+END
+END
+END
+END
+IF _Feld=1
+IF _Tcount<0
+IF _Xakt>_RX-_KON_A_1
+_Xakt := _RX-_KON_A_1
+;Änderung der Konsolenposition wird durch rotes Rechteck angezeigt
+ZRechteck (_Xakt-92.5,0,221,1500,0,987135,0,5,1,1)
+IF _Sprache=0
+Hinweismeldung ('Traverse: Kollission erkannt - Bitte neue Position überprüfen')
+ELSE
+Hinweismeldung ('Konsole: collision check changed position - Please check Result')
+END
+END
+ELSE
+IF STRPOS('2',INTTOSTR(_Ka))>1
+IF _Xakt>_Xa-_KON_A_X
+_Xakt := _Xa-_KON_A_X
+;Änderung der Konsolenposition wird durch rotes Rechteck angezeigt
+ZRechteck (_Xakt-128.5,0,221,1500,0,987135,0,5,1,1)
+IF _Sprache=0
+Hinweismeldung ('Traverse: Plausibilitätsprüfung erkennt Kollission - Bitte neue Position überprüfen')
+ELSE
+Hinweismeldung ('Konsole: collision check changed position - Please check Result')
+END
+END
+ELSE
+IF STRPOS('3',INTTOSTR(_Ka))>1
+IF _Xakt>_RX-_Xa-_KON_A_B
+_Xakt := _RX-_Xa-_KON_A_B
+;Änderung der Konsolenposition wird durch rotes Rechteck angezeigt
+ZRechteck (_Xakt-128.5,0,221,1500,0,987135,0,5,1,1)
+IF _Sprache=0
+Hinweismeldung ('Traverse: Plausibilitätsprüfung erkennt Kollission - Bitte neue Position überprüfen')
+ELSE
+Hinweismeldung ('Konsole: collision check changed position - Please check Result')
+END
+END
+END
+END
+IF _Tcount=(_Anzahl_Konsolen/2)
+IF _Xakt>_Xa-_KON_A_D
+_Xakt := _Xa-_KON_A_D
+;Änderung der Konsolenposition wird durch rotes Rechteck angezeigt
+ZRechteck (_Xakt-128.5,0,205,1500,0,987135,0,5,1,1)
+IF _Sprache=0
+Hinweismeldung ('Traverse: Plausibilitätsprüfung erkennt Kollission - Bitte neue Position überprüfen')
+ELSE
+Hinweismeldung ('Konsole: collision check changed position - Please check Result')
+END
+END
+END
+END
+END
+;Ende Plausibilitätsprüfung
+END
+;Traverse wird hinzugefügt
+_Tcount := _Tcount+1
+IF ((_Tcount+1)>(_Anzahl_Konsolen/2))&(_Feld=0)
+_xakt := _xakt-53
+ELSE
+IF ((_Tcount+1)>(_Anzahl_Konsolen/2))&(_Feld=1)
+_xakt := _xakt+53
+END
+END
+AddMachineComponent ('',-1,0,0,2,0,0,1,_Xakt,1,0,0,0,'','',0,0,0,0,0,0,0,0,0,0,_Zeichnen)
+_Xa := _Xakt
+_Ka := _Kakt

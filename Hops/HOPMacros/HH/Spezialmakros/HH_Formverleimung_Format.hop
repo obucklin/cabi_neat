@@ -1,0 +1,108 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.10.0.27[Hops.exe]
+;BILD=HH_FORMVERLEIMUNG_FORMAT.WMF
+;INFO=
+;WZGV=7225C_685
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=HH_Formverleimung_Format
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   L1 := 600;*VAR*L‰nge langes Teil
+   DY := 500;*VAR*Dimension Fertigteil in Y
+   L2 := 120;*VAR*L‰nge kurzes Teil
+   RA := 100;*VAR*Radius auﬂen
+   MS := 15;*VAR*Materialst‰rke
+   UEZ := -2;*VAR*‹berstand Fr‰ser unter Werkst¸ck
+   Aufmaﬂ := 5;*VAR*Aufmaﬂ Rohmaﬂ zu Fertigmaﬂ DY
+   WZ := 21;*VAR*Werkzeug ID
+   DX2 := 0;Rechenwert
+   Beta := 0;Drehwinkel
+START
+;HH_Formverleimung HOLZHER GmbH
+;JOA / KEI 18.01.2023
+;Version V1.01
+;History:
+;Erstellung JOA 18.01.2023
+;Winkelberechnung und L‰ngenberechnung
+Beta := ARCTAN((L2-MS)/(L1-MS))
+DX2 := SQRT(SQR(L1-MS)+SQR(L2-MS))+(SIN(Beta)*MS)
+;#
+;Profilkontur
+KB ('Fertigteil','',0,COS(Beta)*MS,0,'',1,0)
+CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=L1,WINKEL:=Beta,Z:=0,INFO:='',ESD:=2)
+KVerrundung ('',0,RA,'',2)
+CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=L2,WINKEL:=Beta-90,Z:=0,INFO:='',ESD:=2)
+CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=-MS,WINKEL:=Beta,Z:=0,INFO:='',ESD:=2)
+CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=L2-MS,WINKEL:=Beta+90,Z:=0,INFO:='',ESD:=2)
+KVerrundung ('',0,RA-MS,'',2)
+CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=-L1+MS,WINKEL:=Beta,Z:=0,INFO:='',ESD:=2)
+CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=MS,WINKEL:=Beta+90,Z:=0,INFO:='',ESD:=2)
+;#
+;Leitkurve f¸r seitliche Fr‰sungen
+KB ('PROFIL','',(SIN(Beta)*MS)-(SIN(Beta)*(UEZ)),(SIN(90-Beta)*(UEZ)),0,'',0,0)
+CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=L1-MS+UEZ,WINKEL:=Beta,Z:=0,INFO:='',ESD:=2)
+KVerrundung ('',0,RA-MS+UEZ,'',2)
+CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=-L2+MS,WINKEL:=Beta+90,Z:=0,INFO:='',ESD:=2)
+CALL ProfileFormedPart_V7 ( VAL VIEW:=1,COLOR:=65535,FILENAME:='',UNIT:=0,CONTOURS:='Fertigteil',CONTOURSHOLES:='',PROFILLENGTH:=DY,RAWBEGIN:=Aufmaﬂ,RAWEND:=Aufmaﬂ,DELETECONTOURS:=0)
+;#
+;Leitkurve f¸r gerade Fr‰sungen
+KB ('Flach','',-Aufmaﬂ,0,0,'',0,0)
+KG01 ('',DY+Aufmaﬂ+Aufmaﬂ,0,0,'',0,2)
+;#
+;seitliche Fr‰sungen
+WZF (WZ,_VE,_V,_VA,_SD,_ANF,'1')
+EbeneF (0,0,0,90,0,0,0,0)
+WZF (WZ,_VE,_V,_VA,_SD,_ANF,'1')
+KSP ('???','???',+_WZR,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0)
+KonturFraesen ('PROFIL','KSP','KEP',0,0,0,0,0,0,0,0,0,90,0)
+EP (0,_ANF,0)
+EbeneF (0,0,0,90,0,7,0,0)
+WZF (WZ,_VE,_V,_VA,_SD,_ANF,'1')
+KSP (0,0,-_WZR,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0)
+KonturFraesen ('PROFIL','KSP','KEP',0,0,0,0,0,0,0,0,0,90,0)
+EP (0,_ANF,0)
+;#
+;Stirnkantenfr‰sungen
+Ebene0()
+KB ('links','',SIN(Beta)*(+MS),-Aufmaﬂ,0,'',1,1)
+KG01 ('',0,DY+Aufmaﬂ+Aufmaﬂ,0,'',10,2)
+KSP (SIN(Beta)*(-UEZ),'???',0,1,1,_ANF,0,180,Beta,0,1,0,0,0,0,1,0,0,0,0,0,0,0)
+KonturFraesen ('links','KSP','KEP',0,0,0,1,0,0,0,0,(-(SIN(Beta)*_WZD))+(COS(Beta)*UEZ),90,0)
+EP (1,_ANF,0)
+KB ('rechts','',(SIN(Beta)*(MS))+(SQRT(SQR(L1-MS)+SQR(L2-MS))),-Aufmaﬂ,0,'',1,1)
+KG01 ('',0,DY+Aufmaﬂ+Aufmaﬂ,0,'',10,2)
+KSP ((SIN(Beta)*_WZD)+(COS(Beta)*UEZ),'???',0,1,1,_ANF,0,180,Beta-90,0,1,0,0,0,0,1,0,0,0,0,0,0,0)
+KonturFraesen ('rechts','KSP','KEP',0,0,0,1,0,0,0,0,SIN(Beta)*UEZ,90,0)
+EP (1,_ANF,0)
+;#
+;Beschriftung und Bemaﬂung
+;Nur Sichtbar bei:
+;L1=600
+;L2=120
+;RA=100
+HGNeu()
+HLine2P (0,COS(Beta)*MS,COS(Beta)*L1,(SIN(Beta)*L1)+(COS(Beta)*MS),0,0)
+HLine2P (_RX,SIN(Beta)*MS,COS(Beta)*L1,(SIN(Beta)*L1)+(COS(Beta)*MS),0,0)
+HLineY (SIN(Beta)*MS,3)
+HLineX (_RX-(COS(Beta)*MS),1)
+HLineY (0,3)
+CALL B2Punkte_V7 ( VAL P1X:=_SPX1,P1Y:=_SPY1,P2X:=_SPX5,P2Y:=_SPY5,ABSTAND:=-20,FARBE:=24831,TEXT:='L2',TEXTHOEHE:=20,PFEILLAENGE:=4,PFEILEINNERHALB:=0,WCS:=1,ESXY1:=0,ESXY2:=0)
+HLineW ((COS(Beta)*(L1-RA))+(SIN(Beta)*RA),(COS(Beta)*MS)+(SIN(Beta)*(L1-RA))-(COS(Beta)*RA),Beta,1)
+HLineW ((COS(Beta)*(L1-RA))+(SIN(Beta)*RA),(COS(Beta)*MS)+(SIN(Beta)*(L1-RA))-(COS(Beta)*RA),Beta+90,1)
+HLineW ((COS(Beta)*(L1-RA))+(SIN(Beta)*RA),(COS(Beta)*MS)+(SIN(Beta)*(L1-RA))-(COS(Beta)*RA),Beta+45,1)
+HKreismpr ((COS(Beta)*(L1-RA))+(SIN(Beta)*RA),(COS(Beta)*MS)+(SIN(Beta)*(L1-RA))-(COS(Beta)*RA),RA,1)
+CALL B2Punkte_V7 ( VAL P1X:=_SPX5,P1Y:=_SPY5,P2X:=_SPX19,P2Y:=_SPY19,ABSTAND:=-20,FARBE:=24831,TEXT:='MS',TEXTHOEHE:=20,PFEILLAENGE:=5,PFEILEINNERHALB:=0,WCS:=1,ESXY1:=0,ESXY2:=0)
+CALL BRadius_V7 ( VAL MX:=_SPX53,MY:=_SPY53,PX:=_SPX71,PY:=_SPY71,ABSTAND:=30,FARBE:=24831,TEXT:='RA',TEXTHOEHE:=20,PFEILLAENGE:=5,PFEILEINNERHALB:=0,WCS:=1,ESXY1:=0,ESXY2:=0)
+CALL B2Punkte_V7 ( VAL P1X:=0,P1Y:=COS(Beta)*MS,P2X:=_SPX1,P2Y:=_SPY1,ABSTAND:=-20,FARBE:=24831,TEXT:='L1',TEXTHOEHE:=20,PFEILLAENGE:=5,PFEILEINNERHALB:=0,WCS:=1,ESXY1:=1,ESXY2:=0)
+HGNeuEnd()

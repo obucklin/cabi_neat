@@ -1,0 +1,18 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowXMLINFOUAXIS_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   r1 := 0;*VAR*beliebige Zahl
+   r2 := 0;*VAR*beliebige Zahl
+   r3 := 0;*VAR*beliebige Zahl
+   r4 := 0;*VAR*beliebige Zahl
+   r5 := 0;*VAR*beliebige Zahl
+   r6 := 0;*VAR*beliebige Zahl
+   str := '';*VAR*Zeichenkette
+   r7 := 0;*VAR*beliebige Zahl
+   r8 := 0;*VAR*beliebige Zahl
+   r9 := 0;*VAR*beliebige Zahl
+START
+nciext (-200055,'NCISys',0,0,0,r1,r2,r3,r4,r5,r6,str,r7,r8,r9)

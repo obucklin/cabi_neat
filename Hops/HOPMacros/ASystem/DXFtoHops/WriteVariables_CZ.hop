@@ -1,0 +1,25 @@
+;MAKROTYP=1
+;BILD=WriteVariables_CZ.wmf
+;INFO=WriteVariables
+;WZGV=demo
+;MASCHINE=Simu
+;NCNAME=WriteVariables_CZ
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   DDepth5_00000 := -5;
+   DType5_00000 := 20;
+   DDepth35_00000 := -6;
+   DType35_00000 := 20;
+   DDepth8_00000 := -10;
+   DType8_00000 := 10;
+START
+FinishedPart (FX,FY,FZ,0,3)
+È_nástr := 1
+NájezdB := 1
+VýjezdB := 1
+Rad_opr := 1

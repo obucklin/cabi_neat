@@ -1,0 +1,728 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=CLAMEX_EINZELN.WMF
+;INFO=
+;WZGV=7225K_136
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Clamex1_Stumpf
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_7.Dll
+;DIALOGPROC=ShowTClamex_EinzFDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   CLAMEX_ID :=116;*VAR*Fräswkz
+   Clamex_B_ID :=501;*VAR*Bohrwkz
+   Art :=1;*VAR*0 = stirnseitig (mitLoch) / 1 = Flachseitig (Ohne Loch)
+   B_Pos :=7.50;*VAR*Bohrposition
+   B_DM :=5;*VAR*BohrungsDM
+   C_TIEFE :=14.00;*VAR*Clamex Tiefe
+   ESXY1 :=2;*VAR*Easy Snap vo
+   ESXY2 :=1;*VAR*Easy Snap li
+   ESXY3 :=5;*VAR*Easy Snap hi
+   ESXY4 :=3;*VAR*Easy Snap re
+   EX1 :=0;*VAR*Pos X
+   EY1 :=(DZ/2);*VAR*Pos Y
+   EX2 :=(DZ/2);*VAR*Pos X
+   EY2 :=60;*VAR*Pos Y
+   EX3 :=60;*VAR*Pos X
+   EY3 :=-(DZ/2);*VAR*Pos Y
+   EX4 :=(DZ/2);*VAR*Pos X
+   EY4 :=60;*VAR*Pos Y
+   C_Typ :=1;*VAR*Clamex Typ
+   Richtung :=8;*VAR*; Arbeitsrichtung 2: vorne / 8: links / 6: Hinten / 4: Rechts
+   RF :=2;*VAR*; Reihenfolge 0: Nur Bohrung 1: Nur Fräsen / 3: Beide
+   Win :=45;*VAR*; Drehwinkel
+   Gegen_U :=-1;*VAR*; Nullpunkt gegenüber
+   T := 0;Tiefe fräsung
+   Temp_SN := 0;Temporärer Easy Snap
+   EHX := 0;Temp Var bei winkel
+   EHY := 0;Temp Var bei winkel
+   Sx_Para := 0;
+   Sy_Para := 0;
+   Stl_Typ := 'P14_Of.stl';Clamex Typ
+START
+Fertigteil (500,500,19,0,0,0,0,0,'',0,0,0)
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+;Stinrseitig
+;IF (Art=1) & (C_Typ=3)
+;T := 50.3 - 10
+;T := _WzR - 10
+;ELSE
+T := _WzR - C_Tiefe
+;END
+IF Art = 1
+;********************************************************
+;Vorne links 45°
+IF Richtung = 1
+EbeneF (0,0,0,90,180 + Win,1,2)
+TransEsXY (EHX,EHY,7,0)
+IF Gegen_U = -1
+EY2:= ABS(EHX)- EY2
+END
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+ZSTL (EY2,0,EX2 *-1,1973790,1,STL_Typ,5,0)
+SP (EY2,-70,EX2 *-1,0,0,_ANF,0,-90,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EY2,- T,0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EY2,-70,0,0,5,2)
+EP (0,_ANF,0)
+Ebene0()
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:= Win-90,ESXY1:=1)
+CALL _ZRechteck_2P_V5 ( VAL SX:=EX2 - 1.4,SY:=EY2 - 33,EX:=EX2 + 1.4,EY:=EY2 + 33,FUELLEN:=0,FARBE:=0,ESXY1:=1,ESXY2:=1)
+CALL _DrehenBBEnde ()
+End
+;**********************************************************
+; von Vorne anpassen der Snaps
+IF Richtung = 2
+IF ESXY1 = 1
+Temp_Sn := 7
+END
+IF ESXY1 = 2
+Temp_Sn := 6
+END
+IF ESXY1 =3
+Temp_Sn := 5
+END
+Ebene1()
+ZSTL (EX1,0,EY1 * -1,1973790,1,STL_Typ,Temp_SN,0)
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (EX1,-70,EY1 *-1,0,0,_ANF,0,-90,0,Temp_SN,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EX1,- T,0,0,Temp_SN,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EX1,-70,0,0,Temp_SN,2)
+EP (0,_ANF,0)
+Ebene0()
+CALL _ZRechteck_2P_V5 ( VAL SX:=EX1- 33,SY:=EY1 + 1.4,EX:=EX1+33,EY:=EY1-1.4,FUELLEN:=0,FARBE:=0,ESXY1:=ESXY1,ESXY2:=ESXY1)
+END
+;********************************************************************
+;Vorne Rechts 45°
+IF Richtung = 3
+EbeneF (0,0,0,90,180 - Win,3,0)
+TransEsXY (EHX,EHY,5,0)
+IF Gegen_U = -1
+EY4:= ABS(EHX)- EY4
+END
+ZSTL (EY4,0,EX4 *-1,1973790,1,STL_Typ,7,0)
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (EY4,-70,EX4 * -1,0,0,_ANF,0,-90,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EY4,- T,0,0,7,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EY4,-70,0,0,7,2)
+EP (0,_ANF,0)
+Ebene0()
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=90 - Win,ESXY1:=3)
+CALL _ZRechteck_2P_V5 ( VAL SX:=EX4 - 1.4,SY:=EY4 - 33,EX:=EX4 + 1.4,EY:=EY4 + 33,FUELLEN:=0,FARBE:=0,ESXY1:=3,ESXY2:=3)
+CALL _DrehenBBEnde ()
+End
+;*********************************************************************
+;Hinten Rechts 45°
+IF Richtung = 5
+EbeneF (0,0,0,90,Win,5,0)
+TransEsXY (EHX,EHY,1,0)
+IF Gegen_U = -1
+EY4:= ABS(EHX)- EY4
+END
+ZSTL (EY4,0,EX4 *-1,1973790,1,STL_Typ,5,0)
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (EY4,-70,EX4 *-1,0,0,_ANF,0,-90,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EY4,- T,0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EY4,-70,0,0,5,2)
+EP (0,_ANF,0)
+Ebene0()
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:= Win - 90,ESXY1:=5)
+CALL _ZRechteck_2P_V5 ( VAL SX:=EX4 - 1.4,SY:=EY4 - 33,EX:=EX4 + 1.4,EY:=EY4 + 33,FUELLEN:=0,FARBE:=0,ESXY1:=5,ESXY2:=5)
+CALL _DrehenBBEnde ()
+End
+;*********************************************************************
+;Hinten Links 45°
+IF Richtung = 7
+EbeneF (0,0,0,90,-Win,7,0)
+TransEsXY (EHX,EHY,5,0)
+IF Gegen_U = -1
+EY2:= ABS(EHX)- EY2
+END
+ZSTL (EY2,0,EX2 *-1,1973790,1,STL_Typ,7,0)
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (EY2,-70,EX2 *-1,0,0,_ANF,0,-90,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EY2,- T,0,0,7,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EY2,-70,0,0,7,2)
+EP (0,_ANF,0)
+Ebene0()
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:= - Win + 90 ,ESXY1:=7)
+CALL _ZRechteck_2P_V5 ( VAL SX:=EX2 - 1.4,SY:=EY2 - 33,EX:=EX2 + 1.4,EY:=EY2 + 33,FUELLEN:=0,FARBE:=0,ESXY1:=7,ESXY2:=7)
+CALL _DrehenBBEnde ()
+End
+;*********************************************************************
+IF Richtung = 8
+;von Links anpassen der Snaps
+IF ESXY2 = 1
+Temp_Sn := 5
+Ebene2()
+ZSTL (EY2,0,EX2 *-1,1973790,1,STL_Typ,Temp_SN,0)
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+;hier
+SP (EY2,-70,EX2 * -1,0,0,_ANF,0,-90,0,Temp_SN,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EY2,- T,0,0,Temp_SN,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EY2,-70,0,0,Temp_SN,2)
+EP (0,_ANF,0)
+Ebene0()
+END
+IF ESXY2 = 8
+Temp_Sn := 6
+Ebene2()
+ZSTL (EY2*-1,0,EX2 *-1,1973790,1,STL_Typ,Temp_SN,0)
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+;hier
+SP (EY2*-1,-70,EX2 * -1,0,0,_ANF,0,-90,0,Temp_SN,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EY2*-1,- T,0,0,Temp_SN,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EY2*-1,-70,0,0,Temp_SN,2)
+EP (0,_ANF,0)
+Ebene0()
+END
+IF ESXY2 = 7
+Temp_Sn := 7
+Ebene2()
+ZSTL (EY2,0,EX2 *-1,1973790,1,STL_Typ,Temp_SN,0)
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+;hier
+SP (EY2,-70,EX2 * -1,0,0,_ANF,0,-90,0,Temp_SN,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EY2,- T,0,0,Temp_SN,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EY2,-70,0,0,Temp_SN,2)
+EP (0,_ANF,0)
+Ebene0()
+END
+CALL _ZRechteck_2P_V5 ( VAL SX:=EX2-1.4,SY:=EY2 + 33,EX:=EX2+1.4,EY:=EY2-33,FUELLEN:=0,FARBE:=0,ESXY1:=ESXY2,ESXY2:=ESXY2)
+END
+;*********************************************************************
+IF Richtung = 6
+;von Hinten anpassen der Snaps
+IF ESXY3 = 7
+Temp_Sn := 5
+Ebene3()
+ZSTL (EX3,0,EY3 *-1,1973790,1,STL_Typ,Temp_SN,0)
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (EX3,-70,EY3 *-1,0,0,_ANF,0,-90,0,Temp_SN,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EX3,- T,0,0,Temp_SN,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EX3,-70,0,0,Temp_SN,2)
+EP (0,_ANF,0)
+Ebene0()
+END
+IF ESXY3 = 6
+Temp_Sn := 6
+Ebene3()
+ZSTL (EX3*-1,0,EY3 *-1,1973790,1,STL_Typ,Temp_SN,0)
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (EX3*-1,-70,EY3 *-1,0,0,_ANF,0,-90,0,Temp_SN,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EX3*-1,- T,0,0,Temp_SN,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EX3*-1,-70,0,0,Temp_SN,2)
+EP (0,_ANF,0)
+Ebene0()
+END
+IF ESXY3 = 5
+Temp_Sn := 7
+Ebene3()
+ZSTL (EX3,0,EY3 *-1,1973790,1,STL_Typ,Temp_SN,0)
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (EX3,-70,EY3 *-1,0,0,_ANF,0,-90,0,Temp_SN,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EX3,- T,0,0,Temp_SN,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EX3,-70,0,0,Temp_SN,2)
+EP (0,_ANF,0)
+Ebene0()
+END
+CALL _ZRechteck_2P_V5 ( VAL SX:=EX3 - 33,SY:=EY3 - 1.4,EX:=EX3 + 33,EY:=EY3 + 1.4,FUELLEN:=0,FARBE:=0,ESXY1:=ESXY3,ESXY2:=ESXY3)
+END
+;*********************************************************************
+IF Richtung = 4
+;von Rechts anpassen der Snaps
+IF ESXY4 = 3
+Temp_Sn := 7
+END
+IF ESXY4 = 4
+Temp_Sn := 6
+END
+IF ESXY4 = 5
+Temp_Sn := 5
+END
+Ebene4()
+ZSTL (EY4,0,EX4 * -1,1973790,1,STL_Typ,Temp_SN,0)
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (EY4,-70,EX4 *-1,0,0,_ANF,0,0,0,Temp_SN,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EY4,-T,0,0,Temp_SN,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EY4,-70,0,0,Temp_SN,2)
+EP (0,_ANF,0)
+Ebene0()
+CALL _ZRechteck_2P_V5 ( VAL SX:=EX4 - 1.4,SY:=EY4 - 33,EX:=EX4 + 1.4,EY:=EY4 + 33,FUELLEN:=0,FARBE:=0,ESXY1:=ESXY4,ESXY2:=ESXY4)
+END
+END
+;*********************************************************************
+IF Art = 0
+;Vorne links 45°
+IF Richtung = 1
+EbeneF (0,0,0,90,180 + Win,1,2)
+TransEsXY (EHX,EHY,7,0)
+Ebene0()
+IF Gegen_U = -1
+EY2:= ABS(EHX)- EY2
+END
+IF RF = 0
+;nur Bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+Sx_Para := cos(Win)
+SY_Para := Sin(Win)
+IF C_Typ =3
+ELSE
+Bohrung ((SX_Para *EY2) + B_Pos *Sin(Win),(SY_Para *EY2) - B_Pos *Cos(Win),B_Dm,EX2,10,0,0,1,0,0,0,0)
+END
+END
+IF RF =1
+;nur Fraesen
+Sx_Para := Cos(Win)
+SY_Para := Sin(Win)
+;Hier
+EbeneF (0,0,0,0,win,1,2)
+ZSTL (Ey2,0,EX2,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP ((Sx_Para * EY2)  - 70 * Sin(Win),(SY_Para *EY2) + 70 * Cos(Win),EX2,0,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+CALL _WGerade_V5 ( VAL LAENGE:=70  - T,WINKEL:=Win-90,Z:=0,R:=0,ESD:=2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 ((Sx_Para * EY2)- 70 * Sin(Win),SY_Para *EY2 + 70 * Cos(Win),0,0,1,2)
+EP (0,_ANF,0)
+END
+IF RF =2
+; Bohren und fraesen
+; Bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+Sx_Para := cos(Win)
+SY_Para := Sin(Win)
+IF C_Typ =3
+ELSE
+Bohrung ((SX_Para *EY2) + B_Pos *Sin(Win),(SY_Para *EY2) - B_Pos *Cos(Win),B_Dm,EX2,10,0,0,1,0,0,0,0)
+END
+;Fraesen
+Sx_Para := Cos(Win)
+SY_Para := Sin(Win)
+EbeneF (0,0,0,0,win,1,2)
+ZSTL (Ey2,0,EX2,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP ((Sx_Para * EY2)  - 70 * Sin(Win),(SY_Para *EY2) + 70 * Cos(Win),EX2,0,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+CALL _WGerade_V5 ( VAL LAENGE:=70  - T,WINKEL:=Win-90,Z:=0,R:=0,ESD:=2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 ((Sx_Para * EY2)- 70 * Sin(Win),SY_Para *EY2 + 70 * Cos(Win),0,0,1,2)
+EP (0,_ANF,0)
+END
+End
+;*********************************************************************
+IF Richtung = 2
+; von Vorne anpassen der Snaps
+IF RF = 0
+;nur Bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+IF C_Typ =3
+ELSE
+Bohrung (EX1,B_Pos,B_DM,EY1,10,0,0,ESXY1,0,0,0,0)
+END
+END
+IF RF = 1
+;nur Fraesen
+EbeneF (EX1,0,EY1 *-1,0,180,ESXY1,2)
+ZSTL (0,0,0,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (EX1,-70,EY1,0,0,_ANF,0,0,0,ESXY1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EX1,- T,0,0,ESXY1,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EX1,-70,0,0,ESXY1,2)
+EP (0,_ANF,0)
+END
+IF RF = 2
+;Bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+IF C_Typ =3
+ELSE
+Bohrung (EX1,B_Pos,B_DM,EY1,10,0,0,ESXY1,0,0,0,0)
+END
+;Fraesen
+EbeneF (EX1,0,EY1 *-1,0,180,ESXY1,2)
+ZSTL (0,0,0,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (EX1,-70,EY1,0,0,_ANF,0,0,0,ESXY1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EX1,- T,0,0,ESXY1,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EX1,-70,0,0,ESXY1,2)
+EP (0,_ANF,0)
+END
+END
+;*********************************************************************
+;Vorne rechts 45°
+IF Richtung = 3
+EbeneF (0,0,0,90,- Win,3,0)
+TransEsXY (EHX,EHY,7,0)
+Ebene0()
+IF Gegen_U = -1
+EY4:= ABS(EHX)- EY4
+END
+IF RF = 0
+;nur Bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+Sx_Para := cos(Win)
+SY_Para := Sin(Win)
+IF C_Typ =3
+ELSE
+Bohrung ((SX_Para *EY4) + B_Pos *Sin(Win),(SY_Para *EY4) - B_Pos *Cos(Win),B_Dm,Ex4,10,0,0,3,0,0,0,0)
+END
+END
+IF RF =1
+;nur Fraesen
+Sx_Para := Cos(Win)
+SY_Para := Sin(Win)
+EbeneF (0,0,0,0,win +270,3,2)
+ZSTL (Ey4 *-1,0,EX4,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP ((Sx_Para * EY4)  - 70 * Sin(Win),(SY_Para *EY4) + 70 * Cos(Win),EX4,0,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0)
+CALL _WGerade_V5 ( VAL LAENGE:=70  - T,WINKEL:= -Win-90,Z:=0,R:=0,ESD:=2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 ((Sx_Para * EY4)- 70 * Sin(Win),SY_Para *EY4 + 70 * Cos(Win),0,0,3,2)
+EP (0,_ANF,0)
+END
+IF RF =2
+; Bohren und fraesen
+; Bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+Sx_Para := cos(Win)
+SY_Para := Sin(Win)
+IF C_Typ =3
+ELSE
+Bohrung ((SX_Para *EY4) + B_Pos *Sin(Win),(SY_Para *EY4) - B_Pos *Cos(Win),B_Dm,Ex4,10,0,0,3,0,0,0,0)
+END
+;Fraesen
+Sx_Para := Cos(Win)
+SY_Para := Sin(Win)
+EbeneF (0,0,0,0,win +270,3,2)
+ZSTL (Ey4 *-1,0,EX4,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP ((Sx_Para * EY4)  - 70 * Sin(Win),(SY_Para *EY4) + 70 * Cos(Win),EX4,0,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0)
+CALL _WGerade_V5 ( VAL LAENGE:=70 - T,WINKEL:=-Win-90,Z:=0,R:=0,ESD:=2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 ((Sx_Para * EY4)- 70 * Sin(Win),SY_Para *EY4 + 70 * Cos(Win),0,0,3,2)
+EP (0,_ANF,0)
+END
+END
+;**********************************************************
+IF Richtung = 4
+IF RF = 0
+;von Rechts nur bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+IF C_Typ =3
+ELSE
+Bohrung (B_Pos,EY4,B_DM,EX4,10,0,0,ESXY4,0,0,0,0)
+END
+END
+IF RF = 1
+;von rechts Fraesen
+EbeneF (0,EY4,EX4*-1,0,270,ESXY4,2)
+ZSTL (0,0,0,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-70,EY4,EX4,0,0,_ANF,0,0,0,ESXY4,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (- T,EY4,0,0,ESXY4,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (-70,EY4,0,0,ESXY4,2)
+EP (0,_ANF,0)
+END
+IF RF = 2
+;von Rechts bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+IF C_Typ =3
+ELSE
+Bohrung (B_Pos,EY4,B_DM,EX4,10,0,0,ESXY4,0,0,0,0)
+END
+;Fraesen
+EbeneF (0,EY4,EX4*-1,0,270,ESXY4,2)
+ZSTL (0,0,0,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-70,EY4,EX4,0,0,_ANF,0,0,0,ESXY4,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (- T,EY4,0,0,ESXY4,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (-70,EY4,0,0,ESXY4,2)
+EP (0,_ANF,0)
+END
+END
+;**********************************************************
+;Hinten rechts 45°
+IF Richtung = 5
+EbeneF (0,0,0,90,Win,5,0)
+TransEsXY (EHX,EHY,1,0)
+Ebene0()
+IF Gegen_U = -1
+EY4:= ABS(EHX)- EY4
+END
+IF RF = 0
+;nur Bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+Sx_Para := cos(Win)
+SY_Para := Sin(Win)
+IF C_Typ =3
+ELSE
+Bohrung ((SX_Para *EY4) + B_Pos *Sin(Win),(SY_Para *EY4) - B_Pos *Cos(Win),B_Dm,EX4,10,0,0,5,0,0,0,0)
+END
+END
+IF RF =1
+;nur Fraesen
+Sx_Para := Cos(Win)
+SY_Para := Sin(Win)
+EbeneF (0,0,0,0,win+180,5,2)
+ZSTL (Ey4,0,EX4,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP ((Sx_Para * EY4)  - 70 * Sin(Win),(SY_Para *EY4) + 70 * Cos(Win),EX4,0,0,_ANF,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0)
+CALL _WGerade_V5 ( VAL LAENGE:=70  - T,WINKEL:=Win+90,Z:=0,R:=0,ESD:=2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 ((Sx_Para * EY4)- 70 * Sin(Win),SY_Para *EY4 + 70 * Cos(Win),0,0,5,2)
+EP (0,_ANF,0)
+END
+IF RF =2
+; Bohren und fraesen
+; Bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+Sx_Para := cos(Win)
+SY_Para := Sin(Win)
+IF C_Typ =3
+ELSE
+Bohrung ((SX_Para *EY4) + B_Pos *Sin(Win),(SY_Para *EY4) - B_Pos *Cos(Win),B_Dm,EX4,10,0,0,5,0,0,0,0)
+END
+;Fraesen
+Sx_Para := Cos(Win)
+SY_Para := Sin(Win)
+EbeneF (0,0,0,0,win+180,5,2)
+ZSTL (Ey4,0,EX4,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP ((Sx_Para * EY4) - 70 * Sin(Win),(SY_Para *EY4) + 70 * Cos(Win),EX4,0,0,_ANF,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0)
+CALL _WGerade_V5 ( VAL LAENGE:=70 - T,WINKEL:=Win+90,Z:=0,R:=0,ESD:=2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 ((Sx_Para * EY4)- 70 * Sin(Win),SY_Para *EY4 + 70 * Cos(Win),0,0,5,2)
+EP (0,_ANF,0)
+END
+END
+;*********************************************************
+IF Richtung = 6
+;von hinten
+IF RF = 0
+;von Hinten nur bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+IF C_Typ =3
+ELSE
+Bohrung (EX3,B_Pos,B_DM,EX3,10,0,0,ESXY3,0,0,0,0)
+END
+END
+IF RF = 1
+;Nur Fräsen
+EbeneF (EX3,0,EY3*-1,0,0,ESXY3,2)
+ZSTL (0,0,0,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (EX3,-70,EY3,0,0,_ANF,0,0,0,ESXY3,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EX3,-T,0,0,ESXY3,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EX3,-70,0,0,ESXY3,2)
+EP (0,_ANF,0)
+END
+IF RF = 2
+;von Hinten bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+IF C_Typ =3
+ELSE
+Bohrung (EX3,B_Pos,B_DM,EY3,10,0,0,ESXY3,0,0,0,0)
+END
+;Fräsen
+EbeneF (EX3,0,EY3*-1,0,0,ESXY3,2)
+ZSTL (0,0,0,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (EX3,-70,EY3,0,0,_ANF,0,0,0,ESXY3,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EX3,-T,0,0,ESXY3,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (EX3,-70,0,0,ESXY3,2)
+EP (0,_ANF,0)
+END
+END
+;*********************************************************************
+;Hinten links 45°
+IF Richtung = 7
+EbeneF (0,0,0,90,-Win,7,0)
+TransEsXY (EHX,EHY,5,0)
+Ebene0()
+IF Gegen_U = -1
+EY2:= ABS(EHX)- EY2
+END
+IF RF = 0
+;nur Bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+Sx_Para := cos(Win)
+SY_Para := Sin(Win)
+IF C_Typ =3
+ELSE
+Bohrung ((SX_Para *EY2) + B_Pos *Sin(Win),(SY_Para *EY2) - B_Pos *Cos(Win),B_Dm,EX2,10,0,0,7,0,0,0,0)
+END
+END
+IF RF =1
+;nur Fraesen
+Sx_Para := Cos(Win)
+SY_Para := Sin(Win)
+EbeneF (0,0,0,0,win-270,7,2)
+ZSTL (Ey2 *-1,0,EX2,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP ((Sx_Para * EY2)  - 70 * Sin(Win),(SY_Para *EY2) + 70 * Cos(Win),EX2,0,0,_ANF,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+CALL _WGerade_V5 ( VAL LAENGE:=70  - T,WINKEL:=- Win + 90,Z:=0,R:=0,ESD:=2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 ((Sx_Para * EY2)- 70 * Sin(Win),SY_Para *EY2 + 70 * Cos(Win),0,0,7,2)
+EP (0,_ANF,0)
+END
+IF RF =2
+; Bohren und fraesen
+; Bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+Sx_Para := cos(Win)
+SY_Para := Sin(Win)
+IF C_Typ =3
+ELSE
+Bohrung ((SX_Para *EY2) + B_Pos *Sin(Win),(SY_Para *EY2) - B_Pos *Cos(Win),B_Dm,EX2,10,0,0,7,0,0,0,0)
+END
+;Fraesen
+Sx_Para := Cos(Win)
+SY_Para := Sin(Win)
+EbeneF (0,0,0,0,win-270,7,2)
+ZSTL (Ey2 *-1,0,EX2,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP ((Sx_Para * EY2) - 70 * Sin(Win),(SY_Para *EY2) + 70 * Cos(Win),Ex2,0,0,_ANF,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+CALL _WGerade_V5 ( VAL LAENGE:=70 - T,WINKEL:=- Win+90 ,Z:=0,R:=0,ESD:=2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 ((Sx_Para * EY2)- 70 * Sin(Win),SY_Para *EY2 + 70 * Cos(Win),0,0,7,2)
+EP (0,_ANF,0)
+END
+END
+;**********************************************************
+IF Richtung = 8
+IF RF = 0
+;von Links nur bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+IF C_Typ =3
+ELSE
+Bohrung (B_Pos,EY2,B_DM,EX2,10,0,0,ESXY2,0,0,0,0)
+END
+END
+IF RF = 1
+;nur Fraesen
+EbeneF (0,EY2,EX2 *-1,0,90,ESXY2,2)
+ZSTL (0,0,0,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-70,EY2,EX2,0,0,_ANF,0,0,0,ESXY2,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (- T,EY2,0,0,ESXY2,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (-70,EY2,0,0,ESXY2,2)
+EP (0,_ANF,0)
+END
+IF RF = 2
+;von Links bohren
+WZB (Clamex_B_ID,_VE,_V,_VA,_SD,_ANF,'1')
+IF C_Typ =3
+ELSE
+Bohrung (B_Pos,EY2,B_DM,EX2,10,0,0,ESXY2,0,0,0,0)
+END
+;Fraesen
+EbeneF (0,EY2,EX2 *-1,0,90,ESXY2,2)
+ZSTL (0,0,0,1973790,1,STL_Typ,0,0)
+Ebene0()
+WZF (CLAMEX_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-70,EY2,EX2,0,0,_ANF,0,0,0,ESXY2,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (- T,EY2,0,0,ESXY2,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (-70,EY2,0,0,ESXY2,2)
+EP (0,_ANF,0)
+END
+END
+;*********************************************************************
+END
+End

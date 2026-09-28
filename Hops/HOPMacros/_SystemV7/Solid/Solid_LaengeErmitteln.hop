@@ -1,0 +1,7 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   KN_Vektor := '';*VAR*
+   Laenge := 0;*VAR**REF*
+START
+Laenge := GETCE_LENGTH(KN_Vektor,1)

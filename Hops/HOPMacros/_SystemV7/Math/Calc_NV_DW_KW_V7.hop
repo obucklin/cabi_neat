@@ -1,0 +1,17 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowCalc_NV_DW_KW_V7Dialog
+VARS
+   Nx := ;*VAR**REF*X-Wert des Normalenvektors
+   Ny := ;*VAR**REF*Y-Wert des Normalenvektors
+   Nz := ;*VAR**REF*Z-Wert des Normalenvektors
+   KW := 90;*VAR*
+   DW := 0;*VAR*
+   x := 0;
+   y := 0;
+   z := 1;
+START
+CALL Rot3D_V7 (REF X:=x,Y:=y,Z:=z VAL KWGRAD:=KW,DWGRAD:=DW)
+Nx := x
+Ny := y
+Nz := z

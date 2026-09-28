@@ -598,3 +598,21 @@ details.collapsible > summary .changed {
   gap: 6px;
   padding: 2px 8px 8px 12px;
 }
+
+/* hinges on doors, highlighted panels */
+.hinge-pot {
+  fill: none;
+  stroke: var(--front-stroke);
+  stroke-dasharray: 3 2;
+}
+
+.hinge-arm {
+  stroke: var(--front-stroke);
+  stroke-width: 1.5;
+}
+
+.panel-row.highlight {
+  background: var(--accent-soft);
+  border-radius: 4px;
+  box-shadow: inset 3px 0 0 var(--accent);
+}

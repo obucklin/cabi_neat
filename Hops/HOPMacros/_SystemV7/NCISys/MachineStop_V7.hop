@@ -1,0 +1,30 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.10.0.108[Hops.exe]
+;BILD=
+;INFO=MachineStop_V7
+;WZGV=7235C_219
+;WZGVCONFIG=
+;MASCHINE=HH7
+;NCNAME=
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowMACHINESTOP_V7Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   Mode := 0;*VAR*0 mit Werkstückfreigabe; 1 ohne Werkstückfreigabe....
+   ParkMode := 6;*VAR*
+   ParkPosX := 0;*VAR*
+   ParkPosY := 0;*VAR*
+   Typ := 0;*VAR*
+   r6 := 0;*VAR*
+   str := '';*VAR*
+   r7 := 0;*VAR*
+START
+nciext (-108200,'NCISys',3,0,0,Mode,ParkMode,ParkPosX,ParkPosY,Typ,r6,str,r7)

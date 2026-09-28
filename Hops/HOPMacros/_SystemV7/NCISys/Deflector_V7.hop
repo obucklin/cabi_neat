@@ -1,0 +1,16 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowDEFLECTOR_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   Hold := 0;*VAR*1 bis zum Werkzeugwechsel verwenden
+   HoldCloneMoveZ := 0;*VAR*1 Fräsbahnen mit mehrfach Z-Zustellung einfügen
+   ID := 0;*VAR*Werkzeug ID
+   Mode := 0;*VAR*= 0 Winkel anpassen | = 1 Winkel absolut immer gleich | = 2 Nur verwenden
+   WinkelDiff := 0;*VAR*Offsetwinkel Mode = 0
+   Winkel := 0;*VAR*Winkel Mode = 1
+   RadiusDiff := 0;*VAR*
+   Abstand := 0;*VAR*
+START
+nciext (-107999,'NCISys',1,Hold,HoldCloneMoveZ,ID,Mode,WinkelDiff,Winkel,RadiusDiff,Abstand)

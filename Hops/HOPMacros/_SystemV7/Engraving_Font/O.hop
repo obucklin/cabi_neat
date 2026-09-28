@@ -1,0 +1,34 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   DX := 10;
+   DY := 10;
+   DZ := 19;
+   Tool := 38;WZ
+   Z := -1;*VAR*
+   Faktor := 1;*VAR*1=10mm
+START
+Fertigteil(DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;$F$Big Letters
+;WZF(Tool,_VE,_V,_VA,_SD,_ANF,'')
+KB ('O','',9.1392*Faktor,3.2629*Faktor,0,'',0,0)
+KG03M ('',9.3855*Faktor,4.9300*Faktor,_Z,2.7738*Faktor,5.0550*Faktor,'',0,0,0)
+KG01 ('',9.3909*Faktor,5.1909*Faktor,_Z,'',0,0)
+KG03M ('',9.1447*Faktor,6.8580*Faktor,_Z,2.7791*Faktor,5.0665*Faktor,'',0,0,0)
+KG03M ('',7.7409*Faktor,9.0691*Faktor,_Z,4.8182*Faktor,5.6622*Faktor,'',0,0,0)
+KG03M ('',4.6990*Faktor,10.1215*Faktor,_Z,4.8354*Faktor,5.5935*Faktor,'',0,0,0)
+KG03M ('',1.6569*Faktor,9.0699*Faktor,_Z,4.5614*Faktor,5.5935*Faktor,'',0,0,0)
+KG03M ('',0.2524*Faktor,6.8592*Faktor,_Z,4.5786*Faktor,5.6622*Faktor,'',0,0,0)
+KG03M ('',0.0058*Faktor,5.1921*Faktor,_Z,6.6176*Faktor,5.0660*Faktor,'',0,0,0)
+KG01 ('',0.0005*Faktor,4.9296*Faktor,_Z,'',0,0)
+KG03M ('',0.2469*Faktor,3.2625*Faktor,_Z,6.6122*Faktor,5.0552*Faktor,'',0,0,0)
+KG03M ('',1.6512*Faktor,1.0517*Faktor,_Z,4.5732*Faktor,4.4591*Faktor,'',0,0,0)
+KG03M ('',4.6932*Faktor,-0.0002*Faktor,_Z,4.5560*Faktor,4.5278*Faktor,'',0,0,0)
+KG03M ('',7.7352*Faktor,1.0520*Faktor,_Z,4.8300*Faktor,4.5278*Faktor,'',0,0,0)
+KG03M ('',9.1392*Faktor,3.2629*Faktor,_Z,4.8128*Faktor,4.4591*Faktor,'',0,0,0)
+KSP('???','???',Z,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('O','KSP','KEP',0,0,0,0,0,0,0,0)
+EP(0,_ANF,0)
+deletecontour ('O',0)

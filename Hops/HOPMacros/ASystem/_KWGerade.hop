@@ -1,0 +1,20 @@
+;MAKROTYP=1
+;BILD=WGerade.WMF
+;INFO=_WGerade
+;WZGV=demo
+;MASCHINE=Simu
+;NCNAME=_KWGerade
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   Name := '';*VAR*Konturelementname
+   Laenge := ;*VAR*Länge der Geraden
+   Winkel := ;*VAR*Winkel gegen X
+   Z := _Z;*VAR*Zustelltiefe
+   Info := '';*VAR*Konturelementinfo
+START
+KG01(Name,_X+laenge*cos(Winkel),_Y+laenge*sin(Winkel),Z,Info)

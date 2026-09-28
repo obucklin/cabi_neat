@@ -1,0 +1,55 @@
+;MAKROTYP=0
+;BILD=_HG_LOT_V7.BMP
+;INFO=_hg_lot
+;WZGV=DIANA
+;WZGVCONFIG=
+;MASCHINE=Simu
+;NCNAME=_hg_lot_V7
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_hg_lot_V5Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   para := 0;*VAR*Parallele
+   x1 := 0;*VAR*1. Schnittpunkt in X
+   y1 := 0;*VAR*1. Schnittpunkt in Y
+   x2 := 0;*VAR*2. Schnittpunkt in X
+   y2 := 0;*VAR*2. Schnittpunkt in Y
+   x3 := 0;*VAR*Durchgangspunkt in X
+   y3 := 0;*VAR*Durchgangspunkt in Y
+   Eingabe_Art := 0;*VAR*0=2 Punkte   1=Winkel
+   LY := 0;Abstand in Y
+   LX := 0;Abstand in X
+   winkel := 0;*VAR*Winkel der Eingangspunkte
+   diff := 0;
+   esxy1 := 0;*VAR*
+   esxy2 := 0;*VAR*
+   esxy3 := 0;*VAR*
+START
+;direkt cnc systeme NCHOPS Version 4.x
+;Hilfsgeometrie Lot mit Parallelversatz
+;--- Wenn über 2 Punkte eingegeben wurde
+transesxy (x1,y1,esxy1,0)
+transesxy (x2,y2,esxy2,0)
+transesxy (x3,y3,esxy3,0)
+IF Eingabe_Art=0
+CALL Dist2P_2D_V7 (REF DIST:=Diff VAL P1X:=x1,P1Y:=y1,P2X:=x2,P2Y:=y2)
+IF Diff<>0
+LX := (x2-x1)/Diff
+LY := (y2-y1)/Diff
+ELSE
+Fehlermeldung (GetMessageText('39','Linie ist nicht korrekt, da Länge 0 ist'))
+END
+x3 := x3+para*LX
+y3 := y3+para*LY
+HLine2P (x3,y3,x3+LY,y3-LX,1,1)
+ELSE
+;--- Wenn über 1 Punkt und Winkel eingegeben wurde
+CALL _hg_para_winkel (VAL para:=para,x1:=x3,y1:=y3,winkel:=winkel+90)
+END

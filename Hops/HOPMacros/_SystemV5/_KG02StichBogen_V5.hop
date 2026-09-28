@@ -1,0 +1,26 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopKonturen.Dll
+;DIALOGPROC=Show_KG02StichBogen_V5Dialog
+VARS
+   Name := '';*VAR*KonturElementname
+   Breite := ;*VAR*Breite des Stichbogen
+   Hoehe := ;*VAR*Höhe des Stichbogen
+   Z := 0;*VAR*Zustelltiefe
+   Radius := 0;
+   H := 0;Hilfsvariable
+   Info := '';*VAR*KonturElementinfo
+   esd := 2;*VAR*
+START
+;Rohteil (1000,200,40,0,0)
+transesd (z,esd)
+IF Hoehe<0
+H := -Hoehe
+ELSE
+H := Hoehe
+END
+Radius := (sqr(H)+sqr(Breite)/4)/(2*H)
+IF Hoehe>0
+CALL _KG02R ( VAL EN:=Name,EX:=_X+Breite,EY:=_Y,EZ:=Z,R:=Radius,EI:=Info)
+ELSE
+CALL _KG03R ( VAL EN:=Name,EX:=_X+Breite,EY:=_Y,EZ:=Z,R:=Radius,EI:=Info)
+END

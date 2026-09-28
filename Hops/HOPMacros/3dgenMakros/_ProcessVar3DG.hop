@@ -1,0 +1,167 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.1082[Hops.exe]
+;BILD=_PROCESSVAR3DG.WMF
+;INFO=
+;WZGV=7735D_101
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=_ProcessVar
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   ProcessID := 0;*VAR*Prozesskennung
+START
+;HOLZHER GmbH
+;Copyright 2016
+;2016-05-04 - CC-Makros V2.0 KRI
+CreateGlobalVar ('_pVar_PreCutID',0)
+CreateGlobalVar ('_pVar_PreCutName','')
+CreateGlobalVar ('_pVar_NoDrillingH',0)
+CreateGlobalVar ('_pVar_NoDrillingV',0)
+CreateGlobalVar ('_pVar_NoFormat',0)
+CreateGlobalVar ('_pVar_NoProcessH',0)
+CreateGlobalVar ('_pVar_NoProcessV',0)
+CreateGlobalVar ('_pVar_NoLamello',0)
+CreateGlobalVar ('_pVar_NoLamello_H',0)
+CreateGlobalVar ('_pVar_NoLamello_Winkel',0)
+CreateGlobalVar ('_pVar_PCount',0)
+CreateGlobalVar ('_pVar_NoSaw',0)
+CreateGlobalVar ('_pVar_FormatRadial',0)
+IF ProcessID=0
+_pVar_NoFormat := 0
+/IF _nest=1
+IF (_MaschinenTYP=3) | (_MaschinenTYP=4)
+_pVar_FormatRadial := 0
+ELSE
+_pVar_FormatRadial := 1
+END
+_nest := 0
+ELSE
+IF ProcessID=1
+;Direkt von CC mit Format=1 --> mit Formatieren
+_pVar_NoFormat := 0
+/IF _nest=1
+IF (_MaschinenTYP=3) | (_MaschinenTYP=4)
+_pVar_FormatRadial := 0
+ELSE
+_pVar_FormatRadial := 1
+END
+_nest := 0
+ELSE
+IF ProcessID=100
+;Zuschnitt war auf DBS Druckbalkensäge
+_pVar_PreCutID := 100
+_pVar_PreCutName := 'BEAMSAW'
+_pVar_NoDrillingH := 0
+_pVar_NoDrillingV := 0
+_pVar_NoFormat := 1
+_pVar_NoProcessH := 0
+_pVar_NoProcessV := 0
+_pVar_NoLamello := 0
+_pVar_NoLamello_H := 0
+_pVar_NoLamello_Winkel := 1
+_pVar_FormatRadial := 1
+_pVar_NoSaw := 1
+_nest := 0
+ELSE
+IF ProcessID=101
+;Alle Bearbeitungen ohne Winkel Sägen und Lamello es muss noch mit PI = 201
+_pVar_PreCutID := 101
+_pVar_PreCutName := 'BEAMSAW'
+_pVar_NoDrillingH := 0
+_pVar_NoDrillingV := 0
+_pVar_NoFormat := 0
+_pVar_NoProcessH := 0
+_pVar_NoProcessV := 0
+;Mittelseite CC alle bearbeitungen
+IF _Format=1
+_pVar_NoLamello := 0
+_pVar_NoLamello_H := 0
+_pVar_NoLamello_Winkel := 0
+ELSE
+_pVar_NoLamello := 1
+_pVar_NoLamello_H := 0
+_pVar_NoLamello_Winkel := 1
+END
+_pVar_FormatRadial := 0
+_pVar_NoSaw := 1
+_nest := 0
+ELSE
+;Zuschnitt war auf CNC Nestingmaschine
+IF ProcessID=200
+_pVar_PreCutID := 200
+_pVar_PreCutName := 'NESTCNC'
+_pVar_NoDrillingH := 0
+_pVar_NoDrillingV := 1
+_pVar_NoFormat := 1
+_pVar_NoProcessH := 0
+_pVar_NoProcessV := 1
+_pVar_NoLamello := 1
+_pVar_NoLamello_H := 0
+_pVar_NoLamello_Winkel := 0
+_pVar_FormatRadial := 1
+_pVar_NoSaw := 1
+_nest := 0
+ELSE
+;Nur Winkelschnitt mit Verbinder Lamello zuerst PID 101
+IF ProcessID=201
+_pVar_PreCutID := 201
+_pVar_PreCutName := 'NESTCNC'
+_pVar_NoDrillingH := 1
+_pVar_NoDrillingV := 1
+_pVar_NoFormat := 1
+_pVar_NoProcessH := 1
+_pVar_NoProcessV := 1
+_pVar_NoLamello := 0
+_pVar_NoLamello_H := 1
+_pVar_NoLamello_Winkel := 0
+_pVar_FormatRadial := 1
+_pVar_NoSaw := 0
+_nest := 0
+ELSE
+IF ProcessID=1
+;Zuschnitt unbekannt - Komplettbearbeitung
+_pVar_PreCutID := 1
+_pVar_PreCutName := 'COMPLETE'
+_pVar_NoDrillingH := 0
+_pVar_NoDrillingV := 0
+_pVar_NoFormat := 0
+_pVar_NoProcessH := 0
+_pVar_NoProcessV := 0
+_pVar_NoLamello := 0
+_pVar_NoLamello_H := 0
+_pVar_NoLamello_Winkel := 0
+_pVar_FormatRadial := 1
+_pVar_NoSaw := 1
+_nest := 0
+ELSE
+END
+END
+END
+END
+END
+END
+END
+;//////
+;Zum anzeigen der aktuellen Einsellungen (HB)
+/ChangeVar (_PID_ActiveZeroPointPID)
+/ChangeVar (_pVar_NoDrillingH)
+/ChangeVar (_pVar_NoDrillingV)
+/ChangeVar (_pVar_NoFormat)
+/ChangeVar (_pVar_NoProcessH)
+/ChangeVar (_pVar_NoProcessV)
+/ChangeVar (_pVar_NoLamello)
+/ChangeVar (_pVar_NoLamello_H)
+/ChangeVar (_pVar_NoLamello_Winkel)
+/ChangeVar (_pVar_FormatRadial)
+/ChangeVar (_pVar_NoSaw)
+;/////

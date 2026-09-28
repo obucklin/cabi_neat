@@ -1,0 +1,11 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   DX := 600mm;Dimension X
+   DY := 400mm;Dimension Y
+   DZ := 19mm;Dimension Z
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+Call DHOPTISTOP_V7 ()

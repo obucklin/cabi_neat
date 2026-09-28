@@ -1,0 +1,28 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.8.0.2[Hops.exe]
+;BILD=END_REL_Z.WMF
+;INFO=
+;WZGV=7235C_001
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=End_rel_Z
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   Abfahrfaktor := _ANF;*VAR*Abfahrfaktor
+   Abfahrbewegung := 0;*VAR*0=keine; 1=linear; 2=radial; 3=seitlich
+START
+G01 (0,0,0,0,10,2)
+EP (Abfahrbewegung,Abfahrfaktor,0)

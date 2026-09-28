@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowNCIExt_StandardParaDialog
+;AUTOSCRIPTSTART=0
+VARS
+   Hold := 0;*VAR*
+   HoldCloneMoveZ := 0;*VAR*
+START
+nciext (-400000,'NCISys',1,Hold,HoldCloneMoveZ)

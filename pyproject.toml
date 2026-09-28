@@ -15,7 +15,6 @@ dependencies = ["compas_timber"]
 [project.optional-dependencies]
 occ = ["compas_brep[occ]"]
 viewer = ["compas_threejs", "compas_brep[occ]"]
-hops = ["easyhops"]
 dev = ["pytest>=8", "ruff", "compas_brep[occ]"]
 
 [project.scripts]

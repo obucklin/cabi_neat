@@ -1,0 +1,7 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   Mode := 0;*VAR*0=Bottomside in Topview 1=Bottomside in Bottomview 10=Turn Part V1 20=Bottomside in Bottomview mirror free view
+   Mirror := 0;*VAR*0=Mirror at Y-Axis; 1=Mirror at X-Axis
+START
+nciext (-101002,'TopBottomOpti',0,0,0,1,Mode,Mirror)

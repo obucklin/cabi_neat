@@ -1,0 +1,159 @@
+;MAKROTYP=0
+;BILD=Ecke.wmf
+;INFO=
+;WZGV=7223K_023
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Ecke
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 1000;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   x3 := 30;
+   x2 := 0;
+   x1 := 0;
+   y2 := 0;
+   y1 := 30;
+   z1 := 0;
+   vers := 0.5;*VAR*
+   Tiefe := 18;*VAR*Tiefe in Z
+   PosY := 80;*VAR*Pos  Ecke
+   PosX := 300;*VAR*Pos Ecke
+   Ecke := 1;*VAR*Ecken 1- 4
+   Tool := 108;*VAR*Werkzeug ID
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+WZF (Tool,_VE,_V,_VA,_SD,_ANF,'1')
+IF Ecke =1
+VERXY (PosX,PosY)
+;Links unten
+SP (x1+_WzR,y1,z1,0,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (x1+_WzR,y2+_WzR,0,0,1,2)
+G01 (x3,y2+_WzR,0,0,1,2);BREAKPOINT
+y2 := y2 + Vers +_WzR
+x2 := x2 + vers+_WzR
+WHILE abs(Z1) < Tiefe
+z1 := (z1 - (vers/1))
+G01 (x3,y2,z1,0,1,0)
+G01 (x2,y2,z1,0,1,0)
+G01 (x2,y1,z1,0,1,0)
+x2 := x2 + vers
+z1 := (z1 - (vers/1))
+G01 (x2,y1,z1,0,1,0)
+y2 := y2 + vers
+G01 (x2,y2,z1,0,1,0)
+G01 (x3,y2,z1,0,1,0)
+y2 := y2 + vers
+x2 := x2 + vers
+END
+EP (0,_ANF,0)
+VERXYEND()
+END
+IF Ecke =2
+;Links oben
+Z1 := 0
+x3 := 30
+x2 := 0
+x1 := 0
+y2 := 1
+y1 := 30
+VERXY (PosX-1,PosY)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=270,ESXY1:=1)
+SP (x1+_WzR,y1,z1,0,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (x1+_WzR,y2+_WzR,0,0,1,2)
+G01 (x3,y2+_WzR,0,0,1,2)
+y2 := y2 + Vers +_WzR
+x2 := x2 + vers+_WzR
+WHILE abs(Z1) < Tiefe
+z1 := (z1 - (vers/1))
+G01 (x3,y2,z1,0,1,0)
+G01 (x2,y2,z1,0,1,0)
+G01 (x2,y1,z1,0,1,0)
+x2 := x2 + vers
+z1 := (z1 - (vers/1))
+G01 (x2,y1,z1,0,1,0)
+y2 := y2 + vers
+G01 (x2,y2,z1,0,1,0)
+G01 (x3,y2,z1,0,1,0)
+y2 := y2 + vers
+x2 := x2 + vers
+END
+EP (0,_ANF,0)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+IF Ecke =3
+;Rechts  oben
+Z1 := 0
+x3 := 30
+x2 := 0
+x1 := 0
+y2 := 1
+y1 := 30
+VERXY (PosX,PosY+1)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=180,ESXY1:=1)
+SP (x1+_WzR,y1,z1,0,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (x1+_WzR,y2+_WzR,0,0,1,2)
+G01 (x3,y2+_WzR,0,0,1,2)
+y2 := y2 + Vers +_WzR
+x2 := x2 + vers+_WzR
+WHILE abs(Z1) < Tiefe
+z1 := (z1 - (vers/1))
+G01 (x3,y2,z1,0,1,0)
+G01 (x2,y2,z1,0,1,0)
+G01 (x2,y1,z1,0,1,0)
+x2 := x2 + vers
+z1 := (z1 - (vers/1))
+G01 (x2,y1,z1,0,1,0)
+y2 := y2 + vers
+G01 (x2,y2,z1,0,1,0)
+G01 (x3,y2,z1,0,1,0)
+y2 := y2 + vers
+x2 := x2 + vers
+END
+EP (0,_ANF,0)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END
+IF Ecke =4
+;Rechts  unten
+Z1 := 0
+x3 := 30
+x2 := 0
+x1 := 0
+y2 := 1
+y1 := 30
+VERXY (PosX+1,PosY)
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=90,ESXY1:=1)
+SP (x1+_WzR,y1,z1,0,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (x1+_WzR,y2+_WzR,0,0,1,2)
+G01 (x3,y2+_WzR,0,0,1,2)
+y2 := y2 + Vers +_WzR
+x2 := x2 + vers+_WzR
+WHILE abs(Z1) < Tiefe
+z1 := (z1 - (vers/1))
+G01 (x3,y2,z1,0,1,0)
+G01 (x2,y2,z1,0,1,0)
+G01 (x2,y1,z1,0,1,0)
+x2 := x2 + vers
+z1 := (z1 - (vers/1))
+G01 (x2,y1,z1,0,1,0)
+y2 := y2 + vers
+G01 (x2,y2,z1,0,1,0)
+G01 (x3,y2,z1,0,1,0)
+y2 := y2 + vers
+x2 := x2 + vers
+END
+EP (0,_ANF,0)
+CALL _DrehenBBEnde ()
+VERXYEND()
+END

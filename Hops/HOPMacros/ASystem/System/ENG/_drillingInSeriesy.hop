@@ -1,0 +1,35 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=Rbohy
+;MASCHINE=demo
+;WZGV=demo
+;BILD=RBohy.WMF
+VARS
+   SPX := 37;*VAR*starting point in x
+   SPY := 64;*VAR*starting point in y
+   distance := 32;*VAR*distance between drilling
+   EPY := _RY-64;*VAR*final point in y
+   T := -13;*VAR*depth of drilling
+   D := 5;*VAR*diameter of drilling
+   TL := 0;loops of depth
+START
+;direkt cnc systeme NCHOPS Version3.0
+;drilling in series in y  V 3.0/SF/09.98
+IF T>0
+T := -T
+END
+IF EPY > SPY
+WHILE   SPY <= EPY
+DRILLING(SPX,SPY,D,T,TL,0,0)
+SPY := SPY + distance
+END
+ELSE
+WHILE    SPY >= EPY
+DRILLING(SPX,SPY,D,T,TL,0,0)
+SPY := SPY - distance
+END
+END
+

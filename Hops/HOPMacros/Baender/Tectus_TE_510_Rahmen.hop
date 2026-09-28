@@ -1,0 +1,50 @@
+;MAKROTYP=0
+;BILD=Tectus_TE_510_Rahmen.wmf
+;INFO=
+;WZGV=7123K_021
+;MASCHINE=HOLZHER
+;NCNAME=Tectus_TE_510_Rahmen
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 1880;Dimension X
+   DY := 100;Dimension Y
+   DZ := 45;Dimension Z
+   Falz_T := 15;*VAR*Falztiefe
+   Falz_H := 35;*VAR*Falz hoehe
+   Band_O := 780;*VAR*Band oben Ref. mitte Band
+   Mass_Oberkante := 4;Mass von Oberkante Rahmen
+   Band_U := 1600;*VAR*Band unten Referenz oben
+START
+Fertigteil (DX,DY,DZ,0,0,10,2.5,60,'',0,0,0)
+;Tectus Band Te 510
+WZF (152,_VE,_V,_VA,_SD,_ANF,'1')
+Ebene1()
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=Band_O,Y_MITTE:=Mass_Oberkante +14.5,TASCHENLAENGE:=175,TASCHENBREITE:=32,RADIUS:=14.5,WINKEL:=0,TIEFE:=-(Falz_T +10),ZUSTELLUNG:=0,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=7,ESMD:=0,LASER:=0)
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=Band_O,Y_MITTE:=Mass_Oberkante +14.5,TASCHENLAENGE:=125,TASCHENBREITE:=32,RADIUS:=0,WINKEL:=0,TIEFE:=-(Falz_T +35),ZUSTELLUNG:=10,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=7,ESMD:=0,LASER:=0)
+Ebene0()
+;Bohrungen Tectus Band Te 510 oben
+WZF (22,_VE,_V,_VA,_SD,_ANF,'1')
+HorzB (Band_O - 71,Falz_T,Mass_Oberkante +14.5 + 9,3,-25,0,0,90,1,2,0,0)
+HorzB (Band_O - 71,Falz_T,Mass_Oberkante +14.5 - 9,3,-25,0,0,90,1,2,0,0)
+HorzB (Band_O + 71,Falz_T,Mass_Oberkante +14.5 + 9,3,-25,0,0,90,1,2,0,0)
+HorzB (Band_O + 71,Falz_T,Mass_Oberkante +14.5 - 9,3,-25,0,0,90,1,2,0,0)
+;Band unten
+WZF (152,_VE,_V,_VA,_SD,_ANF,'1')
+Ebene1()
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=Band_U,Y_MITTE:=Mass_Oberkante +14.5,TASCHENLAENGE:=175,TASCHENBREITE:=29,RADIUS:=14.5,WINKEL:=0,TIEFE:=-(Falz_T +10),ZUSTELLUNG:=0,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=7,ESMD:=0,LASER:=0)
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=Band_U,Y_MITTE:=Mass_Oberkante +14.5,TASCHENLAENGE:=125,TASCHENBREITE:=29,RADIUS:=0,WINKEL:=0,TIEFE:=-(Falz_T +35),ZUSTELLUNG:=10,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=7,ESMD:=0,LASER:=0)
+Ebene0()
+;Bohrungen Tectus Band Te 510 unten
+WZF (22,_VE,_V,_VA,_SD,_ANF,'1')
+HorzB (Band_U - 71,Falz_T,Mass_Oberkante +14.5 + 9,3,-25,0,0,90,1,2,0,0)
+HorzB (Band_U - 71,Falz_T,Mass_Oberkante +14.5 - 9,3,-25,0,0,90,1,2,0,0)
+HorzB (Band_U + 71,Falz_T,Mass_Oberkante +14.5 + 9,3,-25,0,0,90,1,2,0,0)
+HorzB (Band_U + 71,Falz_T,Mass_Oberkante +14.5 - 9,3,-25,0,0,90,1,2,0,0)

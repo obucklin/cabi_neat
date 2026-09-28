@@ -1,0 +1,91 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_hg_para_V5Dialog
+VARS
+   Breite := 500;breite
+   Stärke := 30;Stärke
+   Höhe := 300;Höhe
+   para := 0;*VAR*Parallele
+   x1 := 0;*VAR*1. Schnittpunkt in X
+   y1 := 0;*VAR*1. Schnittpunkt in Y
+   x2 := 0;*VAR*2. Schnittpunkt in X
+   y2 := 0;*VAR*2. Schnittpunkt in Y
+   x11 := 0;
+   y11 := 0;
+   x12 := 0;
+   y12 := 0;
+   LY := 0;Abstand in Y
+   LX := 0;Abstand in X
+   winkel := 0;Winkel der Eingangspunkte
+   X_Versatz := 0;
+   Y_Versatz := 0;
+   fertig := 0;Wenn bereits senkrecht oder waagerecht
+   diff := 0;
+   esxy1 := 0;*VAR*
+   esxy2 := 0;*VAR*
+START
+;direkt cnc systeme NCHOPS Version3
+;Hilfsgeometrie mit Parallelversatz
+;---- Wenn Punkte horizontal
+transesxy (x1,y1,esxy1,0)
+transesxy (x2,y2,esxy2,0)
+IF y1=y2
+IF x1<x2
+y11 := y1-para
+ELSE
+y11 := y1+para
+END
+HLineY (y11)
+fertig := 1
+END
+;---- Wenn Punkte senkrecht
+diff := x1-x2
+IF diff<0
+diff := -diff
+END
+IF (x1=x2)|(diff<0.0001)
+IF y1<y2
+x11 := x1+para
+ELSE
+x11 := x1-para
+END
+HLineX (x11)
+fertig := 1
+END
+IF fertig=0
+;---- Abstände und Winkel berechnen
+LX := x2-x1
+LY := y2-y1
+winkel := arctan(LY/LX)
+X_Versatz := sin(winkel)*para
+Y_Versatz := cos(winkel)*para
+;--------------------------------------------
+;------------- Fallunterscheidungen
+IF x1<x2
+IF y1<y2
+x11 := x1+X_Versatz
+y11 := y1-Y_Versatz
+x12 := x2+X_Versatz
+y12 := y2-Y_Versatz
+ELSE
+x11 := x1+X_Versatz
+y11 := y1-Y_Versatz
+x12 := x2+X_Versatz
+y12 := y2-Y_Versatz
+END
+END
+IF x1>x2
+IF y1<y2
+x11 := x1-X_Versatz
+y11 := y1+y_Versatz
+x12 := x2-x_Versatz
+y12 := y2+y_Versatz
+ELSE
+x11 := x1-X_Versatz
+y11 := y1+Y_Versatz
+x12 := x2-X_Versatz
+y12 := y2+Y_Versatz
+END
+END
+HLine2P (x11,y11,x12,y12)
+END

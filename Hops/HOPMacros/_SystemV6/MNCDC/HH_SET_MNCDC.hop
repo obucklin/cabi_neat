@@ -1,0 +1,39 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.974[Hops.exe]
+;BILD=HH_SET_MNCDC.WMF
+;INFO=
+;WZGV=7405_644
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=HH_SET_MNCDC
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   MNCDC_200007 := 60;*VAR*Abstand Spannmittel zum linken und rechten Rand
+   MNCDC_200021 := 310;*VAR*Maximale Breite für ein Kleinteil
+   MNCDC_200037 := 310;*VAR*Maximale Breite in X fuer kleine Teile(fuer ID -200038)
+   MNCDC_200038 := 5;*VAR*Abstand Spannmittel li/re fuer Kleinteile
+   MNCDC_200044 := 250;*VAR*Schwellwert Y Größe für eingeschränkter Bereich
+   MNCDC_200045 := 1200;*VAR*Schwellwert X Größe für eingeschränkter Bereich
+   MNCDC_200046 := 150;*VAR*Offset für linke Seite (fuer ID -200045)
+   MNCDC_200047 := 150;*VAR*Offset für rechte Seite (fuer ID -200045)
+   MNCDC_200055 := 0;*VAR*Linke Verfahrgrenze für die Sauger
+START
+CALL SetMNCDCFloatOption ( VAL ID:=-200007,FLOAT:=MNCDC_200007)
+CALL SetMNCDCFloatOption ( VAL ID:=-200021,FLOAT:=MNCDC_200021)
+CALL SetMNCDCFloatOption ( VAL ID:=-200037,FLOAT:=MNCDC_200037)
+CALL SetMNCDCFloatOption ( VAL ID:=-200038,FLOAT:=MNCDC_200038)
+CALL SetMNCDCFloatOption ( VAL ID:=-200044,FLOAT:=MNCDC_200044)
+CALL SetMNCDCFloatOption ( VAL ID:=-200045,FLOAT:=MNCDC_200045)
+CALL SetMNCDCFloatOption ( VAL ID:=-200046,FLOAT:=MNCDC_200046)
+CALL SetMNCDCFloatOption ( VAL ID:=-200047,FLOAT:=MNCDC_200047)
+CALL SetMNCDCFloatOption ( VAL ID:=-200055,FLOAT:=MNCDC_200055)

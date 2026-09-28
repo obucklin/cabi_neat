@@ -1,0 +1,26 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   EX := 200;*VAR*endpunkt x
+   EY := -20;*VAR*endpunkt y
+   Z := 0;*VAR*enpunkt z
+   My := 0;*VAR*mittelpunkt y
+   Gtyp := 3;*VAR*2 -> CW  3 -> CCW
+   R := 0;Verrundungsradius
+   MX := 0;
+   OK := 1;
+   FehlerText := '';
+START
+CALL _KB_APEPMy (REF MX:=Mx,OK:=OK VAL APX:=_X,APY:=_Y,EPX:=EX,EPY:=EY,MY:=My)
+IF OK=1
+IF GTyp=2
+g02m (EX,EY,Z,MX,MY,R,0,0,0)
+ELSE
+G03M (EX,EY,Z,MX,MY,R,0,0,0)
+END
+ELSE
+FehlerText := GetMessageText('11','Nicht konstruierbar !')
+Fehlermeldung (Fehlertext)
+END

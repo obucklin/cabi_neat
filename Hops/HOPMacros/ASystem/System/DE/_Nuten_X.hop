@@ -1,0 +1,55 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCNAME
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=_NutInX.bmp
+VARS
+   NB := 5;*VAR*Nutbreite
+   NT := -5;*VAR*NutTiefe
+   Ebene := 1;*VAR*Seite: 1->Unten, <>1->Oben
+   ARand := 5;*VAR*Kleinere Abstand von Nut zum Rand
+   ALinks := 0;*VAR*0 -> Rohteilkante links, <>0 -> Abstand zu Rohteilkante links mit Einpassen
+   ARechts := 0;*VAR*0 -> Rohteilkante rechts, <>0 -> Abstand zu Rohteilkante rechts mit Einpassen
+   RK := 0;*VAR*Richtungs Kenner für Gleichlauf / Gegenlauf
+   Y := 0;
+   X1 := 0;
+   X2 := 0;
+   EP1 := 0;Einpassen
+   EP2 := 0;Einpassen
+   Korr := 0;
+   Saege_Art := 1;Säge fix = 0     Sägeaggregat = 1
+   k := 1;Rechteck zeichnen
+START
+;direkt cnc systeme NCHOPS Version 3.4
+;Sägenut X V 3.4 / 04.01
+IF Ebene=1
+;Unten Rohteilseite
+Y := ARand
+Korr := 1
+k := 1
+ELSE
+;Oben Rohteilseite
+Y := _RY-ARand
+Korr := 2
+k := -1
+END
+X1 := ALinks
+X2 := _RX-ARechts
+;Einpassen bestimmen
+IF ALinks=0
+EP1 := 0
+ELSE
+EP1 := -1
+END
+IF ARechts=0
+EP2 := 0
+ELSE
+EP2 := -1
+END
+CALL _nuten (VAL X1:=X1,Y1:=Y,X2:=X2,Y2:=Y,NB:=NB,Tiefe:=NT,LAGE:=Korr,SPEGA:=EP1,EPEGA:=EP2,RK:=RK)
+ZRechteck (alinks,y,_rx-alinks-arechts,nb*k,0,0)
+

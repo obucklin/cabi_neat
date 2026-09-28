@@ -1,0 +1,22 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowMAINGROUP_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   MoveX := 0;*VAR*
+   MoveY := 0;*VAR*
+   MoveZ := 0;*VAR*
+   Angle := 0;*VAR*Winkel inkremental
+   r5 := 0;*VAR*= 123454321 Umspannen
+   Aufmassmode := 0;*VAR*<> 0 Aufmass Links und Rechts verwenden
+   str := '';*VAR*Zeichenkette
+   Umheben := 0;*VAR*<> 0 Umheben
+   AufmassLinks := 0;*VAR*
+   AufmassRechts := 0;*VAR*
+   R1 := 0;*VAR*
+   R2 := 0;*VAR*
+   R3 := 0;*VAR*
+   R4 := 0;*VAR*
+START
+nciext (-100260,'NCISys',3,0,0,MoveX,MoveY,MoveZ,Angle,r5,Aufmassmode,str,Umheben,AufmassLinks,AufmassRechts,R1,R2,R3,R4)

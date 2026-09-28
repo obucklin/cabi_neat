@@ -1,0 +1,208 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSpez1.dll
+;DIALOGPROC=Show_SchlitzenSaegeDialog
+;AUTOSCRIPTSTART=0
+VARS
+   LPX := 500;
+   LPY := 250;
+   LPZ := 55;
+   XPOS := 0;*VAR*(Mittelpunkt)
+   YPOS := 0;*VAR*(Mittelpunkt)
+   EBENE := 1;*VAR*BearbeitungsEbene
+   Laenge := 80;*VAR*Bereich auf dem geschlitzt werden soll!
+   Hoehe := _RZ;*VAR*Schlitz-Breite
+   Anzahl_Schli := 5;*VAR*Anzahl Schlitze
+   Tiefe := 25;*VAR*
+   GutSeite := 1;*VAR*0=Oben 1=unten
+   esXY := 8;*VAR*
+   Schli_Breite := 0;berrechnet
+   Ueberstand := 1;
+   Motorlage := 0;=1 wenn Säge linksdrehend
+   EB_Dreh := 0;
+   EB_Offset_Y := 0;
+   EB_Offset_X := 0;
+   EB_DW_OFFSET := 0;
+   SIC_H := 5;Abstand Horizontal
+   SIC_V := 50;Sicherheit überm Werkstück
+   Anz := 0;zum berechnen
+   Anz_SPS := 0;berrechnet Anzahl Schnitte pro Schlitz
+   BB := 0;Zum rechnen Sägeblatt Breite
+   Z_Step := 0;
+   Hor_Zustell := 0;berechnet
+   Ueberstand_U := 0;
+   Ueberstand_O := 0;
+   Hor_SicPos := 0;berechnet
+   i := 0;
+   j := 0;
+   d_x := 0;Rechenvariable
+   d_y := 0;Rechenvariable
+START
+;--
+;--
+;--
+;--
+Fertigteil (LPX,LPY,LPZ,0,0,0,0,0,'',0,0,0)
+transesxy (xpos,ypos,esxy,1)
+;Transesz (ZPos,esz)
+;WZS (3805,_VE,_V,_VA,_SD,_ANF,'1')
+;--
+Ebene := Ebene+1
+;-- Makro zum Schlitzen
+;-- Vorraussetzung ist, dass die Säge auf Sägeblatt - Mitte eingetragen ist..
+;--
+;-- Funktioniert nur passgenau - keine Überlappung berücksichtigt
+;--
+;-- Verwendete globale Variablen - Werkzeugdaten
+;--   *   _SBB = Sägeblattbreite
+;--   *   _WZR = Sägeblattradius
+;--   *   _WZD = Sägeblattdurchmesser
+;--
+;--
+;--
+;-- Variable für Sägeblattbreite
+BB := _SBB
+;-- Überstand oben unten
+Ueberstand := (Hoehe-_RZ)/2
+;-- Schlitzbreite berechnen
+Schli_Breite := Laenge/((Anzahl_Schli*2-1))
+;-- Plausi
+IF (_AV_ROTA<>0)|(_AV_TIPA<>0)
+Fehlermeldung ('Ebene <> 0 nicht zulässig - Makro _SchlitzenSaege ')
+END
+IF Schli_Breite<BB
+Fehlermeldung ('Schlitzbreite ist kleiner wie Sägeblattbreite')
+END
+IF BB<0.01
+Fehlermeldung ('Gewähltes Werkzeug falsch, oder Sägeblattbreite zu klein')
+END
+Ebene0()
+;--
+;-- Variable für die Ebenendefinition (Drehwinkel)
+IF Ebene=1
+EB_Dreh := 90
+;--
+;-- Ebenen Offset der freien Ebene
+EB_Offset_X := Laenge/2
+EB_Offset_Y := 0
+;--
+END
+IF Ebene=2
+EB_Dreh := 0
+;--
+;-- Ebenen Offset der freien Ebene
+EB_Offset_X := 0
+EB_Offset_Y := -Laenge/2
+;--
+END
+IF Ebene=3
+EB_Dreh := -90
+;--
+;-- Ebenen Offset der freien Ebene
+EB_Offset_X := -Laenge/2
+EB_Offset_Y := 0
+;--
+END
+IF Ebene=4
+EB_Dreh := 180
+;--
+;-- Ebenen Offset der freien Ebene
+EB_Offset_X := 0
+EB_Offset_Y := Laenge/2
+;--
+END
+;--
+;-- links drehende Säge
+;--
+IF GutSeite=0
+Motorlage := 1
+END
+;-- Anzahl Bewegungen pro Schlitz
+;SF/MW Berechnung geändert 03.12.2014
+Anz := Trunc(Schli_Breite/BB)
+IF (Anz*BB)<Schli_Breite
+;-- es geht nicht auf
+Anz_SPS := Anz+1
+;-- Zustellung pro Step im Schlitz
+Z_Step := (Schli_Breite-BB)/(Anz_SPS-1)
+ELSE
+;-- geht genau auf
+Anz_SPS := Anz
+Z_Step := BB
+END
+Ueberstand_O := Ueberstand
+Ueberstand_U := Ueberstand
+;--
+;-- Zeichnerisch
+;--
+FOR j := 1 TO Anzahl_Schli STEP 1
+IF Ebene=1
+d_x := (Xpos-Laenge/2)+(j-1)*Schli_Breite*2
+d_y := YPos
+ZRechteck (d_x,d_y,Schli_Breite,TIEFE,1,32896,0)
+END
+IF Ebene=2
+d_x := XPOS
+d_y := (Ypos-Laenge/2)+(j-1)*Schli_Breite*2
+ZRechteck (d_x,d_y,Tiefe,Schli_Breite,1,32896,0)
+END
+IF Ebene=3
+d_x := (Xpos-Laenge/2)+(j-1)*Schli_Breite*2
+d_y := YPos-Tiefe
+ZRechteck (d_x,d_y,Schli_Breite,TIEFE,1,32896,0)
+END
+IF Ebene=4
+d_x := XPOS-Tiefe
+d_y := (Ypos-Laenge/2)+(j-1)*Schli_Breite*2
+ZRechteck (d_x,d_y,Tiefe,Schli_Breite,1,32896,0)
+END
+END
+;--
+Hor_SicPos := -_WZR-SIC_H
+Hor_Zustell := Tiefe-_WZR
+EB_DW_OFFSET := 0
+;--
+;-- Wenn Motorlage getauscht
+;--
+IF Motorlage=1
+Hor_SicPos := -Hor_SicPos
+Hor_Zustell := -Hor_Zustell
+EB_Offset_X := -EB_Offset_X
+EB_Offset_Y := -EB_Offset_Y
+EB_DW_OFFSET := 180
+END
+;--
+;--
+KB ('ANFAHR','',Hor_SicPos,_RZ+Ueberstand_O+_WZR+SIC_V,-BB/2,'',0,0)
+KG01 ('',_X,_RZ+Ueberstand_O,0,'',0,2)
+;--
+;-- jetzt die Schlitzkontur
+;--
+FOR j := 1 TO Anzahl_Schli STEP 1
+KB ('SCHLITZ'+INTTOSTR(j),'',Hor_SicPos,_RZ+Ueberstand_O,0,'',0,0)
+KG01 ('',0,0,-BB/2-((j-1)*Schli_Breite*2),'',10,2)
+FOR i := 1 TO Anz_SPS STEP 1
+KG01 ('',Hor_Zustell,_Y,0,'',0,2)
+KG01 ('',0,-Ueberstand_O-_RZ-Ueberstand_U,0,'',10,2)
+KG01 ('',Hor_SicPos,_Y,0,'',0,2)
+KG01 ('',0,Ueberstand_O+_RZ+Ueberstand_U,0,'',10,2)
+IF i<Anz_SPS
+;-- Zustellung nächster Step
+KG01 ('',0,0,-Z_Step,'',10,2)
+END
+END
+END
+;EXITMACRO
+EbeneF (XPos+EB_Offset_X,YPOS+EB_Offset_Y,0,90,EB_Dreh+EB_DW_OFFSET,0,0)
+KSP ('???','???',0,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('ANFAHR','KSP','KEP',0,0,0,1,0,0,0,0)
+FOR j := 1 TO Anzahl_Schli STEP 1
+KonturFraesen ('SCHLITZ'+INTTOSTR(j),'KSP','KEP',0,0,0,1,0,0,0,0)
+END
+KonturFraesen ('ANFAHR','KSP','KEP',1,0,0,0,0,0,0,0)
+IF GutSeite=1
+EP (0,_ANF,1)
+ELSE
+EP (0,_ANF,0)
+END
+Ebene0()
+deletecontour ('',1)

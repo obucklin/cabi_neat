@@ -1,0 +1,6 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   Mirror := 0;*VAR*0=Mirror at Y-Axis; 1=Mirror at X-Axis
+START
+nciext (-101002,'TopBottomOpti',0,0,0,1,20,Mirror)

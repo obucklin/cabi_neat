@@ -1,0 +1,49 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.7.12.80[Hops.exe]
+;BILD=POCKETCIRCLETHROUGH_HH.WMF
+;INFO=
+;WZGV=ActiveMachine
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=PocketCircleThrough_HH
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   X := 0;*VAR*X-POSITION
+   Y := 0;*VAR*Y-Position
+   R := 30;*VAR*Radius
+   T := -13;*VAR*Tiefe
+   Abfahren := 0;*VAR*Abfahren 0=ohne 1=linear 2=radial
+   Z_inter := 1;*VAR*Z Interpolierend
+   Zu_pro_Schritt := _AT_MAXDEPTH;*VAR*zustellung pro schritt Standart ( _AT_MAXDEPTH )
+   Ri := 0;*VAR*Fräsrichtung 0=Rechts 1=Links
+   laser := 0;*VAR*Laserbahn 0=aus 1=ein
+   Bearbeitungs_lage := 1;*VAR*Bearbeitungs_lage 0=mitte 1=innen 2=aussen
+   res2 := 0;*VAR*reserve2
+START
+;HOLZHER GmbH
+;Copyright 15.02.2021
+;Version 15.02.2021 (Freigabe HH)
+;---------Änderungen hier reinschreiben: ----------***
+;Version 15.02.2021
+IF _pVar_NoProcessV=1
+;Prozessvariable - Keine Bearbeitung aktiv
+ELSE
+WZF (_Router_Standard_ID,_VE,_V,_VA,_SD,_ANF,'1')
+IF (_MaschinenTyp=3) | (_MaschinenTyp=4)
+;Überstand 0,1mm bei Nesting
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=x,Y_MITTE:=y,TIEFE:=-T-0.1,ZUTIEFE:=Zu_pro_Schritt,RADIUS:=R,RADIUSKORREKTUR:=Bearbeitungs_lage,AB:=Abfahren,AUFMASS:=0,BEARB_UMKEHREN:=Ri,WINKEL:=180,ANF:=_ANF,ABF:=_ANF,RAMPE:=1,INTERPOL:=Z_inter,ESXY:=0,ESMD:=0,LASER:=laser)
+ELSE
+;Überstand 2mm
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=x,Y_MITTE:=y,TIEFE:=-T-2,ZUTIEFE:=Zu_pro_Schritt,RADIUS:=R,RADIUSKORREKTUR:=Bearbeitungs_lage,AB:=Abfahren,AUFMASS:=0,BEARB_UMKEHREN:=Ri,WINKEL:=180,ANF:=_ANF,ABF:=_ANF,RAMPE:=1,INTERPOL:=Z_inter,ESXY:=0,ESMD:=0,LASER:=laser)
+END
+END

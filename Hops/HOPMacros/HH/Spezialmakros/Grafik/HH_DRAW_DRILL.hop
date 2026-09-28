@@ -1,0 +1,165 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.11.0.182[Hops.exe]
+;BILD=HH_DRAW_DRILL.WMF
+;INFO=
+;WZGV=7605_071222
+;WZGVCONFIG=
+;MASCHINE=HH7
+;NCNAME=HH_DRAW_DRILL
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   W := 0;
+   Schritt := 24;
+   POSX := 0;*VAR*
+   POSY := 0;*VAR*
+   D := 5;*VAR*Durchmesser
+   Show := 0;*VAR*
+START
+;HOLZHER GmbH
+;Anzeige im 2D Bohrung von unten
+;S.K 27.04.2023
+;V1.001 Erstellung S.K
+IF Show=1
+;------------3mm--------------
+IF D=3
+VERXY (POSX,POSY)
+ZLinie (0,0,0,0,3303458,0,0,3,1,0)
+WHILE W<=360
+CALL _DrehenBBStart_V7 ( VAL DX:=0,DY:=0,ESXY1:=0,DW:=W,ONFREEVIEW:=0)
+ZKBCW (0,0,1.5,0,1.4672,-0.3119,3303458,0,0,0,0,0,0)
+CALL _DrehenBBEnde ()
+W := W+Schritt
+END
+VERXYEND()
+END
+;------------5mm--------------
+IF D=5
+VERXY (POSX,POSY)
+ZLinie (0,0,0,0,3303458,0,0,3,1,0)
+WHILE W<=360
+CALL _DrehenBBStart_V7 ( VAL DX:=0,DY:=0,ESXY1:=0,DW:=W,ONFREEVIEW:=0)
+ZKBCW (0,0,2.5,0,2.4454,-0.5198,3303458,0,0,0,0,0,0)
+CALL _DrehenBBEnde ()
+W := W+Schritt
+END
+VERXYEND()
+END
+;------------6mm--------------
+IF D=6
+VERXY (POSX,POSY)
+ZLinie (0,0,0,0,3303458,0,0,3,1,0)
+WHILE W<=360
+CALL _DrehenBBStart_V7 ( VAL DX:=0,DY:=0,ESXY1:=0,DW:=W,ONFREEVIEW:=0)
+ZKBCW (0,0,2.5,0,2.4454,-0.5198,3303458,0,0,0,0,0,0)
+CALL _DrehenBBEnde ()
+W := W+Schritt
+END
+VERXYEND()
+END
+;------------8mm--------------
+IF D=8
+VERXY (POSX,POSY)
+ZLinie (0,0,0,0,3303458,0,0,3,1,0)
+WHILE W<=360
+CALL _DrehenBBStart_V7 ( VAL DX:=0,DY:=0,ESXY1:=0,DW:=W,ONFREEVIEW:=0)
+ZKBCW (0,0,4,0,3.9126,-0.8316,3303458,0,0,0,0,0,0)
+CALL _DrehenBBEnde ()
+W := W+Schritt
+END
+VERXYEND()
+END
+;------------10mm--------------
+IF D=10
+VERXY (POSX,POSY)
+ZLinie (0,0,0,0,3303458,0,0,3,1,0)
+WHILE W<=360
+CALL _DrehenBBStart_V7 ( VAL DX:=0,DY:=0,ESXY1:=0,DW:=W,ONFREEVIEW:=0)
+ZKBCW (0,0,5,0,4.8907,-1.0396,3303458,0,0,0,0,0,0)
+CALL _DrehenBBEnde ()
+W := W+Schritt
+END
+VERXYEND()
+END
+;------------12mm--------------
+IF D=12
+VERXY (POSX,POSY)
+ZLinie (0,0,0,0,3303458,0,0,3,1,0)
+WHILE W<=360
+CALL _DrehenBBStart_V7 ( VAL DX:=0,DY:=0,ESXY1:=0,DW:=W,ONFREEVIEW:=0)
+ZKBCW (0,0,6,0,5.8689,-1.2475,3303458,0,0,0,0,0,0)
+CALL _DrehenBBEnde ()
+W := W+Schritt
+END
+VERXYEND()
+END
+;------------15mm--------------
+IF D=15
+VERXY (POSX,POSY)
+ZLinie (0,0,0,0,3303458,0,0,3,1,0)
+WHILE W<=360
+CALL _DrehenBBStart_V7 ( VAL DX:=0,DY:=0,ESXY1:=0,DW:=W,ONFREEVIEW:=0)
+ZKBCW (0,0,7.5,0,7.3361,-1.5593,3303458,0,0,0,0,0,0)
+CALL _DrehenBBEnde ()
+W := W+Schritt
+END
+VERXYEND()
+END
+;------------20mm--------------
+IF D=15
+VERXY (POSX,POSY)
+ZLinie (0,0,0,0,3303458,0,0,3,1,0)
+WHILE W<=360
+CALL _DrehenBBStart_V7 ( VAL DX:=0,DY:=0,ESXY1:=0,DW:=W,ONFREEVIEW:=0)
+ZKBCW (0,0,10,0,9.7815,-2.0791,3303458,0,0,0,0,0,0)
+CALL _DrehenBBEnde ()
+W := W+Schritt
+END
+VERXYEND()
+END
+;------------25mm--------------
+IF D=15
+VERXY (POSX,POSY)
+ZLinie (0,0,0,0,3303458,0,0,3,1,0)
+WHILE W<=360
+CALL _DrehenBBStart_V7 ( VAL DX:=0,DY:=0,ESXY1:=0,DW:=W,ONFREEVIEW:=0)
+ZKBCW (0,0,12.5,0,12.2268,-2.5989,3303458,0,0,0,0,0,0)
+CALL _DrehenBBEnde ()
+W := W+Schritt
+END
+VERXYEND()
+END
+;------------30mm--------------
+IF D=15
+VERXY (POSX,POSY)
+ZLinie (0,0,0,0,3303458,0,0,3,1,0)
+WHILE W<=360
+CALL _DrehenBBStart_V7 ( VAL DX:=0,DY:=0,ESXY1:=0,DW:=W,ONFREEVIEW:=0)
+ZKBCW (0,0,15,0,14.6722,-3.1187,3303458,0,0,0,0,0,0)
+CALL _DrehenBBEnde ()
+W := W+Schritt
+END
+VERXYEND()
+END
+;------------35mm--------------
+IF D=35
+VERXY (POSX,POSY)
+ZLinie (0,0,0,0,3303458,0,0,3,1,0)
+WHILE W<=360
+CALL _DrehenBBStart_V7 ( VAL DX:=0,DY:=0,ESXY1:=0,DW:=W,ONFREEVIEW:=0)
+ZKBCW (0,0,17.5,0,17.1176,-3.6385,3303458,0,0,0,0,0,0)
+CALL _DrehenBBEnde ()
+W := W+Schritt
+END
+VERXYEND()
+END
+END

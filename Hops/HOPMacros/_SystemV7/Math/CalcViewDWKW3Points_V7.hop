@@ -1,0 +1,57 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowCalcViewDWKW3Points_V7Dialog
+VARS
+   P1X := 0;*VAR*
+   P1Y := 0;*VAR*
+   P1Z := 0;*VAR*
+   PX := 0;*VAR*
+   PY := 0;*VAR*
+   PZ := 0;*VAR*
+   P2X := 0;*VAR*
+   P2Y := 0;*VAR*
+   P2Z := 0;*VAR*
+   DW := ;*VAR**REF**REF*
+   KW := ;*VAR**REF*
+   V1X := 0;
+   V1Y := 0;
+   V1Z := 0;
+   V2X := 0;
+   V2Y := 0;
+   V2Z := 0;
+   Nx := 0;
+   Ny := 0;
+   Nz := 0;
+   FKU_Offx := 0;
+   FKU_Offy := 0;
+   FKU_Offz := 0;
+   FKU_Null := 0.0000000001;
+   FKU_Vxx := 0;
+   FKU_Vxy := 0;
+   FKU_Vxz := 0;
+   FKU_Vyx := 0;
+   FKU_Vyy := 0;
+   FKU_Vyz := 0;
+START
+V1X := P1X-PX
+V1Y := P1Y-PY
+V1Z := P1Z-PZ
+V2X := P2X-PX
+V2Y := P2Y-PY
+V2Z := P2Z-PZ
+CALL VektorProdukt_V7 (REF NX:=Nx,NY:=Ny,NZ:=Nz VAL V1X:=V1X,V1Y:=V1Y,V1Z:=V1Z,V2X:=V2X,V2Y:=V2Y,V2Z:=V2Z)
+FKU_Offx := Px
+FKU_Offy := Py
+FKU_Offz := Pz
+IF (abs (Nx) < FKU_Null) & (abs (Ny) < FKU_Null)
+CALL VektorProdukt_V7 (REF NX:=FKU_Vxx,NY:=FKU_Vxy,NZ:=FKU_Vxz VAL V1X:=0,V1Y:=1,V1Z:=0,V2X:=Nx,V2Y:=Ny,V2Z:=Nz)
+ELSE
+CALL VektorProdukt_V7 (REF NX:=FKU_Vxx,NY:=FKU_Vxy,NZ:=FKU_Vxz VAL V1X:=0,V1Y:=0,V1Z:=1,V2X:=Nx,V2Y:=Ny,V2Z:=Nz)
+END
+CALL VektorProdukt_V7 (REF NX:=FKU_Vyx,NY:=FKU_Vyy,NZ:=FKU_Vyz VAL V1X:=Nx,V1Y:=Ny,V1Z:=Nz,V2X:=FKU_Vxx,V2Y:=FKU_Vxy,V2Z:=FKU_Vxz)
+CALL GetWinkel2P_V4 (REF WINKEL2P:=DW VAL P1X:=Nx,P1Y:=Ny,P2X:=0,P2Y:=0)
+DW := DW-90
+KW := arccos(Nz)
+IF FKU_Vyz<0
+KW := -KW
+END

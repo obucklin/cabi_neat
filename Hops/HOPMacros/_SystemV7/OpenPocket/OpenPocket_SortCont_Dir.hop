@@ -1,0 +1,233 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.5.4.618[Hops.exe]
+;BILD=OPENPOCKET_SORTCONT_DIR.WMF
+;INFO=18138609
+;WZGV=THEUNS_HUELLHORST
+;WZGVCONFIG=
+;MASCHINE=THEUNS_HUELLHORST
+;NCNAME=OpenPocket_SortCont_Dir
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   Ecke := 0;*VAR*0=LU / 1=U / 2=RU.......
+   SortX := 0;*VAR*Sort in X direction  [1 / -1]
+   SortY := 0;*VAR*Sort in Y direction  [1 / -1]
+   SP_EP := 'XM';*VAR*Direction of SP --> EP
+   Angle_Switch := 0;*VAR*0=0 / 1=90
+   PocketKonturName := 'xPocket';*VAR*Name
+   Lines := 0;*VAR*Count lines
+   Direct := 0;*VAR*switch direction
+   SMove := 0;*VAR*Startmove [ 0 / 90 / 180 / 270]
+   Switch := 0;Switch direction of contours
+   X1_SP := 0;Analyce X of contour
+   Y1_SP := 0;Analyce Y of contour
+   X1_EP := 0;Analyce X of contour
+   Y1_EP := 0;Analyce X of contour
+   X2_SP := 0;Analyce X of contour
+   Y2_SP := 0;Analyce Y of contour
+   X2_EP := 0;Analyce X of contour
+   Y2_EP := 0;Analyce X of contour
+   i := 0;
+   Coord1 := 0;
+   Coord2 := 0;
+   Wi := 0;Angle first element
+   SX := 0;Startpoint X
+   SY := 0;Startpoint Y
+START
+;--------------------------------------------------------------------------------------------
+;- direkt cnc systeme NC-HOPS (Version 7.5.5.x)
+;--------------------------------------------------------------------------------------------
+;- Rectangel pocket open
+;--------------------------------------------------------------------------------------------
+;- Get coordinates from first 2 lines
+X1_SP := GETCP_X(PocketKonturName+INTTOSTR(0),0)
+Y1_SP := GETCP_Y(PocketKonturName+INTTOSTR(0),0)
+X1_EP := GETCP_X(PocketKonturName+INTTOSTR(0),1)
+Y1_EP := GETCP_Y(PocketKonturName+INTTOSTR(0),1)
+;-
+X2_SP := GETCP_X(PocketKonturName+INTTOSTR(1),0)
+Y2_SP := GETCP_Y(PocketKonturName+INTTOSTR(1),0)
+X2_EP := GETCP_X(PocketKonturName+INTTOSTR(1),1)
+Y2_EP := GETCP_Y(PocketKonturName+INTTOSTR(1),1)
+;-
+;-
+;- Reverse direction
+IF Direct=1
+;- Sort
+;-
+IF Ecke=0
+;- LU
+IF Angle_Switch=0
+SortY := -SortY
+ELSE
+SortX := -SortX
+END
+END
+;-
+IF Ecke=1
+;- U
+IF Angle_Switch=0
+Switch := 1
+ELSE
+SortX := -SortX
+END
+END
+;-
+IF Ecke=2
+;- RU
+IF Angle_Switch=0
+SortY := -SortY
+ELSE
+SortX := -SortX
+END
+END
+;-
+IF Ecke=3
+;- R
+IF Angle_Switch=0
+SortY := -SortY
+ELSE
+Switch := 1
+END
+END
+;-
+IF Ecke=4
+;- RO
+IF Angle_Switch=0
+SortY := -SortY
+ELSE
+SortX := -SortX
+END
+END
+;-
+IF Ecke=5
+;- O
+IF Angle_Switch=0
+Switch := 1
+ELSE
+SortX := -SortX
+END
+END
+;-
+IF Ecke=6
+;- LO
+IF Angle_Switch=0
+SortY := -SortY
+ELSE
+SortX := -SortX
+END
+END
+;-
+IF Ecke=7
+;- L
+IF Angle_Switch=0
+SortY := -SortY
+ELSE
+Switch := 1
+END
+END
+END
+;-
+;-
+;-
+;-
+;- Sort Y Plus
+IF SortY = 1
+Coord1 := Y1_SP
+Coord2 := Y2_SP
+END
+;- Sort Y Minus
+IF SortY = -1
+Coord1 := Y2_SP
+Coord2 := Y1_SP
+END
+;- Sort X Plus
+IF SortX = 1
+Coord1 := X1_SP
+Coord2 := X2_SP
+END
+;- Sort X Minus
+IF SortX = -1
+Coord1 := X2_SP
+Coord2 := X1_SP
+END
+;-
+;-----------------------
+;-
+;- Lines in correct order
+IF Coord1>Coord2
+FOR i := 0 TO Lines-1 STEP 1
+SetKontur_Name (PocketKonturName+INTTOSTR(i),PocketKonturName+INTTOSTR(Lines-i) + '_Sort')
+END
+ELSE
+FOR i := 0 TO Lines-1 STEP 1
+SetKontur_Name (PocketKonturName+INTTOSTR(i),PocketKonturName+INTTOSTR(i+1) + '_Sort')
+END
+END
+;-
+;-----------------------
+;-
+;- Direction contour X Plus
+IF TEXTSAME(SP_EP,'XP')
+Coord1 := X1_SP
+Coord2 := X1_EP
+IF Switch=1
+Coord1 := X1_EP
+Coord2 := X1_SP
+END
+END
+;- Direction contour X Minus
+IF TEXTSAME(SP_EP,'XM')
+Coord1 := X1_EP
+Coord2 := X1_SP
+IF Switch=1
+Coord1 := X1_SP
+Coord2 := X1_EP
+END
+END
+;- Direction contour Y Plus
+IF TEXTSAME(SP_EP,'YP')
+Coord1 := Y1_SP
+Coord2 := Y1_EP
+IF Switch=1
+Coord1 := Y1_EP
+Coord2 := Y1_SP
+END
+END
+;- Direction contour Y Minus
+IF TEXTSAME(SP_EP,'YM')
+Coord1 := Y1_EP
+Coord2 := Y1_SP
+IF Switch=1
+Coord1 := Y1_SP
+Coord2 := Y1_EP
+END
+END
+;-
+;-
+;- Switch direction of contours and rename in "_Sort_Dir"
+FOR i := 1 TO Lines STEP 1
+IF Coord1>Coord2
+CALL Call_Extensions_ReverseContour ( VAL CONTOURNAME_CONTOURNAME:=PocketKonturName+INTTOSTR(i)+'_Sort',CONTOURNAME:=PocketKonturName+INTTOSTR(i)+'_Sort_Dir',CONTOURINFO:='',CONTOURLAYER:='')
+deletecontour (PocketKonturName+INTTOSTR(i)+'_Sort',0)
+ELSE
+SetKontur_Name (PocketKonturName+INTTOSTR(i) + '_Sort',PocketKonturName+INTTOSTR(i) + '_Sort_Dir')
+END
+END
+;-
+;- Create the Start movement pepending on the angle
+CALL GetWinkel2P_V7 (REF WINKEL2P:=Wi VAL P1X:=GETCP_X(PocketKonturName+INTTOSTR(1) + '_Sort_Dir',0),P1Y:=GETCP_Y(PocketKonturName+INTTOSTR(1) + '_Sort_Dir',0),P2X:=GETCP_X(PocketKonturName+INTTOSTR(1) + '_Sort_Dir',1),P2Y:=GETCP_Y(PocketKonturName+INTTOSTR(1) + '_Sort_Dir',1))
+SX := ((GETCP_X(PocketKonturName+INTTOSTR(1) + '_Sort_Dir',0))) - ( (_AT_COLLRADIUS+5) * Cos(SMove) )
+SY := ((GETCP_Y(PocketKonturName+INTTOSTR(1) + '_Sort_Dir',0))) - ( (_AT_COLLRADIUS+5) * Sin(SMove) )
+KB ('SMove','',SX,SY,0,'',0,0)
+KG01 ('',(GETCP_X(PocketKonturName+INTTOSTR(1) + '_Sort_Dir',0)),(GETCP_Y(PocketKonturName+INTTOSTR(1) + '_Sort_Dir',0)),0,'',0,2)
+;-

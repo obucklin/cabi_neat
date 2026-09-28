@@ -1,0 +1,174 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   K_Anzahl := 0;
+   Wink1 := 0;
+   Wink2 := 0;
+   X1 := 0;
+   Y1 := 0;
+   X2 := 0;
+   Y2 := 0;
+   X3 := 0;
+   Y3 := 0;
+   si := 0;
+   Wink_Stich := 0;
+   t := 0;*VAR*
+   i := 0;Konturenanzahl
+   EleAnz := 0;Anzahl Konturelemente
+   dist := 0;
+   elelength := 0;
+   j := 0;
+   startelement := 0;
+   AnzahlOutlineP := 0;
+   MX := 0;
+   MY := 0;
+   KE := 0;
+   anzi := 0;*VAR*
+   grenzdist := 6;grenzwert für ausspitzen
+   MX1 := 0;Merker X Kontur0
+   MY1 := 0;Merker Y Kontur0
+   MX2 := 0;
+   MY2 := 0;
+   Wink3 := 0;
+   Wink4 := 0;
+   ewu := 0;element winkel unterschied
+   dns := 0;
+   abwink := 0;Anstand abhängig vom Werkzeugwinkel und tiefe
+   WW := 0;Werkzeugwinkel
+   wink5 := 0;
+   h := 0;
+START
+WW := _WZKW
+FOR i := 0 TO anzi STEP 1
+si := 0;
+K_Anzahl := GETKE_ANZAHL('Textkontur'+INTTOSTR(i))
+KB ('K_N1','',GETKP_X('Textkontur'+INTTOSTR(i),si),GETKP_Y('Textkontur'+INTTOSTR(i),si),-t,'',0,0)
+FOR si := 0 TO K_Anzahl-2 STEP 1
+X1 := GETKP_X('Textkontur'+INTTOSTR(i),si)
+Y1 := GETKP_Y('Textkontur'+INTTOSTR(i),si)
+X2 := GETKP_X('Textkontur'+INTTOSTR(i),si+1)
+Y2 := GETKP_Y('Textkontur'+INTTOSTR(i),si+1)
+X3 := GETKP_X('Textkontur'+INTTOSTR(i),si+2)
+Y3 := GETKP_Y('Textkontur'+INTTOSTR(i),si+2)
+IF si=0
+MX1 := GETKP_X('Textkontur'+INTTOSTR(i),'KSP')
+MY1 := GETKP_Y('Textkontur'+INTTOSTR(i),'KSP')
+MX2 := GETKP_X('Textkontur'+INTTOSTR(i),si+1)
+MY2 := GETKP_Y('Textkontur'+INTTOSTR(i),si+1)
+END
+HGNeu();
+HLine2P (X1,Y1,X2,Y2,1,1)
+HLine2P (X2,Y2,X3,Y3,1,1)
+;Länge des stiches in Abhängikeit vom Werkzeug berechnen
+abwink := t*TAN(WW)
+CALL _hg_para_V5 ( VAL PARA:=abwink,X1:=X1,Y1:=Y1,X2:=X2,Y2:=Y2,ESXY1:=0,ESXY2:=0)
+CALL _hg_para_V5 ( VAL PARA:=abwink,X1:=X2,Y1:=Y2,X2:=X3,Y2:=Y3,ESXY1:=0,ESXY2:=0)
+CALL Dist2P_V4 (REF DIST:=dist VAL P1X:=_SPX1,P1Y:=_SPY1,P2X:=_SPX11,P2Y:=_SPY11)
+HGNeuEnd()
+dns := 0
+CALL GetWinkel2P_V4 (REF WINKEL2P:=Wink3 VAL P1X:=X2,P1Y:=Y2,P2X:=X3,P2Y:=Y3)
+CALL GetWinkel2P_V4 (REF WINKEL2P:=Wink4 VAL P1X:=X1,P1Y:=Y1,P2X:=X2,P2Y:=Y2)
+IF Wink3>180
+Wink3 := Wink3-360
+END
+IF Wink4>180
+Wink4 := Wink4-360
+END
+ewu := abs(Wink3)-abs(Wink4)
+IF (ewu<10)&(ewu>-10)
+dns := 1
+END
+CALL GetWinkel2P_V4 (REF WINKEL2P:=Wink1 VAL P1X:=X3,P1Y:=Y3,P2X:=X2,P2Y:=Y2)
+CALL GetWinkel2P_V4 (REF WINKEL2P:=Wink2 VAL P1X:=X2,P1Y:=Y2,P2X:=X3,P2Y:=Y3)
+Wink_Stich := Wink2-Wink1
+CALL GetWinkelDiff3P_V4 (REF WINKELDIFF3P:=Wink_Stich VAL P1X:=X3,P1Y:=Y3,MX:=X2,MY:=Y2,P3X:=X1,P3Y:=Y1)
+IF Wink_Stich>180
+Wink_Stich := Wink2+Wink_Stich/2+180
+ELSE
+Wink_Stich := Wink2+Wink_Stich/2
+END
+IF (Wink_Stich<180)
+Wink_Stich := Wink_Stich+180
+ELSE
+Wink_Stich := Wink_Stich-180
+END
+KE := si+1
+IF GETCE_TYP('Textkontur'+INTTOSTR(i),KE)=2
+MY := GETKE_MY('Textkontur'+INTTOSTR(i),KE)
+MX := GETKE_MX('Textkontur'+INTTOSTR(i),KE)
+KG02M ('',X2,Y2,0,MX,MY,'',0,2,0)
+IF (GETCE_TYP('Textkontur'+INTTOSTR(i),KE+1)=1)&(dns=0)
+KG01 ('',X2,Y2,0,'',0,2)
+CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=dist,WINKEL:=Wink_Stich,Z:=0,INFO:='',ESD:=0)
+KG01 ('',X2,Y2,-t,'',0,0)
+ELSE
+KG01 ('',X2,Y2,0,'',0,2)
+END
+END
+IF GETCE_TYP('Textkontur'+INTTOSTR(i),KE)=3
+MY := GETKE_MY('Textkontur'+INTTOSTR(i),KE)
+MX := GETKE_MX('Textkontur'+INTTOSTR(i),KE)
+KG03M ('',X2,Y2,0,MX,MY,'',0,2,0)
+IF (GETCE_TYP('Textkontur'+INTTOSTR(i),KE+1)=1)&(dns=0)
+KG01 ('',X2,Y2,0,'',0,2)
+CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=dist,WINKEL:=Wink_Stich,Z:=0,INFO:='',ESD:=0)
+KG01 ('',X2,Y2,-t,'',0,0)
+ELSE
+KG01 ('',X2,Y2,0,'',0,2)
+END
+END
+IF (GETCE_TYP('Textkontur'+INTTOSTR(i),KE)=1)&(dns=0)
+KG01 ('',X2,Y2,0,'',0,2)
+CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=dist,WINKEL:=Wink_Stich,Z:=0,INFO:='',ESD:=0)
+KG01 ('',X2,Y2,-t,'',0,0)
+ELSE
+KG01 ('',X2,Y2,0,'',0,2)
+END
+END
+KG01 ('',X3,Y3,0,'',0,2)
+HGNeu()
+HLine2P (MX2,MY2,MX1,MY1,1,1)
+HLine2P (X2,Y2,X3,Y3,1,1)
+CALL _hg_para_V5 ( VAL PARA:=-abwink,X1:=MX2,Y1:=MY2,X2:=MX1,Y2:=MY1,ESXY1:=0,ESXY2:=0)
+CALL _hg_para_V5 ( VAL PARA:=-abwink,X1:=X2,Y1:=Y2,X2:=X3,Y2:=Y3,ESXY1:=0,ESXY2:=0)
+CALL Dist2P_V4 (REF DIST:=dist VAL P1X:=_SPX1,P1Y:=_SPY1,P2X:=_SPX11,P2Y:=_SPY11)
+HGNeuEnd()
+dns := 0
+CALL GetWinkel2P_V4 (REF WINKEL2P:=Wink3 VAL P1X:=MX1,P1Y:=MY1,P2X:=MX2,P2Y:=MY2)
+CALL GetWinkel2P_V4 (REF WINKEL2P:=Wink4 VAL P1X:=MX1,P1Y:=MY1,P2X:=X2,P2Y:=Y2)
+IF Wink3>180
+Wink3 := Wink3-360
+END
+IF Wink4>180
+Wink4 := Wink4-360
+END
+ewu := abs(Wink3)-abs(Wink4)
+IF (ewu<25)&(ewu>-25)
+dns := 1
+END
+CALL GetWinkel2P_V4 (REF WINKEL2P:=Wink1 VAL P1X:=MX2,P1Y:=MY2,P2X:=MX1,P2Y:=MY1)
+CALL GetWinkel2P_V4 (REF WINKEL2P:=Wink2 VAL P1X:=MX1,P1Y:=MY1,P2X:=MX2,P2Y:=MY2)
+Wink_Stich := Wink2-Wink1
+CALL GetWinkelDiff3P_V4 (REF WINKELDIFF3P:=Wink_Stich VAL P1X:=MX2,P1Y:=MY2,MX:=MX1,MY:=MY1,P3X:=X2,P3Y:=Y2)
+IF Wink_Stich>180
+Wink_Stich := Wink2+Wink_Stich/2+180
+ELSE
+Wink_Stich := Wink2+Wink_Stich/2
+END
+IF (Wink_Stich<180)
+Wink_Stich := Wink_Stich+180
+ELSE
+Wink_Stich := Wink_Stich-180
+END
+IF dns=0
+CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=dist,WINKEL:=Wink_Stich,Z:=0,INFO:='',ESD:=0)
+END
+KG01 ('',X3,Y3,0,'',0,2)
+deletecontour ('K1',0)
+KSP ('???','???','???',0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('K_N1',Startelement,Startelement,0,0,0,1,0,0,0,0)
+EP (0,_ANF,0)
+deletecontour ('K_N1',0)
+END

@@ -1,0 +1,79 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   max_z := -12;*VAR*Maximale Zustellung pro Umfahrung
+   Breite := 80;*VAR*Breite des Rechtecks
+   Höhe := 20;*VAR*Höhe des Rechtecks
+   X_Mitte := 50;*VAR*Mittelpunkt in X
+   Y_Mitte := 50;*VAR*Mittelpunkt in Y
+   Z_Mitte := 0;*VAR*Mittelpunkt in Z
+   Tiefe := -4;*VAR*Frästiefe unters Werkstück
+   Radius := 30;Radius der Kreisbahn
+   DW := 0;*VAR*Drehwinkel
+   KW := 45;*VAR*Kippwinkel
+   D_Y := 0;
+   Saugercheck := 1;[1] mit Saugerabwahl
+   D_X := 0;
+   i := 0;
+   a := 0;
+   SSW := 0;*VAR*StaketenSteigungswinkel
+   WDiff := 0;berechnet
+   Wa := 0;berechnet
+   We := 0;berechnet
+START
+;******************************************************
+;********   Direkt cnc-systeme GmbH   ®  *******
+;******************************************************
+;*******  SemaToHops - Treppenmakros  ********
+;******************************************************
+Rohteil (500,500,40,0,0)
+;Lochkreis schräg
+We := SSW
+Wa := DW+90
+IF We>360
+We := We-360
+END
+IF Wa>We
+We := We+360
+ELSE
+END
+WDiff := We-Wa
+IF WDiff>=360
+WDiff := WDiff-360
+ELSE
+END
+;a = berechnete zusätzliche Tiefe am tiefsten Punkt
+a := TAN(WDiff)*Breite/2
+EbeneF (x_Mitte,y_Mitte,z_Mitte,KW+90,DW-90)
+IF Tiefe < Max_Z
+i := Max_z
+ELSE
+i := Tiefe
+END
+SP (0,Höhe/2,i,2,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+FOR i := max_z TO Tiefe STEP max_z
+G01 (Breite/2,Höhe/2,i-a,0)
+G01 (Breite/2,-Höhe/2,_Z,0)
+G01 (0,-Höhe/2,i,0)
+G01 (-Breite/2,-Höhe/2,i+a,0)
+G01 (-Breite/2,Höhe/2,_Z,0)
+G01 (0,Höhe/2,i,0)
+END
+IF i>Tiefe
+G01 (Breite/2,Höhe/2,i-a,0)
+G01 (Breite/2,-Höhe/2,_Z,0)
+G01 (0,-Höhe/2,i,0)
+G01 (-Breite/2,-Höhe/2,i+a,0)
+G01 (-Breite/2,Höhe/2,_Z,0)
+G01 (0,Höhe/2,i,0)
+END
+G01 (Breite/2,Höhe/2,Tiefe-a,0)
+G01 (Breite/2,-Höhe/2,_Z,0)
+G01 (0,-Höhe/2,Tiefe,0)
+G01 (-Breite/2,-Höhe/2,Tiefe+a,0)
+G01 (-Breite/2,Höhe/2,_Z,0)
+G01 (0,Höhe/2,Tiefe,0)
+EP (0,_ANF,0)
+Ebene0()

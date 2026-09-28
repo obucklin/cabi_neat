@@ -1,0 +1,59 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.6.12.75[Hops.exe]
+;BILD=EXAMPLE_1.BMP
+;INFO=FLDR_FORMAT4_H7
+;WZGV=FLDR_FORMAT4_H7
+;WZGVCONFIG=
+;MASCHINE=Simu3D
+;NCNAME=Example_1
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   MX := 500;*VAR*Position in X
+   MY := 300;*VAR*Position in Y
+   DX := 600;*VAR*Dimension in X
+   DY := 400;*VAR*Dimension in Y
+   Z := -26;*VAR*Depth
+   R := 30;*VAR*Edge radius
+   DW := 0;*VAR*Rotation
+   Direction := 0;*VAR*Direction
+   Profil := 20;*VAR*Profil
+START
+Fertigteil (1000,600,20,0,0,0,0,0,'',0,0,0,0)
+KB ('LAx','',MX,MY - DY/2,0,'',0,0)
+KG01 ('',DX/2,0,0,'',10,2)
+KG01 ('',0,DY,0,'',10,2)
+KG01 ('',-DX,0,0,'',10,2)
+KG01 ('',0,-DY,0,'',10,2)
+KG01ZuKB()
+IF DW<>0
+CALL _DrehenBBStart_V7 ( VAL DX:=MX,DY:=MY,ESXY1:=0,DW:=DW,ONFREEVIEW:=1)
+END
+KSP ('???','???',-ABS(Z),1,2,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('LAx','KSP','KEP',0,R,0,0,0,0,0,0,0)
+EP (2,_ANF,Direction)
+IF DW<>0
+CALL _DrehenBBEnde ()
+END
+IF (Profil=15) | (Profil=20)
+IF DW<>0
+CALL _DrehenBBStart_V7 ( VAL DX:=MX,DY:=MY,ESXY1:=0,DW:=DW,ONFREEVIEW:=1)
+END
+CALL GLUEPROCESS_V7 ()
+KSP ('???','???',-ABS(Profil),1,2,_ANF,-Profil,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('LAx','KSP','KEP',0,R,0,0,0,0,0,0,0)
+EP (2,_ANF,Direction)
+IF DW<>0
+CALL _DrehenBBEnde ()
+END
+END
+deletecontour ('LAx',0)

@@ -1,0 +1,13 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowViewgroupOptions_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   Mode := 0;*VAR*0 = only one Processtyp / 1 = mixed processtypes
+   Res1 := 0;*VAR*
+   Res2 := 0;*VAR*
+   Res3 := 0;*VAR*
+   Res4 := '';*VAR*
+START
+nciext (-70508050,'NCISys',0,0,0,Mode)

@@ -1,0 +1,27 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.7.12.80[Hops.exe]
+;BILD=
+;INFO=P14KOPFB
+;WZGV=7735D_129
+;WZGVCONFIG=
+;MASCHINE=HH7
+;NCNAME=
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   p1 := '';*VAR*Layer name
+   p2 := '';*VAR*
+   CenterX := 0;*VAR*The X coordinate of the center point
+   CenterY := 0;*VAR*The Y coordinate of the center point
+   Angle := 0;*VAR*Rotation angle
+START
+CALL Clamex_Scheibe ( VAL PX:=CenterX,PY:=CenterY,PZ:=_RZ/2,DW:=Angle,KW:=90,FRAESEN:=1,DEPTH:=-14,SEITL_ZUST:=1.4,BOHREN:=1,B_ABST:=7.5,B_ABST_KANTE:=9.5,B_D:=6,WKZ_B:=501,WKZ_B_H:=51006,WKZ_F:=1360,WKZ_B_S:=50006,WKZ_F_H:=136,WKZ_F_S:=136)

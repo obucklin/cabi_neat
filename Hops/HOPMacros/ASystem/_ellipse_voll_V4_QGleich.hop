@@ -1,0 +1,78 @@
+;MAKROTYP=1
+;BILD=
+;INFO=_ellipse_voll_V4
+;WZGV=demo
+;MASCHINE=Simu
+;NCNAME=_ellipse_voll_V4_QGleich
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   mx := _RX/2;*VAR*Mitte in X
+   my := _RY/2;*VAR*Mitte in Y
+   dw := 0;*VAR*Drehwinkel
+   a := _RX;*VAR*X-Achse
+   b := _RY;*VAR*Y-Achse
+   z := 0;*VAR*Tiefe
+   BL := 2;*VAR*Lage   0=mittig    1=links   2=rechts
+   anf_bew := 2;*VAR*Anfahrbewegung
+   Aufmass := 0;*VAR*Abstand zur Kontur
+   ANF := _ANF;*VAR*Anfahrfaktor
+   ZuTiefe := 0;*VAR*Zustellung pro Umfahrung
+   tt := 0;intern
+   t := 0;intern
+   akt_Tiefe := 0;Benutzt für aktuelle Frästiefe
+   a_last := 0;letzte Zustellung
+   Interpol := 0;*VAR*Interpolation auf Anfahrbewegung
+START
+;direkt cnc systeme NCHOPS Version 4.x
+;****** Ellipse fräsen komplett *****
+;Rohteil (500,300,20,0,0)
+;WZF (2,_VE,_V,_VA,_SD,_ANF)
+a := a/2+Aufmass
+b := b/2+Aufmass
+;***** Überprüfung Tiefe negativ *****
+IF z<0
+z := z*(-1)
+END
+;***** Überprüfung ZuTiefe negativ *****
+IF zuTiefe<0
+zutiefe := zutiefe*(-1)
+END
+;***** Überprüfung ZuTiefe NULL *****
+IF ZuTiefe=0
+ZuTiefe := z
+END
+;****************************
+IF BL=0
+anf_bew := 0
+END
+IF (BL=1) & (anf_bew=1)
+anf_bew := 2
+END
+;****************************
+IF Interpol = 1
+anf_bew := -anf_bew
+END
+;****************************
+IF (z=0) & (ZuTiefe=0)
+Fehlermeldung (Bitte_Tiefe_eingeben)
+END
+;******* Anzahl Zustellungen errechnen *******
+t := trunc(z/zutiefe)
+;******* Letzte Zustellung in mm *******
+a_last := (z - zutiefe*t)
+;****************************
+CALL _DrehenBBStart (VAL DX:=mx,DY:=my,Dw:=dw)
+akt_Tiefe := zutiefe
+FOR tt := 1 TO t STEP 1
+CALL EllipseAusSegmente ( VAL mx:=mx,my:=my,a:=a,b:=b,z:=-akt_Tiefe,BL:=BL,anf_bew:=anf_bew,ANF:=ANF)
+akt_Tiefe := Akt_Tiefe+zutiefe
+END
+IF a_last>0
+CALL EllipseAusSegmente ( VAL mx:=mx,my:=my,a:=a,b:=b,z:=-z,BL:=BL,anf_bew:=anf_bew,ANF:=ANF)
+END
+CALL _DrehenBBEnde ()

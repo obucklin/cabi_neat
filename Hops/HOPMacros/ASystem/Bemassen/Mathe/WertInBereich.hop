@@ -1,0 +1,23 @@
+;MAKROTYP=1
+;BILD=
+;INFO=
+;WZGV=Demo
+;MASCHINE=Simu
+;NCNAME=ZahlInBereich
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   Wert := 0;*VAR*
+   BU := 0;*VAR*
+   BO := 0;*VAR*
+   Innerhalb := 0;*VAR**REF*
+START
+IF (BU <= Wert) & (Wert <= BO)
+Innerhalb := 1
+ELSE
+Innerhalb := 0
+END

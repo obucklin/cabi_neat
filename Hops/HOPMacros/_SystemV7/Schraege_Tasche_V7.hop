@@ -1,0 +1,112 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_RechtecktascheSchraeg_Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   thoehe := 0;
+   max_z := 10;*VAR*Maximale Zustellung pro Umfahrung
+   B := 190;*VAR*B des Rechtecks
+   L := 120;*VAR*L des Rechtecks
+   MX := 100;*VAR*Mittelpunkt in X
+   MY := 200;*VAR*Mittelpunkt in Y
+   Z_Mitte := 10;*VAR*Mittelpunkt in Z
+   sa := 0;
+   a := 0;
+   WDiff := 0;berechnet
+   Wa := 0;berechnet
+   We := 0;berechnet
+   fakt := 0;
+   st := 0;
+   inv := 0;
+   DW := 0;
+   KW := -80;Kippwinkel
+   SSW := 100;StaketenSteigungswinkel
+   TAP := 15;*VAR*Tipangle Pocket
+   TAT := 20;*VAR*Tipangle Tool
+   steps := 2;
+   wverx := 0;winkel verschiebung in x
+   verx := 0;vesatz in x
+   verxe := 0;
+   posz := 0;
+   esxy := 0;*VAR*
+   esmd := 0;*VAR*
+START
+;******************************************************
+;********   Direkt cnc-systeme GmbH   ®  *******
+;******************************************************
+TransEsD (Posz,esmd)
+esmd := esmd+2
+IF esmd<>3
+z_mitte := -z_mitte
+END
+IF esmd=3
+z_mitte := -z_mitte+_RZ
+END
+IF max_z=0
+max_Z := _AT_MAXDEPTH
+END
+IF max_z=0
+max_Z := _AT_USEABLELENGTH
+END
+IF _WZD=0;
+Fehlermeldung (GetMessageText('17','Kein Werkzeug gewählt'))
+END
+SSW := 90-TAT
+KW := -90+TAP+TAT
+IF SSW=0
+Fehlermeldung (GetMessageText('1003','Kein gültiger Winkel'))
+END
+We := SSW
+Wa := DW+90
+IF We>360
+We := We-360
+END
+IF Wa>We
+We := We+360
+ELSE
+END
+WDiff := We-Wa
+IF WDiff>=360
+WDiff := WDiff-360
+ELSE
+END
+thoehe := COS(wdiff)*L
+a := TAN(WDiff)*thoehe/2
+sa := -(TAN(abs(TAP))*thoehe/2)
+FOR Steps := sa+max_z TO z_mitte+max_z STEP max_z
+IF steps>z_mitte
+posz := z_mitte
+ELSE
+posz := steps
+END
+wverx := TAT+TAP
+verx := TAN(wverx)*posz
+verxe := TAN(wverx)*z_mitte
+EbeneF (MX+verx-verxe,MY,posz,KW+90,DW-90,esxy,2)
+SP (0,thoehe/2,a,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (B/2,thoehe/2,_z,0,0,0)
+G01 (B/2,-thoehe/2,-a,0,0,0)
+G01 (0,-thoehe/2,_Z,0,0,0)
+G01 (-B/2,-thoehe/2,_Z,0,0,0)
+G01 (-B/2,thoehe/2,a,0,0,0)
+G01 (0,thoehe/2,a,0,0,0)
+IF (B>_WZD*2)|(L>_WZD*2)
+IF B>L
+fakt := Round((thoehe/2)/_WZR)-1
+ELSE
+fakt := Round(B/_WZD)-1
+END
+FOR st := fakt TO 0 STEP -1
+inv := (fakt-st+1)
+G01 (0,(thoehe/2)-(_WZR*inv),TAN(WDiff)*(thoehe-(_WZD*inv))/2,0,0,0)
+G01 ((B/2)-(_WZR*inv),(thoehe/2)-(_WZR*inv),_z,0,0,0)
+G01 (B/2-(_WZR*inv),-(thoehe-(_WZD*inv))/2,-(TAN(WDiff)*(thoehe-(_WZD*inv))/2),0,0,0)
+G01 (0,-(thoehe-(_WZD*inv))/2,_Z,0,0,0)
+G01 (-(B-(_WZD*inv))/2,-(thoehe-(_WZD*inv))/2,_Z,0,0,0)
+G01 (-(B-(_WZD*inv))/2,(thoehe/2)-(_WZR*inv),TAN(WDiff)*(thoehe-(_WZD*inv))/2,0,0,0)
+G01 (0,(thoehe/2)-(_WZR*inv),TAN(WDiff)*(thoehe-(_WZD*inv))/2,0,0,0)
+END
+END
+EP (0,_ANF,0)
+Ebene0()
+END

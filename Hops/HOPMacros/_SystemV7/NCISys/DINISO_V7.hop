@@ -1,0 +1,9 @@
+;MAKROTYP=1
+VARS
+   Code := '';*VAR*diniso code
+   Mode := 1;Identfiziert den "Script unterdrückten" NCIExt als DINISO - Zeile
+START
+Fertigteil (1000,2000,19,0,0,0,0,0,'',0,0,0)
+;-- mw 22.12.2016 - DINISO - Line ueber System NCIExt - unterdrueckter NCI im Script
+;# -7710
+NCIExt (-7710,'',2,0,0,Mode,Code)

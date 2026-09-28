@@ -1,0 +1,22 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCName
+;MASCHINE=demo
+;WZGV=demo
+;BILD=WGerade.WMF
+VARS
+   length := 50;*VAR*length of line
+   angle := 0;*VAR*angle relative to x axis
+   Z := 0;*VAR*depth in z
+   R := 0;*VAR*radius to get round curves
+START
+;direkt cnc systeme NCHOPS Version3.0
+;line of angle V 1.0/JOFU/07.98
+;finished part (400,400,20,0,0)
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+;SP (200,200,_Z,0,0,1,0,0,0)
+G01(_X+LENGTH*COS(ANGLE),_Y+LENGTH*SIN(ANGLE),Z,R)
+

@@ -1,0 +1,161 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=SEITE_LR_GP_1.WMF
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=SEITE_LR_GP_1
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_1.Dll
+;DIALOGPROC=ShowLoch_R_GpDialog_1
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2000;Dimension X
+   DY := 560;Dimension Y
+   DZ := 16;Dimension Z
+   SPX :=0;*VAR*LR X-Start
+   SPY1 :=50.00;*VAR*LR Y1-Start
+   SPY2 :=0.00;*VAR*LR Y2-Start
+   SPY3 :=64;*VAR*LR Y3-Start
+   EX :=0;*VAR*LR End X
+   TLF :=10;*VAR*LR Bohrtyp
+   Tiefe :=-13;*VAR*LR Tiefe
+   Raster :=32;*VAR*LR Raster
+   DM :=5.00;*VAR*LR Lochdurchmesser
+   CheckTyp :=0;*VAR*Typ Lochreihe
+   CheckY1 :=-1;*VAR*LR 1 Ja/Nein
+   CheckY2 :=0;*VAR*LR 2 Ja/Nein
+   CheckY3 :=-1;*VAR*LR 3 Ja/Nein
+   Snap1xy :=7;*VAR*Easy Snap XY
+   SnapY1 :=4;*VAR*Easy Snap Y1
+   SnapY2 :=3;*VAR*Easy Snap Y2
+   SnapX :=3;*VAR*Easy Snap X_End
+   SnapZ :=0;*VAR*Easy Snap Z
+   AnzB :=5;*VAR*Anzahl Bänder
+   GP_Tiefe :=-13.00;*VAR*Grundplatten Tiefe
+   GP_DM :=5.00;*VAR*Grundplatten BohrDM
+   GP_RandX_L :=128;*VAR*Grundplatten Randmass in X links
+   GP_RandX_R :=128;*VAR*Grundplatten Randmass in X rechts
+   GP_RandY :=37.00;*VAR*Grundplatten Randmass in Y
+   GP_TLF :=10;*VAR*Grundplatten Bohrtyp
+   Richtung :=0;*VAR*0=Xgerichtet; 1= Ygerichtet
+   Band_1 := 0;
+   Band_2 := 0;
+   Band_3 := 0;
+   Anzeige :=-1;*VAR*Masslinie
+START
+Fertigteil (DX,DY,DZ,0,0,2.5,2.5,0,'Schrank Seite',0,0,0)
+IF CheckY1 = -1
+CALL Lochreihe ( VAL SPX:=SPX,SPY1:=SPY1,SPY2:=SPY2,SPY3:=SPY3,EX:=EX,TLF:=TLF,TIEFE:=Tiefe,RASTER:=Raster,DM:=DM,CHECKY2:=CheckY2,CHECKY3:=CheckY3,CHECKTYP:=CheckTyp,SNAP1XY:=Snap1XY,SNAPY1:=SnapY1,SNAPY2:=SnapY2,SNAPX:=SnapX,SNAPZ:=SnapZ);BREAKPOINT
+IF Anzeige = -1
+IF CheckTyp=2
+CALL B2Punkte_V7 ( VAL P1X:=- (Raster / 2),P1Y:=20,P2X:=0,P2Y:=20,ABSTAND:=-30,FARBE:=196352,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=5,PFEILEINNERHALB:=0,WCS:=1,ESXY1:=6,ESXY2:=6)
+CALL B2Punkte_V7 ( VAL P1X:=(Raster / 2),P1Y:=20,P2X:=0,P2Y:=20,ABSTAND:=30,FARBE:=196352,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=5,PFEILEINNERHALB:=0,WCS:=1,ESXY1:=6,ESXY2:=6)
+ZLinie (0,0,0,0,196352,6,2,0,0,1)
+END
+END
+END
+;Grundplatten
+IF AnzB=0
+ELSE
+IF Richtung = 0
+Bohrung ((GP_RandX_L+16),GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung ((GP_RandX_L- 16),GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung ((GP_RandX_R+16),GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,3,0,0,0,0)
+Bohrung ((GP_RandX_R-16),GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,3,0,0,0,0)
+IF Anzeige = -1
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=GP_RandX_L,P2Y:=0,ABSTAND:=10,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=GP_RandX_R,P2Y:=0,ABSTAND:=-120,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=3)
+END
+ELSE
+Bohrung (GP_RandX_L,GP_RandY-17,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (GP_RandX_L,(GP_RandY-17) +32,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (GP_RandX_R,GP_RandY-17,GP_DM,GP_Tiefe,GP_TLF,0,0,3,0,0,0,0)
+Bohrung (GP_RandX_R,(GP_RandY-17) +32,GP_DM,GP_Tiefe,GP_TLF,0,0,3,0,0,0,0)
+IF Anzeige = -1
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=GP_RandX_L,P2Y:=0,ABSTAND:=10,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=GP_RandX_R,P2Y:=0,ABSTAND:=-120,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=3)
+END
+END
+IF AnzB=3
+Band_1 := ((_RX - Gp_RandX_L- Gp_RandX_R) / 2)+Gp_RandX_L
+Band_2 := ((_RX - Gp_RandX_L- Gp_RandX_R) / 2)+ Gp_RandX_R
+IF Richtung = 0
+Bohrung (Band_1-16,GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (Band_1+16,GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+IF Anzeige = -1
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=Band_1,P2Y:=0,ABSTAND:=50,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+END
+ELSE
+Bohrung (Band_1,GP_RandY-17,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (Band_1,(GP_RandY-17) + 32,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+IF Anzeige = -1
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=Band_1,P2Y:=0,ABSTAND:=50,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+END
+END
+END
+IF AnzB=4
+Band_1 := ((_RX - Gp_RandX_L- Gp_RandX_R) / 3)+Gp_RandX_L
+Band_2 := ((_RX - Gp_RandX_L- Gp_RandX_R) / 3)+Gp_RandX_R
+IF Richtung = 0
+Bohrung ((Band_1-16.00),GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung ((Band_1+16),GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (Band_2 -16,GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,3,0,0,0,0)
+Bohrung (Band_2 + 16,GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,3,0,0,0,0)
+IF Anzeige = -1
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=Band_1,P2Y:=0,ABSTAND:=40,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=Band_2,P2Y:=0,ABSTAND:=80,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=3)
+END
+ELSE
+Bohrung (Band_1,GP_RandY-17,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (Band_1,(GP_RandY-17)+32,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (Band_2,GP_RandY-17,GP_DM,GP_Tiefe,GP_TLF,0,0,3,0,0,0,0)
+Bohrung (Band_2,(GP_RandY-17) + 32,GP_DM,GP_Tiefe,GP_TLF,0,0,3,0,0,0,0)
+IF Anzeige = -1
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=Band_1,P2Y:=0,ABSTAND:=50,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=Band_2,P2Y:=0,ABSTAND:=90,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=3)
+END
+END
+END
+IF AnzB=5
+/Anz := ((_RX -GP_RandX ) ) / Raster
+/Anz := Anz DIV 4
+/BandM1 := anz *  Raster
+Band_1 := ((_RX - Gp_RandX_L- Gp_RandX_R) / 4)+Gp_RandX_L
+Band_2 := ((_RX - Gp_RandX_L- Gp_RandX_R) / 4)+Gp_RandX_R
+Band_3 := (((_RX - Gp_RandX_L- Gp_RandX_R) / 4)*2)+Gp_RandX_L
+IF Richtung = 0
+Bohrung (Band_1+16,GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (Band_1-16,GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (Band_3-16,GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (Band_3 +16,GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (Band_2- 16,GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,3,0,0,0,0)
+Bohrung (Band_2+16,GP_RandY,GP_DM,GP_Tiefe,GP_TLF,0,0,3,0,0,0,0)
+IF Anzeige = -1
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=Band_1,P2Y:=0,ABSTAND:=30,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=Band_3,P2Y:=0,ABSTAND:=60,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=Band_2,P2Y:=0,ABSTAND:=90,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=3)
+END
+ELSE
+Bohrung (Band_1,GP_RandY-17,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (Band_1,(GP_RandY-17)+32,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (Band_3,GP_RandY-17,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (Band_3,(GP_RandY-17)+32,GP_DM,GP_Tiefe,GP_TLF,0,0,1,0,0,0,0)
+Bohrung (Band_2,GP_RandY-17,GP_DM,GP_Tiefe,GP_TLF,0,0,3,0,0,0,0)
+Bohrung (Band_2,(GP_RandY-17)+32,GP_DM,GP_Tiefe,GP_TLF,0,0,3,0,0,0,0)
+IF Anzeige = -1
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=Band_1,P2Y:=0,ABSTAND:=30,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=Band_3,P2Y:=0,ABSTAND:=60,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=1)
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=Band_2,P2Y:=0,ABSTAND:=-90,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=1,ESXY2:=3)
+END
+END
+END
+END

@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowFORCEDIRECTORIESDialog
+VARS
+   Value := '';*VAR*
+   Result := ;*VAR**REF*
+START
+CALLDLL FORCEDIRECTORIES(Extensions,DefaultStr,REF Result:=Result VAL Value:=Value)

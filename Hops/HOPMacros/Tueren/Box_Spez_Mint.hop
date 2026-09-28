@@ -1,0 +1,102 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=BOX_SPEZ_MINT.WMF
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Box_Spez
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2000;Dimension X
+   DY := 400;Dimension Y
+   DZ := 45;Dimension Z
+   DR_Hoehe := DR_Hoehe+El_Mass +20;*VAR*Drückerhöhe
+   Falz_H := Falz_H;*VAR*Falzhöhe
+   Falz_T := Falz_T;*VAR*Falztiefe
+   Kasten_L := 220;*VAR*Kastenlänge
+   Kasten_B := Ka_B;*VAR*Kastenbreite
+   Zu_1 := Zu_1;*VAR*Zustellung
+   Tiefe1 := 42;*VAR*Tiefe Kasten
+   Dist_Falz_Stu := Dist_Falz_Stu;*VAR*Distanz Falz <-> Stulp
+   Ver_X := Sk_Vers;*VAR*Versatz in der Länge (zusammenfahren)
+   Stulp_B := Stulp_B;*VAR*Stulpbreite
+   Diff_K_Stulp := Diff_K_Stulp;*VAR*Differenz Kasten Stulp
+   TempX := 0;Temp Var für zusammenfahren
+   Ver_Wkz := 0;
+   ZuStellen := 0;Zustellung
+   Pendeln := 0;Pendeln Ja Nein
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;Endlosschlaufe vermeiden
+IF Zu_1 = 0
+Zu_1 := 0.1
+END
+IF (Zu_1  > _AT_MAXDEPTH) & (_AT_MAXDEPTH <> 0)
+Zu_1 := _AT_MAXDEPTH
+END
+Ebene3()
+IF _WzD >= Kasten_B
+Pendeln := 1
+ELSE
+Pendeln := 0
+END
+;Kasten1
+IF Pendeln = 1
+TempX := Kasten_L
+SP (DR_Hoehe  + (TempX / 2),Falz_H-Dist_Falz_Stu - (Stulp_B/2) + Diff_K_Stulp,- (Falz_T ),0,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0);BREAKPOINT
+WHILE Zustellen <  Tiefe1
+G01 (0,0,(ZU_1 *-1),0,10,2)
+G01 (TempX,0,0,0,10,2)
+TempX := TempX - Ver_X
+Zustellen := Zustellen + ZU_1
+G01 (0,0,(ZU_1 *-1),0,10,2)
+G01 (- TempX,0,0,0,10,2)
+Zustellen := Zustellen + ZU_1
+TempX := TempX - Ver_X
+IF Zustellen >= (Tiefe1 )
+G01 (0,0,- (Tiefe1 + Falz_T),0,10,0)
+G01 (TempX /2,0,0,0,10,2)
+END
+END
+EP (0,_ANF,0)
+ELSE
+;Ohne pendeln
+Ebene3()
+Ver_Wkz := (Kasten_B / 2) - _Wzr
+TempX := Kasten_L
+SP (DR_Hoehe,Falz_H-Dist_Falz_Stu - (Stulp_B/2)-Ver_Wkz + Diff_K_Stulp,-(Falz_T ),0,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0)
+WHILE Zustellen <  Tiefe1
+G01 (0,0,- ZU_1,0,10,2)
+G01 (- (TempX/2),0,0,0,10,2)
+G01 (0,Kasten_B - _WzD,0,0,10,2)
+G01 (TempX,0,0,0,10,2)
+G01 (0,-(Kasten_B - _WzD),0,0,10,2)
+G01 (- (TempX/2),0,0,0,10,2)
+Zustellen := Zustellen +Zu_1
+TempX := TempX - Ver_X
+IF Zustellen >= (Tiefe1 )
+G01 (0,0,- (Tiefe1 + Falz_T),0,10,0)
+G01 (TempX /2,0,0,0,10,2)
+G01 (0,Kasten_B - _WzD,0,0,10,2)
+G01 (-TempX,0,0,0,10,2)
+G01 (0,- (Kasten_B - _WzD),0,0,10,2)
+G01 ((TempX /2),0,0,0,10,2)
+END
+END
+EP (0,_ANF,0)
+END
+Ebene0()
+ZRechteck (DR_Hoehe  - (Kasten_L /2),Falz_T,Kasten_L,-(Tiefe1 ),0,0,7,0,0,0)
+ZLinie (DR_Hoehe  - (Kasten_L /2),Falz_T,(DR_Hoehe  - (TempX / 2)),(Tiefe1 ) + Falz_T,65280,7,7,0,0,0)
+ZLinie (DR_Hoehe + (Kasten_L /2),Falz_T,(DR_Hoehe  + (TempX / 2)),(Tiefe1) + Falz_T,65280,7,7,0,0,0)

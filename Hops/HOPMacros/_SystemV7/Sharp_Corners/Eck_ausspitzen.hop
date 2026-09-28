@@ -1,0 +1,92 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;VERSION=7.0.0.1
+VARS
+   X := 50;*VAR*Position der Ecke
+   Y := 50;*VAR*Position der Ecke
+   Wink1 := 45;*VAR*Kippwinkel Werkzeug
+   DW := 45;*VAR*Drehwinkel
+   FalzBreite := 15;*VAR*Falzbreite (Schalter)
+   FalzTiefe := 25;*VAR*Falztiefe
+   FaktorVonOben := 0.9;Faktor für Z-Fahrt von oben
+   Rueck := 5;Rückzug für Durchstechen
+   Durch := 12;Z Duchstechen
+   Abst_Falz := 0;
+   ye := 0;
+   ze := 0;
+   y1 := 0;
+   z1 := 0;
+   y2 := 0;
+   z2 := 0;
+START
+;**************************
+Fertigteil (100,100,40,0,0,0,0,0,'',0,0,0)
+;**************************
+/WZF (4,_VE,_V,_VA,_SD,_ANF,'1')
+IF (Wink1 < 0) | (Wink1 > 90)
+Fehlermeldung (GetMessageText('1002','Falscher Kippwinkel 0-90°'))
+ELSE
+END
+;-
+;- Falz ausstechen
+IF FalzBreite > 0
+CALL GLUEPROCESS_V7 ()
+HGNeu()
+CALL _hg_para_winkel_V5 ( VAL PARA:=Falzbreite,X1:=X,Y1:=Y,WINKEL:=DW+90+45,ESXY1:=0)
+CALL _hg_para_winkel_V5 ( VAL PARA:=Falzbreite,X1:=X,Y1:=Y,WINKEL:=DW+90+45+90,ESXY1:=0)
+CALL Dist2P_V4 (REF DIST:=Abst_Falz VAL P1X:=X,P1Y:=Y,P2X:=_SPX1,P2Y:=_SPY1)
+EbeneF (_SPX1,_SPY1,0,Wink1,DW,0,2)
+SP (0,0,0,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+;- runter in den Falz
+G01 (0,-sin(wink1)*(FalzTiefe),-cos(wink1)*(FalzTiefe),0,0,2)
+;- nach links
+G01 (-tan(45)*20,-cos(wink1)*20,sin(wink1)*20,0,10,2)
+;- zurück
+G01 (tan(45)*20,cos(wink1)*20,-sin(wink1)*20,0,10,2)
+;- nach rechts
+G01 (-tan(45+90)*20,-cos(wink1)*20,sin(wink1)*20,0,10,2)
+;- zurück
+G01 (tan(45+90)*20,cos(wink1)*20,-sin(wink1)*20,0,10,2)
+;- zur Innenkontur
+G01 (0,-cos(wink1)*Abst_Falz,sin(wink1)*Abst_Falz,0,10,2)
+;- Runter aber noch nicht durch
+G01 (0,(-sin(wink1)) * ( ((_rz) * (FaktorVonOben) -FalzTiefe)),(-cos(wink1)) * ( ((_rz) * (FaktorVonOben) -FalzTiefe )),0,10,2)
+;- zurück wegen Ausrisse
+G01 (0,-cos(wink1)*Rueck,sin(wink1)*Rueck,0,10,2)
+;- durch auf Endtiefe
+G01 (0,(-sin(wink1)) * ( (_rz * (1-FaktorVonOben)) +ABS(Durch) ),(-cos(wink1)) *  ( (_rz * (1-FaktorVonOben)) +ABS(Durch) ),0,10,2)
+;- Ran an Innenkontur
+G01 (0,cos(wink1)*Rueck,-sin(wink1)*Rueck,0,10,2)
+;- ganz raus
+G01 (0,-(-sin(wink1)) * ( (_rz +ABS(Durch) )),-(-cos(wink1)) * ( (_rz +ABS(Durch) )),0,10,2)
+;G01 (0,0,0,0,0,0)
+EP (0,_ANF,0)
+Ebene0()
+HGNeuEnd()
+ELSE
+;- DURCHGEHEND
+EbeneF (X,Y,0,Wink1,DW,0,2)
+SP (0,0,0,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+ye := -cos(wink1)*Rueck
+ze := sin(wink1)*Rueck
+G01 (0,-sin(wink1)*(_rz*FaktorVonOben),-cos(wink1)*(_rz*FaktorVonOben),0,0,2)
+y1 := _y
+z1 := _z
+G01 (0,-cos(wink1)*Rueck,sin(wink1)*Rueck,0,10,2)
+y2 := _y
+z2 := _z
+G01 (0,(-sin(wink1)) * ( (_rz * (1-FaktorVonOben) +ABS(Durch) )),(-cos(wink1)) * ( (_rz * (1-FaktorVonOben) +ABS(Durch) )),0,10,2)
+G01 (0,cos(wink1)*Rueck,-sin(wink1)*Rueck,0,10,2)
+/G01 (0,0,0,0,0,0)
+G01 (0,y1,z1,0,0,0)
+G01 (0,y2,z2,0,0,0)
+G01 (0,ye,ze,0,0,0)
+EP (0,_ANF,0)
+Ebene0()
+END
+CALL _DrehenBBStart_V5 ( VAL DX:=X,DY:=Y,DW:=DW,ESXY1:=0)
+ZLinie (X,Y,X + 15,Y - 15,255,0,0)
+ZLinie (X,Y,X - 15,Y - 15,255,0,0)
+ZLinie (X,Y,X,Y - 20,255,0,0)
+CALL _DrehenBBEnde ()

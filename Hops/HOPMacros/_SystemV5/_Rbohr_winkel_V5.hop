@@ -1,0 +1,106 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_Rbohr_winkel_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   SPx := ;*VAR*StartPunkt (x)
+   spy := ;*VAR*StartPunkt (y)
+   Winkel := 0;*VAR*
+   Raster := 32mm;*VAR*Rasterwerte
+   Anzahl := 7;*VAR*Anzahl Löcher
+   T := -13;*VAR*Bohrtiefe
+   D := 5mm;*VAR*Bohrdurchmesser
+   TLF := 0;*VAR*Tieflochflag
+   i := 0;
+   X_Versatz := 0;
+   Y_Versatz := 0;
+   Abstand := 0;*VAR*0=direkter Abstand  1=X   2=Y
+   esxy := 1;*VAR*
+   esd := 0;*VAR*
+START
+;direkt cnc systeme NCHOPS Version 4.x
+;*********************************************************
+;****                Lochreihe über Winkel             ****
+;*********************************************************
+Transesd (T,esd)
+transesxy (spx,spy,esxy,1)
+IF Winkel<-360
+Fehlermeldung (GetMessageText('18','Bitte Winkel nicht kleiner als minus 360 eingeben'))
+END
+IF Winkel<0
+Winkel := winkel+360
+END
+IF Winkel>360
+Fehlermeldung (GetMessageText('19','Bitte Winkel nicht groesser als 360 eingeben'))
+END
+;*** Nur negative Tiefe zugelassen
+IF T>0
+T := -T
+END
+;*** Direkter Abstand
+IF Abstand=0
+X_Versatz := cos(winkel)*raster
+Y_Versatz := sin(winkel)*raster
+END
+;*** Abstand in X
+IF Abstand=1
+X_Versatz := raster
+IF (Winkel=90)|(Winkel=270)
+Fehlermeldung (GetMessageText('20','Abstand in X bei 90 oder 270 Grad nicht möglich'))
+END
+IF (Winkel>=0)&(Winkel<90)
+Y_Versatz := tan(winkel)*raster
+END
+IF (Winkel>90)&(Winkel<180)
+X_Versatz := -raster
+Y_Versatz := tan(winkel)*raster * (-1)
+END
+IF (Winkel=180)
+X_Versatz := -raster
+Y_Versatz := 0
+END
+IF (Winkel>180)&(Winkel<270)
+X_Versatz := -raster
+Y_Versatz := tan(winkel)*raster * (-1)
+END
+IF (Winkel>270)&(Winkel<360)
+Y_Versatz := tan(winkel)*raster
+END
+END
+;*** Abstand in Y
+IF Abstand=2
+Y_Versatz := raster
+IF (Winkel=0)|(Winkel=180)
+Fehlermeldung (GetMessageText('21','Abstand in Y bei 0 oder 180 Grad nicht moeglich'))
+END
+IF (Winkel>0)&(Winkel<90)
+X_Versatz := raster/tan(winkel)
+END
+IF (Winkel=90)
+Y_Versatz := raster
+X_Versatz := 0
+END
+IF (Winkel>90)&(Winkel<180)
+X_Versatz := raster/tan(winkel)
+END
+IF (Winkel>180)&(Winkel<270)
+Y_Versatz := -raster
+X_Versatz := raster/tan(winkel) *(-1)
+END
+IF (Winkel=270)
+Y_Versatz := -raster
+X_Versatz := 0
+END
+IF (Winkel>270)&(Winkel<360)
+X_Versatz := raster/tan(winkel) *(-1)
+Y_Versatz := -raster
+END
+END
+;*** Bohren
+FOR i := 0 TO anzahl-1 STEP 1
+Bohrung (spx+x_versatz*i,spy+y_versatz*i,D,T,TLF,0,0)
+END
+;CALL B2Punkte_V4 ( VAL P1X:=spx,P1Y:=spy,P2X:=spx+x_versatz,P2Y:=Spy,Abstand:=80,Farbe:=0,Text:='',TextHöhe:=20,Pfeillänge:=20,PfeileInnerhalb:=1)
+;CALL B2Punkte_V4 ( VAL P1X:=spx,P1Y:=spy,P2X:=spx,P2Y:=Spy+y_versatz,Abstand:=-80,Farbe:=0,Text:='',TextHöhe:=20,Pfeillänge:=20,PfeileInnerhalb:=1)
+;CALL B2Punkte_V4 ( VAL P1X:=spx,P1Y:=spy,P2X:=spx+x_versatz,P2Y:=Spy+y_versatz,Abstand:=1,Farbe:=0,Text:='',TextHöhe:=20,Pfeillänge:=20,PfeileInnerhalb:=1)
+;CALL BWinkel_V4 ( VAL P1X:=spx+20,P1Y:=spy,P2X:=spx+x_versatz,P2Y:=spy+y_versatz,MX:=spx,MY:=spy,Abstand:=-200,AbstandBem:=15,Farbe:=0,Text:='',TextHöhe:=20,Pfeillänge:=15,PfeileInnerhalb:=0)

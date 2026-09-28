@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowMNCDCLOCKSPLIT_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   Mode := 0;*VAR*0 - aufteilen deaktivieren
+START
+nciext (-300001,'NCISys',3,0,0,Mode)

@@ -13,6 +13,7 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+from .config import HINGE_DEFAULTS
 from .config import CabinetConfig
 from .config import Cell
 from .config import DoorMount
@@ -21,6 +22,7 @@ from .config import HingeSide
 from .config import Split
 from .config import SplitDirection
 from .config import ZoneKind
+from .config import hinge_positions
 
 AXES = ("x", "y", "z")
 
@@ -358,7 +360,19 @@ def _add_door(layout, name, opening, style, hinge, attrs, panels, hinges=None):
     for leaf_name, lx, lw, side in leaves:
         hinge_x = lx if side == HingeSide.LEFT else lx + lw
         hinge_panel = panels[side.value]
-        leaf_attrs = dict(attrs, hinge_side=side.value, hinge_point=(hinge_x, fy, fz), hinge_axis=(0.0, 0.0, 1.0), hinge_panel=hinge_panel.name)
+        # where the hinges' pots are, in the front elevation (x, z), as the hinge joint will place them
+        dims = dict(HINGE_DEFAULTS, **(hinges or {}))
+        pot_x = hinge_x + (1 if side == HingeSide.LEFT else -1) * (dims["cup_diameter"] / 2.0 + dims["cup_edge_distance"])
+        pots = [(pot_x, fz + t) for t in hinge_positions(fh, dims["hinge_count"], dims["end_distance"])]
+        leaf_attrs = dict(
+            attrs,
+            hinge_side=side.value,
+            hinge_point=(hinge_x, fy, fz),
+            hinge_axis=(0.0, 0.0, 1.0),
+            hinge_panel=hinge_panel.name,
+            hinges=pots,
+            cup_diameter=dims["cup_diameter"],
+        )
         door = layout.add(Part(leaf_name, "door", (lx, fy, fz), (lw, c.front_thickness, fh), "y", leaf_attrs))
         layout.join(door, hinge_panel, "cup_hinge", mount=c.door_mount.value, **(hinges or {}))
 

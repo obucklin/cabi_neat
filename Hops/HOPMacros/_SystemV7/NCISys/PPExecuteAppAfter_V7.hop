@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowPPEXECUTEAPPAFTER_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   StartMode := 0;*VAR*= 0 Anwendung wird gestartet; <> 0 Anwendung wird nicht gestartet
+START
+nciext (-100069,'NCISys',0,0,0,0,StartMode)

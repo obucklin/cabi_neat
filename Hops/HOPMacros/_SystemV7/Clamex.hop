@@ -1,0 +1,668 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_Clamex_Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   LPX := 300;
+   LPY := 200;
+   LPZ := 19;
+   WKZ_NUT := 1360;FIX_WERKZEUGNUMMER DES NUTERS
+   WKZ_BOHR := 24;FIX_WERKZEUGNUMMER DES BOHRERS
+   WKZ_Finger := 139;Werkzeugnummer Fingerfräser  bei 90 Grad auf Platte
+   WKZ_90 := 91;Werkzeug für 90° von Ebene 0
+   EITI := 10;FIX_Eintauchtiefe des Werkzeuges
+   arbeit := 3;Bohren = 1; Fräsen = 2; Bohren und Fräsen = 3
+   MIX := 0;FIX_MASS IN X-RICHTUNG
+   MIY := 0;FIX_MASS IN Y-RICHTUNG
+   DDE := 0;FIX_DREHWINKEL DER EBENE
+   NDAW := 7;FIX_NUTZLÄNGE DES AKTUELLEN WERKZEUGES
+   FDFE := 0;FIX_FLÄCHENHÖHE DER FREIEN EBENE
+   SFDFE := 0;FIX_WURZEL AUS FDFE
+   RAFB := 7.5;FIX_REGULÄRER ABSTAND FÜR DIE BOHRUNG
+   BAFB := 0;FIX_BENUTZBARER ABSTAND FÜR DIE BOHRUNG
+   ZH := 0;FIX_Z-Höhe
+   WUE := 10;FIX_WERKZEUG ÜBER EBENE
+   BOU := 1.4;FIX_BEWEGUNG NACH OBEN UND UNTEN
+   winkel := 10;*VAR*Winkel des vertikalen Verbinders
+   verbindung := 0;*VAR*
+   seite := 1;*VAR*
+   bohr := 0;*VAR*
+   seiteteil := 1;*VAR*
+   verbinder := 1;*VAR*
+   abstand := 33;*VAR*
+   anzahl := 0;
+   abstv := 0;
+   abstand2 := 0;*VAR*
+   abstand3 := 0;*VAR*
+   typ := 0;*VAR*
+   averbinder := 0;
+   OriVerbinder := 0;
+   ADDWI := 0;Korrekturwinkel für mitte mit Flex-5
+   SK := 0;*VAR*
+   SPSK := 0;*VAR*
+   EPSK := 0;*VAR*
+   wschraeg := 0;
+   yposb := 0;
+   EVK := 0;Ebene Verkürzen
+   verl := 0;
+   typ_name := 'P14';
+   TSK := 0;*VAR*typ schräge kante Winkel/ SP /EP
+   DVZ := 0;Divaro Merker Nut
+   ESD1 := -999999;Easysnap1 Divaro
+   ESD2 := -999999;Easysnap2 Divaro
+   RKDV := 2;
+   FF := 0;*VAR*Fingerfräser
+   LFF := 0;Länge Fingerfräsung
+   vx := 0;
+   ax := 0;
+   ay := 0;
+   az := 0;
+   STLOffset := 0;
+START
+Fehlermeldung ('This macro is no longer supported. Please use Clamex_V7.hop.')
+;Zuweisung der STLS
+IF TYP=0;
+bohr := 0
+;Tenso
+typ_name := 'TN'
+eiti := 14
+IF (verbindung=2)
+IF ( seite=0)
+eiti := 18
+STLOffset := -4
+ELSE
+eiti := 10
+STLOffset := 4
+END
+END
+ELSE
+IF TYP=1
+;Divaro
+typ_name := 'DV'
+bohr := 0
+eiti := 18
+IF Seite=1
+Fehlermeldung ('Clamex Divaro nur auf Stirnkante möglich')
+END
+IF SK=1
+Fehlermeldung ('Clamex Divaro an schräger Kante nicht möglich')
+END
+ELSE
+IF TYP=2
+;Medius 14/10
+typ_name := 'MD'
+IF ( seite=0)
+eiti := 14
+ELSE
+eiti := 10
+END
+ELSE
+IF TYP=3
+;P 10
+typ_name := 'P10'
+EITI := 10
+RAFB := 5.5
+ELSE
+IF TYP=4
+;P14
+typ_name := 'P14'
+EITI := 14
+RAFB := 7.5
+END
+END
+END
+END
+END
+;Wenn keine schräge Kante SPSK/EPSK=0
+IF SK=0
+SPSK := 0
+EPSK := 0
+END
+;Wenn Schräge Kante mit Winkel
+IF (SK=1)&(TSK=0)
+IF (EPSK>89.999)|(EPSK<0)
+Fehlermeldung ('Winkel Schräge Ebene auserhalb des zulässigen Bereichs')
+END
+IF (seiteteil=0)|(seiteteil=2)
+EPSK := TAN(EPSK)*(_RX-SPSK)
+ELSE
+IF (seiteteil=1)|(seiteteil=3)
+EPSK := TAN(EPSK)*(_RY-SPSK)
+END
+END
+IF ((seiteteil=0)|(seiteteil=2)&(EPSK>_RY))|((seiteteil=1)|(seiteteil=3)&(EPSK>_RX))
+Fehlermeldung ('Winkel schräge Kante zu groß')
+END
+END
+;//
+Fertigteil (LPX,LPY,LPZ,0,0,0,0,0,'',0,0,0)
+IF (verbindung=2)&(typ=1)
+Fehlermeldung ('Clamex P14 auf Fläche nicht zulässig')
+END
+;#
+IF (verbindung=0)&(seite=0)
+winkel := 0
+abstand2 := 0
+END
+;
+IF (verbindung=0)&(seite=1)
+winkel := 90
+bohr := 0
+abstand2 := 0
+END
+;
+IF verbindung=1
+winkel := 45
+abstand2 := 0
+END
+;
+IF (verbindung=2)&(seite=0)
+winkel := 0
+abstand2 := 0
+END
+;
+IF (verbindung=2)&(seite=1)
+winkel := 90
+bohr := 0
+END
+;
+IF (verbindung=3)&(seite=0)
+abstand2 := 0
+END
+;
+IF (verbindung=3)&(seite=1)
+bohr := 0
+abstand2 := 0
+END
+;
+;#
+;#
+;Breite für Fingerfräsung berechnen
+HGNeu()
+HKreismpr (0,50.2,50.2,0)
+HLineY (EITI,3)
+CALL Dist2P_V4 (REF DIST:=LFF VAL P1X:=_SPX1,P1Y:=_SPY1,P2X:=_SPX2,P2Y:=_SPY2)
+HGNeuEnd()
+LFF := LFF/2
+;.
+IF verbindung=4
+/winkel := 90-winkel/2
+END
+IF (verbindung=3)
+IF winkel>90
+Fehlermeldung ('ACHTUNG ! KOLLISIONSGEFAHR ! WINKEL NICHT GRÖSSER 90 !')
+END
+winkel := 90-winkel
+END
+IF verbinder<2
+averbinder := 2
+ELSE
+averbinder := verbinder
+END
+IF Verbindung=2
+OriVerbinder := 1
+END
+;FEHLERMELDUNG FALLS DER KIPPWINKEL
+;( winkel ) GRÖSSER ALS 60 UND KLEINER
+;ALS 90 ODER GRÖSSER ALS 90 GRAD IST
+;( winkel = KIPPWINKEL DER EBENE )
+;#
+IF ((winkel>60)&(winkel<90))|(winkel>90)
+Fehlermeldung ('ACHTUNG ! KOLLISIONSGEFAHR ! NICHT GRÖSSER 60 !')
+END
+;#
+IF winkel<=60
+IF seiteteil=0
+DDE := 180
+MIX := _RX
+MIY := 0
+END
+IF seiteteil=1
+DDE := 90
+MIX := 0
+MIY := 0
+END
+IF seiteteil=2
+DDE := 0
+MIX := 0
+MIY := _RY
+END
+IF seiteteil=3
+DDE := 270
+MIX := _RX
+MIY := 0
+END
+END
+IF (winkel=90) | ((verbindung=3)&(seite=1))
+IF seiteteil=0
+DDE := 0
+MIX := 0
+MIY := _RZ
+END
+IF seiteteil=1
+DDE := 270
+MIX := _RZ
+MIY := 0
+END
+IF seiteteil=2
+DDE := 180
+MIX := 0
+MIY := _RY-_RZ
+END
+IF seiteteil=3
+DDE := 90
+MIX := _RX-_RZ
+MIY := 0
+END
+END
+;////////
+;////////
+;Wenn Schräge Ebene
+IF SK=1;
+IF seiteteil=0
+MIX := SPSK
+CALL GetWinkel2P_V4 (REF WINKEL2P:=wschraeg VAL P1X:=SPSK,P1Y:=0,P2X:=_RX,P2Y:=EPSK)
+DDE := DDE+wschraeg
+;Länge der verkürzten Ebene
+EVK := (_RX-SPSK)/(COS(wschraeg))
+verl := (MIY)*SIN(wschraeg)
+;#
+END
+IF seiteteil=1
+MIY := 0
+CALL GetWinkel2P_V4 (REF WINKEL2P:=wschraeg VAL P1X:=_RX,P1Y:=SPSK,P2X:=_RX-EPSK,P2Y:=_RY)
+IF (winkel=90) | ((verbindung=3)&(seite=1))
+DDE := wschraeg+180
+MIX := EPSK+(_RZ/SIN(wschraeg))
+ELSE
+MIX := EPSK
+DDE := wschraeg
+END
+;#
+;Länge der verkürzten Ebene
+EVK := (_RY-SPSK)/(COS(wschraeg-90))
+verl := (MIX-EPSK)*SIN(wschraeg-90)
+;#
+END
+IF seiteteil=2;
+MIX := 0
+MIY := MIY-EPSK
+CALL GetWinkel2P_V4 (REF WINKEL2P:=wschraeg VAL P1X:=SPSK,P1Y:=0,P2X:=_RX,P2Y:=EPSK)
+DDE := DDE+wschraeg
+;#
+;Länge der verkürzten Ebene
+EVK := (_RX-SPSK)/(COS(wschraeg))
+verl := (_RY-EPSK-MIY)*SIN(wschraeg)
+;#
+;Versatz bei Fräsung 90°
+IF Winkel=90
+MIY := MIY-_RZ/2
+END
+;#
+;#
+END
+IF seiteteil=3
+MIY := SPSK
+CALL GetWinkel2P_V4 (REF WINKEL2P:=wschraeg VAL P1X:=_RX,P1Y:=SPSK,P2X:=_RX-EPSK,P2Y:=_RY)
+IF (winkel=90) | ((verbindung=3)&(seite=1))
+/MIX := _RX-_RZ
+MIX := _RX-(_RZ/SIN(wschraeg))
+DDE := wschraeg
+ELSE
+MIX := _RX
+DDE := wschraeg+180
+END
+;#
+;Länge der verkürzten Ebene
+EVK := (_RY-SPSK)/(COS(wschraeg-90))
+verl := (_RX-MIX)*SIN(wschraeg-90)
+;#
+END
+END
+;#######################################
+;KONTROLLEBENE UM DIE BREITE DER EBENE ZU BEKOMMEN
+;NICHT LÖSCHEN ODER AUSKLAMMERN !
+EbeneF (0,_ry,0,90-winkel,180,0,0)
+FDFE := _EH_RZ
+Ebene0()
+IF winkel<=60
+ZH := (FDFE-3.5-(NDAW/2))
+END
+IF winkel=90
+ZH := _RZ/2
+END
+IF winkel=0
+ZH := _RZ/2
+END
+;---------------------------------------------
+;Abstand für verbindung mit einer seite Winkel
+IF (verbindung=3)&(seite=1)
+winkel := 90
+ZH := -ZH+_RZ
+END
+;---------------------------------------------
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+;WINKELIGE VERBINDUNG
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+IF winkel<=60
+FOR anzahl := 0 TO verbinder-1 STEP 1
+EbeneF (MIX,MIY,0,winkel,DDE,0,0)
+IF (arbeit=2)|(arbeit=3)
+;#######################################
+;---------------------------------------------
+;AUSWAHL DES WERKZEUGES ZUM NUTEN
+CALL GROUPSTART_V7 ( VAL NAME:='OPTIGROUP_WKZ_NUT')
+;---------------------------------------------
+WZF (WKZ_NUT,_VE,_V,_VA,_SD,_ANF,'1')
+;---------------------------------------------
+;#######################################
+;PROGRAMMIERUNG DER FRÄSBAHN
+;---------------------------------------------
+;Nut für Clamex Divaro
+IF (Typ=1)&(DVZ=0)
+IF (seiteteil=0)|(seiteteil=3)
+ESD1 := 5
+ESD2 := 7
+ELSE
+IF (seiteteil=2)|(seiteteil=1)
+ESD1 := 7
+ESD2 := 5
+RKDV := 1
+END
+END
+SP (0,8,_RZ/2,RKDV,3,_ANF,0,0,0,ESD1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (10+_WZR,8,0,0,ESD2,2)
+EP (3,_ANF,0)
+DVZ := 1
+END
+;---------------------------------------------
+;---------------------------------------------
+IF (seiteteil=0)
+abstv := (_rx-(abstand+abstand3))/(averbinder-1)
+;wenn schräg Ebene verkürzen
+IF SK=1
+abstv := (EVK-(abstand+abstand3))/(averbinder-1)
+END
+;---------------------------------------------
+ZSTL (MIX-abstand-(abstv*(anzahl))-SPSK,STLOffset,ZH,12632256,1,typ_name+'.stl',0,0)
+SP (MIX-abstand-(abstv*(anzahl))-SPSK,_WZR+WUE,ZH,0,0,_ANF,0,0,90,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+END
+IF (seiteteil=1)
+abstv := (_ry-(abstand+abstand3))/(averbinder-1)
+;wenn schräg Ebene verkürzen
+IF SK=1
+abstv := (EVK-(abstand+abstand3))/(averbinder-1)
+END
+;---------------------------------------------
+ZSTL (abstand+abstv*anzahl,STLOffset,ZH,12632256,1,typ_name+'.stl',0,0)
+SP (abstand+abstv*anzahl,_WZR+WUE,ZH,0,0,_ANF,0,0,90,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+END
+IF (seiteteil=2)
+abstv := (_rx-(abstand+abstand3))/(averbinder-1)
+;wenn schräg Ebene verkürzen
+IF SK=1
+abstv := (EVK-(abstand+abstand3))/(averbinder-1)
+END
+;---------------------------------------------
+ZSTL (abstand+(abstv*anzahl),STLOffset,ZH,12632256,1,typ_name+'.stl',0,0)
+SP (abstand+(abstv*anzahl),_WZR+WUE,ZH,0,0,_ANF,0,0,90,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+END
+IF seiteteil=3
+abstv := (_ry-(abstand+abstand3))/(averbinder-1)
+;wenn schräg Ebene verkürzen
+IF SK=1
+abstv := (EVK-(abstand+abstand3))/(averbinder-1)
+END
+;---------------------------------------------
+ZSTL (-abstand-abstv*anzahl,STLOffset,ZH,12632256,1,typ_name+'.stl',0,0)
+SP (-abstand-abstv*anzahl,_WZR+WUE,ZH,0,0,_ANF,0,0,90,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+END
+G01 (0,-(WUE+EITI),0,0,10,2)
+G01 (0,0,BOU,0,10,2)
+G01 (0,0,-(BOU*2),0,10,2)
+G01 (0,0,BOU,0,10,2)
+G01 (0,+(WUE+EITI),0,0,10,2)
+EP (0,_ANF,0)
+Ebene0()
+CALL GROUPEND_V7 ( VAL NAME:='OPTIGROUP_WKZ_NUT')
+END
+END
+END
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+;STUMPFE VERBINDUNG
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+IF winkel=90
+;---------------------------------------------
+;Fläche mit aggregat
+;---------------------------------------------
+FOR anzahl := 0 TO verbinder-1 STEP 1
+IF (arbeit=2)|(arbeit=3)
+;#######################################
+;---------------------------------------------
+;AUSWAHL DES WERKZEUGES ZUM NUTEN
+IF WKZ_NUT=WKZ_90
+CALL GROUPSTART_V7 ( VAL NAME:='OPTIGROUP_WKZ_NUT')
+ELSE
+CALL GROUPSTART_V7 ( VAL NAME:='OPTIGROUP_WKZ_90')
+END
+;---------------------------------------------
+WZF (WKZ_90,_VE,_V,_VA,_SD,_ANF,'1')
+;---------------------------------------------
+;#######################################
+;PROGRAMMIERUNG DER FRÄSBAHN
+IF OriVerbinder=1
+Winkel := 90-ADDWI
+END
+IF seiteteil=0
+EbeneF (MIX,MIY+abstand2,0,winkel,DDE,0,2)
+abstv := (_rx-(abstand+abstand3))/(averbinder-1)
+IF SK=1
+abstv := (EVK-(abstand+abstand3))/(averbinder-1)
+END
+vx := abstand+(abstv*anzahl)-verl
+ZSTL (vx,STLOffset,ZH,12632256,1,typ_name+'.stl',0,0)
+;Fingerfräser
+IF FF=1
+CALL VxyzToAxyz_V7 (REF AX:=ax,AY:=ay,AZ:=az VAL OFFX:=_AV_OFFSETX,OFFY:=_AV_OFFSETY,OFFZ:=_AV_OFFSETZ,DW:=_AV_ROTA,KW:=_AV_TIPA,VX:=vx,VY:=0,VZ:=ZH)
+Ebene0()
+WZF (WKZ_Finger,_VE,_V,_VA,_SD,_ANF,'1')
+CALL Clamex_Vektor ( VAL WIDTH:=LFF,HEIGHT:=-EITI,DX:=ax,DY:=ay,DZ:=_RZ,WZ:=-DDE,ESXY:=0)
+ELSE
+SP (vx,_WZR+WUE,ZH,0,0,_ANF,0,0,90,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+END
+END
+IF (seiteteil=1)
+EbeneF (MIX+abstand2,MIY,0,winkel,DDE,0,2)
+abstv := (_ry-(abstand+abstand3))/(averbinder-1)
+IF SK=1
+abstv := (EVK-(abstand+abstand3))/(averbinder-1)
+END
+vx := -abstand-abstv*anzahl-verl
+ZSTL (vx,STLOffset,ZH,12632256,1,typ_name+'.stl',0,0)
+;Fingerfräser
+IF FF=1
+CALL VxyzToAxyz_V7 (REF AX:=ax,AY:=ay,AZ:=az VAL OFFX:=_AV_OFFSETX,OFFY:=_AV_OFFSETY,OFFZ:=_AV_OFFSETZ,DW:=_AV_ROTA,KW:=_AV_TIPA,VX:=vx,VY:=0,VZ:=ZH)
+Ebene0()
+WZF (WKZ_Finger,_VE,_V,_VA,_SD,_ANF,'1')
+CALL Clamex_Vektor ( VAL WIDTH:=LFF,HEIGHT:=-EITI,DX:=ax,DY:=ay,DZ:=_RZ,WZ:=-DDE,ESXY:=0)
+ELSE
+;---------------------------------------------
+SP (vx,_WZR+WUE,ZH,0,0,_ANF,0,0,90,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+END
+END
+IF (seiteteil=2)
+EbeneF (MIX,MIY-abstand2,0,winkel,DDE,0,2)
+abstv := (_rx-(abstand+abstand3))/(averbinder-1)
+IF SK=1
+abstv := (EVK-(abstand+abstand3))/(averbinder-1)
+END
+vx := -abstand-(abstv*anzahl)-verl
+ZSTL (vx,STLOffset,ZH,12632256,1,typ_name+'.stl',0,0)
+;Fingerfräser
+IF FF=1
+CALL VxyzToAxyz_V7 (REF AX:=ax,AY:=ay,AZ:=az VAL OFFX:=_AV_OFFSETX,OFFY:=_AV_OFFSETY,OFFZ:=_AV_OFFSETZ,DW:=_AV_ROTA,KW:=_AV_TIPA,VX:=vx,VY:=0,VZ:=ZH)
+Ebene0()
+WZF (WKZ_Finger,_VE,_V,_VA,_SD,_ANF,'1')
+CALL Clamex_Vektor ( VAL WIDTH:=LFF,HEIGHT:=-EITI,DX:=ax,DY:=ay,DZ:=_RZ,WZ:=-DDE,ESXY:=0)
+ELSE
+SP (vx,_WZR+WUE,ZH,0,0,_ANF,0,0,90,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+END
+END
+IF seiteteil=3
+EbeneF (MIX-abstand2,MIY,0,winkel,DDE,0,2)
+abstv := (_ry-(abstand+abstand3))/(averbinder-1)
+IF SK=1
+abstv := (EVK-(abstand+abstand3))/(averbinder-1)
+END
+vx := abstand+abstv*anzahl-verl
+ZSTL (vx,STLOffset,ZH,12632256,1,typ_name+'.stl',0,0)
+;Fingerfräser
+IF FF=1
+CALL VxyzToAxyz_V7 (REF AX:=ax,AY:=ay,AZ:=az VAL OFFX:=_AV_OFFSETX,OFFY:=_AV_OFFSETY,OFFZ:=_AV_OFFSETZ,DW:=_AV_ROTA,KW:=_AV_TIPA,VX:=vx,VY:=0,VZ:=ZH)
+Ebene0()
+WZF (WKZ_Finger,_VE,_V,_VA,_SD,_ANF,'1')
+CALL Clamex_Vektor ( VAL WIDTH:=LFF,HEIGHT:=-EITI,DX:=ax,DY:=ay,DZ:=_RZ,WZ:=-DDE,ESXY:=0)
+ELSE
+SP (vx,_WZR+WUE,ZH,0,0,_ANF,0,0,90,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+END
+END
+;---------------------------------------------
+IF FF<>1
+G01 (0,-(WUE+EITI),0,0,10,2)
+G01 (0,0,BOU,0,10,2)
+G01 (0,0,-(BOU*2),0,10,2)
+G01 (0,0,BOU,0,10,2)
+G01 (0,+(WUE+EITI),0,0,10,2)
+EP (0,_ANF,0)
+Ebene0()
+END
+IF WKZ_NUT=WKZ_90
+CALL GROUPEND_V7 ( VAL NAME:='OPTIGROUP_WKZ_NUT')
+ELSE
+CALL GROUPEND_V7 ( VAL NAME:='OPTIGROUP_WKZ_90')
+END
+END
+END
+END
+Ebene0()
+IF winkel<=60
+IF bohr=1
+;#######################################
+;---------------------------------------------
+;Wenn Schräg Bohrungen auf freier Ebene
+IF SK=1
+IF seiteteil=0
+EbeneF (MIX,MIY,0,winkel,DDE-180,0,2)
+ELSE
+IF seiteteil=1
+EbeneF (MIX+abstand2,MIY,0,winkel,DDE-90,0,2)
+/EbeneF (0,MIY,0,winkel,DDE+90,0,2)
+ELSE
+IF seiteteil=2
+EbeneF (MIX,MIY,0,winkel,DDE-180,0,2)
+ELSE
+IF seiteteil=3
+EbeneF (_RX,MIY,0,winkel,DDE-180,0,2)
+END
+END
+END
+END
+END
+;---------------------------------------------
+;AUSWAHL DES WERKZEUIGES ZUM BOHREN
+CALL GROUPSTART_V7 ( VAL NAME:='OPTIGROUP_WKZ_BOHR')
+;---------------------------------------------
+WZB (WKZ_BOHR,_VE,_V,_VA,_SD,_ANF,'1')
+;---------------------------------------------
+IF SK=0
+;Bohrung an gerader Kante
+;#######################################
+SFDFE := SQRT((FDFE*FDFE)-(_RZ*_RZ))
+IF winkel=90
+Hinweismeldung ('BOHREN BEI 90 GRAD NICHT MÖGLICH !')
+END
+BAFB := RAFB/(COS(winkel))*1
+FOR anzahl := 0 TO verbinder-1 STEP 1
+IF seiteteil=0
+abstv := (_rx-(abstand+abstand3))/(averbinder-1)
+IF (Winkel=0)
+Bohrung (abstand+(abstv*anzahl),BAFB+SFDFE,_WZD,-(ZH),10,0,0,0,0,0,0,0)
+ELSE
+HorzB (abstand+(abstv*anzahl),BAFB+SFDFE,0,_WZD,-(ZH),0,-(90-winkel),DDE+90,0,2,0,0)
+END
+END
+IF seiteteil=1
+abstv := (_ry-(abstand+abstand3))/(averbinder-1)
+IF (Winkel=0)
+Bohrung (BAFB+SFDFE,abstand+abstv*anzahl,_WZD,-(ZH),10,0,0,0,0,0,0,0)
+ELSE
+HorzB (BAFB+SFDFE,abstand+abstv*anzahl,0,_WZD,-(ZH),0,-(90-winkel),DDE+90,0,2,0,0)
+END
+END
+IF seiteteil=2
+abstv := (_rx-(abstand+abstand3))/(averbinder-1)
+IF (Winkel=0)
+Bohrung (abstand+(abstv*anzahl),_ry-(BAFB+SFDFE),_WZD,-(ZH),10,0,0,0,0,0,0,0)
+ELSE
+HorzB (abstand+(abstv*anzahl),_ry-(BAFB+SFDFE),0,_WZD,-(ZH),0,-(90-winkel),DDE+90,0,2,0,0)
+END
+END
+IF seiteteil=3
+abstv := (_ry-(abstand+abstand3))/(averbinder-1)
+IF (Winkel=0)
+Bohrung (_RX-(BAFB+SFDFE),abstand+abstv*anzahl,_WZD,-(ZH),10,0,0,0,0,0,0,0)
+ELSE
+HorzB (_RX-(BAFB+SFDFE),abstand+abstv*anzahl,0,_WZD,-(ZH),0,-(90-winkel),DDE+90,0,2,0,0)
+END
+END
+END
+;#######################################
+ELSE
+;Bohrung an schräger Kante
+SFDFE := SQRT((FDFE*FDFE)-(_RZ*_RZ))
+IF winkel=90
+Hinweismeldung ('BOHREN BEI 90 GRAD NICHT MÖGLICH !')
+END
+BAFB := RAFB/(COS(winkel))*1
+FOR anzahl := 0 TO verbinder-1 STEP 1
+IF seiteteil=0
+abstv := (EVK-(abstand+abstand3))/(averbinder-1)
+IF (Winkel=0)
+Bohrung (abstand+(abstv*anzahl),BAFB+SFDFE,_WZD,-(ZH),10,0,0,0,0,0,0,0)
+ELSE
+HorzB (abstand+(abstv*anzahl),BAFB+SFDFE,0,_WZD,-(ZH),0,-(90-winkel),DDE+90,0,2,0,0)
+END
+END
+IF seiteteil=1
+abstv := (EVK-(abstand+abstand3))/(averbinder-1)
+IF (Winkel=0)
+Bohrung (BAFB+SFDFE,(abstand+abstv*anzahl),_WZD,-(ZH),10,0,0,0,0,0,0,0)
+ELSE
+Fehlermeldung ('Bohrung auf Schräger Kante mit Winkel noch nicht möglich')
+END
+END
+IF seiteteil=2
+abstv := (EVK-(abstand+abstand3))/(averbinder-1)
+IF (Winkel=0)
+Bohrung (-(abstand+(abstv*anzahl)),(BAFB+SFDFE),_WZD,-(ZH),10,0,0,0,0,0,0,0)
+ELSE
+Fehlermeldung ('Bohrung auf Schräger Kante mit Winkel noch nicht möglich')
+END
+END
+IF seiteteil=3
+abstv := (EVK-(abstand+abstand3))/(averbinder-1)
+IF (Winkel=0)
+Bohrung (abstand+(abstv*anzahl),BAFB,_WZD,-(ZH),10,0,0,0,0,0,0,0)
+ELSE
+Fehlermeldung ('Bohrung auf Schräger Kante mit Winkel noch nicht möglich')
+END
+END
+END
+END
+;#######################################
+CALL GROUPEND_V7 ( VAL NAME:='OPTIGROUP_WKZ_BOHR')
+END
+END
+Ebene0()

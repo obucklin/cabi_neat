@@ -1,0 +1,12 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   SettingID := 0;*VAR*Einstellung-ID
+   NewValue := 0;*VAR*Neuer Wert
+START
+NCIExt (-11204567,'FlexiClampPos',0,0,0,SettingID,NewValue)

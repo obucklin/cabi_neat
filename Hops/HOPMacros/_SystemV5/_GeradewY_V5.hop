@@ -1,0 +1,30 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_GeradewY_V5Dialog
+VARS
+   Y := ;*VAR*Strecke in Y-Richtung
+   Winkel := ;*VAR*Winkel der Strecke gegenüber X-Achse
+   Z := 0;*VAR*Zustelltiefe
+   R := 0;*VAR*verrundungsradius
+   dx := 0;
+   esd := 2;*VAR*
+START
+;DIREKT CNC SYSTEME NCHOPS VERSION 3.0
+;Gerade mit y-Wert und Winkel
+Transesd (z,esd)
+WHILE Winkel>360
+Winkel := Winkel-360
+END
+WHILE Winkel<0
+Winkel := Winkel+360
+END
+IF (Winkel=0) | (Winkel=180) | (Winkel=360)
+Hinweismeldung (GetMessageText('35','Gerade in Y kann nicht erzeugt werden Laenge ist 0'))
+ELSE
+dx := Y/Tan(Winkel)
+IF (Winkel>0)&(Winkel<180)
+G01 (_X+dx,_Y+Y,Z,R)
+ELSE
+G01 (_X-dx,_Y-Y,Z,R)
+END
+END

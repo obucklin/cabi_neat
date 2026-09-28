@@ -1,0 +1,21 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowParaContourParserExtContoursDialog
+;AUTOSCRIPTSTART=0
+VARS
+   CONTOURNAME_CONTOURNAMES := '';*VAR*
+   Dist := 0;*VAR*
+   MaxArcDist := 0.1mm;*VAR*
+   MaxArcDistLinesToArc := 0.1mm;*VAR*
+   LinesToArc := 0;*VAR*
+   TolShortLine := 0.001mm;*VAR*
+   DeleteShortEle := 1;*VAR*
+   NKS := 5;*VAR*
+   ZOffset := 0;*VAR*
+   Count := ;*VAR**REF*
+   ContourName := '';*VAR*
+   ContourInfo := '';*VAR*
+   ContourLayer := '';*VAR*
+START
+;Parallelberechnung über DLL
+CALLDLL PARACONTOURPARSEREXTCONTOURS(Extensions,DefaultStr,REF COUNT:=Count VAL CONTOURNAME_CONTOURNAMES:=CONTOURNAME_CONTOURNAMES,DIST:=Dist,MAXARCDIST:=MaxArcDist,MAXARCDISTLINESTOARC:=MaxArcDistLinesToArc,LINESTOARC:=LinesToArc,TOLSHORTLINE:=TolShortLine,DELETESHORTELE:=DeleteShortEle,NKS:=NKS,ZOFFSET:=ZOffset,CONTOURNAME:=ContourName,CONTOURINFO:=ContourInfo,CONTOURLAYER:=ContourLayer)

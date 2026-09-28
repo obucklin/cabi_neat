@@ -1,0 +1,85 @@
+;MAKROTYP=1
+;BILD=_HG_KORB_5R.wmf
+;INFO=KORBBOGEN5R_B
+;WZGV=Demo
+;MASCHINE=NC1000
+;NCNAME=_HG_Korb_5R
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   SX := 0;*VAR*Startpunkt in X
+   SY := 0;*VAR*Startpunkt in Y
+   Br := 2000;*VAR*Gesamtbreite
+   Stich := 400;*VAR*Stich
+   HolzBr := 20;*VAR*Holzbreite
+   L := 800;
+   e := 0;
+   Q := 0;
+   V := 0;
+   R1 := 0;
+   R2 := 0;
+   R3 := 0;
+   _K5R1 := 0;Kleinster Radius
+   _K5R2 := 0;Mittlerer Radius
+   _K5R3 := 0;Grosser Radius
+   _K5R4 := 0;Innen
+   _K5R5 := 0;Innen
+   _K5R6 := 0;Innen
+START
+;direkt cnc systeme NCHOPS Version 4
+Rohteil (Br,Stich,19,0,0)
+L := Br/2
+e := sqrt(2)*(L-Stich)
+Q := (2-sqrt(2))*(Stich-L)
+IF (Q<>0)&((L-e)>0)
+V := sqr(e)/(4*Q+2*e)-sqr(Q)/(2*Q+e)
+R1 := L-e
+R2 := L-e+sqrt(2)*e/2
+R3 := V+Stich
+IF R1<HolzBr/2
+Fehlermeldung ('Nicht konstruierbar !')
+END
+IF (R1>0)&(R2>0)&(R3>0)
+HLineY (SY)
+HKreismpr (R1,SY,R1)
+HKreismpr (Br/2-e/2,SY-e/2,R2)
+HKreismpr (Br/2,SY-V,R3)
+HKreismpr (Br-R1,SY,R1)
+HKreismpr (Br-(Br/2-e/2),SY-e/2,R2)
+ZLinie (_spx5-5,_spy5+5,_spx5+5,_spy5-5,0)
+ZLinie (_spx5+5,_spy5+5,_spx5-5,_spy5-5,0)
+ZLinie (_spx11-5,_spy11+5,_spx11+5,_spy11-5,0)
+ZLinie (_spx11+5,_spy11+5,_spx11-5,_spy11-5,0)
+ZLinie (_spx27-5,_spy27+5,_spx27+5,_spy27-5,0)
+ZLinie (_spx27+5,_spy27+5,_spx27-5,_spy27-5,0)
+ZLinie (_spx29-5,_spy29+5,_spx29+5,_spy29-5,0)
+ZLinie (_spx29+5,_spy29+5,_spx29-5,_spy29-5,0)
+END
+END
+IF HolzBr>0
+HKreismpr (R1,SY,R1-HolzBr)
+HKreismpr (Br/2-e/2,SY-e/2,R2-HolzBr)
+HKreismpr (Br/2,SY-V,R3-HolzBr)
+HKreismpr (Br/2+e/2,SY-e/2,R2-HolzBr)
+HKreismpr (Br-R1,SY,R1-HolzBr)
+ZLinie (_spx55-5,_spy55+5,_spx55+5,_spy55-5,0)
+ZLinie (_spx55+5,_spy55+5,_spx55-5,_spy55-5,0)
+ZLinie (_spx71-5,_spy71+5,_spx71+5,_spy71-5,0)
+ZLinie (_spx71+5,_spy71+5,_spx71-5,_spy71-5,0)
+ZLinie (_spx89-5,_spy89+5,_spx89+5,_spy89-5,0)
+ZLinie (_spx89+5,_spy89+5,_spx89-5,_spy89-5,0)
+ZLinie (_spx109-5,_spy109+5,_spx109+5,_spy109-5,0)
+ZLinie (_spx109+5,_spy109+5,_spx109-5,_spy109-5,0)
+_K5R4 := R1-HolzBr
+_K5R5 := R2-HolzBr
+_K5R6 := R3-HolzBr
+ZText ('_K5R4='+ FloatToStr(R1-HolzBr,8,3)+' / _K5R5='+ FloatToStr(R2-HolzBr,8,3)+' / _K5R6='+ FloatToStr(R3-HolzBr,8,3),SX+Br/2,SY+Stich-HolzBr+10,12,0,8,0,'',0,0,0,0)
+END
+_K5R1 := R1
+_K5R2 := R2
+_K5R3 := R3
+ZText ('_K5R1='+ FloatToStr(R1,8,3)+' / _K5R2='+ FloatToStr(R2,8,3)+' / _K5R3='+ FloatToStr(R3,8,3),SX+Br/2,SY+Stich+10,12,0,8,0,'',0,0,0,0)

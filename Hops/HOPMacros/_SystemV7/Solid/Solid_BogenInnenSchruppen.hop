@@ -1,0 +1,150 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   KN := 'RADIUS_Innen';*VAR*
+   ViewOffx := 0;*VAR*
+   ViewOffy := 0;*VAR*
+   ViewOffz := 0;*VAR*
+   ViewDW := 0;*VAR*
+   ViewKW := 90;*VAR*
+   Tiefe := -100;*VAR*
+   Schrittweite := 5;*VAR*
+   UeberstandV := 20;*VAR*
+   UeberstandH := 20;*VAR*
+   KW := 9;
+   KStep := 0;
+   AktPos := 0;
+   AktZPos := 0;
+   Vxx := 0;
+   Vxy := 0;
+   Vxz := 0;
+   Vyx := 0;
+   Vyy := 0;
+   Vyz := 0;
+   Vzx := 0;
+   Vzy := 0;
+   Vzz := 0;
+   PKx := 0;*REF*
+   PKy := 0;*REF*
+   PKz := 0;*REF*
+   VektorOffset := 50;
+   OK := 1;*REF*=1 Funktion wurde korrekt ausgef¸hrt
+   BH := 0;*REF*Bogenhˆhe
+   MPx := 0;*REF*Mittelpunkt in X
+   MPy := 0;*REF*Mittelpunkt in Y
+   Radius := 0;
+   Konkav := 1;*REF*1=konkav (Wˆlbung nach oben); 0=konvex (Wˆlbung nach unten)
+   SPx := 0;*REF*
+   SPy := 0;*REF*
+   EPx := 0;*REF*
+   EPy := 0;*REF*
+   KDW := 0;
+   KBL := 0;
+   KOffy := 0;
+   KOffz := 0;
+   KNAlt := '';
+START
+;$$Fertigteil
+Fertigteil (505,347,101,0,0,0,0,0,'',0,0,0)
+;KB ('RADIUS_INNEN','F',0.0000,_RZ,0.0000,'',0,0)
+;KG03M ('',289.9138,_RZ,0.0000,144.9569,144.9569+_RZ,'315.0000|45.0000|',0,0,0)
+;KB('RADIUS_AUSSEN','F',0.0000,0.0000,0.0000,'')
+;KG02M('',346.4823,0.0000,0.0000,173.2412,-173.2412,'45.0000|315.0000|')
+;Bogeneigenschaften ermitteln
+CALL Solid_GETKONTURBOGENPARA (REF OK:=OK,BH:=BH,MPX:=MPx,MPY:=MPy,RADIUS:=Radius,KONKAV:=Konkav,SPX:=SPx,SPY:=SPy,EPX:=EPx,EPY:=EPy,WINKEL:=KDW VAL KN:=KN)
+;Eingepasster Kippwinkel berechnen
+KW := arcSin(_WZR/Radius)
+;Offsets ermitteln
+KOffz := cos(KW)*_WZR
+KOffy := sin(KW)*_WZR
+IF GETKP_X(KN,1)>GETKP_X(KN,0)
+Contour_Parallel (KN,-KOffy,0,0,1,KN+'Offset','','',0)
+ELSE
+Contour_Parallel (KN,KOffy,0,0,1,KN+'Offset','','',0)
+END
+KNAlt := KN
+KN := KN+'Offset'
+;Ebeneeigenschaften zuweisen
+CALL CalcViewVectorsDWKW_V7 (REF VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz VAL DW:=ViewDW,KW:=ViewKW)
+;Bogenl‰nge
+KBL := KDW*pi/180*Radius
+KStep := Schrittweite/KBL
+;.
+Tiefe := Tiefe-UeberstandH
+;Fuﬂkurve erzeugen
+AktPos := 0
+AktZPos := UeberstandV
+CALL Solid_CalcPointsWithTipA (REF PKX:=PKx,PKY:=PKy,PKZ:=PKz VAL KN:=KN,PZ:=AktZPos,KONTURPOS:=AktPos,KW:=KW,FRADIUS:=_WZR,VEKTOROFFSET:=0,VIEWOFFX:=ViewOffx,VIEWOFFY:=ViewOffy,VIEWOFFZ:=ViewOffz,VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz)
+KB ('Fuss','',PKx,PKy,PKz,'',0,1)
+AktZPos := Tiefe
+CALL Solid_CalcPointsWithTipA (REF PKX:=PKx,PKY:=PKy,PKZ:=PKz VAL KN:=KN,PZ:=AktZPos,KONTURPOS:=AktPos,KW:=KW,FRADIUS:=_WZR,VEKTOROFFSET:=0,VIEWOFFX:=ViewOffx,VIEWOFFY:=ViewOffy,VIEWOFFZ:=ViewOffz,VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz)
+KG01 ('',PKx,PKy,PKz,'',0,1)
+AktPos := AktPos+KStep
+WHILE AktPos<=1
+CALL Solid_CalcPointsWithTipA (REF PKX:=PKx,PKY:=PKy,PKZ:=PKz VAL KN:=KN,PZ:=AktZPos,KONTURPOS:=AktPos,KW:=KW,FRADIUS:=_WZR,VEKTOROFFSET:=0,VIEWOFFX:=ViewOffx,VIEWOFFY:=ViewOffy,VIEWOFFZ:=ViewOffz,VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz)
+KG01 ('',PKx,PKy,PKz,'',0,1)
+IF AktZPos=UeberstandV
+AktZPos := Tiefe
+ELSE
+AktZPos := UeberstandV
+END
+CALL Solid_CalcPointsWithTipA (REF PKX:=PKx,PKY:=PKy,PKZ:=PKz VAL KN:=KN,PZ:=AktZPos,KONTURPOS:=AktPos,KW:=KW,FRADIUS:=_WZR,VEKTOROFFSET:=0,VIEWOFFX:=ViewOffx,VIEWOFFY:=ViewOffy,VIEWOFFZ:=ViewOffz,VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz)
+KG01 ('',PKx,PKy,PKz,'',0,1)
+AktPos := AktPos+KStep
+END
+IF (AktPos-KStep)<1
+AktPos := 1
+CALL Solid_CalcPointsWithTipA (REF PKX:=PKx,PKY:=PKy,PKZ:=PKz VAL KN:=KN,PZ:=AktZPos,KONTURPOS:=AktPos,KW:=KW,FRADIUS:=_WZR,VEKTOROFFSET:=0,VIEWOFFX:=ViewOffx,VIEWOFFY:=ViewOffy,VIEWOFFZ:=ViewOffz,VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz)
+KG01 ('',PKx,PKy,PKz,'',0,1)
+IF AktZPos=UeberstandV
+AktZPos := Tiefe
+ELSE
+AktZPos := UeberstandV
+END
+CALL Solid_CalcPointsWithTipA (REF PKX:=PKx,PKY:=PKy,PKZ:=PKz VAL KN:=KN,PZ:=AktZPos,KONTURPOS:=AktPos,KW:=KW,FRADIUS:=_WZR,VEKTOROFFSET:=0,VIEWOFFX:=ViewOffx,VIEWOFFY:=ViewOffy,VIEWOFFZ:=ViewOffz,VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz)
+KG01 ('',PKx,PKy,PKz,'',0,1)
+END
+;.
+;.
+;.
+;Kopfkurve erzeugen
+AktPos := 0
+AktZPos := UeberstandV
+CALL Solid_CalcPointsWithTipA (REF PKX:=PKx,PKY:=PKy,PKZ:=PKz VAL KN:=KN,PZ:=AktZPos,KONTURPOS:=AktPos,KW:=KW,FRADIUS:=_WZR,VEKTOROFFSET:=VektorOffset,VIEWOFFX:=ViewOffx,VIEWOFFY:=ViewOffy,VIEWOFFZ:=ViewOffz,VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz)
+KB ('Kopf','',PKx,PKy,PKz,'',0,1)
+AktZPos := Tiefe
+CALL Solid_CalcPointsWithTipA (REF PKX:=PKx,PKY:=PKy,PKZ:=PKz VAL KN:=KN,PZ:=AktZPos,KONTURPOS:=AktPos,KW:=KW,FRADIUS:=_WZR,VEKTOROFFSET:=VektorOffset,VIEWOFFX:=ViewOffx,VIEWOFFY:=ViewOffy,VIEWOFFZ:=ViewOffz,VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz)
+KG01 ('',PKx,PKy,PKz,'',0,1)
+AktPos := AktPos+KStep
+WHILE AktPos<=1
+CALL Solid_CalcPointsWithTipA (REF PKX:=PKx,PKY:=PKy,PKZ:=PKz VAL KN:=KN,PZ:=AktZPos,KONTURPOS:=AktPos,KW:=KW,FRADIUS:=_WZR,VEKTOROFFSET:=VektorOffset,VIEWOFFX:=ViewOffx,VIEWOFFY:=ViewOffy,VIEWOFFZ:=ViewOffz,VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz)
+KG01 ('',PKx,PKy,PKz,'',0,1)
+IF AktZPos=UeberstandV
+AktZPos := Tiefe
+ELSE
+AktZPos := UeberstandV
+END
+CALL Solid_CalcPointsWithTipA (REF PKX:=PKx,PKY:=PKy,PKZ:=PKz VAL KN:=KN,PZ:=AktZPos,KONTURPOS:=AktPos,KW:=KW,FRADIUS:=_WZR,VEKTOROFFSET:=VektorOffset,VIEWOFFX:=ViewOffx,VIEWOFFY:=ViewOffy,VIEWOFFZ:=ViewOffz,VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz)
+KG01 ('',PKx,PKy,PKz,'',0,1)
+AktPos := AktPos+KStep
+END
+IF (AktPos-KStep)<1
+AktPos := 1
+CALL Solid_CalcPointsWithTipA (REF PKX:=PKx,PKY:=PKy,PKZ:=PKz VAL KN:=KN,PZ:=AktZPos,KONTURPOS:=AktPos,KW:=KW,FRADIUS:=_WZR,VEKTOROFFSET:=VektorOffset,VIEWOFFX:=ViewOffx,VIEWOFFY:=ViewOffy,VIEWOFFZ:=ViewOffz,VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz)
+KG01 ('',PKx,PKy,PKz,'',0,1)
+IF AktZPos=UeberstandV
+AktZPos := Tiefe
+ELSE
+AktZPos := UeberstandV
+END
+CALL Solid_CalcPointsWithTipA (REF PKX:=PKx,PKY:=PKy,PKZ:=PKz VAL KN:=KN,PZ:=AktZPos,KONTURPOS:=AktPos,KW:=KW,FRADIUS:=_WZR,VEKTOROFFSET:=VektorOffset,VIEWOFFX:=ViewOffx,VIEWOFFY:=ViewOffy,VIEWOFFZ:=ViewOffz,VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz)
+KG01 ('',PKx,PKy,PKz,'',0,1)
+END
+;.
+;.
+CALL _KSP_5Axis_V5 ( VAL Z:=0,WZK:=0,AB:=0,AF:=_ANF,ABST:=0,ESD:=1,DEPTHCOUNT:=0,DEPTH:=0)
+ContourMilling5Axis ('Kopf','KSP','KEP','Fuss','KSP','KEP',0,0,2,0,0)
+EP (0,_ANF,0)
+deletecontour ('Kopf',0)
+deletecontour ('Fuss',0)
+deletecontour (KN,0)

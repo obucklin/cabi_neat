@@ -1,0 +1,196 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=SK_SPEZ_TREPL.WMF
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=SK_Spez
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 400;Dimension X
+   DY := 400;Dimension Y
+   DZ := 20;Dimension Z
+   DR_Hoehe := 0;*VAR*Drückerhöhe
+   Falz_H := 9;*VAR*Falzhöhe
+   Falz_T := 15;*VAR*Falztiefe
+   D_Falz_H := 12;*VAR*Doppelfalz Höhe
+   K1_L := 200.00;*VAR*Kastenlänge
+   K1_B := 16;*VAR*Kastenbreite
+   K2_L := 160.00;*VAR*Kasten 2 Länge
+   K2_B := 14;*VAR*Innerer Kasten Breite
+   Zu_1 := 5;*VAR*Zustellung 1
+   Zu_2 := 7;*VAR*Zustellung2
+   Tiefe1 := 45;*VAR*Tiefe1
+   Tiefe2 := 90;*VAR*Tiefe2
+   Ver_K_D := 28.00;*VAR*Versatz Kasten Drücker
+   Ver_S_K := Ver_S_K;*VAR*Versatz Kasten stulp
+   Dist_Falz_Stu := Dist_Falz_Stu;*VAR*Distance Falz <-> Stulp
+   SK_Versatz := 1;*VAR*Versatz in der Länge (zusammenfahren)
+   Buendig := 1;*VAR*1 = Bündig  / 0=Falz
+   Stulp_B := 18;*VAR*Stulp Breite
+   Dorn_M := 60.00;*VAR*Dornmass
+   Diff_K1_K2 := 0;*VAR*Differenz Kasten Gross zu Kasten Klein
+   TempX := 0;Temp Var für zusammenfahren
+   TempX1 := 0;TempVar zum zusammenfahren Kasten 2 Tiefe
+   Ver_Wkz := 0;Versatz Werkzeug
+   ZuStellen := Falz_T;Zustellung
+   Pendeln1 := 0;Pendeln Ja Nein 2.Kasten
+   Pendeln := 0;Pendeln Ja Nein
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+IF (Zu_1  > _AT_MAXDEPTH) & (_AT_MAXDEPTH <> 0)
+Zu_1 := _AT_MAXDEPTH
+END
+IF (Zu_2  > _AT_MAXDEPTH) & (_AT_MAXDEPTH <> 0)
+Zu_2 := _AT_MAXDEPTH
+END
+Ebene3()
+IF _WzD >= K1_B
+Pendeln := 1
+ELSE
+Pendeln := 0
+END
+IF _WzD >= K2_B
+Pendeln1 := 1
+ELSE
+Pendeln1 := 0
+END
+;Kasten1
+IF Pendeln = 1
+TempX := K1_L
+TempX1 := K2_L
+IF Buendig = 1
+;Bündig
+SP (DR_Hoehe + Ver_K_D,Falz_H - Dist_Falz_Stu - (Ver_S_K* -1) -(Stulp_B/2),-(Falz_T),0,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0);BREAKPOINT
+ELSE
+;Falz
+SP (DR_Hoehe + Ver_K_D,Falz_H - Dist_Falz_Stu -  (Ver_S_K * -1) - (Stulp_B /2),- Falz_T,0,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0)
+END
+G01 ((TempX /2),0,0,0,10,2)
+WHILE Zustellen <  Tiefe1
+G01 (0,0,- ZU_1,0,10,2)
+G01 (- (TempX ),0,0,0,10,2)
+Zustellen := Zustellen + ZU_1
+G01 (0,0,- ZU_1,0,10,2)
+G01 (TempX,0,0,0,10,2)
+TempX := TempX - (SK_Versatz)
+Zustellen := Zustellen + ZU_1
+END
+;Kasten2
+Zustellen := (Zustellen - ZU_1) + Zu_2
+G01 (DR_Hoehe + Ver_K_D,Falz_H - Dist_Falz_Stu - (Ver_S_K * -1) - (Stulp_B / 2) -(Diff_K1_K2 *-1),0,0,3,2)
+G01 (-(K2_L / 2),0,0,0,10,2)
+WHILE Zustellen < (Tiefe2 - Zu_2)
+G01 (0,0,- ZU_2,0,10,2)
+G01 ((TempX1 ),0,0,0,10,2)
+Zustellen := Zustellen + ZU_2
+TempX1 := TempX1 - (SK_Versatz)
+G01 (0,0,- ZU_2,0,10,2)
+G01 (-TempX1,0,0,0,10,2)
+TempX1 := TempX1 - (SK_Versatz)
+Zustellen := Zustellen + ZU_2
+END
+IF Zustellen >= (Tiefe2 )
+G01 (0,0,- (Tiefe2 + Falz_T),0,10,0)
+G01 (TempX1,0,0,0,10,2)
+END
+EP (0,_ANF,0)
+;Ohne pendeln hier
+Ebene0()
+ELSE
+Ebene3()
+Ver_Wkz := (K1_B / 2) - _Wzr
+TempX := K1_L
+TempX1 := K2_L
+IF Buendig = 1
+;Bündig
+SP (DR_Hoehe + Ver_K_D,Falz_H - (Stulp_B/2) + Ver_S_K + Ver_Wkz,-(Falz_T + Zu_1),0,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0);BREAKPOINT
+ELSE
+;Falz
+SP (DR_Hoehe + Ver_K_D,Falz_H - (Stulp_B/2) + Ver_S_K + Ver_Wkz,-(Falz_T + Zu_1),0,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0)
+/SP (DR_Hoehe + Ver_K_D,Falz_H-Dist_Falz_Stu - _WzR - Ver_S_K,- Falz_T,0,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0)
+END
+WHILE Zustellen <  Tiefe1
+G01 (0,0,- ZU_1,0,10,2)
+G01 (- (TempX / 2),0,0,0,10,2)
+G01 (0,-(K1_B - _WzD),0,0,10,2)
+G01 (TempX,0,0,0,10,2)
+G01 (0,(K1_B - _WzD),0,0,10,2)
+G01 (- (TempX/2),0,0,0,10,2)
+Zustellen := Zustellen +Zu_1
+TempX := TempX - Sk_Versatz
+END
+IF Pendeln1 = 0
+/G01 (0,(Diff_K1_K2 ) +(K1_B - K2_B),0,0,10,2)
+G01 (0,(Diff_K1_K2 ),0,0,10,2)
+WHILE Zustellen <  (Tiefe2 - ZU_2 )
+G01 (0,0,- ZU_2,0,10,2)
+G01 (- (TempX1 /2),0,0,0,10,2)
+G01 (0,-(K2_B - _WzD),0,0,10,2)
+G01 (TempX1,0,0,0,10,2)
+G01 (0,(K2_B - _WzD),0,0,10,2)
+G01 (- (TempX1/2),0,0,0,10,2)
+Zustellen := Zustellen + ZU_2
+TempX1 := TempX1 - SK_Versatz
+END
+IF Zustellen > (Tiefe2 - ZU_2)
+G01 (0,0,- (Tiefe2 + Falz_T),0,10,0)
+G01 (TempX1 /2,0,0,0,10,2)
+G01 (0,- (K2_B - _WzD),0,0,10,2)
+G01 (-TempX1,0,0,0,10,2)
+G01 (0,(K2_B - _WzD),0,0,10,2)
+G01 ((TempX1 /2),0,0,0,10,2)
+END
+EP (0,_ANF,0)
+ELSE
+;mit  pendeln
+;hier
+IF Buendig =1
+G01 (-TempX1/2,(Diff_K1_K2 ) -((K1_B -K2_B) / 2),0,0,10,2)
+ELSE
+G01 (-TempX1/2,(Diff_K1_K2 ) -((K1_B -K2_B) / 2),0,0,10,2)
+/G01 (-TempX1/2,(Diff_K1_K2 * -1),0,0,10,2)
+END
+WHILE Zustellen < (Tiefe2 - (Zu_2))
+G01 (0,0,- ZU_2,0,10,2)
+G01 (TempX1,0,0,0,10,2)
+Zustellen := Zustellen + ZU_2
+TempX1 := TempX1 - (SK_Versatz)
+G01 (0,0,- ZU_2,0,10,2)
+G01 (- TempX1,0,0,0,10,2)
+TempX1 := TempX1 - (SK_Versatz)
+Zustellen := Zustellen + ZU_2
+END
+IF Zustellen >= (Tiefe2 )
+G01 (0,0,- (Tiefe2 + Falz_T),0,10,0)
+G01 (TempX1,0,0,0,10,2)
+END
+EP (0,_ANF,0)
+END
+END
+Ebene0()
+;hier
+ZLinie (DR_Hoehe + Ver_K_D - (K1_L /2),Falz_T,DR_Hoehe + Ver_K_D + (K1_L /2),Falz_T,2816,7,7,0,0,1)
+ZLinie (DR_Hoehe + Ver_K_D - (K1_L /2),Falz_T,DR_Hoehe + Ver_K_D - (K1_L /2),Falz_T + 41.7,2816,7,7,0,0,1)
+ZLinie (DR_Hoehe +  Ver_K_D + (K1_L /2),Falz_T,DR_Hoehe + Ver_K_D + (K1_L /2),Falz_T + 41.7,2816,7,7,0,0,1)
+ZLinie (DR_Hoehe  + Ver_K_D - (K1_L /2),Falz_T + 41.7,DR_Hoehe + Ver_K_D - (K2_L /2),Falz_T + 41.7,2816,7,7,0,0,1)
+ZLinie (DR_Hoehe + Ver_K_D + (K1_L /2),Falz_T + 41.7,DR_Hoehe + Ver_K_D + (K2_L /2),Falz_T + 41.7,2816,7,7,0,0,1)
+ZLinie (DR_Hoehe + Ver_K_D - (K2_L /2),Falz_T + 41.7,DR_Hoehe + Ver_K_D - (K2_L /2),Falz_T + 29.00 + Dorn_M,2816,7,7,0,0,1)
+ZLinie (DR_Hoehe + Ver_K_D + (K2_L /2),Falz_T + 41.7,DR_Hoehe + Ver_K_D + (K2_L /2),Falz_T + 29.00 + Dorn_M,2816,7,7,0,0,1)
+ZLinie (DR_Hoehe + Ver_K_D - (K2_L /2),Falz_T + 29.00 + Dorn_M,DR_Hoehe + Ver_K_D + (K2_L /2),Falz_T + 29.00 + Dorn_M,2816,7,7,0,0,1)
+;Schnittlinie
+ZLinie (DR_Hoehe + Ver_K_D - (K1_L /2),Falz_T,DR_Hoehe + Ver_K_D - (TempX /2),Falz_T + 41.7,179968,7,7,0,0,1)
+ZLinie (DR_Hoehe +  Ver_K_D + (K1_L /2),Falz_T,DR_Hoehe + Ver_K_D + (TempX/2),Falz_T + 41.7,179968,7,7,0,0,1)
+ZLinie (DR_Hoehe + Ver_K_D - (K2_L /2),Falz_T + 41.7,DR_Hoehe + Ver_K_D - (TempX1 /2),Falz_T + 29.00 + Dorn_M,179968,7,7,0,0,1)
+ZLinie (DR_Hoehe + Ver_K_D + (K2_L /2),Falz_T + 41.7,DR_Hoehe + Ver_K_D + (TempX1 /2),Falz_T + 29.00 + Dorn_M,179968,7,7,0,0,1)

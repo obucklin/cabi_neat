@@ -1,0 +1,194 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=LOCHREIHE.WMF
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Lochreihen
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_1.Dll
+;DIALOGPROC=ShowL_BohrenDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   SpX :=0;*VAR*Mindestwert Startpunkt
+   SpY1 :=37.00;*VAR*Startpunkt Y1
+   SpY2 :=0;*VAR*Startpunkt Y2
+   SpY3 :=50.00;*VAR*Startpunkt Y3
+   EX :=0;*VAR*Endpunkt in X
+   TLF :=10;*VAR*Bohrflag
+   Tiefe :=-13.00;*VAR*Bohrtiefe
+   Raster :=32.00;*VAR*Raster
+   Dm :=5.00;*VAR*Durchmesser
+   CheckY2 :=-1;*VAR*Lochreihe2 Ja/Nein
+   CheckY3 :=-1;*VAR*Lochreihe3 Ja/Nein
+   CheckTyp :=2;*VAR*LochreihenTyp 0 = XWert / 1= Einpassen / 2= vermittelt
+   Snap1XY :=7;*VAR*Easy Snap in XY
+   SnapY1 :=4;*VAR*Easy Snap in Y1
+   SnapY2 :=3;*VAR*Easy Snap in Y2
+   SnapX :=3;*VAR*Easy Snap in Ende X
+   SnapZ :=0;*VAR*Easy Snap in Z
+   Dummy := 0;
+   MerkerSPX := 0;
+   Rest := 0;
+   Länge := 0;
+   Länge1 := 0;
+   Anz := 0;Anzahl Löcher
+   I := 0;Zählvariable
+START
+;Weinig Holzher Schweiz B. Achermann
+Fertigteil (1000,600,19,0,0,0,0,0,'',0,0,0)
+;Lochreihe in X
+IF CheckTyp = 2
+;Ausgemittelt
+Snap1XY := 7
+SnapX := 5
+END
+Transesxy (SPX,SPY1,Snap1XY,1)
+Transesxy (Dummy,SPY2,SnapY1,1)
+Transesxy (Dummy,SPY3,SnapY2,1)
+Transesxy (EX,Dummy,SnapX,1)
+MerkerSPX := SPX
+IF (SPX > EX) & (CheckTyp=1)
+MerkerSpx := SPX
+SPX := EX
+EX := MerkerSpX
+END
+;Auswahl Xwert
+IF CheckTyp=0
+;1.Reihe
+IF EX > SpX
+WHILE SpX <= EX
+Bohrung (SpX,SpY1,Dm,Tiefe,TLF,0,0,0,SnapZ,0,0,0)
+SPX := Spx + Raster
+END
+ELSE
+WHILE SpX >= EX
+Bohrung (SpX,SpY1,Dm,Tiefe,TLF,0,0,0,SnapZ,0,0,0)
+SPX := Spx - Raster
+END
+END
+SPX := MerkerSPX
+;2. Reihe
+IF CheckY2= -1
+IF EX > SpX
+WHILE SpX <= EX
+Bohrung (SpX,SpY2,Dm,Tiefe,TLF,0,0,0,SnapZ,0,0,0)
+SPX := Spx + Raster
+END
+ELSE
+WHILE SpX >= EX
+Bohrung (SpX,SpY2,Dm,Tiefe,TLF,0,0,0,SnapZ,0,0,0)
+SPX := Spx - Raster
+END
+END
+END
+;3. Reihe
+SPX := MerkerSPX
+IF CheckY3= -1
+IF EX > SpX
+WHILE SpX <= EX
+Bohrung (SpX,SpY3,Dm,Tiefe,TLF,0,0,0,SnapZ,0,0,0)
+SPX := Spx + Raster
+END
+ELSE
+WHILE SpX >= EX
+Bohrung (SpX,SpY3,Dm,Tiefe,TLF,0,0,0,SnapZ,0,0,0)
+SPX := Spx - Raster
+END
+END
+END
+END
+;Ausgemittelte Lochreihe
+IF CheckTyp=1
+Länge := Ex- SpX
+Anz := (Länge) / Raster
+Anz := Anz DIV 1 +1
+Rest := (Länge - (Anz - 1) * Raster) / 2
+FOR I := 0 TO Anz -1 STEP 1
+Bohrung (SpX + Rest + I * Raster,SpY1,Dm,Tiefe,TLF,0,0,0,0,0,0,0)
+END
+IF CheckY2=-1
+;1. Hälfte
+Anz := (Länge) / Raster
+Anz := Anz DIV 1 + 1
+Rest := (Länge - (Anz - 1) * Raster) / 2
+FOR I := 0 TO Anz -1 STEP 1
+Bohrung (SpX + (Rest )+ I * Raster,SpY2,Dm,Tiefe,TLF,0,0,0,SnapZ,0,0,0)
+END
+END
+IF CheckY3=-1
+;1. Hälfte
+Anz := (Länge) / Raster
+Anz := Anz DIV 1 + 1
+Rest := (Länge - (Anz - 1) * Raster) / 2
+FOR I := 0 TO Anz -1 STEP 1
+Bohrung (SpX + (Rest )+ I * Raster,SpY3,Dm,Tiefe,TLF,0,0,0,SnapZ,0,0,0)
+END
+END
+END
+;Vermittelte Lochreihe
+IF CheckTyp=2
+Länge := Ex- SpX
+Anz := (Länge) / Raster
+Anz := Anz DIV 1 +1
+Rest := (Länge - (Anz - 1) * Raster) / 2
+IF (SpX+(Raster/2)) <= (_Rx/2)
+Bohrung ((_Rx / 2) - (Raster / 2),SpY1,DM,Tiefe,TLF,0,0,0,0,0,0,0)
+WHILE _X > (  SpX+31.99)
+Bohrung (- Raster,0,DM,Tiefe,TLF,0,0,10,0,0,0,0)
+END
+END
+IF (EX - (Raster/2)) >= (_Rx/2)
+Bohrung ((_Rx / 2) + (Raster / 2),SPy1,DM,Tiefe,TLF,0,0,0,0,0,0,0)
+WHILE _X < (  EX - 31.99)
+Bohrung (Raster,0,DM,Tiefe,TLF,0,0,10,0,0,0,0)
+END
+END
+IF CheckY2=-1
+;1. Hälfte
+Anz := (Länge) / Raster
+Anz := Anz DIV 1 + 1
+Rest := (Länge - (Anz - 1) * Raster) / 2
+IF (SpX+(Raster/2)) <= (_Rx/2)
+Bohrung ((_Rx / 2) - (Raster / 2),SpY2,DM,Tiefe,TLF,0,0,0,0,0,0,0)
+WHILE _X > (  SpX+31.99)
+Bohrung (- Raster,0,DM,Tiefe,TLF,0,0,10,0,0,0,0)
+END
+END
+IF (EX - (Raster/2)) >= (_Rx/2)
+Bohrung ((_Rx / 2) + (Raster / 2),SPy2,DM,Tiefe,TLF,0,0,0,0,0,0,0)
+WHILE _X < (  EX - 31.99)
+Bohrung (Raster,0,DM,Tiefe,TLF,0,0,10,0,0,0,0)
+END
+END
+END
+IF CheckY3=-1
+;1. Hälfte
+Anz := (Länge) / Raster
+Anz := Anz DIV 1 + 1
+Rest := (Länge - (Anz - 1) * Raster) / 2
+IF (SpX+(Raster/2)) <= (_Rx/2)
+Bohrung ((_Rx / 2) - (Raster / 2),SpY3,DM,Tiefe,TLF,0,0,0,0,0,0,0)
+WHILE _X > (  SpX+31.99)
+Bohrung (- Raster,0,DM,Tiefe,TLF,0,0,10,0,0,0,0)
+END
+END
+IF (EX - (Raster/2)) >= (_Rx/2)
+Bohrung ((_Rx / 2) + (Raster / 2),SPy3,DM,Tiefe,TLF,0,0,0,0,0,0,0)
+WHILE _X < (  EX - 31.99)
+Bohrung (Raster,0,DM,Tiefe,TLF,0,0,10,0,0,0,0)
+END
+END
+END
+END

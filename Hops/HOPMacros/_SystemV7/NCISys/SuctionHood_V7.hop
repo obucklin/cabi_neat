@@ -1,0 +1,34 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.8.0.2[Hops.exe]
+;BILD=SUCTIONHOOD_V7.WMF
+;INFO=SUCTIONHOOD_V7
+;WZGV=7532D_151
+;WZGVCONFIG=
+;MASCHINE=HH7
+;NCNAME=
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowSUCTIONHOOD_V7Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   Hold := 0;*VAR*1 bis zum Werkzeugwechsel verwenden
+   HoldCloneMoveZ := 0;*VAR*1 Fräsbahnen mit mehrfach Z-Zustellung einfügen
+   Position1 := 0;*VAR*je nach Typ verschieden
+   Typ1 := 0;*VAR*0 Stufen; 1 Achse ....
+   Mode1 := 0;*VAR*
+   Position2 := 0;*VAR*je nach Typ verschieden
+   Typ2 := 0;*VAR*0 Stufen; 1 Achse ....
+   Mode2 := 0;*VAR*
+START
+nciext (-100244,'NCISys',1,Hold,HoldCloneMoveZ,Position1,Typ1,Mode1,Position2,Typ2,Mode2)
+IF Mode2=1
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=0,MODE:=1,STR:='V.E.M_DataBYTE[33]=24')
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=0,MODE:=1,STR:='M168')
+END

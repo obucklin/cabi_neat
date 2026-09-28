@@ -1,0 +1,63 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   x_Mitte := 0;*VAR*Taschenmitte in X auf Ebene bezogen
+   Y_Mitte := 0;*VAR*Taschenmitte in Y auf Ebene bezogen
+   Z_Mitte := 0;*VAR*Taschenmitte in Z auf Ebene bezogen
+   Taschenlaenge := 100;*VAR*Tasche in X
+   Taschenbreite := 60;*VAR*Tasche in Y
+   Tiefe := 0;*VAR*Tiefe der Tasche
+   View_X := 0;*VAR*Einfügepunkt der Ebene in X
+   View_Y := 0;*VAR*Einfügepunkt der Ebene in Y
+   View_Z := 0;*VAR*Einfügepunkt der Ebene in Z
+   View_DW := 0;*VAR*Drehwinkel der Ebene
+   View_KW := 0;*VAR*Kippwinkel der Ebene
+   UeberstandVorne := 20;*VAR*Überstand vorne
+   UeberstandHinten := 30;*VAR*Überstand hinten
+   PosKind := 0;*VAR*0 - links 1 - Mitte 2 - Rechts
+   ax := 0;
+   ay := 0;
+   az := 0;
+   KN := 'Kontur_Temp';
+   AnzahlOutlineP := 0;
+   AnzahlP := 0;
+   Ueberlappung := 67;Überlappung in % vom Werkzeugdurchmesser
+   PKN := 'PKN';
+   i := 0;
+START
+IF (Taschenlaenge>_WZD) & (Taschenbreite>_WZD)
+CALL VxyzToAxyz_V7 (REF AX:=ax,AY:=ay,AZ:=az VAL OFFX:=View_X,OFFY:=View_Y,OFFZ:=View_Z,DW:=View_DW,KW:=View_KW,VX:=x_Mitte,VY:=y_Mitte,VZ:=z_Mitte)
+HGNeu()
+CALL _hg_para_winkel_V5 ( VAL PARA:=Taschenbreite/2+UeberstandVorne,X1:=ax,Y1:=ay,WINKEL:=View_DW,ESXY1:=0)
+CALL _hg_para_winkel_V5 ( VAL PARA:=Taschenlaenge/2,X1:=ax,Y1:=ay,WINKEL:=View_DW+90,ESXY1:=0)
+CALL _hg_para_winkel_V5 ( VAL PARA:=Taschenbreite/2+UeberstandHinten,X1:=ax,Y1:=ay,WINKEL:=View_DW+180,ESXY1:=0)
+CALL _hg_para_winkel_V5 ( VAL PARA:=Taschenlaenge/2,X1:=ax,Y1:=ay,WINKEL:=View_DW+270,ESXY1:=0)
+KB (KN,'',_SPX1,_SPY1,0,'',0,0)
+KG01 ('',_SPX5,_SPY5,0,'',0,2)
+KG01 ('',_SPX11,_SPY11,0,'',0,2)
+KG01 ('',_SPX7,_SPY7,0,'',0,2)
+KG01 ('',_SPX1,_SPY1,0,'',0,2)
+HGNeuEnd()
+IF PosKind=0
+;Links
+CreatePocketContour (KN,_WZR,_WZD-_WZD*Ueberlappung/100,0,2,1,PKN,'','',AnzahlP,AnzahlOutlineP)
+ELSE
+IF PosKind=1
+;Mitte
+CreatePocketContour (KN,_WZR,_WZD-_WZD*Ueberlappung/100,0,0,0,PKN,'','',AnzahlP,AnzahlOutlineP)
+ELSE
+;Rechts
+CreatePocketContour (KN,_WZR,_WZD-_WZD*Ueberlappung/100,0,2,0,PKN,'','',AnzahlP,AnzahlOutlineP)
+END
+END
+FOR i := 1 TO AnzahlP STEP 1
+CALL _ExecutePocketContour_V5 ( VAL KN:=PKN+IntToStr(i-1),LASTTIEFE:=Tiefe,TIEFE:=Tiefe,FLIEGENDEINTAUCHEN:=1,MAXEINTAUCHLAENGE:=50,LASTCALL:=PosKind=1)
+END
+IF (PosKind=0)|(PosKind=2)
+FOR i := 1 TO AnzahlOutlineP STEP 1
+CALL _ExecutePocketContour_V5 ( VAL KN:=PKN+'_Outline'+IntToStr(i-1),LASTTIEFE:=Tiefe,TIEFE:=Tiefe,FLIEGENDEINTAUCHEN:=1,MAXEINTAUCHLAENGE:=50,LASTCALL:=(i=AnzahlOutlineP))
+END
+END
+CALL _DeletePocketContours_V5 ( VAL KN:=PKN,ANZAHLP:=AnzahlP,ANZAHLOUTLINEP:=AnzahlOutlineP)
+deletecontour (KN)
+END

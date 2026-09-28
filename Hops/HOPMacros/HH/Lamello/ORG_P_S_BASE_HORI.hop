@@ -1,0 +1,153 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.5.3.1[Hops.exe]
+;BILD=P_S_BASE_HORI.WMF
+;INFO=
+;WZGV=7735D_101
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=P_S_BASE_HORI
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   POS_X := 0;*VAR*POSITION X von der Kante
+   POS_Y := 0;*VAR*POSITION Y von der Kante
+   POS_Z := 15;*VAR*POSITION Z von unten
+   DRILL_DISTANCE := 7.5;*VAR*Bohrungsabstand von der Kante (5.5 / 7.5)
+   VIEW := 2;*VAR*Seite 1=vorne / 2=links / 3=hinten / 4=rechts
+   DRILL := 1;*VAR*Bohrung JA / NEIN
+   Z_BEWEG := 1;*VAR*In der Nut Z Bewegung (Mitte-Hoch-Runter-Mitte)
+   NUT_TIEFE := -14;*VAR*Tiefe der Nut (muss immer negativ sein)
+   Temp_Var1 := 0;*VAR*Freie Variable 1
+   Temp_Var2 := 0;*VAR*Freie Variable 2
+   Temp_Var3 := 0;*VAR*Freie Variable 3
+   WKZ_NUT := 136;*VAR*Werkzeug ID Nuter
+   WKZ_BOHR := 501;*VAR*Werkzeug ID Fräser
+   BOU := 1.4;FIX_BEWEGUNG NACH OBEN UND UNTEN
+   CENTR_POS_X := 0;interne Berechnung
+   CENTR_POS_Y := 0;interne Berechnung
+   Z_POS_VON_UNTEN := 0;
+   SHOW_STL := 0;Anzeige STL
+   DREHWI := 0;Drehwinkel
+   RABS := 1;Kreistasche vergrößern
+   NESTKont := 106;Outline Nestkontur Durchmesser
+   DX := 200;Dimension X
+   DY := 200;Dimension Y
+   DZ := 40;Dimension Z
+   Versatz_Y := 0;
+   Versatz_X := 0;
+   EinTauchWeg_Y := 0;
+   EinTauchWeg_X := 0;
+   TOOL_RAD := 50.2;WerkzeugRadius
+   ToolID := -99999;
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;Abfrage ob Tiefe negativ
+CALL _UserInterface3DG (REF RESULT:=ToolID VAL INPUTTEXT:='GetStandardRouterID')
+IF (_MaschinenTyp=3) | (_MaschinenTyp=4)
+_EXECUTELEADINOUT := 1
+ELSE
+_EXECUTELEADINOUT := 0
+END
+IF NUT_TIEFE>=0
+Fehlermeldung ('only negativ value')
+EXITMACRO
+END
+;Bohrabstand anhand der Frästiefe definieren
+/IF NUT_TIEFE>=(-11)
+/DRILL_DISTANCE := 5.5
+/Hinweismeldung ('DrillDistance 5.5')
+/ELSE
+/DRILL_DISTANCE := 7.5
+/Hinweismeldung ('DrillDistance 7.5')
+/END
+;-
+Z_POS_VON_UNTEN := -_RZ+POS_Z
+;Ebene 1 VORNE
+IF VIEW=1
+Versatz_Y := DRILL_DISTANCE
+DREHWI := 180
+CENTR_POS_X := POS_X
+CENTR_POS_Y := POS_Y-NESTKont/2
+EinTauchWeg_Y := POS_Y-NUT_TIEFE-TOOL_RAD
+EinTauchWeg_X := POS_X
+END
+;Ebene 2 LINKS
+IF VIEW=2
+Versatz_X := DRILL_DISTANCE
+DREHWI := 90
+CENTR_POS_X := POS_X-NESTKont/2
+CENTR_POS_Y := POS_Y
+NUT_TIEFE := -NUT_TIEFE
+EinTauchWeg_Y := POS_Y
+EinTauchWeg_X := POS_X+NUT_TIEFE-TOOL_RAD
+END
+;Ebene 3 HINTEN
+IF VIEW=3
+Versatz_Y := -DRILL_DISTANCE
+DREHWI := 0
+CENTR_POS_Y := POS_Y+NESTKont/2
+CENTR_POS_X := POS_X
+EinTauchWeg_Y := POS_Y+NUT_TIEFE+TOOL_RAD
+EinTauchWeg_X := POS_X
+END
+;Ebene 4 RECHTS
+IF VIEW=4
+Versatz_X := -DRILL_DISTANCE
+DREHWI := 270
+CENTR_POS_X := POS_X+NESTKont/2
+CENTR_POS_Y := POS_Y
+EinTauchWeg_Y := POS_Y
+EinTauchWeg_X := POS_X+NUT_TIEFE+TOOL_RAD
+END
+;°°°°°°°°°°°°DRILL°°°°°°°°°°°°°°^
+WZB (WKZ_BOHR,_VE,_V,_VA,_SD,_ANF,'1')
+;Wenn mit Bohrkopf gearbeitete wird --> WZD = 6
+IF _BOXID = 501
+_WZD := 6
+END
+IF DRILL=1
+Bohrung (POS_X+Versatz_X,POS_Y+Versatz_Y,_WZD,Z_POS_VON_UNTEN,10,0,0,0,0,0,0,0)
+/CALL B2Punkte_V7 ( VAL P1X:=POS_X,P1Y:=0,P2X:=POS_X+Versatz_X,P2Y:=0,ABSTAND:=-120,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=30mm,PFEILEINNERHALB:=0,WCS:=1,ESXY1:=0,ESXY2:=0)
+END
+;Anzeige STL+ Grafik
+IF SHOW_STL=1
+EbeneF (POS_X,POS_Y,0,0,DREHWI,0,2)
+ZSTL (0,0,Z_POS_VON_UNTEN,12632256,1,_STRING_STL,0,0)
+Ebene0()
+END
+;Nestkontur_LEadInOut
+IF _EXECUTELEADINOUT=1;BREAKPOINT
+WZF (9999,_VE,_V,_VA,_SD,_ANF,'1')
+CALL LeadInOutKontur_V7 ()
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=CENTR_POS_X,Y_MITTE:=CENTR_POS_Y,TIEFE:=-1,ZUTIEFE:=0,RADIUS:=NESTKont/2,RADIUSKORREKTUR:=0,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=360,ANF:=_ANF,ABF:=_ANF,RAMPE:=0,INTERPOL:=0,ESXY:=0,ESMD:=0,LASER:=0)
+;Vorfräsen / pree-mill
+IF _Clamex_Saege_ID <> 9999
+WZF (_Clamex_Saege_ID,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=CENTR_POS_X,Y_MITTE:=CENTR_POS_Y,TIEFE:=Z_POS_VON_UNTEN-5,ZUTIEFE:=_AT_MAXDEPTH,RADIUS:=TOOL_RAD+RABS,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=180,ANF:=_ANF,ABF:=_ANF,RAMPE:=1,INTERPOL:=1,ESXY:=0,ESMD:=0,LASER:=0)
+ZKBCW (CENTR_POS_X,CENTR_POS_Y,CENTR_POS_X-TOOL_RAD+_WZR-RABS,CENTR_POS_Y,CENTR_POS_X-TOOL_RAD+_WZR-RABS,CENTR_POS_Y,14742785,0,0,0,_WZD,2,0)
+ZText ('pree-mill',CENTR_POS_X,CENTR_POS_Y+20,30,0,9,14742785,'Times New Roman',0,0,0,0,0,1)
+END
+END
+;Fräsen
+WZF (WKZ_NUT,_VE,_V,_VA,_SD,_ANF,'1')
+SP (CENTR_POS_X,CENTR_POS_Y,Z_POS_VON_UNTEN,0,0,_ANF,0,0,90,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (EinTauchWeg_X,EinTauchWeg_Y,0,0,0,2)
+;Keine Z Bewegung bei z.B.Bisco
+IF Z_BEWEG=1
+G01 (0,0,BOU,0,10,2)
+G01 (0,0,-(BOU*2),0,10,2)
+G01 (0,0,BOU,0,10,2)
+END
+G01 (CENTR_POS_X,CENTR_POS_Y,0,0,0,2)
+EP (0,_ANF,0)
+/CALL B2Punkte_V7 ( VAL P1X:=0,P1Y:=0,P2X:=NUT_TIEFE,P2Y:=0,ABSTAND:=30,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=30mm,PFEILEINNERHALB:=0,WCS:=1,ESXY1:=0,ESXY2:=0)
+/ChangeVar (EinTauchWeg_X)

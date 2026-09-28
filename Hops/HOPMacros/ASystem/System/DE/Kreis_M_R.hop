@@ -1,0 +1,31 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCName
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=WGerade.WMF
+VARS
+   EX := 0;*VAR*
+   EY := 0;*VAR*
+   Z := 0;*VAR*Zustelltiefe
+   MX := 0;*VAR*
+   MY := 0;*VAR*
+   R := 0;*VAR*verrundungsradius
+   MXNeu := 0;
+   MYNeu := 0;
+   _AktPosX := 0;
+   _AktPosY := 0;
+START
+CALL SetPunkt (VAL X:=MX,Y:=MY)
+CALL RotUmPunkt ()
+MXNeu := _AktPosX
+MYNeu := _AktPosY
+CALL SetPunkt (VAL X:=EX,Y:=EY)
+CALL RotUmPunkt ()
+G03M (_AktPosX,_AktPosY,Z,MXNeu,MYNeu,R)
+_AktPosSaveX := EX
+_AktPosSaveY := EY
+

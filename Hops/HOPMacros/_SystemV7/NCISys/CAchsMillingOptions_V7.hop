@@ -1,0 +1,18 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowCACHSMILLINGOPTIONS_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   Hold := 0;*VAR*1 bis zum Werkzeugwechsel verwenden
+   HoldCloneMoveZ := 0;*VAR*1 Fräsbahnen mit mehrfach Z-Zustellung einfügen
+   Para1 := 0;*VAR*NCIMode
+   Para2 := 0;*VAR*= 0 automatik; = 1 manuell
+   Para3 := 0;*VAR*Winkel
+   Para4 := 0;*VAR*Winkel Mode = 0 um Winkel auf der Stelle drehen; = 1 um Winkel entlang des nächsten Elements drehen
+START
+IF Para1=0
+Para3 := 0
+Para4 := 0
+END
+nciext (-107005,'NCISys',1,Hold,HoldCloneMoveZ,Para1,Para2,Para3,Para4)

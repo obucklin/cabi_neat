@@ -1,0 +1,12 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   CADKN := '';*VAR*
+   CADBL := 0;*VAR*0 - Mitte; 1 - links; 2 - rechts
+   Tiefe := -_RZ-1;*VAR*
+START
+KSP ('???','???',Tiefe,CADBL,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen (CADKN,'KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)

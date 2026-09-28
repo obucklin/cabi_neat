@@ -1,0 +1,113 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=xxx
+;NCNAME=1
+;MASCHINE=demo
+;WZGV=demo
+;BILD=RechteckWMF.bmp
+VARS
+   x_Mitte := 100;*VAR*centre of rectangle in x
+   Y_Mitte := 100;*VAR*centre of rectangle in y
+   laenge := 50;*VAR*length of rectangle in x
+   breite := 40;*VAR*width of rectangle in y
+   Radius := 25;*VAR*radius of edges
+   Winkel := 0;*VAR*angle against x-axis
+   Tiefe := _Z;*VAR*depth of pocket
+   Radiuskorrektur := 0;*VAR*0=centre,1=outside,2=inside
+   AB := 0;*VAR*0 -> no movement, <> 0 -> movement
+   GX := 0;FW-X
+   GY := 0;FW-Y
+   ANZAHL := 0;
+   ÜberfahrKreisbogen := 2;
+   LängeGeradenstück := 0;
+   KreisEndpunktY := 0;Kreisendpunkt in Y beim Überfahren des Endpunktes
+   MinimalerAbstand := 0.5;
+   UeberfahrwegX := 0.5;Überfahrweg in X
+START
+;direkt cnc systeme NCHOPS Version3.0
+;rectangle ccw V 3.0/SF/30.09.98
+;difference to square
+IF Laenge>breite
+GX := laenge
+GY := breite
+ELSE
+GX := breite
+GY := laenge
+Winkel := Winkel+90
+END
+;Tiefeneingabe prüfen
+IF Tiefe>0
+Tiefe := -tiefe
+END
+IF Winkel<>0
+ROTATEBB()
+END
+;Abfrage ob Radius zu groß
+IF Radius > GY/2
+Radius := GY/2
+END
+IF Radius < _wzr
+;Eckenradius ist kleiner als der Werkzeugradius
+Radius := _wzr
+END
+KreisEndpunktY := _WZD+ÜberfahrKreisbogen
+IF KreisEndpunktY>=GY
+KreisEndpunktY := _WZD+((GY-_WZD)/2)
+END
+IF KreisEndpunktY<_WZD
+;Dann erfolgt keine Bahnbewegung mehr
+KreisEndpunktY := 0
+END
+;Rechteck
+;IF _SDAKT <0
+IF Radiuskorrektur=0
+SP(X_MITTE,Y_MITTE-GY/2,TIEFE,0,0,_ANF,0,0,0)
+ELSE
+IF Radiuskorrektur=1
+IF AB=0
+SP(X_MITTE,Y_MITTE-GY/2,TIEFE,2,0,_ANF,0,0,0)
+ELSE
+SP(X_MITTE,Y_MITTE-GY/2,TIEFE,2,2,1.1,0,0,0)
+END
+ELSE
+IF AB=0
+SP(X_MITTE,Y_MITTE-GY/2,TIEFE,1,0,_ANF,0,0,0)
+ELSE
+SP(X_MITTE,Y_MITTE-GY/2,TIEFE,1,0,_ANF,0,0,0)
+END
+END
+END
+G01(X_MITTE+GX/2,_Y,_Z,RADIUS)
+G01(_X,Y_MITTE+GY/2,_Z,RADIUS)
+G01(X_MITTE-GX/2,_Y,_Z,RADIUS)
+G01(_X,Y_MITTE-GY/2,_Z,RADIUS)
+G01(X_MITTE,_Y,_Z,0)
+;Ueberfahren wenn geradenstück lang genug
+IF ((GX-2*Radius)/2) > UeberfahrwegX
+G01(_X+UEBERFAHRWEGX,_Y,_Z,0)
+END
+;Im Kreisbogen überfahren
+;IF (Tiefe<=-_RZ) & (KreisEndpunktY>_WZD)
+IF Radiuskorrektur=0
+;Keine Abfahrbewegung
+EP(0,_ANF,0)
+ELSE
+IF Radiuskorrektur=1
+IF AB=0
+EP(0,1.1,0)
+ELSE
+EP(2,1.1,0)
+END
+ELSE
+IF AB<>0
+IF (KreisEndpunktY>_WZD)
+TANG(_X,_Y+KREISENDPUNKTY,_Z,_WZR)
+END
+END
+EP(0,1.1,0)
+END
+END
+ROTATEEB(X_MITTE,Y_MITTE,WINKEL)
+

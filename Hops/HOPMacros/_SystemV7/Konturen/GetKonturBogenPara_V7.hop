@@ -1,0 +1,54 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowGetKonturBogenPara_V7Dialog
+VARS
+   KN := '';*VAR*
+   EleIndex := 1;*VAR*
+   OK := ;*VAR**REF*=1 Funktion wurde korrekt ausgeführt
+   BH := ;*VAR**REF*Bogenhöhe
+   MPx := ;*VAR**REF*Mittelpunkt in X
+   MPy := ;*VAR**REF*Mittelpunkt in Y
+   Radius := ;*VAR**REF*
+   Konkav := ;*VAR**REF*1=konkav (Wölbung nach oben); 0=konvex (Wölbung nach unten)
+   SPx := ;*VAR**REF*
+   SPy := ;*VAR**REF*
+   EPx := ;*VAR**REF*
+   EPy := ;*VAR**REF*
+   Typ := 0;cw oder ccw
+   X1 := 0;
+   X2 := 0;
+   Winkel := ;*VAR**REF*
+START
+Typ := GetKE_Typ(KN,EleIndex)
+IF (EleIndex<=GetKE_Anzahl(KN)) & (Typ<>1)
+X1 := GetKP_X(KN,EleIndex-1)
+X2 := GetKP_X(KN,EleIndex)
+IF ((Typ=3) & (X2>X1))|((Typ=2) & (X1>X2))
+konkav := 0
+ELSE
+konkav := 1
+END
+IF (X2>X1)
+SPx := GetKP_X(KN,EleIndex-1)
+SPy := GetKP_Y(KN,EleIndex-1)
+EPx := GetKP_X(KN,EleIndex)
+EPy := GetKP_Y(KN,EleIndex)
+ELSE
+SPx := GetKP_X(KN,EleIndex)
+SPy := GetKP_Y(KN,EleIndex)
+EPx := GetKP_X(KN,EleIndex-1)
+EPy := GetKP_Y(KN,EleIndex-1)
+END
+MPx := GetKE_Mx(KN,EleIndex)
+MPy := GetKE_My(KN,EleIndex)
+CALL Dist2P_V4 (REF DIST:=Radius VAL P1X:=SPx,P1Y:=SPy,P2X:=MPx,P2Y:=MPy)
+IF ((Typ=3) & (X2>X1))|((Typ=2) & (X1>X2))
+CALL GetWinkelDiff3P_V4 (REF WINKELDIFF3P:=Winkel VAL P1X:=GetKP_X(KN,EleIndex-1),P1Y:=GetKP_Y(KN,EleIndex-1),MX:=MPx,MY:=MPy,P3X:=GetKP_X(KN,EleIndex),P3Y:=GetKP_Y(KN,EleIndex))
+ELSE
+CALL GetWinkelDiff3P_V4 (REF WINKELDIFF3P:=Winkel VAL P1X:=GetKP_X(KN,EleIndex),P1Y:=GetKP_Y(KN,EleIndex),MX:=MPx,MY:=MPy,P3X:=GetKP_X(KN,EleIndex-1),P3Y:=GetKP_Y(KN,EleIndex-1))
+END
+BH := Radius-radius*sqrt(1-sqr(sin(Winkel/2)))
+OK := 1
+ELSE
+OK := 0
+END

@@ -1,0 +1,95 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_Format_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   Eckenverrundung := 0;*VAR*Radius der Eckenverrundung
+   Tiefe := -2;*VAR*Fraestiefe
+   Aufmass := 0;*VAR*Aufmass zur Kontur
+   ANF := _ANF;*VAR*Anfahrfaktor
+   esmd := 1;*VAR*
+   ggl := 0;*VAR*
+   laser := 0;*VAR*
+   depth := 0;*VAR*
+   Delta := 0;
+   HaveToSplit := 0;
+   _MNCDC_Measure_activ := 0;
+   _MNCDC_Format_activ := 0;
+START
+;DIREKT CNC SYSTEME NCHOPS
+;*********************************
+;*** Formatieren Standard ***
+;*********************************
+Rohteil (300,300,19,0,0)
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+Ebene0()
+;*********************************
+;*** Fehleingaben abfangen ***
+Transesd (Tiefe,esmd)
+IF ((Aufmass < 0) & (_RX <= (Aufmass*(-2))) | (_RY <= (Aufmass*(-2))))
+Fehlermeldung (GetMessageText('4','Negatives Ausmass zu gross !'))
+ELSE
+END
+;SF 01.04.2009
+;Zu großen Eckradius prüfen
+delta := _RX-2*Eckenverrundung
+IF Delta<0
+Fehlermeldung (GetMessageText('24','Eckradius zu gross'))
+END
+delta := _RY-2*Eckenverrundung
+IF Delta<0
+Fehlermeldung (GetMessageText('24','Eckradius zu gross'))
+END
+IF (_AT_MAXDEPTH>0) & (Abs(Tiefe)>_AT_MAXDEPTH)
+IF depth>_AT_MAXDEPTH
+Hinweismeldung ('Limit: _AT_MAXDEPTH (' + FLOATTOSTR(_AT_MAXDEPTH,5,3) +')')
+depth := _AT_MAXDEPTH
+ELSE
+IF depth=0
+IF Abs(Tiefe) > _AT_MAXDEPTH
+Hinweismeldung ('Limit: _AT_MAXDEPTH (' + FLOATTOSTR(_AT_MAXDEPTH,5,3) +')')
+depth := _AT_MAXDEPTH
+END
+END
+END
+END
+;*********************************
+;*********************************
+;*** Keine negative Radien zugelassen ***
+IF Eckenverrundung<0
+Eckenverrundung := -Eckenverrundung
+END
+;*********************************
+;*** Radien manipulieren ****
+IF (Eckenverrundung>0) & (Aufmass>=0)
+Eckenverrundung := Aufmass+Eckenverrundung
+END
+IF (Eckenverrundung>0) & (Aufmass<0)
+Eckenverrundung := Aufmass+Eckenverrundung
+IF Eckenverrundung<0
+Eckenverrundung := 0
+Hinweismeldung (GetMessageText('37','Eckverrundung entfaellt !  Aufmass ist groesser als Eckradius.'))
+END
+END
+;*********************************
+;Spezielle Bohrmaschine Dübeln zum Schluss
+nciext (-300002,'MNCDC',0,0,0,2)
+CALL _MNCDC_SplitFormat (REF HAVETOSPLIT:=HaveToSplit)
+IF HaveToSplit
+;Spezielle Bohrmaschine aktiv
+CALL _MNCDC_Format ( VAL ECKENVERRUNDUNG:=Eckenverrundung,TIEFE:=Tiefe,AUFMASS:=Aufmass,ANF:=ANF,ESMD:=esmd,GGL:=ggl,LASER:=laser,DEPTH:=depth)
+ELSE
+SP (-Aufmass,_RY/2,Tiefe,2,2,ANF,0,0,0,0,0,ggl,0,depth,0,0,LASER,0,0,0,0,0,0)
+G01 (_X,-Aufmass,_Z,Eckenverrundung)
+G01 (_RX+Aufmass,_Y,_Z,Eckenverrundung)
+G01 (_X,_RY+Aufmass,_Z,Eckenverrundung)
+G01 (-Aufmass,_Y,_Z,Eckenverrundung)
+G01 (_X,_RY/2-_WZR,_Z,0)
+EP (2,ANF,0)
+END
+;MW 11.05.2015 - Messen und Formatieren zusammen geht nicht
+IF (_MNCDC_Measure_activ >0)
+Fehlermeldung (GetMessageText('2002','Formatieren und Messen gemeinsam nicht möglich!'))
+ELSE
+_MNCDC_Format_activ := 1
+END

@@ -1,0 +1,95 @@
+;MAKROTYP=1
+;BILD=Fasen4x.wmf
+;INFO=
+;WZGV=STANDARD
+;MASCHINE=HOLZHER
+;NCNAME=Falz_Fasen
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA.Dll
+;DIALOGPROC=ShowFaseDialog
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2080mm;Dimension X
+   DY := 980mm;Dimension Y
+   DZ := 45mm;Dimension Z
+   Fase1_Wkz :=135;*VAR*Werkzeug für Fase1 von unten
+   Fase2_Wkz :=135;*VAR*Werkzeug für Fase2 von unten
+   Fase3_Wkz :=135;*VAR*Werkzeug für Fase3 von unten
+   Fase4_Wkz :=235;*VAR*Werkzeug für Fase Überschlag
+   Falz1_T :=15.00;*VAR*Falz1-Tiefe
+   Falz1_H :=12.00;*VAR*Falz1-Höhe
+   Fase1_Mass :=1.00;*VAR*Fase1
+   Falz2_T :=13.00;*VAR*Falz2-Tiefe
+   Falz2_H :=25.00;*VAR*Falz2-Höhe
+   Fase2_Mass :=1.00;*VAR*Fase2
+   Fase3_Mass :=1.00;*VAR*Fase3 im Überschlag
+   Fase4_Mass :=1.00;*VAR*Fase4 im Überschlag von oben
+   F_Radius :=2.00;*VAR*Radius oben im Überschlag
+   CheckFase1 :=-1;*VAR*Fase1 Ja/Nein
+   CheckFase2 :=-1;*VAR*Fase2 Ja/Nein
+   CheckFase3 :=-1;*VAR*Fase3 Ja/Nein
+   CheckFase4 :=-1;*VAR*Fase4 Ja/Nein
+   ;;*********************************
+   ; HolzHer Schweiz AG B. Achermann   
+   ;*********************************
+   ; FasMakro  
+START
+IF CheckFase1=-1
+;Fase bei Doppelfalz ganz unten
+WZF (Fase1_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-150,Falz1_T+Falz2_T,Fase1_Mass,2,1,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz1_T+Falz2_T,Falz1_T+Falz2_T,0,0,7,2)
+G01 (Falz1_T+Falz2_T,Falz1_T+Falz2_T,0,0,1,2)
+G01 (-150,Falz1_T+Falz2_T,0,0,3,2)
+EP (1,_ANF,0)
+END
+IF CheckFase2=-1
+;Fase bei 1.Falz ganz unten
+WZF (Fase2_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+IF CheckFase1=-1
+;Wenn Doppelfalz ja
+SP (-150,Falz2_T,Fase2_Mass+Falz1_H,2,1,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+ELSE
+;Wenn Doppelfalz nein
+SP (-150,Falz2_T,Fase2_Mass,2,1,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+END
+G01 (Falz2_T,Falz2_T,0,0,7,2)
+G01 (Falz2_T,Falz2_T,0,0,1,2)
+G01 (-150,Falz2_T,0,0,3,2)
+EP (1,_ANF,0)
+END
+IF CheckFase3=-1
+;Fase bei Überschlag unten unten
+WZF (Fase3_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+IF (CheckFase1=-1) & (CheckFase2=-1)
+;Wenn Doppelfalz und Einfach Falz ja
+SP (-150,0,Fase3_Mass+Falz1_H +Falz2_H,2,1,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+END
+IF (CheckFase1=0) & (CheckFase2=-1)
+;Wenn Doppelfalz nicht und Einfachfalz ja
+SP (-150,0,Fase3_Mass+Falz2_H,2,1,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+END
+IF (CheckFase1=0) & (CheckFase2=0)
+;Wenn Doppelfalz und Einfachfalz nein
+SP (-150,0,Fase3_Mass,2,1,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+END
+G01 (0,0,0,F_Radius,7,2)
+G01 (0,0,0,F_Radius,1,2)
+G01 (-150,0,0,0,3,2)
+EP (1,_ANF,0)
+END
+;3te Fase
+IF CheckFase4=-1
+;Fase im Überschlag
+WZF (Fase4_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-150,0,-Fase4_Mass,2,1,_ANF,0,0,0,5,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,F_Radius,7,2)
+G01 (0,0,0,F_Radius,1,2)
+G01 (-150,0,0,0,3,2)
+EP (1,_ANF,0)
+END

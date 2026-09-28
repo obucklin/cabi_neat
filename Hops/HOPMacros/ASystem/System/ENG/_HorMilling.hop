@@ -1,0 +1,68 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=HORTASCH
+;MASCHINE=demo
+;WZGV=demo
+;BILD=_HorTasche.WMF
+VARS
+   View := 1;*VAR*processing View
+   XPOS := 0;*VAR*(centre in x)
+   YPOS := 0;*VAR*(centre in y)
+   ZPOS := 0;*VAR*(centre of pocket) from edge below
+   length := 100;*VAR*length of pocket
+   height := 17;*VAR*height of pocket
+   depth := 55;*VAR*depth of pocket
+   radius := 0;*VAR*radius of the edge of the pocket
+   number := 3;*VAR*number of depth in z
+   colour := 0;coloured yes/no  0/1
+START
+;finished part (300,300,100,0,0)
+;INPUT
+;ToolM (1,_VA,_V,_VE,_SD,_ANF)
+IF depth<0
+depth := -depth
+END
+;horizontal milling pocket on View1- View4
+;(c) DiREKT CNC-SYSTEME GmbH [MW] 12.11.97
+;**************************************************************************************
+IF (View=1)&(number>0)&(_WZD<=height)
+;Von VORNE
+DRECTANGLE (XPOS-length/2,YPOS,length,depth,colour,1)
+VIEW5(XPOS,YPOS,0,90,0)
+;Ebene1()
+CALL _TaschenFraesen1 (VAL X:=0,Y:=ZPOS,Z:=0,Hoehe:=height,Laenge:=length,Tiefe:=depth,Anzahl:=number,Radius:=Radius)
+END
+;ENDE von Bearbeitung auf EBENE1
+;**************************************************************************************
+IF (View=2)&(number>0)&(_WZD<=height)
+;Von LINKS
+DRECTANGLE (XPOS,YPOS-length/2,depth,length,colour,1)
+;Ebene2()
+VIEW5(XPOS,YPOS,0,90,270)
+CALL _TaschenFraesen1 (VAL X:=0,Y:=ZPOS,Z:=0,Hoehe:=height,Laenge:=length,Tiefe:=depth,Anzahl:=number,Radius:=Radius)
+END
+;ENDE von Bearbeitung auf EBENE2
+;**************************************************************************************
+IF (View=3)&(number>0)&(_WZD<=height)
+;Von Hinten
+DRECTANGLE (XPOS-length/2,YPOS,length,-depth,colour,1)
+VIEW5(XPOS,YPOS,0,90,180)
+;Ebene3()
+CALL _TaschenFraesen1 (VAL X:=0,Y:=ZPOS,Z:=0,Hoehe:=height,Laenge:=length,Tiefe:=depth,Anzahl:=number,Radius:=Radius)
+END
+;ENDE von Bearbeitung auf EBENE3
+;**************************************************************************************
+IF (View=4)&(number>0)&(_WZD<=height)
+;Von Rechts
+DRECTANGLE (XPOS,YPOS-length/2,-depth,length,colour,1)
+VIEW5(XPOS,YPOS,0,90,90)
+;Ebene4()
+CALL _TaschenFraesen1 (VAL X:=0,Y:=ZPOS,Z:=0,Hoehe:=height,Laenge:=length,Tiefe:=depth,Anzahl:=number,Radius:=Radius)
+END
+;ENDE von Bearbeitung auf EBENE4
+;**************************************************************************************
+VIEW0()
+

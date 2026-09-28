@@ -1,0 +1,51 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowKonturEle_V_NachHintenEP_V7Dialog
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.2
+VARS
+   name := '';*VAR*Bauteilname
+   EleNr := 1;*VAR*Element
+   EleTyp := 0;Typ  Gerade  Bogen
+   SX := -9999;
+   SY := -9999;
+   EX := -9999;
+   EY := -9999;
+   MX := -9999;
+   MY := -9999;
+   Vx := ;*VAR**REF*
+   Vy := ;*VAR**REF*
+   Nx := 0;
+   Ny := 0;
+   Dist := 0;
+START
+;******************************************************
+;********   Direkt cnc-systeme GmbH   ®  *******
+;******************************************************
+SX := getkp_x(name,EleNr-1)
+SY := getkp_y(name,EleNr-1)
+MX := getkE_mx(name,EleNr)
+MY := getkE_my(name,EleNr)
+EX := getkp_x(name,EleNr)
+EY := getkp_y(name,EleNr)
+EleTyp := GetKE_Typ(name,EleNr)
+IF EleTyp=1
+Vx := -Ex+Sx
+Vy := -Ey+Sy
+ELSE
+Vx := Ex-Mx
+Vy := Ey-My
+Nx := -Vy
+Ny := Vx
+IF EleTyp=2
+Nx := -Nx
+Ny := -Ny
+END
+Vx := -Nx
+Vy := -Ny
+END
+CALL Dist2P_2D_V7 (REF DIST:=Dist VAL P1X:=0,P1Y:=0,P2X:=Vx,P2Y:=Vy)
+IF Dist>0
+Vx := Vx/Dist
+Vy := Vy/Dist
+END

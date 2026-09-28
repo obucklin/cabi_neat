@@ -1,0 +1,224 @@
+;MAKROTYP=1
+;DIALOGDLL=DowlingDialogs.Dll
+;DIALOGPROC=Show_Dowling_BoGr_HX_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   BIX := 64;*VAR*Bohrung1 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIX := 64+37;*VAR*Bohrung2 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIIX := 0;*VAR*Bohrung3 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIIIX := 0;*VAR*Bohrung4 (Wert=0-> Bohrung wird nicht abgesetzt)
+   Z := 0;*VAR*Z-Wert von der Unterkante
+   Spiegeln := 0;*VAR*1=>gespiegelt
+   T := -30;*VAR*Bohrtiefe
+   D := 8mm;*VAR*Bohrdurchmesser
+   Ebene := 0;*VAR*Ebene 2 oder Ebene 4
+   TL := 0;Tieflochflag
+   YP := 0;Y Position
+   DW := 90;Drehwinkel
+   Inkrement := 0;*VAR*Absolut oder Inkremental
+   B1 := 0;Bohrung 1
+   B2 := 0;Bohrung 2
+   B3 := 0;Bohrung 3
+   B4 := 0;Bohrung 4
+   esx := 3;*VAR*
+   esz := 1;*VAR*
+   use2 := 1;*VAR*
+   use3 := 0;*VAR*
+   use4 := 0;*VAR*
+   DummyY := 0;
+   BAktiv := 1;*VAR*
+   LAktiv := 1;*VAR*
+   DAktiv := 1;*VAR*
+   DuebA := 15;*VAR*
+   LeimZ := 50;*VAR*
+   DuebL := 40;*VAR*
+   Num1 := 0;*VAR*
+   Num2 := 0;*VAR*
+   Str1 := '';*VAR*
+   BoxId := 0;Merker BoxNr
+   Faktor := 1;
+   Y_STL := 0;
+   STL_Name := '';
+   ToolID := 0;
+   ToolStr := '';
+   ToolIsMounted := 0;
+   ToolType := 0;
+   ToolIsDrillHead := 0;
+START
+;******************************************************
+;********   Direkt cnc-systeme GmbH   ®  *******
+;******************************************************
+;*****    Horiz. Bohren + Dübel + Leimen     *******
+;******************************************************
+Fertigteil (1000,2000,19,0,0,0,0,0,'',0,0,0,0)
+BoxID := _BoxId
+;-
+;- Dübeln, wenn gewählt...
+IF BAktiv
+;- Bohren...
+CALL _BoGr_HX_V5 ( VAL BIX:=BIX,BIIX:=BIIX,BIIIX:=BIIIX,BIIIIX:=BIIIIX,Z:=Z,SPIEGELN:=Spiegeln,T:=T,D:=D,EBENE:=Ebene,INKREMENT:=Inkrement,ESX:=ESX,ESZ:=ESZ,USE2:=USE2,USE3:=USE3,USE4:=USE4)
+END
+;-
+;- Dübeln, wenn gewählt...
+IF DAktiv
+;-
+;- FehlEingabe verhindern...
+IF ABS(T) < (DuebL-DuebA)
+Fehlermeldung ('Dowel too deep !')
+END
+CALLDLL GET_POSSIBLE_DRILL_TOOL(ParserExtensionC,DefaultStr,REF OTOOLID:=ToolID,OTOOLSTR:=ToolStr,OTOOLISMOUNTED:=ToolIsMounted,OTOOLTYPE:=ToolType,OTOOLISDRILLHEAD:=ToolIsDrillHead VAL IDIAMETER:=D,ILENGTH:=0,INX:=0,INY:=0,INZ:=0,IDRILLTYPE:=9999,IMILLDRILLOFFSET:=0,IMAXDIAMETER:=0,IMATERIALID:=-1,ITECHTYPE:=3)
+WZF (ToolID,_VE,_V,_VA,_SD,_ANF,'500')
+;-
+;- Auswerten Ebenen
+IF ebene=0
+YP := 0
+ELSE
+YP := _RY
+Faktor := -1
+END
+;-
+;- Berechnung: ink. oder abs
+IF Inkrement=0
+transesxy (BIX,DummyY,esx,1)
+transesxy (BIIX,DummyY,esx,1)
+transesxy (BIIIX,DummyY,esx,1)
+transesxy (BIIIIX,DummyY,esx,1)
+B1 := BIX
+B2 := BIIX
+B3 := BIIIX
+B4 := BIIIIX
+ELSE
+B1 := BIX
+B2 := BIX+BIIX
+B3 := BIX+BIIX+BIIIX
+B4 := BIX+BIIX+BIIIX+BIIIIX
+transesxy (B1,DummyY,esx,1)
+transesxy (B2,DummyY,esx,1)
+transesxy (B3,DummyY,esx,1)
+transesxy (B4,DummyY,esx,1)
+END
+;*****************************************
+;*****************************************
+;- Dübel zeichnen...
+ZRechteck (B1-D/2,YP-DuebA*Faktor,D,DuebL*Faktor,1,1024255,0,0,-1,0)
+IF use2 = 1
+ZRechteck (B2-D/2,YP-DuebA*Faktor,D,DuebL*FAktor,1,1024255,0,0,-1,0)
+END
+IF use3 = 1
+ZRechteck (B3-D/2,YP-DuebA*Faktor,D,DuebL*FAktor,1,1024255,0,0,-1,0)
+END
+IF use4 = 1
+ZRechteck (B4-D/2,YP-DuebA*Faktor,D,DuebL*FAktor,1,1024255,0,0,-1,0)
+END
+IF Spiegeln = 1
+CALL _spiegeln_start_V5 ( VAL SPIEGELN:=1,ACHSE:=0,SPIEGEL_VARIABLE:=0)
+;- Dübel zeichnen...
+ZRechteck (B1-D/2,YP-DuebA*Faktor,D,DuebL*Faktor,1,1024255,0,0,-1,0)
+IF use2 = 1
+ZRechteck (B2-D/2,YP-DuebA*Faktor,D,DuebL*FAktor,1,1024255,0,0,-1,0)
+END
+IF use3 = 1
+ZRechteck (B3-D/2,YP-DuebA*Faktor,D,DuebL*FAktor,1,1024255,0,0,-1,0)
+END
+IF use4 = 1
+ZRechteck (B4-D/2,YP-DuebA*Faktor,D,DuebL*FAktor,1,1024255,0,0,-1,0)
+END
+SPIEGELNEND()
+END
+;-
+IF ebene=0
+;-- links
+Y_STL := 0
+DW := 0
+ELSE
+;-- rechts
+Y_STL := _RY
+DW := 180
+END
+TransEsZ (Z,ESZ);BREAKPOINT
+;- Dübel einbringen...
+;-- MW 29.01.2020 Duebel als STL zeichnen
+;-- STL - Name dynamisch definieren
+STL_Name := 'DowelD_'+FLOATTOSTR(D,2,0)+'L'+FLOATTOSTR(DuebL,2,0)
+;.
+EbeneF (B1,Y_STL,Z,90,DW,0,0,0);BREAKPOINT
+NCINFOProcess (-102010,0,0,DuebA+_AT_LENGTH,0,0,DuebA,Str1,STL_Name,D,LAktiv,LeimZ,DAktiv,DuebA,DuebL,Num1,Num2,T,0,0,0,0,0,0,0,0,0,0,0,0,3)
+IF (Use2<>0)
+EbeneF (B2,Y_STL,Z,90,DW,0,0,0)
+NCINFOProcess (-102010,0,0,DuebA+_AT_LENGTH,0,0,DuebA,Str1,STL_Name,D,LAktiv,LeimZ,DAktiv,DuebA,DuebL,Num1,Num2,T,0,0,0,0,0,0,0,0,0,0,0,0,3)
+END
+IF (Use3<>0)
+EbeneF (B3,Y_STL,Z,90,DW,0,0,0)
+NCINFOProcess (-102010,0,0,DuebA+_AT_LENGTH,0,0,DuebA,Str1,STL_Name,D,LAktiv,LeimZ,DAktiv,DuebA,DuebL,Num1,Num2,T,0,0,0,0,0,0,0,0,0,0,0,0,3)
+END
+IF (Use4<>0)
+EbeneF (B4,Y_STL,Z,90,DW,0,0,0)
+NCINFOProcess (-102010,0,0,DuebA+_AT_LENGTH,0,0,DuebA,Str1,STL_Name,D,LAktiv,LeimZ,DAktiv,DuebA,DuebL,Num1,Num2,T,0,0,0,0,0,0,0,0,0,0,0,0,3)
+END
+;--
+;--gespiegelt
+;--
+IF Spiegeln = 1
+EbeneF (_RX-B1,Y_STL,Z,90,DW,0,0,0)
+NCINFOProcess (-102010,0,0,DuebA+_AT_LENGTH,0,0,DuebA,Str1,STL_Name,D,LAktiv,LeimZ,DAktiv,DuebA,DuebL,Num1,Num2,T,0,0,0,0,0,0,0,0,0,0,0,0,3)
+IF (Use2<>0)
+EbeneF (_RX-B2,Y_STL,Z,90,DW,0,0,0)
+NCINFOProcess (-102010,0,0,DuebA+_AT_LENGTH,0,0,DuebA,Str1,STL_Name,D,LAktiv,LeimZ,DAktiv,DuebA,DuebL,Num1,Num2,T,0,0,0,0,0,0,0,0,0,0,0,0,3)
+END
+IF (Use3<>0)
+EbeneF (_RX-B3,Y_STL,Z,90,DW,0,0,0)
+NCINFOProcess (-102010,0,0,DuebA+_AT_LENGTH,0,0,DuebA,Str1,STL_Name,D,LAktiv,LeimZ,DAktiv,DuebA,DuebL,Num1,Num2,T,0,0,0,0,0,0,0,0,0,0,0,0,3)
+END
+IF (Use4<>0)
+EbeneF (_RX-B4,Y_STL,Z,90,DW,0,0,0)
+NCINFOProcess (-102010,0,0,DuebA+_AT_LENGTH,0,0,DuebA,Str1,STL_Name,D,LAktiv,LeimZ,DAktiv,DuebA,DuebL,Num1,Num2,T,0,0,0,0,0,0,0,0,0,0,0,0,3)
+END
+END
+Ebene0()
+;--
+IF ebene=0
+;-- links
+Y_STL := DuebL/2-DuebA
+ELSE
+;-- rechts
+Y_STL := _RY-DuebL/2+DuebA
+END
+;STL-Zeichnen
+EbeneF (B1,Y_STL,Z,90,DW+90,0,0,0)
+zstl (0,0,0,1024255,1,STL_Name+'.stl',0,0)
+IF (Use2<>0)
+EbeneF (B2,Y_STL,Z,90,DW+90,0,0,0)
+zstl (0,0,0,1024255,1,STL_Name+'.stl',0,0)
+END
+IF (Use3<>0)
+EbeneF (B3,Y_STL,Z,90,DW+90,0,0,0)
+zstl (0,0,0,1024255,1,STL_Name+'.stl',0,0)
+END
+IF (Use4<>0)
+EbeneF (B4,Y_STL,Z,90,DW+90,0,0,0)
+zstl (0,0,0,1024255,1,STL_Name+'.stl',0,0)
+END
+;--
+;--gespiegelt
+;--
+IF Spiegeln <> 0
+EbeneF (_RX-B1,Y_STL,Z,90,DW+90,0,0,0)
+zstl (0,0,0,1024255,1,STL_Name+'.stl',0,0)
+IF (Use2<>0)
+EbeneF (_RX-B2,Y_STL,Z,90,DW+90,0,0,0)
+zstl (0,0,0,1024255,1,STL_Name+'.stl',0,0)
+END
+IF (Use3<>0)
+EbeneF (_RX-B3,Y_STL,Z,90,DW+90,0,0,0)
+zstl (0,0,0,1024255,1,STL_Name+'.stl',0,0)
+END
+IF (Use4<>0)
+EbeneF (_RX-B4,Y_STL,Z,90,DW+90,0,0,0)
+zstl (0,0,0,1024255,1,STL_Name+'.stl',0,0)
+END
+END
+Ebene0()
+;- BohrKopf-Tool wieder aktiv machen,
+;- falls danach nochmals Bohren kommt...
+WZB (BoxID,_VE,_V,_VA,_SD,_ANF,'')
+END

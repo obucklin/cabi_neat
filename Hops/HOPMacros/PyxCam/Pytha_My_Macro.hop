@@ -1,0 +1,13 @@
+;MAKROTYP=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   ContourName := '';*VAR*
+   CenterX := 0;*VAR*
+   CenterY := 0;*VAR*
+   Length := 0;*VAR*
+   Width := 0;*VAR*
+   Angle := 0;*VAR*
+START
+/WZF (0,_VE,_V,_VA,_SD,_ANF,'51')

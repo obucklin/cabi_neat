@@ -1,0 +1,60 @@
+;MAKROTYP=0
+;BILD=VX_120_Tueren.wmf
+;INFO=
+;WZGV=7123K_021
+;MASCHINE=HOLZHER
+;NCNAME=VX_120_Tueren
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2000;Dimension X
+   DY := 400;Dimension Y
+   DZ := 50;Dimension Z
+   Band_O := 400;*VAR*Band oben in Tuer referenz in der Mitte
+   Band_U := 1780;*VAR*Band unten von oben gemessen
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+CALL HH_Park ( VAL PARK:=3,X:=0,Y:=0)
+WZF (3,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Band_O-59.8,-20,-1,0,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Band_O-59.8,3,0,0,1,2)
+G01 (Band_O+59.8,3,0,0,1,2)
+G01 (Band_O+59.8,-20,0,0,1,2)
+EP (0,_ANF,0)
+;Band unten
+SP (Band_U-59.8,-20,-1,0,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Band_U-59.8,3,0,0,1,2)
+G01 (Band_U+59.8,3,0,0,1,2)
+G01 (Band_U+59.8,-20,0,0,1,2)
+EP (0,_ANF,0)
+;Horizontale Bearbeitung Band oben
+Ebene1()
+WZF (152,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=Band_O,Y_MITTE:=6.7,TASCHENLAENGE:=120.6,TASCHENBREITE:=36,RADIUS:=12,WINKEL:=0,TIEFE:=-3.3,ZUSTELLUNG:=0,AB:=0,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=7,ESMD:=0,LASER:=0)
+Ebene0()
+;Loecher vorbohren
+WZF (22,_VE,_V,_VA,_SD,_ANF,'1')
+HorzB (Band_O-48,0,16.5,3,-20,0,0,90,1,2,0,0)
+HorzB (Band_O-24,0,12.5,3,-20,0,0,90,1,2,0,0)
+HorzB (Band_O,0,16.5,3,-20,0,0,90,1,2,0,0)
+HorzB (Band_O+24,0,12.5,3,-20,0,0,90,1,2,0,0)
+HorzB (Band_O+48,0,16.5,3,-20,0,0,90,1,2,0,0)
+;Horizontale Bearbeitung Band unten
+Ebene1()
+WZF (152,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=Band_U,Y_MITTE:=6.7,TASCHENLAENGE:=120.6,TASCHENBREITE:=36,RADIUS:=12,WINKEL:=0,TIEFE:=-3.3,ZUSTELLUNG:=0,AB:=0,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=7,ESMD:=0,LASER:=0)
+Ebene0()
+;Loecher vorbohren
+WZF (22,_VE,_V,_VA,_SD,_ANF,'1')
+HorzB (Band_U-48,0,16.5,3,-20,0,0,90,1,2,0,0)
+HorzB (Band_U-24,0,12.5,3,-20,0,0,90,1,2,0,0)
+HorzB (Band_U,0,16.5,3,-20,0,0,90,1,2,0,0)
+HorzB (Band_U+24,0,12.5,3,-20,0,0,90,1,2,0,0)
+HorzB (Band_U+48,0,16.5,3,-20,0,0,90,1,2,0,0)

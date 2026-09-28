@@ -1,0 +1,10 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowCCPPTRAVOFFSET_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   TravOffsetLinks := 0;*VAR*TravOffset links
+   TravOffsetRechts := 0;*VAR*TravOffset rechts
+START
+nciext (-100076,'NCISys',0,0,0,TravOffsetLinks,TravOffsetRechts)

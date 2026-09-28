@@ -1,0 +1,147 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.11.0.182[Hops.exe]
+;BILD=_BOHGY_V8.WMF
+;INFO=_Bohgy_V5
+;WZGV=7605_071222
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=_Bohgy_V8
+;KOMMENTAR=
+;DX=1
+;DY=2
+;DZ=3
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_Bohgy_V8Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   SPX := 10;*VAR*Startwert (x)
+   BIY := 64;*VAR*Bohrung1 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIY := 64+37;*VAR*Bohrung2 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIIY := 0;*VAR*Bohrung3 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIIIY := 0;*VAR*Bohrung4 (Wert=0-> Bohrung wird nicht abgesetzt)
+   Spiegeln := 0;*VAR*1=>gespiegelt
+   T := -13;*VAR*Bohrtiefe
+   D := 8mm;*VAR*Bohrdurchmesser
+   TLF := 0;*VAR*Tieflochflag
+   Inkrement := 0;*VAR*Absolut oder Inkremental
+   B1 := 0;Bohrung 1
+   B2 := 0;Bohrung 2
+   B3 := 0;Bohrung 3
+   B4 := 0;Bohrung 4
+   esxy := 1;*VAR*
+   esd := 0;*VAR*
+   Use2 := 1;*VAR*
+   Use3 := 0;*VAR*
+   Use4 := 0;*VAR*
+   DummyX := 0;
+   VonUnten := 0;*VAR*Von unten
+START
+;direkt cnc systeme NCHOPS Version 4.x
+;Neu MW 13.Sept 2005
+;Bug bei Inkrement=1 beseitigt
+;Stirnseitenbohrungen in Y
+Transesd (T,esd)
+IF T>0
+T := -T
+END
+IF Inkrement=0
+transesxy (SPX,BIY,esxy,1)
+transesxy (DummyX,BIIY,esxy,1)
+transesxy (DummyX,BIIIY,esxy,1)
+transesxy (DummyX,BIIIIY,esxy,1)
+;IF (BIY<>0)
+Bohrung (SPX,BIY,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=BIY,D:=D,SHOW:=VonUnten)
+;END
+;IF (BIIY<>0)
+IF (Use2<>0)
+Bohrung (SPX,BIIY,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=BIIY,D:=D,SHOW:=VonUnten)
+END
+;IF (BIIIY<>0)
+IF (Use3<>0)
+Bohrung (SPX,BIIIY,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=BIIIY,D:=D,SHOW:=VonUnten)
+END
+;IF (BIIIIY<>0)
+IF (Use4<>0)
+Bohrung (SPX,BIIIIY,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=BIIIIY,D:=D,SHOW:=VonUnten)
+END
+;Gespiegelte Bohrungen
+IF Spiegeln <> 0
+;IF (BIY<>_RY/2)&(BIY<>0)
+Bohrung (SPX,_RY-BIY,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=_RY-BIY,D:=D,SHOW:=VonUnten)
+;END
+;IF (BIIY<>_RY/2)&(BIIY<>0)
+IF (Use2<>0)
+Bohrung (SPX,_RY-BIIY,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=_RY-BIIY,D:=D,SHOW:=VonUnten)
+END
+;IF (BIIIY<>_RY/2)&(BIIIY<>0)
+IF (Use3<>0)
+Bohrung (SPX,_RY-BIIIY,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=_RY-BIIIY,D:=D,SHOW:=VonUnten)
+END
+;IF (BIIIIY<>_RY/2)&(BIIIIY<>0)
+IF (Use4<>0)
+Bohrung (SPX,_RY-BIIIIY,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=_RY-BIIIIY,D:=D,SHOW:=VonUnten)
+END
+END
+ELSE
+B1 := BIY
+B2 := BIY+BIIY
+B3 := BIY+BIIY+BIIIY
+B4 := BIY+BIIY+BIIIY+BIIIIY
+transesxy (SPX,B1,esxy,1)
+transesxy (DummyX,b2,esxy,1)
+transesxy (DummyX,b3,esxy,1)
+transesxy (DummyX,b4,esxy,1)
+;IF (BIY<>0)
+Bohrung (SPX,B1,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=B1,D:=D,SHOW:=VonUnten)
+;END
+;IF (BIIY<>0)
+IF (Use2<>0)
+Bohrung (SPX,B2,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=B2,D:=D,SHOW:=VonUnten)
+END
+;IF (BIIIY<>0)
+IF (Use3<>0)
+Bohrung (SPX,B3,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=B3,D:=D,SHOW:=VonUnten)
+END
+;IF (BIIIIY<>0)
+IF (Use4<>0)
+Bohrung (SPX,B4,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=B4,D:=D,SHOW:=VonUnten)
+END
+;Gespiegelte Bohrungen
+IF Spiegeln <> 0
+;IF (BIY<>_RY/2)&(BIY<>0)
+Bohrung (SPX,_RY-B1,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=_RY-B1,D:=D,SHOW:=VonUnten)
+;END
+;IF (BIIY<>_RY/2)&(BIIY<>0)
+IF (Use2<>0)
+Bohrung (SPX,_RY-B2,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=_RY-B2,D:=D,SHOW:=VonUnten)
+END
+;IF (BIIIY<>_RY/2)&(BIIIY<>0)
+IF (Use3<>0)
+Bohrung (SPX,_RY-B3,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=_RY-B3,D:=D,SHOW:=VonUnten)
+END
+;IF (BIIIIY<>_RY/2)&(BIIIIY<>0)
+IF (Use4<>0)
+Bohrung (SPX,_RY-B4,D,T,TLF,0,0,0,0,0,VonUnten,0)
+CALL HH_DRAW_DRILL ( VAL POSX:=SPX,POSY:=_RY-B4,D:=D,SHOW:=VonUnten)
+END
+END
+END

@@ -1,0 +1,112 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_Rbohy_einpass_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   einpassen := 0;*VAR*Einpassen   1=Ja   0=Nein
+   SPX := 37;*VAR*StartPunkt (x)
+   SPX2 := 0;*VAR*Lage der 2. Reihe
+   SPY := 64;*VAR*Mindestwert für Strartpunkt
+   Raster := 64mm;*VAR*Rasterwerte
+   EPY := 0;*VAR*Mindestwert für Endpunkt
+   T := -13;*VAR*Bohrtiefe
+   D := 5mm;*VAR*Bohrdurchmesser
+   TLF := 0;*VAR*Tieflochflag
+   Anzahl := 0;Anzahl Löcher
+   Rest := 0;Restwert unten
+   i := 0;
+   MerkerSPY := 0;
+   länge := 0;
+   esxy := 1;*VAR*
+   esx := 3;*VAR*
+   esy := 5;*VAR*
+   esd := 0;*VAR*
+   Use2 := 0;*VAR*
+   Dummy := 0;
+START
+;direkt cnc systeme NCHOPS Version 3.4
+;Lochreihe in Y / MD/04.01
+;-- MW / SF 11.05.2009
+;-- Reihenbohrung auch auf freien Ebenen möglich
+;--
+;-- Der Easysnap esx (links - mitte - rechts ) muss in Abhängigkeit von esxy auch Y berücksichtigen
+;--
+;--
+;--
+CALL _Trans_ESX_2_ESXY (REF ESX:=esx VAL ESXY:=esxy)
+CALL _Trans_ESY_2_ESXY (REF ESY:=esy VAL ESXY:=esxy)
+;--
+;--
+;--
+;--
+;--
+;-- Hier bisher Trans immer bezogen auf View=0
+Transesd (T,esd)
+transesxy (SPx,SPy,esxy,0)
+transesxy (dummy,EPY,esy,0)
+transesxy (SPX2,dummy,esx,0)
+Raster := abs(Raster)
+IF (SPY>EPY)&(Einpassen=1)
+;--
+;-- MW 12.12.2007
+;-- wenn Referenzpunkt rechts
+;-- MW 16.01.2008
+;-- nur wenn einpassen gewählt
+MerkerSPY := SPY
+SPY := EPY
+EPY := MerkerSPY
+END
+IF T>0
+T := -T
+END
+;*****   1. Reihe  *****
+MerkerSPY := SPY
+IF einpassen = 1
+länge := epy-spy
+anzahl := (länge)/Raster
+anzahl := anzahl DIV 1 +1
+rest := (länge-(anzahl-1)*Raster)/2
+FOR i := 0 TO anzahl-1 STEP 1
+Bohrung (spx,spy+rest+i*raster,D,T,TLF,0,0)
+END
+ELSE
+IF EPY > SPY
+WHILE   SPY <= EPY
+Bohrung (SPX,SPY,D,T,TLF,0,0)
+SPY  :=  SPY + Raster
+END
+ELSE
+WHILE    SPY >= EPY
+Bohrung (SPX,SPY,D,T,TLF,0,0)
+SPY   :=   SPY - Raster
+END
+END
+END
+;*****   2. Reihe  *****
+;IF SPX2<>0
+IF Use2<>0
+SPY := MerkerSPY
+i := 0
+SPX := SPX2
+IF einpassen = 1
+länge := epy-spy
+anzahl := (länge)/Raster
+anzahl := anzahl DIV 1 +1
+rest := (länge-(anzahl-1)*Raster)/2
+FOR i := 0 TO anzahl-1 STEP 1
+Bohrung (spx,spy+rest+i*raster,D,T,TLF,0,0)
+END
+ELSE
+IF EPY > SPY
+WHILE   SPY <= EPY
+Bohrung (SPX,SPY,D,T,TLF,0,0)
+SPY  :=  SPY + Raster
+END
+ELSE
+WHILE    SPY >= EPY
+Bohrung (SPX,SPY,D,T,TLF,0,0)
+SPY   :=   SPY - Raster
+END
+END
+END
+END

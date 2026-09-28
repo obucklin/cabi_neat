@@ -1,0 +1,29 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowVxyzToAxyz_V7Dialog
+VARS
+   Offx := 0;*VAR*
+   Offy := 0;*VAR*
+   Offz := 0;*VAR*
+   DW := 0;*VAR*
+   KW := 0;*VAR*
+   Vx := 0;*VAR*
+   Vy := 0;*VAR*
+   Vz := 0;*VAR*
+   Ax := ;*VAR**REF*
+   Ay := ;*VAR**REF*
+   Az := ;*VAR**REF*
+   Vxx := 0;
+   Vxy := 0;
+   Vxz := 0;
+   Vyx := 0;
+   Vyy := 0;
+   Vyz := 0;
+   Vzx := 0;
+   Vzy := 0;
+   Vzz := 0;
+START
+CALL CalcViewVectorsDWKW_V7 (REF VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz VAL DW:=DW,KW:=KW)
+ax := Offx+vx*Vxx+vy*Vyx+vz*Vzx
+ay := Offy+vx*Vxy+vy*Vyy+vz*Vzy
+az := Offz+vx*Vxz+vy*Vyz+vz*Vzz

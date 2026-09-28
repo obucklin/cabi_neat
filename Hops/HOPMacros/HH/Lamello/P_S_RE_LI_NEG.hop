@@ -1,0 +1,193 @@
+;MAKROTYP=1
+;INSTVERSION=6.4.0.4
+;EXEVERSION=6.6.2.165[Hops.exe]
+;BILD=Clamex1_Gehrung_Neg.wmf
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Clamex1_Gehrung_Neg
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_7.Dll
+;DIALOGPROC=ShowTClamex_Neg_GehrungDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   F_Tool :=136;*VAR*Clamex WKZ
+   B_Tool :=306;*VAR*Clamex Bohrer
+   Bohren_L :=-1;*VAR*Bohren links ja/nein
+   Bohren_R :=-1;*VAR*Bohren rechts ja/nein
+   CL_BoPos :=7.50;*VAR*Bohrposition
+   B_Dm :=6;*VAR*Bohr DMz
+   Winkel_L :=45;*VAR*Winkel links
+   Winkel_R :=45;*VAR*Winkel rechts
+   X1 :=00.00;*VAR*X_Wert Li hinten
+   Y1 :=60.00;*VAR*Y_Wert Li hinten
+   X2 :=00.00;*VAR*X_Wert Li mitte
+   Y2 :=00.00;*VAR*Y_Wert Li mitte
+   X3 :=00.00;*VAR*X_Wert Li vorne
+   Y3 :=60.00;*VAR*Y_Wert Li vorne
+   X4 :=00.00;*VAR*X_Wert Re hinten
+   Y4 :=60.00;*VAR*Y_Wert Re hinten
+   X5 :=00.00;*VAR*X_Wert Re mitte
+   Y5 :=00.00;*VAR*Y_Wert Re mitte
+   X6 :=00.00;*VAR*X_Wert Re vorne
+   Y6 :=60.00;*VAR*Y_Wert Re vorne
+   C1 :=-1;*VAR*Clamex links hinten
+   C2 :=0;*VAR*Clamex links mitte
+   C3 :=-1;*VAR*Clamex links vorne
+   C4 :=-1;*VAR*Clamex rechts hinten
+   C5 :=0;*VAR*Clamex rechts mitte
+   C6 :=-1;*VAR*Clamex rechts vorne
+   C_Tiefe :=14.00;*VAR*Tiefe je nach Clamex Typ
+   CL_Typ :=1;*VAR*Clamex Typ
+   Pos1 := 0;*VAR*Pos des Clamex in Z
+   Pos2 := 0;*VAR*Dummy
+   Hoehe := _Eh_RZ;Hohe in der Ebene
+   T := 110 - _Wzr;
+   PL_Dicke := _Rz;Plattendicke
+   Bo_Diff := 0;Korrektur des Bohrabstandes
+   Bo_Tiefe := 0;Bohrtiefe
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+Pl_Dicke := _Rz
+CALL P_S_CLAMEX_PAR (REF POS1:=Pos1,POS2:=Pos2 VAL WINKEL:=Winkel_L,DICKE:=Pl_Dicke)
+Winkel_L := 90 -Winkel_L
+;Bohren
+WZB (B_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+EbeneF (X1,0,0,90 - Winkel_L,-90,7,0)
+Hoehe := _EH_Rz - Pos1
+IF _AT_USEABLELENGTH < Hoehe
+Hinweismeldung (GetMessageTextOem('51','Wkz zu kurz!! Loch muss nachgebohrt werden'))
+Bo_Tiefe := _AT_USEABLELENGTH
+ELSE
+Bo_Tiefe := Hoehe
+END
+EbeneF (0,0,_Rz,Winkel_L,-90,7,0)
+; Links hinten
+IF (C1= -1) & (Bohren_L= -1)
+Bohrung (Y1,CL_BoPos + Bo_Diff,B_DM,-Bo_Tiefe,10,0,0,1,0,0,0,0)
+END
+;Links mitte
+IF (C2= -1) & (Bohren_L= -1)
+Bohrung (Y2 * -1,CL_BoPos + Bo_Diff,B_DM,-Bo_Tiefe,10,0,0,2,0,0,0,0)
+END
+;Links vorne
+IF (C3= -1) & (Bohren_L= -1)
+Bohrung (Y3,CL_BoPos + Bo_Diff,B_DM,-Bo_Tiefe,10,0,0,3,0,0,0,0)
+END
+CALL P_S_CLAMEX_PAR (REF POS1:=Pos1,POS2:=Pos2 VAL WINKEL:=Winkel_R,DICKE:=PL_Dicke)
+Winkel_R := 90 -Winkel_R
+EbeneF (X6,0,0,90-Winkel_R,90,3,0)
+Hoehe := _EH_Rz -Pos1
+IF _AT_USEABLELENGTH < Hoehe
+Hinweismeldung (GetMessageTextOem('51','Wkz zu kurz!! Loch muss nachgebohrt werden'))
+Bo_Tiefe := _AT_USEABLELENGTH
+ELSE
+Bo_Tiefe := Hoehe
+END
+EbeneF (0,0,_Rz,Winkel_R,90,5,0)
+;Rechte Seite
+IF (C4= -1) & (Bohren_R= -1)
+Bohrung (Y4,CL_BoPos +Bo_Diff,B_DM,-Bo_Tiefe,10,0,0,3,0,0,0,0)
+END
+;Rechts mitte
+IF (C5= -1) & (Bohren_R= -1)
+Bohrung (Y5,CL_BoPos +Bo_Diff,B_DM,-Bo_Tiefe,10,0,0,2,0,0,0,0)
+END
+;Rechts vorne
+IF (C6= -1) & (Bohren_R= -1)
+Bohrung (Y6,CL_BoPos +Bo_Diff,B_DM,-Bo_Tiefe,10,0,0,1,0,0,0,0)
+END
+Ebene0()
+EbeneF (X3,0,0,90 - Winkel_L,-90,7,0)
+Hoehe := _EH_Rz
+EbeneF (X3,0,_Rz,Winkel_L,-90,7,0)
+;++++++++++++++++++++++++++++++++++++++++++++++
+;Hinten links
+WZF (F_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+T := 110 - _WzR
+IF (C1=-1)
+SP (Y1,0,10,0,0,_ANF,0,0,0,7,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,-T,0,0,10,2)
+G01 (0,0,-(Hoehe -Pos1 ),0,10,0)
+G01 (0,(T -_WzR) + C_Tiefe,0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,- (T - _WzR +C_Tiefe ),0,0,10,2)
+EP (0,_ANF,0)
+END
+;Mitte Links
+IF (C2=-1)
+SP (Y2  * -1,0,10,0,0,_ANF,0,0,0,6,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- T,0,0,10,2)
+G01 (0,0,- (Hoehe -Pos1 ),0,10,0)
+G01 (0,(T -_WzR) + C_Tiefe,0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,- (T - _WzR +C_Tiefe),0,0,10,2)
+EP (0,_ANF,0)
+END
+;Vorne Links
+IF (C3=-1)
+SP (Y3,0,10,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- T,0,0,10,2)
+G01 (0,0,- (Hoehe -Pos1 ),0,10,0)
+G01 (0,(T -_WzR) + C_Tiefe,0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,- (T - _WzR +C_Tiefe),0,0,10,2)
+EP (0,_ANF,0)
+END
+;Rechte Seite
+EbeneF (X6,0,0,90-Winkel_R,90,3,0)
+Hoehe := _EH_Rz
+EbeneF (X6,0,_Rz,Winkel_R,90,3,0)
+;Hinten rechts
+IF (C4=-1)
+SP (Y4,0,10,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- T,0,0,10,2)
+G01 (0,0,- (Hoehe -Pos1 ),0,10,0)
+G01 (0,(T -_WzR) + C_Tiefe,0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,- (T - _WzR +C_Tiefe),0,0,10,2)
+EP (0,_ANF,0)
+END
+;Mitte rechts
+IF (C5=-1)
+SP (Y5,0,10,0,0,_ANF,0,0,0,6,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- T,0,0,10,2)
+G01 (0,0,- (Hoehe -Pos1 ),0,10,0)
+G01 (0,(T -_WzR) + C_Tiefe,0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,- (T - _WzR +C_Tiefe),0,0,10,2)
+EP (0,_ANF,0)
+END
+;Vorne rechts
+IF (C6=-1)
+SP (Y6,0,10,0,0,_ANF,0,0,0,7,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,- T,0,0,10,2)
+G01 (0,0,- (Hoehe -Pos1 ),0,10,0)
+G01 (0,(T -_WzR) + C_Tiefe,0,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,- (T - _WzR +C_Tiefe),0,0,10,2)
+EP (0,_ANF,0)
+END
+Ebene0()

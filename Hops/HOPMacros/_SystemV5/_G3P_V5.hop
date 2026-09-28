@@ -1,0 +1,38 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsSys.Dll
+;DIALOGPROC=ShowG3PDialog
+;AUTOSCRIPTSTART=0
+VARS
+   X := 0;*VAR*X-Wert Punkt 1
+   Y := 0;*VAR*y-Wert Punkt 1
+   Z := 0;*VAR*Zustelltiefe
+   X2 := 0;*VAR*x-Wert Punkt 2
+   Y2 := 0;*VAR*y-Wert Punkt 2
+   esxy := 0;*VAR*Easysnap in xy
+   esd := 2;*VAR*Easysnap depth
+   esxy2 := 0;*VAR*Easysnap in xy 2
+   R := 0;*VAR*
+   mx := 0;
+   my := 0;
+   Gtyp := 0;
+   SX := 0;
+   SY := 0;
+START
+transesxy (x,y,esxy,0)
+transesxy (x2,y2,esxy2,0)
+transesd (Z,esd)
+SX := _X
+SY := _Y
+CALL _KB_3P (REF GTYP:=GTyp,MX:=Mx,MY:=My VAL SX:=SX,SY:=SY,P1X:=X,P1Y:=Y,P2X:=X2,P2Y:=Y2)
+IF (Gtyp<1)|(Gtyp>3)
+Fehlermeldung ('Error-G3P')
+END
+IF GTyp=1
+G01 (x2,y2,Z,R,0,0)
+END
+IF GTyp=2
+g02m (X2,Y2,Z,MX,MY,R,0,0,0)
+END
+IF GTyp=3
+G03M (X2,Y2,Z,MX,MY,R,0,0,0)
+END

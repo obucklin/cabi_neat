@@ -1,0 +1,25 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=FRAESAUS
+;MASCHINE=NC1000
+;WZGV=NC1000_mm
+;BILD=FRAESENAUSSCHNITT.WMF
+VARS
+   POSX := 300;*VAR*Lage in X
+   PosY := 250;*VAR*Lage in Y
+   Lang := 250;*VAR*Länge des Ausschnitts
+   Breit := 500;*VAR*Breite des Ausschnitts
+START
+;'''''''''''''''''''''''''
+;Makro Fräsen Ausschnitt
+SP (POSX,POSY-Lang/2,-_RZ-2,2,-2,_ANF,0,0,0)
+G01 (_X-Breit/2,_Y,_Z,0)
+G01 (_X,_Y+Lang,_Z,0)
+G01 (_X+Breit,_Y,_Z,0)
+G01 (_X,_Y-Lang,_Z,0)
+G01 (_X-Breit/2,_Y,_Z,0)
+EP (2,_ANF,0)
+

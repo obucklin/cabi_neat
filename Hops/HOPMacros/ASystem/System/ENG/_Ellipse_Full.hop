@@ -1,0 +1,39 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NC1000
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=Reihenbohrung.WMF
+VARS
+   mx := _RX/2;*VAR*Mitte in X
+   my := _RY/2;*VAR*Mitte in Y
+   dw := 0;*VAR*Drehwinkel
+   a := _RX;*VAR*X-Achse
+   b := _RY;*VAR*Y-Achse
+   z := 0;*VAR*Tiefe
+   BL := 2;*VAR*Lage   0=mittig    1=links   2=rechts
+   anf_bew := 2;*VAR*Anfahrbewegung
+START
+;direkt cnc systeme NCHOPS Version 3.4
+;****** Ellipse fräsen komplett *****
+;Rohteil (500,300,20,0,0)
+;WZF (1,_VA,_V,_VE,_SD,_ANF)
+IF BL=0
+anf_bew := 0
+END
+IF (BL=1) & (anf_bew=1)
+anf_bew := 2
+END
+a := a/2
+b := b/2
+;CALL _DrehenBBStart (VAL DX:=mx,DY:=my,Dw:=dw)
+CALL _RotateBBStart (VAL DX:=mx,DY:=my,Dw:=dw)
+SP(MX+A,MY,Z,BL,ANF_BEW,_ANF,0,0,0)
+CALLDLL ELLIPSENBOGEN03(Fraesen,Dummy, VAL MX:=mx,MY:=my,a:=a,b:=b,ew:=0,Z:=z,dw:=0,R:=0)
+EP(ANF_BEW,_ANF,0)
+;CALL _DrehenBBEnde ()
+CALL _RotateBBEnd ()
+

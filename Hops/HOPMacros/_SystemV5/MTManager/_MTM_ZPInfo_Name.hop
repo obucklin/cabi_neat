@@ -1,0 +1,29 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowZPINFO_NAMEDialog
+VARS
+   Mode := 0;*VAR*Mode
+   ZP_Name := '';*VAR*Nullpunktname
+   ZP_X := 0;*VAR**REF*Position in X
+   ZP_Y := 0;*VAR**REF*Position in Y
+   ZP_Z := 0;*VAR**REF*Position in Z
+   ZP_ZOffset := 0;*VAR**REF*Offset in Z
+   ZP_EdgeX := 0;*VAR**REF*Anschlagposition in X 0-links 2-rechts
+   ZP_EdgeY := 0;*VAR**REF*Anschlagposition in Y 0-oben 2-unten
+   ZP_MirrorX := 0;*VAR**REF*Spiegeln in X
+   ZP_MirrorY := 0;*VAR**REF*Spiegeln in Y
+   ZP_Field := 0;*VAR**REF*Feldindex
+   ZP_Section := 0;*VAR**REF*Sectionindex
+   ZP_Line := 0;*VAR**REF*Linie
+   ZP_Index := 0;*VAR**REF*Index
+   ZP_MZP := 0;*VAR**REF*Spiegelnullpunkt
+   ZP_Vacuum := 0;*VAR**REF*Vakuum
+   ZP_Enabled := 0;*VAR**REF*Aktiv
+   ZP_Visible := 0;*VAR**REF*Sichtbar
+   ZP_DXF := '';*VAR**REF*DXF-Name
+   ZP_BMP := '';*VAR**REF*BMP-Name
+   ZP_Image3D := '';*VAR**REF*Image 3D
+   ZP_M_MirrorX := 0;*VAR**REF*Spiegeln auf Maschine
+   ZP_M_MirrorY := 0;*VAR**REF*Spiegeln auf Maschine
+START
+CALLDLL MTM_ZPINFO_NAME(HopsMTManagerExt,DefaultStr,REF ZP_X:=ZP_X,ZP_Y:=ZP_Y,ZP_Z:=ZP_Z,ZP_ZOFFSET:=ZP_ZOffset,ZP_EDGEX:=ZP_EdgeX,ZP_EDGEY:=ZP_EdgeY,ZP_MIRRORX:=ZP_MirrorX,ZP_MIRRORY:=ZP_MirrorY,ZP_FIELD:=ZP_Field,ZP_SECTION:=ZP_Section,ZP_LINE:=ZP_Line,ZP_INDEX:=ZP_Index,ZP_MZP:=ZP_MZP,ZP_VACUUM:=ZP_Vacuum,ZP_ENABLED:=ZP_Enabled,ZP_VISIBLE:=ZP_Visible,ZP_DXF:=ZP_DXF,ZP_BMP:=ZP_BMP,ZP_IMAGE3D:=ZP_Image3D,ZP_M_MIRRORX:=ZP_M_MirrorX,ZP_M_MIRRORY:=ZP_M_MirrorY VAL MODE:=Mode,ZP_NAME:=ZP_Name)

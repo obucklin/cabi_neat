@@ -1,0 +1,40 @@
+;MAKROTYP=1
+;BILD=
+;INFO=
+;WZGV=XNC
+;MASCHINE=XNC
+;NCNAME=FloatToStr_V4
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   Wert := 500.999;*VAR*Zahl
+   StrWert := '';*VAR**REF*Gewandelter Wert
+   Toleranz := 0.01;Toleranz für Nachkommastellen anzeigen
+   NKS := 2;
+   PosPunkt := 0;
+   Gefunden := 0;
+   i := 0;
+START
+;Es werden Nachkommastellen
+;ab einer bestimmten Genauigkeit nicht
+;mehr angezeigt
+IF abs(Wert-trunc(Wert))<Toleranz
+StrWert := FloatToStr(Wert,15,0)
+ELSE
+StrWert := FloatToStr(Wert,15,NKS)
+PosPunkt := StrPos('.',StrWert)
+FOR i := PosPunkt+1 TO PosPunkt+NKS STEP 1
+IF StrSame(StrCopy(StrWert,i,1),'0')
+ELSE
+Gefunden := 1
+END
+END
+IF Gefunden
+ELSE
+StrWert := FloatToStr(Wert,15,0)
+END
+END

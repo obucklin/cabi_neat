@@ -1,0 +1,615 @@
+;MAKROTYP=1
+;BILD=_Rechteck_V4.bmp
+;INFO=_Rechteck_z
+;WZGV=Demo
+;MASCHINE=Simu
+;NCNAME=_Rechteck_V4
+;KOMMENTAR=xxx
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   help1 := 0;errechnet für negative Radien
+   akt_Tiefe := 0;Benutzt für aktuelle Frästiefe
+   ZuTiefe_X := 0;Benutzt für Rampe über Quadranten
+   ZuTiefe_Y := 0;Benutzt für Rampe über Quadranten
+   ZuTiefe_X_Last := 0;Benutzt für Rampe über Quadranten
+   ZuTiefe_Y_Last := 0;Benutzt für Rampe über Quadranten
+   a_last := 0;letzte Zustellung
+   X_mitte := _RX/2;*VAR*Rechteckmitte in X
+   Y_Mitte := _RY/2;*VAR*Rechteckmitte in Y
+   Laenge := 100;*VAR*Rechteck in X
+   Breite := 60;*VAR*Rechteck in Y
+   Radius := 0;*VAR*Eckenradius
+   Winkel := 0;*VAR*Winkel gegen X-Achse
+   Tiefe := 0;*VAR*Tiefe der Tasche
+   Zutiefe := 0;*VAR*Zustellung pro Fräsung
+   Radiuskorrektur := 2;*VAR*0=Mitte,1=Auserhalb,2=Innerhalb
+   AB := 2;*VAR*0 -> keine , 2 -> Radial
+   Aufmass := 0;*VAR*Aufmass zur Kontur
+   ANF := _ANF;*VAR*Anfahrfaktor
+   ABF := _ANF;*VAR*Abfahrfaktor
+   LX := 0;Manipulierte Länge um Aufmass
+   LY := 0;Manipulierte Breite um Aufmass
+   ANZAHL := 0;
+   a := 0;errechnet
+   Zustell := 0;errechnet
+   b := 0;errechnet
+   breite1 := 0;errechnet
+   umkehren := 0;*VAR*Bearbeitung umkehren
+   Rampe := 0;*VAR*Zustellung:   0=normal  1=Quadrant   2=Länge
+   Rampenlänge := 50;*VAR*Rampenlänge (nur wirksam, wenn Option Rampe=2)
+   Quadrant := 0;*VAR*Zustellung auf  0=90°   1=180°   2=270°
+   Interpol := 0;*VAR*Interpolation auf Anfahrbewegung
+   X0 := 0;
+   Y0 := 0;
+   X1 := 0;
+   Y1 := 0;
+   X2 := 0;
+   Y2 := 0;
+   X3 := 0;
+   Y3 := 0;
+   X4 := 0;
+   Y4 := 0;
+   X5 := 0;
+   Y5 := 0;
+   X6 := 0;
+   Y6 := 0;
+   X7 := 0;
+   Y7 := 0;
+   X8 := 0;
+   Y8 := 0;
+   X10 := 0;
+   Y10 := 0;
+   X11 := 0;
+   Y11 := 0;
+   X12 := 0;
+   Y12 := 0;
+   X13 := 0;
+   Y13 := 0;
+   X14 := 0;
+   Y14 := 0;
+   X15 := 0;
+   Y15 := 0;
+   X16 := 0;
+   Y16 := 0;
+   X17 := 0;
+   Y17 := 0;
+   X18 := 0;
+   Y18 := 0;
+START
+;direkt cnc systeme NCHOPS Version 4.x
+;Rohteil (500,300,20,0,0)
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+;*******  ZUWEISUNGEN   *******
+LX := laenge+Aufmass*2
+LY := Breite+Aufmass*2
+IF Aufmass>=0
+IF Radius>0
+Radius := Radius+Aufmass
+END
+IF Radius<0
+IF abs(Aufmass)>abs(Radius)
+Hinweismeldung (Der_negative_Eckradius_wird_nicht_verändert_da_Abstand_zur_Kontur_grösser_ist)
+ELSE
+Radius := Radius-Aufmass
+END
+END
+ELSE
+IF Radius>0
+Radius := Radius+Aufmass
+END
+IF Radius<0
+Radius := Radius-Aufmass
+END
+END
+;****************************
+IF (abs(Radius)>0) & ((abs(Radius)<_WZR)) & (Radiuskorrektur=2)
+Hinweismeldung (Eckradius_wird_gelöscht_da_Werkzeug_zu_gross_ist)
+Radius := 0
+END
+;****************************
+;*****************************************
+IF (Rampe=0) & (AB>0)
+IF LY<=LX
+;*** An-/Abfahrbewegung abfangen bei radial
+IF AB=2
+IF ((ANF*_WZR) + _WZR) > LY
+Fehlermeldung (ANfahrbewegung_zu_gross)
+END
+IF ((ABF*_WZR) + _WZR) > LY
+Fehlermeldung (ABfahrbewegung_zu_gross)
+END
+END
+;*** An-/Abfahrbewegung abfangen bei linear
+IF AB=1
+IF (ANF*_WZR) > LX/2
+Fehlermeldung (ANfahrbewegung_zu_gross)
+END
+IF (ABF*_WZR) > LX/2
+Fehlermeldung (ABfahrbewegung_zu_gross)
+END
+END
+ELSE
+;*** An-/Abfahrbewegung abfangen bei radial
+IF AB=2
+IF ((ANF*_WZR) + _WZR) > LX
+Fehlermeldung (ANfahrbewegung_zu_gross)
+END
+IF ((ABF*_WZR) + _WZR) > LX
+Fehlermeldung (ABfahrbewegung_zu_gross)
+END
+END
+;*** An-/Abfahrbewegung abfangen bei linear
+IF AB=1
+IF (ANF*_WZR) > LY/2
+Fehlermeldung (ANfahrbewegung_zu_gross)
+END
+IF (ABF*_WZR) > LY/2
+Fehlermeldung (ABfahrbewegung_zu_gross)
+END
+END
+END
+END
+;*****************************************
+;*** Überschneidung der Fräsbahn
+;*** bei negativem Radius abfangen
+IF Radius<0
+help1 := sqrt((Radius*Radius)+(Radius*Radius))
+IF (help1*2) >= LY
+Fehlermeldung (Nicht_konstruierbar)
+END
+END
+;****************************
+;*******ZUWEISUNG*******
+IF BREITE>LAENGE
+LY := laenge+Aufmass*2
+LX := Breite+Aufmass*2
+Winkel := Winkel+90
+;CALL _DrehenBBStart (VAL DX:=x_mitte,DY:=y_mitte,Dw:=winkel+90)
+ELSE
+;CALL _DrehenBBStart (VAL DX:=x_mitte,DY:=y_mitte,Dw:=winkel)
+END
+;****************************
+IF umkehren=1
+Rampenlänge := -Rampenlänge
+END
+;***** Überprüfung Tiefe negativ *****
+IF Tiefe<0
+tiefe := tiefe*(-1)
+END
+;***** Überprüfung ZuTiefe negativ *****
+IF zuTiefe<0
+zutiefe := zutiefe*(-1)
+END
+;***** Überprüfung ZuTiefe NULL *****
+IF ZuTiefe=0
+ZuTiefe := tiefe
+END
+;****************************
+IF tiefe=_rz
+tiefe := tiefe
+END
+;****************************
+IF (Tiefe=0) & (ZuTiefe=0)
+Fehlermeldung (Bitte_Tiefe_eingeben)
+END
+;******* Anzahl Zustellungen errechnen *******
+a := trunc(tiefe/zutiefe)
+;******* Letzte Zustellung in mm *******
+a_last := (tiefe - zutiefe*a)
+;****************************
+;***** Radius muss kleiner sein als Breite/2 *****
+IF (radius>LX/2)|(radius>LY/2)
+Fehlermeldung (Eckradius_zu_gross)
+END
+;***** Eckradius *****
+IF (Radiuskorrektur=2)&(Radius<_WZR)&(Radius>0)
+Fehlermeldung (Eckradius_zu_klein_fuer_Werkzeug)
+END
+;****************************
+;****************************
+IF Radiuskorrektur=0
+AB := 0
+END
+IF Tiefe=0
+Zutiefe := 0
+END
+;****************************
+;****************************
+IF Rampe=1
+IF Quadrant=0
+IF abs(Radius) = (LY/2)
+;*** Wenn Langloch, dann auf 180° zustellen
+Quadrant := 1
+ELSE
+;*** Berechnung der Z-Zustellung auf LX/2 bei 90°
+zutiefe_X := (LX/2+LY/2)/ZuTiefe
+zutiefe_X := (LX/2)/ZuTiefe_X
+;*** Berechnung der Z-Zustellung auf LY/2 bei 90°
+zutiefe_Y := (LX/2+LY/2)/ZuTiefe
+zutiefe_Y := (LY/2)/ZuTiefe_Y
+END
+END
+IF Quadrant=1
+IF abs(Radius) = (LY/2)
+;*** Wenn Langloch, dann nur in X zustellen
+;*** Berechnung der Z-Zustellung auf LX/2 bei 180°
+zutiefe_X := (LX/2 + LX/2) / ZuTiefe
+zutiefe_X := (LX/2)/ZuTiefe_X
+;*** Berechnung der Z-Zustellung auf LY/2 bei 180°
+zutiefe_Y := 0
+ELSE
+;*** Berechnung der Z-Zustellung auf LX/2 bei 180°
+zutiefe_X := (LX/2 + LY + LX/2) / ZuTiefe
+zutiefe_X := (LX/2)/ZuTiefe_X
+;*** Berechnung der Z-Zustellung auf LY/2 bei 180°
+zutiefe_Y := (LX/2 + LY + LX/2) / ZuTiefe
+zutiefe_Y := (LY/2)/ZuTiefe_Y
+END
+END
+IF Quadrant=2
+IF abs(Radius) = (LY/2)
+;*** Wenn Langloch, dann auf 360° zustellen
+Quadrant := 3
+ELSE
+;*** Berechnung der Z-Zustellung auf LX/2 bei 270°
+zutiefe_X := (LX/2 + LY + LX + LY/2) / ZuTiefe
+zutiefe_X := (LX/2)/ZuTiefe_X
+;*** Berechnung der Z-Zustellung auf LY/2 bei 270°
+zutiefe_Y := (LX/2 + LY + LX + LY/2) / ZuTiefe
+zutiefe_Y := (LY/2)/ZuTiefe_Y
+END
+END
+IF Quadrant=3
+IF abs(Radius) = (LY/2)
+;*** Wenn Langloch, dann nur in X zustellen
+;*** Berechnung der Z-Zustellung auf LX/2 bei 360°
+zutiefe_X := (LX*2) / ZuTiefe
+zutiefe_X := (LX/2)/ZuTiefe_X
+;*** Berechnung der Z-Zustellung auf LY/2 bei 270°
+zutiefe_Y := 0
+ELSE
+;*** Berechnung der Z-Zustellung auf LX/2 bei 360°
+zutiefe_X := (LX*2+LY*2) / ZuTiefe
+zutiefe_X := (LX/2)/ZuTiefe_X
+;*** Berechnung der Z-Zustellung auf LY/2 bei 270°
+zutiefe_Y := (LX*2 + LY*2) / ZuTiefe
+zutiefe_Y := (LY/2)/ZuTiefe_Y
+END
+END
+;*** Berechnung Zustellung auf Letztem Fräsgang
+IF a_last>0
+IF Quadrant=0
+;*** Berechnung der Z-Zustellung auf LX/2 bei 90°
+zutiefe_X_Last := (LX/2+LY/2)/a_Last
+zutiefe_X_Last := (LX/2)/ZuTiefe_X_Last
+;*** Berechnung der Z-Zustellung auf LY/2 bei 90°
+zutiefe_Y_Last := (LX/2+LY/2)/a_Last
+zutiefe_Y_Last := (LY/2)/ZuTiefe_Y_Last
+END
+IF Quadrant=1
+IF abs(Radius) = (LY/2)
+;*** Wenn Langloch, dann nur in X zustellen
+;*** Berechnung der Z-Zustellung auf LX/2 bei 180°
+zutiefe_X_Last := (LX/2 + LX/2) / a_Last
+zutiefe_X_Last := (LX/2)/ZuTiefe_X_Last
+;*** Berechnung der Z-Zustellung auf LY/2 bei 180°
+zutiefe_Y_Last := 0
+ELSE
+;*** Berechnung der Z-Zustellung auf LX/2 bei 180°
+zutiefe_X_Last := (LX/2 + LY + LX/2) / a_Last
+zutiefe_X_Last := (LX/2)/ZuTiefe_X_Last
+;*** Berechnung der Z-Zustellung auf LY/2 bei 180°
+zutiefe_Y_Last := (LX/2 + LY + LX/2) / a_Last
+zutiefe_Y_Last := (LY/2)/ZuTiefe_Y_Last
+END
+END
+IF Quadrant=2
+;*** Berechnung der Z-Zustellung auf LX/2 bei 270°
+zutiefe_X_Last := (LX/2 + LY + LX + LY/2) / a_Last
+zutiefe_X_Last := (LX/2)/ZuTiefe_X_Last
+;*** Berechnung der Z-Zustellung auf LY/2 bei 270°
+zutiefe_Y_Last := (LX/2 + LY + LX + LY/2) / a_Last
+zutiefe_Y_Last := (LY/2)/ZuTiefe_Y_Last
+END
+IF Quadrant=3
+IF abs(Radius) = (LY/2)
+;*** Wenn Langloch, dann nur in X zustellen
+;*** Berechnung der Z-Zustellung auf LX/2 bei 360°
+zutiefe_X_Last := (LX*2) / a_Last
+zutiefe_X_Last := (LX/2)/ZuTiefe_X_Last
+;*** Berechnung der Z-Zustellung auf LY/2 bei 270°
+zutiefe_Y_Last := 0
+ELSE
+;*** Berechnung der Z-Zustellung auf LX/2 bei 360°
+zutiefe_X_Last := (LX*2 + LY*2) / a_Last
+zutiefe_X_Last := (LX/2)/ZuTiefe_X_Last
+;*** Berechnung der Z-Zustellung auf LY/2 bei 270°
+zutiefe_Y_Last := (LX*2 + LY*2) / a_Last
+zutiefe_Y_Last := (LY/2)/ZuTiefe_Y_Last
+END
+END
+END
+END
+;*****************************************
+IF Umkehren=1
+IF Radiuskorrektur=1
+Radiuskorrektur := 2
+ELSE
+IF Radiuskorrektur = 2
+Radiuskorrektur := 1
+END
+END
+END
+;**************************************************
+;********  Punkte berechnen wie folgt ********
+;**************************************************
+;*
+;3 ********************** 4 ********************** 5
+;*                                                              *
+;2                                                             6
+;*                                                              *
+;*                                                              *
+;1 ********************** 0 ********************** 7
+CALL SetRotPara ( VAL MX:=X_Mitte,MY:=Y_Mitte,RotW:=Winkel)
+CALL SetPunkt ( VAL X:=x_mitte,Y:=y_mitte-ly/2)
+CALL RotUmPunkt ()
+X0 := _AktPosX
+Y0 := _AktPosY
+CALL SetPunkt ( VAL X:=x_mitte-lx/2,Y:=y_mitte-ly/2)
+CALL RotUmPunkt ()
+X1 := _AktPosX
+Y1 := _AktPosY
+CALL SetPunkt ( VAL X:=x_mitte-lx/2,Y:=y_mitte)
+CALL RotUmPunkt ()
+X2 := _AktPosX
+Y2 := _AktPosY
+CALL SetPunkt ( VAL X:=x_mitte-lx/2,Y:=y_mitte+ly/2)
+CALL RotUmPunkt ()
+X3 := _AktPosX
+Y3 := _AktPosY
+CALL SetPunkt ( VAL X:=x_mitte,Y:=y_mitte+ly/2)
+CALL RotUmPunkt ()
+X4 := _AktPosX
+Y4 := _AktPosY
+CALL SetPunkt ( VAL X:=x_mitte+lx/2,Y:=y_mitte+ly/2)
+CALL RotUmPunkt ()
+X5 := _AktPosX
+Y5 := _AktPosY
+CALL SetPunkt ( VAL X:=x_mitte+lx/2,Y:=y_mitte)
+CALL RotUmPunkt ()
+X6 := _AktPosX
+Y6 := _AktPosY
+CALL SetPunkt ( VAL X:=x_mitte+lx/2,Y:=y_mitte-ly/2)
+CALL RotUmPunkt ()
+X7 := _AktPosX
+Y7 := _AktPosY
+CALL SetPunkt ( VAL X:=x_mitte-rampenlänge,Y:=y_mitte-ly/2)
+CALL RotUmPunkt ()
+X8 := _AktPosX
+Y8 := _AktPosY
+IF umkehren=0
+X10 := X0
+Y10 := Y0
+X11 := X1
+Y11 := Y1
+X12 := X2
+Y12 := Y2
+X13 := X3
+Y13 := Y3
+X14 := X4
+Y14 := Y4
+X15 := X5
+Y15 := Y5
+X16 := X6
+Y16 := Y6
+X17 := X7
+Y17 := Y7
+X18 := X8
+Y18 := Y8
+ELSE
+X10 := X0
+Y10 := Y0
+X11 := X7
+Y11 := Y7
+X12 := X6
+Y12 := Y6
+X13 := X5
+Y13 := Y5
+X14 := X4
+Y14 := Y4
+X15 := X3
+Y15 := Y3
+X16 := X2
+Y16 := Y2
+X17 := X1
+Y17 := Y1
+X18 := X8
+Y18 := Y8
+END
+;Bohrung (X10,Y10,5,-1,0,0,0)
+;Bohrung (X11,Y11,5,-1,0,0,0)
+;Bohrung (X12,Y12,5,-1,0,0,0)
+;Bohrung (X13,Y13,5,-1,0,0,0)
+;Bohrung (X14,Y14,5,-1,0,0,0)
+;Bohrung (X15,Y15,5,-1,0,0,0)
+;Bohrung (X16,Y16,5,-1,0,0,0)
+;Bohrung (X17,Y17,5,-1,0,0,0)
+;Bohrung (X18,Y18,4,-1,0,0,0)
+;*****************************************
+;******  FRÄSBEARBEITUNG  ******
+;*****************************************
+;******  Uhrzeigersinn  CW  *****
+IF Rampe=0
+;*** senkrecht zustellen oder Interpolativ
+;*** auf Anfahrbewegung zustellen
+IF Interpol = 1
+AB := -AB
+END
+;****
+akt_Tiefe := zutiefe
+FOR b := 1 TO a STEP 1
+SP (X10,Y10,-akt_Tiefe,Radiuskorrektur,Ab,ANF,0,0,0)
+G01 (X11,Y11,_Z,Radius)
+G01 (X13,Y13,_Z,Radius)
+G01 (X15,Y15,_Z,Radius)
+G01 (X17,Y17,_Z,Radius)
+G01 (X10,Y10,_Z,radius)
+EP (AB,ABF,0)
+akt_Tiefe := Akt_Tiefe+zutiefe
+END
+IF a_last>0
+;** (benötigt nur für Tool-Opti)
+Call GLUEPROCESS_V7 ()
+SP (X10,Y10,-tiefe,Radiuskorrektur,Ab,ANF,0,0,0)
+G01 (X11,Y11,_Z,Radius)
+G01 (X13,Y13,_Z,Radius)
+G01 (X15,Y15,_Z,Radius)
+G01 (X17,Y17,_Z,Radius)
+G01 (X10,Y10,_Z,radius)
+EP (AB,ABF,0)
+END
+END
+;******  Uhrzeigersinn  CW  *****
+;*** über Quadranten zustellen
+IF Rampe=1
+IF (AB=2) & (Radiuskorrektur<>1)
+IF LX>=LY
+IF ((ABF*_WZR)) > LY/2
+;IF ((ABF*_WZR)) > LY/2
+Fehlermeldung (ABfahrbewegung_zu_gross)
+END
+ELSE
+;IF ((ABF*_WZR) + _WZR) > LX/2
+IF ((ABF*_WZR)) > LX/2
+Fehlermeldung (ABfahrbewegung_zu_gross)
+END
+END
+END
+;*****************
+;******  Uhrzeigersinn  CW  *****
+;*****************
+SP (X10,Y10,0,Radiuskorrektur,0,ANF,0,0,0)
+FOR b := 1 TO a STEP 1
+G01 (X11,Y11,_z - ZuTiefe_X,Radius)
+G01 (X12,Y12,_Z - ZuTiefe_Y,0)
+IF Quadrant=0
+G01 (X13,Y13,_Z,Radius)
+G01 (X15,Y15,_Z,Radius)
+G01 (X17,Y17,_Z,Radius)
+G01 (X10,Y10,_Z,radius)
+END
+IF Quadrant=1
+G01 (X13,Y13,_Z - ZuTiefe_Y,Radius)
+G01 (X14,Y14,_Z - ZuTiefe_X,0)
+G01 (X15,Y15,_Z,Radius)
+G01 (X17,Y17,_Z,Radius)
+G01 (X10,Y10,_Z,radius)
+END
+IF Quadrant=2
+G01 (X13,Y13,_Z - ZuTiefe_Y,Radius)
+G01 (X15,Y15,_Z - ZuTiefe_X*2,Radius)
+G01 (X16,Y16,_Z - ZuTiefe_Y,0)
+G01 (X17,Y17,_Z,Radius)
+G01 (X10,Y10,_Z,radius)
+END
+IF Quadrant=3
+G01 (X13,Y13,_Z - ZuTiefe_Y,Radius)
+G01 (X15,Y15,_Z - ZuTiefe_X*2,Radius)
+G01 (X17,Y17,_Z - ZuTiefe_Y*2,Radius)
+G01 (X10,Y10,_Z - ZuTiefe_X,0)
+END
+END
+;** Letzter Fräsgang
+IF a_last>0
+;*****************
+G01 (X11,Y11,_Z - ZuTiefe_X_Last,Radius)
+G01 (X12,Y12,_Z - ZuTiefe_Y_Last,0)
+IF Quadrant=0
+G01 (X13,Y13,_Z,Radius)
+G01 (X15,Y15,_Z,Radius)
+G01 (X17,Y17,_Z,Radius)
+END
+IF Quadrant=1
+G01 (X13,Y13,_Z - ZuTiefe_Y_Last,Radius)
+G01 (X14,Y14,_Z - ZuTiefe_X_Last,0)
+G01 (X15,Y15,_Z,Radius)
+G01 (X17,Y17,_Z,Radius)
+END
+IF Quadrant=2
+G01 (X13,Y13,_Z - ZuTiefe_Y_Last,Radius)
+G01 (X15,Y15,_Z - ZuTiefe_X_Last*2,Radius)
+G01 (X16,Y16,_Z - ZuTiefe_Y_Last,0)
+G01 (X17,Y17,_Z,Radius)
+END
+IF Quadrant=3
+G01 (X13,Y13,_Z - ZuTiefe_Y_Last,Radius)
+G01 (X15,Y15,_Z - ZuTiefe_X_Last*2,Radius)
+G01 (X17,Y17,_Z - ZuTiefe_Y_Last*2,Radius)
+END
+END
+G01 (X10,Y10,-Tiefe,Radius)
+G01 (X11,Y11,_Z,Radius)
+G01 (X12,Y12,_Z,0)
+IF Quadrant=1
+G01 (X13,Y13,_Z,Radius)
+G01 (X14,Y14,_Z,0)
+END
+IF Quadrant=2
+G01 (X13,Y13,_Z,Radius)
+G01 (X15,Y15,_Z,Radius)
+G01 (X16,Y16,_Z,0)
+END
+IF Quadrant=3
+G01 (X13,Y13,_Z,Radius)
+G01 (X15,Y15,_Z,Radius)
+G01 (X17,Y17,_Z,Radius)
+G01 (X10,Y10,_Z,0)
+END
+EP (AB,ABF,0)
+END
+;******  Uhrzeigersinn  CW  *****
+;*** über Rampenlänge zustellen
+IF Rampe=2
+IF rampenlänge>=LX/2-(_WZR*ABF)
+Fehlermeldung (Rampe_passt_nicht_in_das_erste_Element)
+END
+IF AB=2
+IF LX>=LY
+IF ((ABF*_WZR) + _WZR) > LY
+Fehlermeldung (ABfahrbewegung_zu_gross)
+END
+ELSE
+IF ((ABF*_WZR) + _WZR) > LX
+Fehlermeldung (ABfahrbewegung_zu_gross)
+END
+END
+END
+akt_Tiefe := zutiefe
+SP (X10,Y10,0,Radiuskorrektur,0,ANF,0,0,0)
+FOR b := 1 TO a STEP 1
+G01 (X18,Y18,-Akt_tiefe,0)
+G01 (X11,Y11,_Z,Radius)
+G01 (X13,Y13,_Z,Radius)
+G01 (X15,Y15,_Z,Radius)
+G01 (X17,Y17,_Z,Radius)
+G01 (X10,Y10,_Z,radius)
+akt_Tiefe := Akt_Tiefe+zutiefe
+END
+IF a_last>0
+G01 (X18,Y18,-tiefe,0)
+G01 (X11,Y11,_Z,Radius)
+G01 (X13,Y13,_Z,Radius)
+G01 (X15,Y15,_Z,Radius)
+G01 (X17,Y17,_Z,Radius)
+G01 (X10,Y10,_Z,radius)
+END
+G01 (X18,Y18,_z,0)
+EP (AB,ABF,0)
+END
+;****************************
+;****************************
+;CALL _DrehenBBEnde ()

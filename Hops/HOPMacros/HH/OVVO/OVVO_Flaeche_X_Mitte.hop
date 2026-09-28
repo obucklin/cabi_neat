@@ -1,0 +1,132 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.6.8.49[Hops.exe]
+;BILD=OVVO_FLAECHE_X_MITTE.WMF
+;INFO=
+;WZGV=7225K_565
+;WZGVCONFIG=
+;MASCHINE=SIMU
+;NCNAME=OVVO_Flaeche_X_Mitte
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=HHDialogs_OVVO.Dll
+;DIALOGPROC=ShowOVVO_FlaecheX
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 200;
+   DY := 250;
+   DZ := 19;
+   WKZ_NUT := 1420;*VAR*FIX_WERKZEUGNUMMER DES NUTERS
+   EITI := 12.9;*VAR*Eintauchtiefe des Werkzeuges 12.7 - 13.1
+   APV_1 := 1;*VAR*Auswahl Position Verbinder links/oben
+   APV_2 := 1;*VAR*Auswahl Position Verbinder links/mitte
+   APV_3 := 1;*VAR*Auswahl Position Verbinder links/unten
+   APV_4 := 1;*VAR*Auswahl Position Verbinder rechts/oben
+   APV_5 := 1;*VAR*Auswahl Position Verbinder rechts/mitte
+   APV_6 := 1;*VAR*Auswahl Position Verbinder rechts/unten
+   APV_7 := 1;*VAR*Auswahl Position Verbinder mitte/oben
+   APV_8 := 1;*VAR*Auswahl Position Verbinder mitte/mitte
+   APV_9 := 1;*VAR*Auswahl Position Verbinder mitte/unten
+   PDV_X_1 := DZ/2;*VAR*Position des Verbinder in X (links oben)
+   PDV_X_2 := DZ/2;*VAR*Position des Verbinder in X (links mitte)
+   PDV_X_3 := DZ/2;*VAR*Position des Verbinder in X (links unten)
+   PDV_X_4 := DZ/2;*VAR*Position des Verbinder in X (rechts oben)
+   PDV_X_5 := DZ/2;*VAR*Position des Verbinder in X (lrechts mitte)
+   PDV_X_6 := DZ/2;*VAR*Position des Verbinder in X (rechts unten)
+   PDV_X_7 := 0;*VAR*Position des Verbinder in X (mitte oben)
+   PDV_X_8 := 0;*VAR*Position des Verbinder in X (mitte mitte)
+   PDV_X_9 := 0;*VAR*Position des Verbinder in X (mitte unten)
+   PDV_Y_1 := 60;*VAR*Position des Verbinders in Y (links oben)
+   PDV_Y_2 := 0;*VAR*Position des Verbinders in Y (links mitte)
+   PDV_Y_3 := 60;*VAR*Position des Verbinders in Y (links unten)
+   PDV_Y_4 := 60;*VAR*Position des Verbinders in Y (rechts oben)
+   PDV_Y_5 := 0;*VAR*Position des Verbinders in Y (rechts mitte)
+   PDV_Y_6 := 60;*VAR*Position des Verbinders in Y (rechts unten)
+   PDV_Y_7 := 60;*VAR*Position des Verbinders in Y (mitte oben)
+   PDV_Y_8 := 0;*VAR*Position des Verbinders in Y (mitte mitte)
+   PDV_Y_9 := 60;*VAR*Position des Verbinders in Y (mitte unten)
+   DIST := 40;Travel Distance (ii)
+   OVVO_TYP := 0;*VAR*0=1230 / 1=1240 / 2=free /3=free
+START
+;OVVO_30.10.2020 S.K INDEX 1.2
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+IF OVVO_TYP=0
+DIST := 20.7
+END
+IF OVVO_TYP=1
+DIST := 39.3
+END
+IF OVVO_TYP=2
+/DIST := 20.7
+Fehlermeldung ('_444_Not used, please Check the Makro settings')
+END
+IF OVVO_TYP=3
+/DIST := 20.7
+Fehlermeldung ('_445_Not used, please Check the Makro settings')
+END
+WZF (WKZ_NUT,_VE,_V,_VA,_SD,_ANF,'1')
+;######################
+;LINKS ################
+;Checkbox 4 (links oben)
+IF APV_1=1
+SP (PDV_X_1,_ry-PDV_Y_1+(DIST/2),-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,-DIST,0,0,10,2)
+EP (0,_ANF,0)
+END
+;Checkbox 2 (links mitte)
+IF APV_2=1
+SP (PDV_X_2,_ry/2+PDV_Y_2+(DIST/2),-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,-DIST,0,0,10,2)
+EP (0,_ANF,0)
+END
+;Checkbox 2 (links vorne)
+IF APV_3=1
+SP (PDV_X_3,PDV_Y_3+(DIST/2),-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,-DIST,0,0,10,2)
+EP (0,_ANF,0)
+END
+;######################
+;MITTE ################
+;Checkbox 7 (mitte oben)
+IF APV_7=1
+SP (_rx/2+PDV_X_7,_ry-PDV_Y_7+(DIST/2),-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,-DIST,0,0,10,2)
+EP (0,_ANF,0)
+END
+;Checkbox 8 (mitte mitte)
+IF APV_8=1
+SP (_rx/2+PDV_X_8,_ry/2+PDV_Y_8+(DIST/2),-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,-DIST,0,0,10,2)
+EP (0,_ANF,0)
+END
+;Checkbox 9 (mitte vorne)
+IF APV_9=1
+SP (_rx/2+PDV_X_9,PDV_Y_9+(DIST/2),-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,-DIST,0,0,10,2)
+EP (0,_ANF,0)
+END
+;######################
+;RECHTS ################
+;Checkbox 4 (rechts oben)
+IF APV_4=1
+SP (_rx-PDV_X_4,_ry-PDV_Y_4+(DIST/2),-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,-DIST,0,0,10,2)
+EP (0,_ANF,0)
+END
+;Checkbox 5 (rechts mitte)
+IF APV_5=1
+SP (_rx-PDV_X_5,_ry/2+PDV_Y_5+(DIST/2),-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,-DIST,0,0,10,2)
+EP (0,_ANF,0)
+END
+;Checkbox 6 (rechts vorne)
+IF APV_6=1
+SP (_rx-PDV_X_6,PDV_Y_6+(DIST/2),-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,-DIST,0,0,10,2)
+EP (0,_ANF,0)
+END

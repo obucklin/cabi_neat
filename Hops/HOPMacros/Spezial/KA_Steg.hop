@@ -1,0 +1,154 @@
+;MAKROTYP=1
+;INSTVERSION=6.4.0.4
+;EXEVERSION=6.6.2.165[Hops.exe]
+;BILD=KA_Steg.wmf
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=123456
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DIALOGBA_EVO.Dll
+;DIALOGPROC=Show_KA_AusSpezDialog_Evo
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   MX :=0;*VAR*Mittelpunkt in X
+   MY :=0;*VAR*Mittelpunkt in Y
+   Tiefe :=-(Dz +2);*VAR*Frästiefe
+   Radius :=100;*VAR*Radius Ausschnitt
+   Win :=0;*VAR*Drehwinkel
+   Steg_B :=2;*VAR*Stegbreite
+   Steg_H :=2;*VAR*Steghöhe
+   E_Typ :=1;*VAR*Einfahrtyp 0= ohne / 2=  Radial
+   BE_Art :=2;*VAR*Bearbeitungsrichtung
+   RK :=1;*VAR*Radius Korrektur
+   SnapXY :=9;*VAR*EasySNAP
+   ZU :=0;*VAR*zustellung in Z
+   Anf :=_Anf;*VAR*Anfahrfaktor
+   Abf :=_Anf;*VAR*Abfahrfaktor
+   P_Versatz :=0;*VAR*Parallelversatz
+   ST1 :=0;*VAR*Steg 1 ja
+   ST2 :=0;*VAR*Steg 2 ja
+   ST3 :=0;*VAR*Steg 3 ja
+   ST4 :=0;*VAR*Steg 4 ja
+   Laser :=0;*VAR*Laserbahn
+   Z_Inter :=0;*VAR*Zinterpolation
+   PX1 := 0;Punkt auf Kreis in X
+   PX2 := 0;Punkt2 auf Kreis in X
+   PX3 := 0;Punkt3 auf Kreis in X
+   PX4 := 0;Punkt4 auf Kreis in X
+   PY1 := 0;Punkt1 auf Kreis in Y
+   PY2 := 0;Punkt2 auf Kreis in Y
+   PY3 := 0;Punkt3 auf Kreis in Y
+   PY4 := 0;Punkt4 auf Kreis in Y
+   Anz := 1;Zählvar
+   Z_PS := 0;Zustellung gerechnet
+   i := 0;Zähler
+   W := 0;Interner bez. Stegbreite
+   ;HHCH B.Achermann
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+W :=  (_Wzr + Steg_B) *180 /(pi*Radius)
+;Punkteberechnung
+PX1 := radius * (Cos(270 + W ))
+PY1 := radius * (Sin(270 - W))
+PX2 := radius * (Cos(180 + W))
+PY2 := radius * (Sin(180 - W))
+PX3 := radius * (Cos(90 + W))
+PY3 := radius * (Sin(90 - W))
+PX4 := radius * (Cos(W))
+PY4 := radius * (Sin(W))
+IF Zu = 0
+Z_PS := (_Rz -Steg_H)
+Anz := 0
+ELSE
+Anz := Trunc((_Rz - Steg_H) / Zu)
+IF Anz = 0
+;Zustellung zu gross
+Z_PS := (_Rz -Steg_H)
+ELSE
+Z_PS := Zu
+END
+END
+;****************************
+IF RK=0
+E_Typ := 0
+END
+;****************************
+IF E_Typ = 1
+IF RK = 0
+E_Typ := 0
+ELSE
+E_Typ := 2
+END
+END
+IF E_Typ = -1
+IF RK = 0
+E_Typ := 0
+ELSE
+E_Typ := -2
+END
+END
+;****************************
+CALL _DrehenBBStart_V5 ( VAL DX:=MX,DY:=MY,DW:=Win,ESXY1:=SnapXY)
+;Wenn Zustellung kleiner Tiefe
+IF Anz > 0
+SP (MX,MY - Radius,- (_Rz - Steg_H),RK,E_Typ,ANF,P_Versatz,0,0,SnapXY,0,BE_Art,0,Z_Ps,0,0,Laser,0,0,0,0,0,0)
+g02m (MX,MY -Radius,0,MX,MY,0,SnapXY,2,SnapXY)
+EP (E_Typ,ABF,0)
+END
+Z_Ps := _Rz - Steg_H
+SP (MX,MY - Radius,- Z_Ps,RK,E_Typ,ANF,P_Versatz,0,0,SnapXY,0,BE_Art,0,0,0,0,Laser,0,0,0,0,0,0)
+;Steg1
+IF St1 = -1
+G01 (MX,MY - Radius,Tiefe,0,SnapXY,0)
+g02m (MX + PX2,MY-PY2,Tiefe,MX,MY,0,SnapXY,0,SnapXY)
+ELSE
+g02m (MX - PX1,MY + PY1,-Z_Ps,MX,MY,0,SnapXY,0,SnapXY)
+G01 (MX - PX1,MY + PY1,Tiefe,0,SnapXY,0)
+g02m (MX + PX2,MY - PY2,Tiefe,MX,MY,0,SnapXY,0,SnapXY)
+END
+;Steg2
+IF St2 = -1
+g02m (MX + PX3,MY + PY3,Tiefe,MX,MY,0,SnapXY,0,SnapXY)
+ELSE
+G01 (MX + PX2,MY - PY2,-Z_Ps,0,SnapXY,0)
+g02m (MX + PX2,MY + PY2,-Z_Ps,MX,MY,0,SnapXY,0,SnapXY)
+G01 (MX + PX2,MY + PY2,Tiefe,0,SnapXY,0)
+g02m (MX + PX3,MY + PY3,Tiefe,MX,MY,0,SnapXY,0,SnapXY)
+END
+;3 steg
+IF ST3 = -1
+g02m (MX + PX4,MY +PY4,Tiefe,MX,MY,0,SnapXY,0,SnapXY)
+ELSE
+G01 (MX + PX3,MY + PY3,-Z_Ps,0,SnapXY,0)
+g02m (MX - PX3,MY + PY3,-Z_Ps,MX,MY,0,SnapXY,0,SnapXY)
+G01 (MX - PX3,MY + PY3,Tiefe,0,SnapXY,0)
+g02m (MX + PX4,MY + PY4,Tiefe,MX,MY,0,SnapXY,0,SnapXY)
+END
+;4 Steg
+IF ST4 = -1
+g02m (MX + PX1,MY + PY1,Tiefe,MX,MY,0,SnapXY,0,SnapXY)
+ELSE
+G01 (MX + PX4,MY + PY4,-Z_Ps,0,SnapXY,0)
+g02m (MX + PX4,MY - PY4,-Z_Ps,MX,MY,0,SnapXY,0,SnapXY)
+G01 (MX + PX4,MY - PY4,Tiefe,0,SnapXY,0)
+g02m (MX + PX1,MY + PY1,Tiefe,MX,MY,0,SnapXY,0,SnapXY)
+END
+IF St1 = -1
+g02m (MX - PX1,MY + PY1,Tiefe,MX,MY,0,SnapXY,0,SnapXY)
+ELSE
+G01 (MX + PX1,MY + PY1,-Z_Ps,0,SnapXY,0)
+g02m (MX - PX1,MY + PY1,-Z_Ps,MX,MY,0,SnapXY,0,SnapXY)
+END
+EP (E_Typ,ABF,0)
+CALL _DrehenBBEnde ()

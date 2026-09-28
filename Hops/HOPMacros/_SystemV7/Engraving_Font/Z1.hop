@@ -1,0 +1,23 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   DX := 10;
+   DY := 10;
+   DZ := 19;
+   Tool := 38;WZ
+   Z := -1;*VAR*
+   Faktor := 1;*VAR*1=10mm
+START
+Fertigteil(DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;$F$Big Letters
+;WZF(Tool,_VE,_V,_VA,_SD,_ANF,'')
+KB ('1','',0,7.3762*Faktor,0,'',0,0)
+KG03M ('',2.8275*Faktor,9.8348*Faktor,_Z,-2.4382*Faktor,13.0350*Faktor,'',0,0,0)
+KG01 ('',3.6065*Faktor,9.8348*Faktor,_Z,'',0,0)
+KG01 ('',3.6065*Faktor,0,_Z,'',0,0)
+KSP('???','???',Z,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen('1','KSP','KEP',0,0,0,0,0,0,0,0)
+EP(0,_ANF,0)
+deletecontour ('1',0)

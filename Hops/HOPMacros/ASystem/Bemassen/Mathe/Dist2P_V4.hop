@@ -1,0 +1,20 @@
+;MAKROTYP=1
+;BILD=
+;INFO=
+;WZGV=XNC
+;MASCHINE=XNC
+;NCNAME=Dist2P_V4
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   P1X := 0;*VAR*
+   P1Y := 0;*VAR*
+   P2X := 100;*VAR*
+   P2Y := 100;*VAR*
+   Dist := 0;*VAR**REF*
+START
+Dist := sqrt(sqr(P2X-P1X)+sqr(P2Y-P1Y))

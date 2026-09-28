@@ -1,0 +1,30 @@
+;MAKROTYP=1
+;BILD=HG2PR.wmf
+;INFO=_HG2PunkteR
+;WZGV=demo
+;MASCHINE=Simu
+;NCNAME=HG2PunkteR
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   HP1X := ;*VAR*Erster Punkt in X
+   HP1Y := ;*VAR*Erster Punkt in Y
+   HP2X := ;*VAR*Zweiter Punkt in X
+   HP2Y := ;*VAR*Zweiter Punkt in Y
+   HRadius := ;*VAR*Radius
+   _HP1X := 0;
+   _HP1Y := 0;
+   _HP2X := 0;
+   _HP2Y := 0;
+   _HRadius := 0;
+START
+CALLDLL HG2PR(Hilfsgeometrie,Dummy, VAL P1X:=HP1X,P1Y:=HP1Y,P2X:=HP2X,P2Y:=HP2Y,R:=HRadius)
+_HP1X := Hp1x
+_HP1y := Hp1y
+_HP2X := Hp2x
+_HRadius := HRadius
+_HP2Y := Hp2Y

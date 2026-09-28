@@ -1,0 +1,560 @@
+;MAKROTYP=1
+
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_Kreisbahn_V5Dialog
+
+;AUTOSCRIPTSTART=0
+
+VARS
+   X_Mitte := 0;*VAR*Mittelpunkt in X
+   Y_Mitte := 0;*VAR*Mittelpunkt in Y
+   Tiefe := -5;*VAR*Gesamte Fraestiefe
+   ZuTiefe := _AT_MAXDEPTH;*VAR*Fraestiefe pro Zustellung (voll Kreis)
+   Radius := 200;*VAR*Radius der Kreisbahn
+   Radiuskorrektur := 1;*VAR*0=Mitte,1=Innerhalb,2=Ausserhalb
+   akt_Tiefe := 0;Benutzt fuer aktuelle Fraestiefe
+   AB := 1;*VAR*Anfahrbewegung 0=keine 1=Radial
+   Aufmass := 0;*VAR*Aufmass zur Kontur
+   Bearb_umkehren := 0;*VAR*Bearbeitung umkehren
+   Winkel := 180;*VAR*Rampenwinkel
+   a := 0;Berechnet
+   ANF := _ANF;*VAR*Anfahrfaktor
+   ABF := _ANF;*VAR*Abfahrfaktor
+   Rampe := 1;*VAR*Zustellung:   0=senkrecht  1=Quadrant   2=Laenge
+   Interpol := 1;*VAR*Interpolation auf Anfahrbewegung
+   CW := 1;Multiplikator zum Richtung umdrehen
+   a_last := 0;letzte Zustellung
+   ueberfahr := 5;ueberfahrwinkel
+   U := 0;Kreisumfang
+   ZuTiefe_Winkel := 0;Benutzt fuer Rampe ueber Quadranten
+   ZuTiefe_Quad1 := 0;Benutzt fuer Rampe ueber Quadranten
+   ZuTiefe_Quad2 := 0;Benutzt fuer Rampe ueber Quadranten
+   ZuTiefe_Quad3 := 0;Benutzt fuer Rampe ueber Quadranten
+   ZuTiefe_Quad4 := 0;Benutzt fuer Rampe ueber Quadranten
+   ZuTiefe_Quad := 0;Benutzt fuer Rampe ueber Quadranten
+   ZuTiefe_Last_Winkel := 0;Benutzt fuer Rampe ueber Quadranten
+   ZuTiefe_Last_Quad1 := 0;Benutzt fuer Rampe ueber Quadranten
+   ZuTiefe_Last_Quad2 := 0;Benutzt fuer Rampe ueber Quadranten
+   ZuTiefe_Last_Quad3 := 0;Benutzt fuer Rampe ueber Quadranten
+   ZuTiefe_Last_Quad4 := 0;Benutzt fuer Rampe ueber Quadranten
+   ZuTiefe_Last_Quad := 0;Benutzt fuer Rampe ueber Quadranten
+   b := 0;
+   esxy := 9;*VAR*
+   esmd := 0;*VAR*
+   laser := 0;*VAR*
+START
+;-- HH_EXTS
+;DIREKT CNC SYSTEME NCHOPS Version 5.x
+;19.08.2002 *MW
+;Abfrage ob Fraeserradius groeﬂer Kreisradius
+;mit Abfrage aussen fraesen - geaendert
+Rohteil (100,100,19,0,0)
+IF Bearb_umkehren=0
+Bearb_umkehren := 1
+ELSE
+Bearb_umkehren := 0
+END
+;WZF (1,_VA,_V,_VE,_SD,_ANF)
+transesxy (X_Mitte,Y_Mitte,esxy,0)
+Transesd (Tiefe,esmd)
+;***** Radius manipulieren *****
+radius := radius+Aufmass
+;***** Winkel nie negativ *****
+IF Winkel<0
+Winkel := -Winkel
+END
+;***** ueberpruefung Tiefe negativ *****
+IF Tiefe<0
+Tiefe := Tiefe*(-1)
+END
+;***** ueberpruefung ZuTiefe negativ *****
+IF zuTiefe<0
+zuTiefe := zuTiefe*(-1)
+END
+;***** ueberpruefung ZuTiefe NULL *****
+IF zuTiefe<=0
+zuTiefe := Tiefe
+END
+;****************************
+IF (Tiefe=0) & (ZuTiefe=0)
+;-- Neu MW 21.04.2005
+;Fehlermeldung (GetMessageText('6','Bitte Tiefe eingeben'))
+END
+;****************************
+IF Radiuskorrektur=0
+AB := 0
+END
+;****************************
+IF AB=1
+IF Radiuskorrektur=0
+AB := 0
+ELSE
+AB := 2
+END
+END
+;****************************
+;******* Anzahl Zustellungen errechnen *******
+IF (Tiefe<>0) & (ZuTiefe<>0)
+a := trunc(tiefe/zutiefe)
+ELSE
+a := 1
+END
+;******* Letzte Zustellung in mm *******
+a_last := (tiefe - zutiefe*a)
+;****************************
+;****************************
+;******* Kreisumfang errechnen *******
+U := PI*Radius*2
+;****************************
+IF Rampe=1
+;*** Berechnung der Z-Zustellung auf 90∞
+ZuTiefe_Quad := (ZuTiefe/360) * 90
+;*** Berechnung der Z-Zustellung auf angegebenem Winkel
+ZuTiefe_Winkel := ZuTiefe
+IF Winkel<=90
+ZuTiefe_Winkel := ZuTiefe
+ZuTiefe_Quad1 := 0
+ZuTiefe_Quad2 := 0
+ZuTiefe_Quad3 := 0
+ZuTiefe_Quad4 := 0
+END
+IF (Winkel>90) & (Winkel<=180)
+ZuTiefe_Winkel := (ZuTiefe/Winkel) * (Winkel-90)
+ZuTiefe_Quad1 := (ZuTiefe/Winkel) * 90
+ZuTiefe_Quad2 := 0
+ZuTiefe_Quad3 := 0
+ZuTiefe_Quad4 := 0
+END
+IF (Winkel>180) & (Winkel<=270)
+ZuTiefe_Winkel := (ZuTiefe/Winkel) * (Winkel-180)
+ZuTiefe_Quad1 := (ZuTiefe/Winkel) * 90
+ZuTiefe_Quad2 := (ZuTiefe/Winkel) * 90
+ZuTiefe_Quad3 := 0
+ZuTiefe_Quad4 := 0
+END
+IF (Winkel>270) & (Winkel<=360)
+ZuTiefe_Winkel := (ZuTiefe/Winkel) * (Winkel-270)
+ZuTiefe_Quad1 := (ZuTiefe/Winkel) * 90
+ZuTiefe_Quad2 := (ZuTiefe/Winkel) * 90
+ZuTiefe_Quad3 := (ZuTiefe/Winkel) * 90
+ZuTiefe_Quad4 := 0
+END
+IF a_last>0
+;*** Berechnung der Z-Zustellung auf LX/2 bei 90∞
+ZuTiefe_Last_Quad := (a_last/360) * 90
+;*** Berechnung der Z-Zustellung auf angegebenem Winkel
+zutiefe_Last_Winkel := a_Last
+IF Winkel<=90
+ZuTiefe_Last_Winkel := a_last
+ZuTiefe_Last_Quad1 := 0
+ZuTiefe_Last_Quad2 := 0
+ZuTiefe_Last_Quad3 := 0
+ZuTiefe_Last_Quad4 := 0
+END
+IF (Winkel>90) & (Winkel<=180)
+ZuTiefe_Last_Winkel := (a_last/Winkel) * (Winkel-90)
+ZuTiefe_Last_Quad1 := (a_last/Winkel) * 90
+ZuTiefe_Last_Quad2 := 0
+ZuTiefe_Last_Quad3 := 0
+ZuTiefe_Last_Quad4 := 0
+END
+IF (Winkel>180) & (Winkel<=270)
+ZuTiefe_Last_Winkel := (a_last/Winkel) * (Winkel-180)
+ZuTiefe_Last_Quad1 := (a_last/Winkel) * 90
+ZuTiefe_Last_Quad2 := (a_last/Winkel) * 90
+ZuTiefe_Last_Quad3 := 0
+ZuTiefe_Last_Quad4 := 0
+END
+IF (Winkel>270) & (Winkel<=360)
+ZuTiefe_Last_Winkel := (a_last/Winkel) * (Winkel-270)
+ZuTiefe_Last_Quad1 := (a_last/Winkel) * 90
+ZuTiefe_Last_Quad2 := (a_last/Winkel) * 90
+ZuTiefe_Last_Quad3 := (a_last/Winkel) * 90
+ZuTiefe_Last_Quad4 := 0
+END
+END
+END
+;*****************************************
+;*** Anfahrbewegung abfangen
+;IF (Rampe=0)&(Radiuskorrektur=1)
+IF (Radiuskorrektur=1)
+;Neu MW 24.05.2006 - Rampe=0 hat nichts mit der Abfahrbewegung zu tun
+IF AB>0
+;Neu MW 23.05.2006 - darf nur wirken, wenn Abfahren = Radial
+IF (ANF*_WZR>radius)
+Fehlermeldung (GetMessageText('12','Anfahrbewegung zu gross'))
+END
+IF (ABF*_WZR>radius)
+Fehlermeldung (GetMessageText('13','Abfahrbewegung zu gross'))
+END
+END
+END
+;*****************************************
+;*****************************************
+IF (_WZR>Radius)&(Radiuskorrektur=1)
+ZKBCW (X_Mitte,Y_Mitte,X_Mitte-_WZR,Y_Mitte,X_Mitte-_WZR,Y_Mitte,255)
+Fehlermeldung (GetMessageText('14','Kreisradius zu klein fuer dieses Werkzeug'))
+END
+;*****************************************
+HGNeu()
+HKreismpr (x_Mitte,y_Mitte,Radius)
+IF Bearb_Umkehren=0
+HLineW (x_Mitte,y_Mitte,winkel)
+HLineW (x_Mitte,y_Mitte,winkel+ueberfahr)
+ELSE
+HLineW (x_Mitte,y_Mitte,-winkel)
+HLineW (x_Mitte,y_Mitte,-winkel-ueberfahr)
+IF Radiuskorrektur=1
+Radiuskorrektur := 2
+ELSE
+IF Radiuskorrektur = 2
+Radiuskorrektur := 1
+END
+END
+END
+;*****************************************
+;******  Hilfsgeometrie  *******
+;*****************************************
+;******  FRaeSBEARBEITUNG  ******
+;*****************************************
+;******  Uhrzeigersinn  CCW  *******
+;*****************************************
+IF Bearb_umkehren=0
+IF Rampe=0
+;*** senkrecht zustellen oder Interpolativ
+;*** auf Anfahrbewegung zustellen
+IF Interpol = 1
+AB := -AB
+END
+;****
+akt_Tiefe := zutiefe
+FOR b := 1 TO a STEP 1
+SP (x_Mitte+Radius,y_Mitte,-akt_Tiefe,Radiuskorrektur,AB,ANF,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+G03M (X_Mitte,y_mitte+radius,_Z,x_mitte,y_mitte,0)
+G03M (X_Mitte-radius,y_mitte,_Z,x_mitte,y_mitte,0)
+G03M (X_Mitte,y_mitte-radius,_Z,x_mitte,y_mitte,0)
+G03M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+EP (AB,ABF,0)
+akt_Tiefe := Akt_Tiefe+zutiefe
+END
+IF a_last>0
+SP (x_Mitte+Radius,y_Mitte,-Tiefe,Radiuskorrektur,AB,ANF,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+G03M (X_Mitte,y_mitte+radius,_Z,x_mitte,y_mitte,0)
+G03M (X_Mitte-radius,y_mitte,_Z,x_mitte,y_mitte,0)
+G03M (X_Mitte,y_mitte-radius,_Z,x_mitte,y_mitte,0)
+G03M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+EP (AB,ABF,0)
+END
+END
+;***********************************
+IF Rampe=1
+;******  Uhrzeigersinn  CCW  *******
+;*** ueber Winkel zustellen
+IF Interpol = 1
+AB := -AB
+END
+;****
+IF Winkel>360
+Fehlermeldung (GetMessageText('15','Winkel zwischen 0 und 360 eingeben'))
+END
+;****
+;****
+SP (x_Mitte+Radius,y_Mitte,0,Radiuskorrektur,0,ANF,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+;****
+FOR b := 1 TO a STEP 1
+;1. Quadrant
+IF Winkel<90
+G03M (_SPX1,_SPY1,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+G03M (X_Mitte,y_mitte+radius,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=90
+G03M (X_Mitte,y_mitte+radius,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+END
+IF Winkel>90
+G03M (X_Mitte,y_mitte+radius,_Z - ZuTiefe_Quad1,x_mitte,y_mitte,0)
+END
+;2. Quadrant
+IF Winkel<=90
+G03M (X_Mitte-radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF (Winkel<180) & (Winkel>90)
+G03M (_SPX1,_SPY1,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+G03M (X_Mitte-radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=180
+G03M (X_Mitte-radius,y_mitte,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+END
+IF Winkel>180
+G03M (X_Mitte-radius,y_mitte,_Z - ZuTiefe_Quad2,x_mitte,y_mitte,0)
+END
+;3. Quadrant
+IF Winkel<180
+G03M (x_mitte,y_mitte-radius,_Z,x_mitte,y_mitte,0)
+END
+IF (Winkel<270) & (Winkel>180)
+G03M (_SPX1,_SPY1,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+G03M (x_mitte,y_mitte-radius,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=270
+G03M (x_mitte,y_mitte-radius,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+END
+IF Winkel>270
+G03M (x_mitte,y_mitte-radius,_Z - ZuTiefe_Quad3,x_mitte,y_mitte,0)
+END
+;4. Quadrant
+IF Winkel<270
+G03M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF (Winkel<360) & (Winkel>270)
+G03M (_SPX1,_SPY1,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+G03M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=360
+G03M (X_Mitte+radius,y_mitte,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+END
+IF Winkel=270
+G03M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+END
+;--- letzte Zustellung --- letzte Zustellung --- letzte Zustellung
+;--- letzte Zustellung --- letzte Zustellung --- letzte Zustellung
+;--- letzte Zustellung --- letzte Zustellung --- letzte Zustellung
+IF a_last>0
+;1. Quadrant
+IF Winkel<90
+G03M (_SPX1,_SPY1,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+G03M (X_Mitte,y_mitte+radius,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=90
+G03M (X_Mitte,y_mitte+radius,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+END
+IF Winkel>90
+G03M (X_Mitte,y_mitte+radius,_Z - ZuTiefe_Last_Quad1,x_mitte,y_mitte,0)
+END
+;2. Quadrant
+IF Winkel<=90
+G03M (X_Mitte-radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF (Winkel<180) & (Winkel>90)
+G03M (_SPX1,_SPY1,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+G03M (X_Mitte-radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=180
+G03M (_SPX1,_SPY1,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+END
+IF Winkel>180
+G03M (x_mitte-radius,y_mitte,_Z - ZuTiefe_Last_Quad2,x_mitte,y_mitte,0)
+END
+;3. Quadrant
+IF Winkel<180
+G03M (x_mitte,y_mitte-radius,_Z,x_mitte,y_mitte,0)
+END
+IF (Winkel<270) & (Winkel>180)
+G03M (_SPX1,_SPY1,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+G03M (x_mitte,y_mitte-radius,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=270
+G03M (x_mitte,y_mitte-radius,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+END
+IF Winkel>270
+G03M (x_mitte,y_mitte-radius,_Z - ZuTiefe_Last_Quad3,x_mitte,y_mitte,0)
+END
+;4. Quadrant
+IF Winkel<270
+G03M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF (Winkel<360) & (Winkel>270)
+G03M (_SPX1,_SPY1,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+G03M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=270
+G03M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=360
+G03M (X_Mitte+radius,y_mitte,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+END
+END
+;---Rampe abraeumen
+IF Winkel=360
+G03M (x_mitte-radius,y_mitte,-Tiefe,x_mitte,y_mitte,0)
+G03M (_SPX1,_SPY1,_Z,x_mitte,y_mitte,0)
+G03M (_SPX3,_SPY3,_Z,x_mitte,y_mitte,0)
+ELSE
+G03M (_SPX1,_SPY1,-Tiefe,x_mitte,y_mitte,0)
+G03M (_SPX3,_SPY3,_Z,x_mitte,y_mitte,0)
+END
+EP (AB,ABF,0)
+END
+;***********************************
+;***********************************
+ELSE
+;***********************************
+;***********************************
+IF Rampe=0
+;*** senkrecht zustellen oder Interpolativ
+;*** auf Anfahrbewegung zustellen
+IF Interpol = 1
+AB := -AB
+END
+;****
+akt_Tiefe := zutiefe
+FOR b := 1 TO a STEP 1
+SP (x_Mitte+Radius,y_Mitte,-akt_Tiefe,Radiuskorrektur,AB,ANF,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+G02M (X_Mitte,y_mitte-radius,_Z,x_mitte,y_mitte,0)
+G02M (X_Mitte-radius,y_mitte,_Z,x_mitte,y_mitte,0)
+G02M (X_Mitte,y_mitte+radius,_Z,x_mitte,y_mitte,0)
+G02M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+EP (AB,ABF,0)
+akt_Tiefe := Akt_Tiefe+zutiefe
+END
+IF a_last>0
+SP (x_Mitte+Radius,y_Mitte,-Tiefe,Radiuskorrektur,AB,ANF,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+G02M (X_Mitte,y_mitte-radius,_Z,x_mitte,y_mitte,0)
+G02M (X_Mitte-radius,y_mitte,_Z,x_mitte,y_mitte,0)
+G02M (X_Mitte,y_mitte+radius,_Z,x_mitte,y_mitte,0)
+G02M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+EP (AB,ABF,0)
+END
+END
+;***********************************;***********************************
+;******  Uhrzeigersinn  CW  *******
+IF Rampe=1
+;*** ueber Winkel zustellen
+IF Interpol = 1
+AB := -AB
+END
+;****
+IF Winkel>360
+Fehlermeldung (GetMessageText('15','Winkel zwischen 0 und 360 eingeben'))
+END
+;****
+;****
+SP (x_Mitte+Radius,y_Mitte,0,Radiuskorrektur,0,ANF,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+;****
+FOR b := 1 TO a STEP 1
+;1. Quadrant
+IF Winkel<90
+G02M (_SPX1,_SPY1,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+G02M (X_Mitte,y_mitte-radius,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=90
+G02M (X_Mitte,y_mitte-radius,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+END
+IF Winkel>90
+G02M (X_Mitte,y_mitte-radius,_Z - ZuTiefe_Quad1,x_mitte,y_mitte,0)
+END
+;2. Quadrant
+IF Winkel<=90
+G02M (X_Mitte-radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF (Winkel<180) & (Winkel>90)
+G02M (_SPX1,_SPY1,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+G02M (X_Mitte-radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=180
+G02M (X_Mitte-radius,y_mitte,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+END
+IF Winkel>180
+G02M (X_Mitte-radius,y_mitte,_Z - ZuTiefe_Quad2,x_mitte,y_mitte,0)
+END
+;3. Quadrant
+IF Winkel<180
+G02M (x_mitte,y_mitte+radius,_Z,x_mitte,y_mitte,0)
+END
+IF (Winkel<270) & (Winkel>180)
+G02M (_SPX1,_SPY1,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+G02M (x_mitte,y_mitte+radius,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=270
+G02M (x_mitte,y_mitte+radius,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+END
+IF Winkel>270
+G02M (x_mitte,y_mitte+radius,_Z - ZuTiefe_Quad3,x_mitte,y_mitte,0)
+END
+;4. Quadrant
+IF Winkel<270
+G02M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF (Winkel<360) & (Winkel>270)
+G02M (_SPX1,_SPY1,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+G02M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=360
+G02M (X_Mitte+radius,y_mitte,_Z - ZuTiefe_Winkel,x_mitte,y_mitte,0)
+END
+IF Winkel=270
+G02M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+END
+;--- letzte Zustellung --- letzte Zustellung --- letzte Zustellung
+;--- letzte Zustellung --- letzte Zustellung --- letzte Zustellung
+;--- letzte Zustellung --- letzte Zustellung --- letzte Zustellung
+IF a_last>0
+;1. Quadrant
+IF Winkel<90
+G02M (_SPX1,_SPY1,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+G02M (X_Mitte,y_mitte-radius,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=90
+G02M (x_Mitte,y_mitte-radius,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+END
+IF Winkel>90
+G02M (X_Mitte,y_mitte-radius,_Z - ZuTiefe_Last_Quad1,x_mitte,y_mitte,0)
+END
+;2. Quadrant
+IF Winkel<=90
+G02M (X_Mitte-radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF (Winkel<180) & (Winkel>90)
+G02M (_SPX1,_SPY1,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+G02M (X_Mitte-radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=180
+G02M (_SPX1,_SPY1,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+END
+IF Winkel>180
+G02M (x_mitte-radius,y_mitte,_Z - ZuTiefe_Last_Quad2,x_mitte,y_mitte,0)
+END
+;3. Quadrant
+IF Winkel<180
+G02M (x_mitte,y_mitte+radius,_Z,x_mitte,y_mitte,0)
+END
+IF (Winkel<270) & (Winkel>180)
+G02M (_SPX1,_SPY1,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+G02M (x_mitte,y_mitte+radius,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=270
+G02M (x_mitte,y_mitte+radius,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+END
+IF Winkel>270
+G02M (x_mitte,y_mitte+radius,_Z - ZuTiefe_Last_Quad3,x_mitte,y_mitte,0)
+END
+;4. Quadrant
+IF Winkel<270
+G02M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF (Winkel<360) & (Winkel>270)
+G02M (_SPX1,_SPY1,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+G02M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=270
+G02M (X_Mitte+radius,y_mitte,_Z,x_mitte,y_mitte,0)
+END
+IF Winkel=360
+G02M (X_Mitte+radius,y_mitte,_Z - ZuTiefe_Last_Winkel,x_mitte,y_mitte,0)
+END
+END
+;---Rampe abraeumen
+IF Winkel=360
+G02M (x_mitte-radius,y_mitte,-Tiefe,x_mitte,y_mitte,0)
+G02M (_SPX1,_SPY1,_Z,x_mitte,y_mitte,0)
+G02M (_SPX3,_SPY3,_Z,x_mitte,y_mitte,0)
+ELSE
+G02M (_SPX1,_SPY1,-Tiefe,x_mitte,y_mitte,0)
+G02M (_SPX3,_SPY3,_Z,x_mitte,y_mitte,0)
+END
+EP (AB,ABF,0)
+END
+END
+;***********************************
+HGNeuEnd()

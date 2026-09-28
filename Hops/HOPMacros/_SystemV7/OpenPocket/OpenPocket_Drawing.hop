@@ -1,0 +1,137 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.5.4.618[Hops.exe]
+;BILD=OPENPOCKET_DRAWING.WMF
+;INFO=18138609
+;WZGV=THEUNS_HUELLHORST
+;WZGVCONFIG=
+;MASCHINE=THEUNS_HUELLHORST
+;NCNAME=OpenPocket_Drawing
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 800;Dimension X
+   DY := 600;Dimension Y
+   DZ := 38;Dimension Z
+   Ecke := 5;*VAR*0=LU / 1=U / 2=RU.......
+   Dim_X := 150;*VAR*Länge in X
+   Dim_Y := 100;*VAR*Länge in Y
+   Rad := 20;*VAR*Radius
+   PosX := 250;*VAR*Positiion in X
+   PosY := 0;*VAR*Positiion in Y
+   W := 1.5;Pixel for drawing
+   Col := 0;0=black
+START
+;--------------------------------------------------------------------------------------------
+;- direkt cnc systeme NC-HOPS (Version 7.5.5.x)
+;--------------------------------------------------------------------------------------------
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0,0)
+;--------------------------------------------------------------------------------------------
+;- Rectangel pocket open
+;- 0 = LU
+;- 1 = U
+;- 2 = RU
+;- 3 = R
+;- 4 = RO
+;- 5 = O
+;- 6 = LO
+;- 7 = L
+;-
+;- DRAWINGS
+;-
+IF Ecke=0
+;- Edge LU
+ZLinie (Dim_X,0,Dim_X,Dim_Y - Rad,Col,1,1,W,1,1)
+IF Rad>0
+CALL _ZKBCCWR_V7 ( VAL SX:=Dim_X,SY:=Dim_Y-Rad,EX:=Dim_X-Rad,EY:=Dim_Y,R:=Rad,FARBE:=Col,ESXY1:=1,ESXY2:=1,THICKNESS:=W,THICKNESSKIND:=1,USEDNCDATA:=1)
+END
+ZLinie (Dim_X-Rad,Dim_Y,0,Dim_Y,Col,1,1,W,1,1)
+END
+;-
+IF Ecke=1
+;- U
+ZLinie (PosX + Dim_X/2,0,PosX + Dim_X/2,Dim_Y-Rad,Col,1,1,W,1,1)
+IF Rad>0
+CALL _ZKBCCWR_V7 ( VAL SX:=PosX + Dim_X/2,SY:=Dim_Y-Rad,EX:=PosX + Dim_X/2 - Rad,EY:=Dim_Y,R:=Rad,FARBE:=Col,ESXY1:=1,ESXY2:=1,THICKNESS:=W,THICKNESSKIND:=1,USEDNCDATA:=1)
+END
+ZLinie (PosX + Dim_X/2 - Rad,Dim_Y,PosX - Dim_X/2 + Rad,Dim_Y,Col,1,1,W,1,1)
+IF Rad>0
+CALL _ZKBCCWR_V7 ( VAL SX:=PosX - Dim_X/2 + Rad,SY:=Dim_Y,EX:=PosX - Dim_X/2,EY:=Dim_Y-Rad,R:=Rad,FARBE:=Col,ESXY1:=1,ESXY2:=1,THICKNESS:=W,THICKNESSKIND:=1,USEDNCDATA:=1)
+END
+ZLinie (PosX - Dim_X/2,Dim_Y-Rad,PosX - Dim_X/2,0,Col,1,1,W,1,1)
+END
+;-
+IF Ecke=2
+;- Edge RU
+ZLinie (Dim_X,0,Dim_X,Dim_Y - Rad,Col,3,3,W,1,1)
+IF Rad>0
+CALL _ZKBCWR_V7 ( VAL SX:=Dim_X,SY:=Dim_Y-Rad,EX:=Dim_X-Rad,EY:=Dim_Y,R:=Rad,FARBE:=Col,ESXY1:=3,ESXY2:=3,THICKNESS:=W,THICKNESSKIND:=1,USEDNCDATA:=1)
+END
+ZLinie (Dim_X-Rad,Dim_Y,0,Dim_Y,Col,3,3,W,1,1)
+END
+;-
+IF Ecke=3
+;- R
+ZLinie (_RX,PosY + Dim_Y/2,_RX - Dim_X + Rad,PosY + Dim_Y/2,Col,1,1,W,1,1)
+IF Rad>0
+CALL _ZKBCCWR_V7 ( VAL SX:=_RX - Dim_X + Rad,SY:=PosY + Dim_Y/2,EX:=_RX - Dim_X,EY:=PosY + Dim_Y/2 - Rad,R:=Rad,FARBE:=Col,ESXY1:=1,ESXY2:=1,THICKNESS:=W,THICKNESSKIND:=1,USEDNCDATA:=1)
+END
+ZLinie (_RX - Dim_X,PosY + Dim_Y/2 - Rad,_RX - Dim_X,PosY - Dim_Y/2 + Rad,Col,1,1,W,1,1)
+IF Rad>0
+CALL _ZKBCCWR_V7 ( VAL SX:=_RX - Dim_X,SY:=PosY - Dim_Y/2 + Rad,EX:=_RX - Dim_X + Rad,EY:=PosY - Dim_Y/2,R:=Rad,FARBE:=Col,ESXY1:=1,ESXY2:=1,THICKNESS:=W,THICKNESSKIND:=1,USEDNCDATA:=1)
+END
+ZLinie (_RX - Dim_X + Rad,PosY - Dim_Y/2,_RX,PosY - Dim_Y/2,Col,1,1,W,1,1)
+END
+;-
+IF Ecke=4
+;- Edge RO
+ZLinie (Dim_X,0,Dim_X,Dim_Y - Rad,Col,5,5,W,1,1)
+IF Rad>0
+CALL _ZKBCCWR_V7 ( VAL SX:=Dim_X,SY:=Dim_Y-Rad,EX:=Dim_X-Rad,EY:=Dim_Y,R:=Rad,FARBE:=Col,ESXY1:=5,ESXY2:=5,THICKNESS:=W,THICKNESSKIND:=1,USEDNCDATA:=1)
+END
+ZLinie (Dim_X-Rad,Dim_Y,0,Dim_Y,Col,5,5,W,1,1)
+END
+;-
+IF Ecke=5
+;- O
+ZLinie (PosX + Dim_X/2,0,PosX + Dim_X/2,Dim_Y-Rad,Col,7,7,W,1,1)
+IF Rad>0
+CALL _ZKBCWR_V7 ( VAL SX:=PosX + Dim_X/2,SY:=Dim_Y-Rad,EX:=PosX + Dim_X/2 - Rad,EY:=Dim_Y,R:=Rad,FARBE:=Col,ESXY1:=7,ESXY2:=7,THICKNESS:=W,THICKNESSKIND:=1,USEDNCDATA:=1)
+END
+ZLinie (PosX + Dim_X/2 - Rad,Dim_Y,PosX - Dim_X/2 + Rad,Dim_Y,Col,7,7,W,1,1)
+IF Rad>0
+CALL _ZKBCWR_V7 ( VAL SX:=PosX - Dim_X/2 + Rad,SY:=Dim_Y,EX:=PosX - Dim_X/2,EY:=Dim_Y-Rad,R:=Rad,FARBE:=Col,ESXY1:=7,ESXY2:=7,THICKNESS:=W,THICKNESSKIND:=1,USEDNCDATA:=1)
+END
+ZLinie (PosX - Dim_X/2,Dim_Y-Rad,PosX - Dim_X/2,0,Col,7,7,W,1,1)
+END
+;-
+IF Ecke=6
+;- Edge RL
+ZLinie (Dim_X,0,Dim_X,Dim_Y - Rad,Col,7,7,W,1,1)
+IF Rad>0
+CALL _ZKBCWR_V7 ( VAL SX:=Dim_X,SY:=Dim_Y-Rad,EX:=Dim_X-Rad,EY:=Dim_Y,R:=Rad,FARBE:=Col,ESXY1:=7,ESXY2:=7,THICKNESS:=W,THICKNESSKIND:=1,USEDNCDATA:=1)
+END
+ZLinie (Dim_X-Rad,Dim_Y,0,Dim_Y,Col,7,7,W,1,1)
+END
+;-
+IF Ecke=7
+;- L
+ZLinie (0,PosY + Dim_Y/2,Dim_X - Rad,PosY + Dim_Y/2,Col,1,1,W,1,1)
+IF Rad>0
+CALL _ZKBCWR_V7 ( VAL SX:=Dim_X - Rad,SY:=PosY + Dim_Y/2,EX:=Dim_X,EY:=PosY + Dim_Y/2 - Rad,R:=Rad,FARBE:=Col,ESXY1:=1,ESXY2:=1,THICKNESS:=W,THICKNESSKIND:=1,USEDNCDATA:=1)
+END
+ZLinie (Dim_X,PosY + Dim_Y/2 - Rad,Dim_X,PosY - Dim_Y/2 + Rad,Col,1,1,W,1,1)
+IF Rad>0
+CALL _ZKBCWR_V7 ( VAL SX:=Dim_X,SY:=PosY - Dim_Y/2 + Rad,EX:=Dim_X - Rad,EY:=PosY - Dim_Y/2,R:=Rad,FARBE:=Col,ESXY1:=1,ESXY2:=1,THICKNESS:=W,THICKNESSKIND:=1,USEDNCDATA:=1)
+END
+ZLinie (Dim_X - Rad,PosY - Dim_Y/2,0,PosY - Dim_Y/2,Col,1,1,W,1,1)
+END
+;-

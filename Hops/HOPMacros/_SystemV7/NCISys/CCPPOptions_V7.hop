@@ -1,0 +1,14 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowCCPPOPTIONS_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   GhostCreationKind := 0;*VAR*
+   r2 := 0;*VAR*beliebige Zahl
+   r3 := 0;*VAR*beliebige Zahl
+   r4 := 0;*VAR*beliebige Zahl
+   r5 := 0;*VAR*beliebige Zahl
+   r6 := 0;*VAR*beliebige Zahl
+START
+nciext (-100800,'NCISys',0,0,0,GhostCreationKind,r2,r3,r4,r5,r6)

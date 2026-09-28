@@ -1,0 +1,36 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCNAME
+;MASCHINE=demo
+;WZGV=demo
+;BILD=GeradeWX.wmf
+VARS
+   X := 50;*VAR*distance in x-direction
+   angle := 0;*VAR*angle relative to x axis
+   Z := _Z;*VAR*depth in z
+   R := 0;*VAR*radius to get round curves
+START
+;DIREKT CNC SYSTEME NCHOPS VERSION 3.0
+;line with x-value and angle
+;finished part(1000,2000,19,0,0)
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+WHILE angle>360
+angle := angle-360
+END
+WHILE angle<0
+angle := angle+360
+END
+IF ((angle<90.0001)&(angle>89.9999))|((angle<270.0001)&(angle>269.9999))
+;Keine Lösung
+GIVEOUTHINT(no_solution)
+ELSE
+IF (angle>90)&(angle<270)
+G01(_X-X,_Y-(X*TAN(ANGLE)),Z,R)
+ELSE
+G01(_X+X,_Y+(X*TAN(ANGLE)),Z,R)
+END
+END
+

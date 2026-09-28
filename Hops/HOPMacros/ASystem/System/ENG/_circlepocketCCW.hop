@@ -1,0 +1,68 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCNAME
+;MASCHINE=demo
+;WZGV=demo
+;BILD=
+VARS
+   X_Mitte := _RX/2;*VAR*centre in x
+   Y_Mitte := _RY/2;*VAR*centre in y
+   Z := _Z;*VAR*depth in z
+   Radius := 20;*VAR*radius of circle path
+   Radiuskorrektur := 2;*VAR*0=centre ,1=outside,2=inside
+   AB := 1;*VAR*0 -> no starting-/departing movement, <> 0 -> starting-/departing movement
+   KreisEndpunktY := 0;
+   ÜberfahrKreisbogen := 2;
+START
+;direkt cnc systeme NCHOPS Version3.0
+;circle path ccw V 3.0/SF/30.09.98
+;finished part(100,100,19,0,0)
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+KreisEndpunktY := _WZD+ÜberfahrKreisbogen
+IF KreisEndpunktY>=2*Radius
+KreisEndpunktY := _WZD+((2*Radius-_WZD)/2)
+END
+IF Radiuskorrektur=0
+SP(X_MITTE+RADIUS,Y_MITTE,Z,0,0,_ANF,0,0,0)
+ELSE
+IF Radiuskorrektur=1
+IF AB=0
+SP(X_MITTE+RADIUS,Y_MITTE,Z,2,0,1.1,0,0,0)
+ELSE
+SP(X_MITTE+RADIUS,Y_MITTE,Z,2,2,1.1,0,0,0)
+END
+ELSE
+IF AB=0
+SP(X_MITTE+RADIUS,Y_MITTE,Z,1,0,_ANF,0,0,0)
+ELSE
+SP(X_MITTE+RADIUS-KREISENDPUNKTY,Y_MITTE,Z,1,0,_ANF,0,0,0)
+G03C(X_MITTE+RADIUS,Y_MITTE,_Z,(X_MITTE+RADIUS-KREISENDPUNKTY)+KREISENDPUNKTY/2,Y_MITTE,0)
+END
+END
+END
+;..
+G03C(X_MITTE-RADIUS,Y_MITTE,_Z,X_MITTE,Y_MITTE,0)
+G03C(X_MITTE+RADIUS,Y_MITTE,_Z,X_MITTE,Y_MITTE,0)
+G03C(X_MITTE,Y_MITTE+RADIUS,_Z,X_MITTE,Y_MITTE,0)
+;nur wenn Fahrweg in Mitte keine Konturverletzung verursacht
+IF Radiuskorrektur=0
+;Keine Abfahrbewegung
+EP(0,_ANF,0)
+ELSE
+IF Radiuskorrektur=1
+IF AB=0
+EP(0,1.1,0)
+ELSE
+EP(2,1.1,0)
+END
+ELSE
+IF AB<>0
+TANG(_X,_Y-KREISENDPUNKTY,_Z,_WZR)
+END
+END
+EP(0,1.1,0)
+END
+

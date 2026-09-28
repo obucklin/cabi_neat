@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowCalcOffX_L_W_V7Dialog
+VARS
+   Laenge := ;*VAR*Länge der Geraden
+   Winkel := ;*VAR*Winkel gegen X
+   OffX := ;*VAR**REF*
+START
+OffX := laenge*cos(Winkel)

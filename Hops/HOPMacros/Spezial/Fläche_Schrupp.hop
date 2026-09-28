@@ -1,0 +1,162 @@
+;MAKROTYP=1
+;INSTVERSION=6.3.0.3
+;EXEVERSION=6.6.1.59[Hops.exe]
+;BILD=Fläche_Schrupp.wmf
+;INFO=
+;WZGV=7225K_105
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Fläche_Schrupp
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_5.Dll
+;DIALOGPROC=ShowTFLach_Fraesen_FDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 200;Dimension Y
+   DZ := 200;Dimension Z
+   F_Tool := 800;*VAR*Werkzeug
+   Ritz_Tool := 800;*VAR*Vorritz Werkzeug
+   Start_T := 80;*VAR*StartTiefe
+   End_T := 0;*VAR*End Tiefe
+   MaxZ := 50;*VAR*Maximale Zustelltiefe
+   Ritz_Tiefe := 10.00;*VAR*Ritz Tiefe
+   Schritt_T := 0;*VAR*Schritttiefe beim Vorritzen
+   Ueberlappung := 62;*VAR*Überlappung in % vom Werkzeugdurchmesser
+   RD := 1;*VAR*Richtung umkehren
+   Ritzen := 1;*VAR*Ritzen ja/oder Nein
+   U_P1 := 0;*VAR*Überlappung an den Ecken
+   U_P2 := 0;*VAR*Überlappung an den Ecken
+   U_P3 := 0;*VAR*Überlappung an den Ecken
+   U_P4 := 0;*VAR*Überlappung an den Ecken
+   EB_X := 0.00;*VAR*Drehpunkt in X
+   EB_Y := 0;*VAR*Drehpunkt in Y
+   EB_Z := 0.00;*VAR*Drehpunkt in Z
+   EB_DW := 90;*VAR*Drehwinkel
+   EB_KW := 45;*VAR*KippWinkel
+   ES_XY := 3;*VAR*Easy Snap XY
+   ES_Z := 0;*VAR*Easy Snap Z
+   X1 := 0;Rechts unten
+   X2 := 0;Rechts oben
+   X3 := 0;Links oben
+   X4 := 0;Links unten
+   Y1 := 0;
+   y2 := 0;
+   y3 := 0;
+   y4 := 0;
+   Namen := 'R1';Konturnamen
+   AA := 0;Abstand Außen/Insel
+   Mode := 0;0 = Spiral; 1 = Konturparallel; 2 = Parallel
+   Angle := 0;Winkel Mode=3
+   Tiefe := 0;Tiefe
+   esmd := 0;
+   FliegendEintauchen := 0;
+   MaxEintauchLaenge := 20;
+   AnzahlP := 2;
+   AnzahlOutlineP := 2;
+   Z_Index := 0;
+   Z_Anzahl := 0;
+   Z_Step := 0;
+   Z_AktTiefe := 50;
+   PocketKonturName := 'Pocket';
+   LastTiefe := 0;
+   LastCall := 0;
+   UseOutline := 0;
+   R_AktTiefe := 0;
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+EbeneF(EB_X,EB_Y,EB_Z,EB_KW,EB_DW,ES_XY,0)
+/TransEsXY (X1,y1,3,0)
+/TransEsXY (X2,y2,5,0)
+/TransEsXY (X3,y3,7,0)
+/TransEsXY (X4,y4,1,0)
+/KB ('R1','',(X4  ),(Y4 ),0,'',0,0)
+/KG01 ('',X1,Y1,0,'',0,2)
+/KG01 ('',X2,Y2,0,'',0,2)
+/KG01 ('',X3,Y2,0,'',0,2)
+/KG01 ('',(X4  ),(Y4),0,'',0,2)
+KB ('R1','',0,0,0,'',7,0)
+KG01 ('',0,0,0,'',5,2)
+KG01 ('',0,0,0,'',3,2)
+KG01 ('',0,0,0,'',1,2)
+KG01 ('',0,0,0,'',7,2)
+WZF (Ritz_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+IF Ritzen = 1
+IF (_AT_MAXDEPTH > Ritz_Tiefe) |  (_AT_MAXDEPTH = 0)
+;MaxZ wird verwendet
+ELSE
+R_AktTiefe := _AT_MAXDEPTH
+END
+IF (Start_T >0) & (Ritz_Tiefe<>0)
+Z_Anzahl := trunc((Start_T - End_T) / Ritz_Tiefe)
+R_AktTiefe := ABS(Start_T)
+ELSE
+Z_Anzahl := 0
+Z_AktTiefe := 0.1mm
+Tiefe := End_T
+END
+FOR Z_Index := 1 TO Z_Anzahl STEP 1
+SP (0,Ritz_Tiefe,R_AktTiefe,1,2,_ANF,0,0,0,7,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Ritz_Tiefe,Ritz_Tiefe,0,0,5,2)
+G01 (Ritz_Tiefe,Ritz_Tiefe,0,0,3,2)
+G01 (Ritz_Tiefe,Ritz_Tiefe,0,0,1,2)
+G01 (Ritz_Tiefe,0,0,0,7,2)
+EP (2,_ANF,0)
+R_AktTiefe := R_AktTiefe - Ritz_Tiefe
+END
+R_AktTiefe := End_T
+SP (0,Ritz_Tiefe,R_AktTiefe,1,2,_ANF,0,0,0,7,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Ritz_Tiefe,Ritz_Tiefe,0,0,5,2)
+G01 (Ritz_Tiefe,Ritz_Tiefe,0,0,3,2)
+G01 (Ritz_Tiefe,Ritz_Tiefe,0,0,1,2)
+G01 (Ritz_Tiefe,0,0,0,7,2)
+EP (2,_ANF,0)
+END
+WZF (F_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+IF (_AT_MAXDEPTH > MaxZ) |  (_AT_MAXDEPTH = 0);BREAKPOINT
+;MaxZ wird verwendet
+ELSE
+MaxZ := _AT_MAXDEPTH
+END
+IF (Start_T >0) & (MaxZ<>0)
+Z_Anzahl := trunc((Start_T - End_T) / MaxZ)
+Z_AktTiefe := ABS(Start_T)
+R_AktTiefe := ABS(Start_T)
+ELSE
+Z_Anzahl := 0
+Z_AktTiefe := 0.1mm
+Tiefe := End_T
+END
+IF _WZR<>0
+;Easysnap verrechnen
+Transesd (Tiefe,esmd)
+/CreatePocketContour (Namen,AA+_WZR,_WZD-_WZD*Ueberlappung/100,Angle,Mode,RD,PocketKonturName,'','',AnzahlP,AnzahlOutlineP)
+CreatePocketContour (Namen,AA,_WZD-_WZD*Ueberlappung/100,Angle,Mode,RD,PocketKonturName,'','',AnzahlP,AnzahlOutlineP)
+IF (AnzahlP=0)&(AnzahlOutlineP=0)
+;SF Fehler ausgeben 13.03.2009
+Fehlermeldung (GetMessageText('1001','Keine Fräskonturen vorhanden. Text vermutlich zu klein.'))
+ELSE
+;Wegschruppen
+FOR Z_Index := 1 TO Z_Anzahl STEP 1
+CALL _ExecutePocketContours_V5 ( VAL KN:='Pocket',MODE:=2,LASTTIEFE:=0,TIEFE:=Z_AktTiefe,ANZAHLP:=1,ANZAHLOUTLINEP:=0,RD:=RD,FLIEGENDEINTAUCHEN:=0,MAXEINTAUCHLAENGE:=20,LASTCALL:=0)
+Z_AktTiefe := Z_AktTiefe - MaxZ
+END
+Z_AktTiefe := End_T
+END
+END
+IF Z_AktTiefe>=0
+;LastCall richtigen Wert übergeben SF 03.11.2009
+CALL _ExecutePocketContours_V5 ( VAL KN:=PocketKonturName,MODE:=Mode,LASTTIEFE:=Z_AktTiefe,TIEFE:=End_T,ANZAHLP:=AnzahlP,ANZAHLOUTLINEP:=AnzahlOutlineP,RD:=RD,FLIEGENDEINTAUCHEN:=FliegendEintauchen,MAXEINTAUCHLAENGE:=MaxEintauchLaenge,LASTCALL:=1)
+END
+CALL _DeletePocketContours_V5 ( VAL KN:=PocketKonturName,ANZAHLP:=AnzahlP,ANZAHLOUTLINEP:=AnzahlOutlineP)
+END
+ELSE
+Fehlermeldung (GetMessageText('17','Bitte Werkzeug definieren'))
+END
+Ebene0()

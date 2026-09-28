@@ -1,0 +1,91 @@
+;MAKROTYP=0
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.2
+VARS
+   DX := 800;Länge in x
+   DY := 400;Länge in y
+   DZ := 19;Stärke in Z
+   CADPX1 := 100;*VAR*Startpunkt Ebene
+   CADPY1 := 0;*VAR*Startpunkt Ebene
+   CADPX2 := 200;*VAR*Richtung Ebene
+   CADPY2 := 0;*VAR*Richtung Ebene
+   PX := 100;Position X
+   PY := 10;Position Y
+   PZ := 19;*VAR*Position Z
+   Anzahl := 2;*VAR*Anzahl Clamex in Reihe
+   Dist_P1 := 100;*VAR*Abstand von Klickpunkt 1
+   Raster := 300;*VAR*Raster für weitere Clamex
+   DW := 180;Drehwinkel
+   KW := 0;*VAR*Kippwinkel
+   Fraesen := 1;*VAR*1=Fräsung absetzen
+   Depth := -14;*VAR*Tiefe
+   Seitl_Zust := 1.4;*VAR*Seitliche Zustellung
+   Nx := 0;X-Wert des Normalenvektors
+   Ny := -1;Y-Wert des Normalenvektors
+   Nz := 0;Z-Wert des Normalenvektors
+   SIC := 20;Sicherheit
+   Bohren := 1;*VAR*1=Bohrung absetzen
+   B_Abst := 7.5;*VAR*Abstand der Bohrung vom Referenzpunkt
+   B_Abst_Kante := 9.5;*VAR*Abstand zur Kante / Oberfläche (für Bohrung)
+   B_D := 6;*VAR*Bohrdurchmesser
+   B_Tiefe := 0;wird ermittelt
+   BX := 0;X-Abst Bohrung
+   BZ := 0;Z-Abst Bohrung
+   WKZ_B := 53300;Bohrer für senkrecht (Fläche)
+   WKZ_B_H := 53300;Bohrer für waagrecht (Seite)
+   WKZ_B_S := 53300;Bohrer für Schräge
+   WKZ_F := 43300;Nutrad für senkrecht (Fläche)
+   WKZ_F_H := 43100;Nutrad für waagrecht (Seiten)
+   WKZ_F_S := 43100;Nutrad für Schräge
+   i := 0;
+START
+;---------------------------------------------------------------------------------
+;- Clamex mit Nutscheibe
+;- Ueber aCADemy - 2 Klickpunkte
+;- Erster Punkt = Einfügepunkt
+;- Zweiter Punkt = Richtung der Ebene
+;---------------------------------------------------------------------------------
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;---------------------------------------------------------------------------------
+;- Winkel errechnen
+CALL GetWinkel2P_V4 (REF WINKEL2P:=DW VAL P1X:=CADPX1,P1Y:=CADPY1,P2X:=CADPX2,P2Y:=CADPY2)
+;---------------------------------------------------------------------------------
+;- Laser damit im aCADemy sichtbar
+WZF (9999,_VE,_V,_VA,_SD,_ANF,'2')
+SP (CADPX1,CADPY1,PZ,0,0,_ANF,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (CADPX2,CADPY2,0,0,0,2)
+EP (0,_ANF,0)
+;---------------------------------------------------------------------------------
+IF Anzahl=0
+Anzahl := 1
+END
+;---------------------------------------------------------------------------------
+;- Bearbeitung...
+FOR i := 0 TO Anzahl-1 STEP 1
+HGNeu()
+HLine2P (CADPX1,CADPY1,CADPX2,CADPY2,0,0)
+/CALL _hg_lot_V5 ( VAL PARA:=Dist_P1 + (i*Raster),X1:=CADPX1,Y1:=CADPY1,X2:=CADPX2,Y2:=CADPY2,X3:=CADPX1,Y3:=CADPY1,EINGABE_ART:=0,WINKEL:=0,ESXY1:=0,ESXY2:=0,ESXY3:=0)
+HKreismpr (CADPX1,CADPY1,Dist_P1 + (i*Raster),0)
+PX := _SPX1
+PY := _SPY1
+HGNeuEnd()
+;-
+;- Umrechnung von Aussenkante auf freie Ebene in X-Y
+IF (KW<>0) & (KW<>90)
+HGNeu()
+HLineY (0,3)
+HLineY (PZ,3)
+HLineY (_RZ,3)
+IF KW>90
+CALL _hg_para_winkel_V5 ( VAL PARA:=0,X1:=0,Y1:=_RZ,WINKEL:=KW,ESXY1:=0)
+ELSE
+CALL _hg_para_winkel_V5 ( VAL PARA:=0,X1:=0,Y1:=0,WINKEL:=KW,ESXY1:=0)
+END
+;-->  SPX9 = Ref-Clamex
+PX := PX + _SPX9*COS(DW+90)
+PY := PY + _SPY9*SIN(DW+90)
+HGNeuEnd()
+END
+CALL Clamex_Scheibe_WKZ ( VAL PX:=PX,PY:=PY,PZ:=PZ,DW:=DW,KW:=KW,FRAESEN:=Fraesen,DEPTH:=Depth,SEITL_ZUST:=Seitl_Zust,BOHREN:=Bohren,B_ABST:=B_Abst,B_ABST_KANTE:=B_Abst_Kante,B_D:=B_D)
+END
+;---------------------------------------------------------------------------------

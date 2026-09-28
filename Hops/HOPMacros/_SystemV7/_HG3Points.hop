@@ -1,0 +1,41 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_HG3PointsDialog
+;AUTOSCRIPTSTART=0
+VARS
+   HTPX1 := ;*VAR*Erster Punkt in X
+   HTPY1 := ;*VAR*Erster Punkt in Y
+   HTPX2 := ;*VAR*Zweiter Punkt in X
+   HTPY2 := ;*VAR*Zweiter Punkt in Y
+   HTPX3 := ;*VAR*
+   HTPY3 := ;*VAR*
+   _HTPX1 := 0;
+   _HTPY1 := 0;
+   _HTPX2 := 0;
+   _HTPY2 := 0;
+   _HTPX3 := 0;
+   _HTPY3 := 0;
+   esxy1 := 0;*VAR*
+   esxy2 := 0;*VAR*
+   esxy3 := 0;*VAR*
+   GTyp := 0;
+   Mx := 0;
+   My := 0;
+   Radius := 0;
+START
+transesxy (HTPX1,HTPY1,esxy1,0)
+transesxy (HTPX2,HTPY2,esxy2,0)
+transesxy (HTPX3,HTPY3,esxy3,0)
+CALL _KB_3P (REF GTYP:=GTyp,MX:=Mx,MY:=My VAL SX:=HTPX1,SY:=HTPY1,P1X:=HTPX2,P1Y:=HTPY2,P2X:=HTPX3,P2Y:=HTPY3)
+CALL Dist2P_2D_V7 (REF DIST:=Radius VAL P1X:=Mx,P1Y:=My,P2X:=HTPX1,P2Y:=HTPY1)
+IF GTyp<>1
+HKreismpr (Mx,My,Radius,1)
+ELSE
+Fehlermeldung (GetMessageText('40','Hilfskreis kann nicht erzeugt werden'))
+END
+_HTPX1 := HTPX1
+_HTPY1 := HTPY1
+_HTPX2 := HTPX2
+_HTPY2 := HTPY2
+_HTPX3 := HTPX3
+_HTPY3 := HTPY3

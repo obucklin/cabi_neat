@@ -1,0 +1,148 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCName
+;MASCHINE=Simu
+;WZGV=NC1000
+;BILD=_SFormat_sonder.wmf
+VARS
+   Schnitt1 := 2;*VAR*1. Schnittseite
+   para1 := 0;*VAR*Parallele für 1. Schnitt
+   Schnitt2 := 1;*VAR*2. Schnittseite
+   para2 := 0;*VAR*Parallele für 2. Schnitt
+   Schnitt3 := 4;*VAR*3. Schnittseite
+   para3 := 0;*VAR*Parallele für 3. Schnitt
+   Schnitt4 := 3;*VAR*4. Schnittseite
+   para4 := 0;*VAR*Parallele für 4. Schnitt
+   Richtung := 1;*VAR*0=Uhrzeiger,1=gegenUhrzeiger
+   Einlauf := 30;Einlauf in mm
+   Auslauf := 30;Auslauf in mm
+START
+;direkt cnc systeme NCHOPS Version 3.4
+;Formatieren mit Säge nur gewählte Seiten / mit Aufmass / MD / 04.01
+;--- Gleiche Schnitte nich möglich ---
+IF ((schnitt1=schnitt2)|(schnitt1=schnitt3)|(schnitt1=schnitt4))&(schnitt1<>0)
+GIVEOUTERROR(GLEICHE_SCHNITTE_NICHT_ERLAUBT)
+END
+IF ((schnitt2=schnitt3)|(schnitt2=schnitt4))&(schnitt2<>0)
+GIVEOUTERROR(GLEICHE_SCHNITTE_NICHT_ERLAUBT)
+END
+IF (schnitt3=schnitt4)&(schnitt3<>0)
+GIVEOUTERROR(GLEICHE_SCHNITTE_NICHT_ERLAUBT)
+END
+;------------- Bearbeitung
+IF richtung=1
+;------- GEGEN UHRZEIGER
+IF schnitt1=1
+CALL _sawing_free (VAL SX:=0,SY:=0,SZ:=-_RZ-2,EX:=_RX,EY:=0,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para1,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt1=4
+CALL _sawing_free (VAL SX:=_RX,SY:=0,SZ:=-_RZ-2,EX:=_RX,EY:=_RY,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para1,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt1=3
+CALL _sawing_free (VAL SX:=_RX,SY:=_RY,SZ:=-_RZ-2,EX:=0,EY:=_RY,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para1,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt1=2
+CALL _sawing_free (VAL SX:=0,SY:=_RY,SZ:=-_RZ-2,EX:=0,EY:=0,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para1,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+;---------------------
+IF schnitt2=1
+CALL _sawing_free (VAL SX:=10,SY:=0,SZ:=-_RZ-2,EX:=_RX,EY:=0,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para2,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt2=4
+CALL _sawing_free (VAL SX:=_RX,SY:=0,SZ:=-_RZ-2,EX:=_RX,EY:=_RY,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para2,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt2=3
+CALL _sawing_free (VAL SX:=_RX,SY:=_RY,SZ:=-_RZ-2,EX:=0,EY:=_RY,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para2,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt2=2
+CALL _sawing_free (VAL SX:=0,SY:=_RY,SZ:=-_RZ-2,EX:=0,EY:=0,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para2,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+;---------------------
+IF schnitt3=1
+CALL _sawing_free (VAL SX:=0,SY:=0,SZ:=-_RZ-2,EX:=_RX,EY:=0,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para3,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt3=4
+CALL _sawing_free (VAL SX:=_RX,SY:=0,SZ:=-_RZ-2,EX:=_RX,EY:=_RY,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para3,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt3=3
+CALL _sawing_free (VAL SX:=_RX,SY:=_RY,SZ:=-_RZ-2,EX:=0,EY:=_RY,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para3,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt3=2
+CALL _sawing_free (VAL SX:=0,SY:=_RY,SZ:=-_RZ-2,EX:=0,EY:=0,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para3,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+;---------------------
+IF schnitt4=1
+CALL _sawing_free (VAL SX:=0,SY:=0,SZ:=-_RZ-2,EX:=_RX,EY:=0,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para4,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt4=4
+CALL _sawing_free (VAL SX:=_RX,SY:=0,SZ:=-_RZ-2,EX:=_RX,EY:=_RY,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para4,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt4=3
+CALL _sawing_free (VAL SX:=_RX,SY:=_RY,SZ:=-_RZ-2,EX:=0,EY:=_RY,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para4,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt4=2
+CALL _sawing_free (VAL SX:=0,SY:=_RY,SZ:=-_RZ-2,EX:=0,EY:=0,EZ:=-_RZ-2,BL:=2,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para4,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+END
+;************************
+;************************
+;************************
+IF richtung=0
+;------- IM UHRZEIGER
+IF schnitt1=1
+CALL _sawing_free (VAL SX:=_RX,SY:=0,SZ:=-_RZ-2,EX:=0,EY:=0,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para1,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF  schnitt1=4
+CALL _sawing_free (VAL SX:=_RX,SY:=_RY,SZ:=-_RZ-2,EX:=_RX,EY:=0,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para1,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt1=3
+CALL _sawing_free (VAL SX:=0,SY:=_RY,SZ:=-_RZ-2,EX:=_RX,EY:=_RY,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para1,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt1=2
+CALL _sawing_free (VAL SX:=0,SY:=0,SZ:=-_RZ-2,EX:=0,EY:=_RY,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para1,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+;---------------------
+IF schnitt2=1
+CALL _sawing_free (VAL SX:=_RX,SY:=0,SZ:=-_RZ-2,EX:=0,EY:=0,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para2,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt2=4
+CALL _sawing_free (VAL SX:=_RX,SY:=_RY,SZ:=-_RZ-2,EX:=_RX,EY:=0,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para2,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt2=3
+CALL _sawing_free (VAL SX:=0,SY:=_RY,SZ:=-_RZ-2,EX:=_RX,EY:=_RY,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para2,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt2=2
+CALL _sawing_free (VAL SX:=0,SY:=0,SZ:=-_RZ-2,EX:=0,EY:=_RY,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para2,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+;---------------------
+IF schnitt3=1
+CALL _sawing_free (VAL SX:=_RX,SY:=0,SZ:=-_RZ-2,EX:=0,EY:=0,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para3,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt3=4
+CALL _sawing_free (VAL SX:=_RX,SY:=_RY,SZ:=-_RZ-2,EX:=_RX,EY:=0,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para3,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt3=3
+CALL _sawing_free (VAL SX:=0,SY:=_RY,SZ:=-_RZ-2,EX:=_RX,EY:=_RY,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para3,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt3=2
+CALL _sawing_free (VAL SX:=0,SY:=0,SZ:=-_RZ-2,EX:=0,EY:=_RY,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para3,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+;---------------------
+IF schnitt4=1
+CALL _sawing_free (VAL SX:=_RX,SY:=0,SZ:=-_RZ-2,EX:=0,EY:=0,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para4,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt4=4
+CALL _sawing_free (VAL SX:=_RX,SY:=_RY,SZ:=-_RZ-2,EX:=_RX,EY:=0,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para4,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt4=3
+CALL _sawing_free (VAL SX:=0,SY:=_RY,SZ:=-_RZ-2,EX:=_RX,EY:=_RY,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para4,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+IF schnitt4=2
+CALL _sawing_free (VAL SX:=0,SY:=0,SZ:=-_RZ-2,EX:=0,EY:=_RY,EZ:=-_RZ-2,BL:=1,Einpassen:=0,EL:=Einlauf,AL:=Auslauf,Parallel:=para4,K:=0,KW:=0,BH:=_RZ,ritzversatz:=0.05)
+END
+END
+;_sawing_free (0,0,-3,0,0,-_RZ-2,2,0,0,0,0,0,0,_RZ,0.05)
+

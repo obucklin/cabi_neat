@@ -1,0 +1,280 @@
+;MAKROTYP=0
+;BILD=Travers_mit_Dübel.wmf
+;INFO=
+;WZGV=7223K_023
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Travers mit Duebel
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_2.Dll
+;DIALOGPROC=ShowR_NeuDialog
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 850;Dimension X
+   DY := 94;Dimension Y
+   DZ := 43;Dimension Z
+   Abl_Wkz :=112;*VAR*Werkzeug zum ablängen
+   VerBO_Wkz :=112;*VAR*Werkzeug für Verbindung oben
+   VerBU_Wkz :=193;*VAR*Werkzeug für Verbindung unten
+   Falz_Wkz :=187;*VAR*Werkzeug für Falz
+   Form_Wkz :=130;*VAR*Werkzeug zum Formatieren
+   FaseL_Wkz :=130;*VAR*Werkzeug für Fase unten längs
+   FaseUQ_Wkz :=129;*VAR*Werkzeug für Fase unten quer
+   FaseO_Wkz :=150;*VAR*Werkzeug für Fase oben
+   Duebel_Wkz :=501;*VAR*Werkzeug für Fase oben
+   ;
+   A_WkzTyp :=0;*VAR*Werkzeug zum ablängen -1= Säge 0= Fräser
+   A_Vorritzen :=-1;*VAR*Vorritzen 0=nein / -1= Ja
+   Zapfen :=6.00;*VAR*Zapfentiefe
+   Zapfen_B :=5.00;*VAR*Zapfenbreite
+   Form_H :=-1;*VAR*Formatieren hinten
+   Form_V :=-1;*VAR*Formatieren vorne
+   FaseL_H_U :=0;*VAR*Fase längs hinten
+   FaseL_V_U :=1.00;*VAR*Fase längs Vorne
+   Fase_Q_U :=1.00;*VAR*Fase unten Quer (ja wenn > 0)
+   Fase_Q_O :=2.00;*VAR*Fase oben  Quer (ja wenn > 0)
+   Fase_O_H :=1.00;*VAR*Fase oben hinten längs (ja wenn > 0)
+   Fase_O_Falz :=1.00;*VAR*Fase oben vorne längs im Falz (ja wenn > 0)
+   Fase_V_Falz :=1.00;*VAR*Fase oben vorne längs im Falz bei Y0 (ja wenn > 0)
+   Falz_H :=29.00;*VAR*Falz_Höhe
+   Falz_T :=15.00;*VAR*Falztiefe
+   B_SY1 :=20.00;*VAR*Bohrung 1 von hinten
+   B_SY2 :=60.00;*VAR*Bohrung 2 von hinten
+   B_Z :=14.00;*VAR*Bohrung Z_Wert von oben
+   B_Tief :=-26.00;*VAR*Bohrung Tiefe
+   B_DM :=8.00;*VAR*DM Bohrung
+   ;
+   ; Blockrahmen Travers mit Dübel
+   ; (c) B. Achermann
+   ; Holz-Her Schweiz AG
+   ;
+START
+Fertigteil (DX,DY,DZ,0,0,10,0.5,0,'',0,0,0)
+WZF (Abl_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+IF A_WkzTyp = -1
+;Säge
+IF A_Vorritzen= -1
+CALL _saege_y_V5 ( VAL SX:=-Zapfen,SY:=-100,SZ:=-10,EY:=-100,EZ:=0,BL:=2,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=2,KW:=0,BH:=-3,RITZVERSATZ:=0.00,ESZ:=0,ESXY1:=7,ESY:=3)
+CALL _saege_y_V5 ( VAL SX:=-Zapfen,SY:=-100,SZ:=-10,EY:=-100,EZ:=0,BL:=1,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=2,KW:=0,BH:=-3,RITZVERSATZ:=0.00,ESZ:=0,ESXY1:=5,ESY:=3)
+ELSE
+CALL _saege_y_V5 ( VAL SX:=-Zapfen,SY:=-100,SZ:=-3,EY:=-100,EZ:=0,BL:=2,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=0,KW:=0,BH:=-3,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=7,ESY:=3)
+CALL _saege_y_V5 ( VAL SX:=-Zapfen,SY:=-100,SZ:=-3,EY:=-100,EZ:=0,BL:=1,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=0,KW:=0,BH:=-3,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=5,ESY:=3)
+END
+ELSE
+;Fräsen
+;Links ablängen (2x in der Tiefe)
+WZF (Abl_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-Zapfen,-30,20,2,0,_ANF,0,0,0,7,1,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-Zapfen,-30,0,0,1,2)
+G01 (-Zapfen,-30,-2,0,1,1)
+TP (1,_VAkt,_DW,_KW)
+G01 (-Zapfen,-30,0,0,7,2)
+EP (0,_ANF,0)
+;konter links
+WZF (VerBO_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,-20,-(Falz_H - Zapfen_B),2,0,_ANF,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-30,0,0,1,2)
+EP (0,_ANF,0)
+;Vorne einfahren
+SP (Falz_T,-50,-2,1,0,_ANF,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz_T,Falz_T - (_Wzr+1),0,0,1,2)
+EP (0,_ANF,0)
+;Rechts ablängen
+WZF (Abl_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-Zapfen,-30,20,2,0,_ANF,0,0,0,3,1,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-Zapfen,-30,0,0,5,2)
+G01 (-Zapfen,-30,-2,0,5,1)
+TP (1,_VAkt,_DW,_KW)
+G01 (-Zapfen,-30,0,0,3,2)
+EP (0,_ANF,0)
+;konter Rechts
+WZF (VerBO_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,-20,-(Falz_H - 5),2,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-30,0,0,5,2)
+EP (0,_ANF,0)
+END
+IF A_WkzTyp = -1
+;Konter oben wenn mit Säge abgelängt wird
+;konter links
+WZF (VerBO_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,-20,-(Falz_H - Zapfen_B),2,0,_ANF,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,1,2)
+G01 (-30,0,0,0,1,2)
+EP (0,_ANF,0)
+;Vorne einfahren
+SP (Falz_T,-50,-2,1,0,_ANF,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz_T,Falz_T -(_Wzr+1),0,0,1,2)
+EP (0,_ANF,0)
+;konter Rechts
+WZF (VerBO_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,-20,-(Falz_H - 5),2,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,5,2)
+G01 (0,-50,0,0,5,2)
+EP (0,_ANF,0)
+END
+;Konter unten Links
+WZF (VerBU_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Falz_T,-100,DZ - Falz_H,2,0,_ANF,0,0,0,7,1,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz_T,10,0,0,1,2)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=1000)
+G01 (Falz_T,-_Wzr,0,0,1,2)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (-100,-_Wzr,0,0,1,2)
+EP (0,_ANF,0)
+;Konter unten Rechts
+SP (Falz_T,-100,DZ -Falz_H,2,0,_ANF,0,0,0,3,1,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz_T,10,0,0,5,2)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=1000)
+G01 (Falz_T,-_Wzr,0,0,5,2)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (-100,-_Wzr,0,0,5,2)
+EP (0,_ANF,0)
+;Fasen quer
+IF Fase_Q_U > 0
+;Fase quer unten im Falz
+WZF (FaseUQ_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Falz_T,-100,Fase_Q_U,2,0,_ANF,0,0,0,7,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz_T,-100,0,0,1,2)
+EP (0,_ANF,0)
+SP (Falz_T,-100,Fase_Q_U,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz_T,-100,0,0,5,2)
+EP (0,_ANF,0)
+END
+;Wenn für Fasen unten und oben das gleiche Werkzeug
+IF (Fase_Q_O > 0 ) & (FaseUQ_Wkz = FaseO_WKZ)
+;Fase quer oben links
+WZF (FaseO_WKZ,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,-45,-Fase_Q_O,2,0,_ANF,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-50,0,0,1,2)
+EP (0,_ANF,0)
+;Fase quer rechts
+SP (0,-45,-Fase_Q_O,2,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-50,0,0,5,2)
+EP (0,_ANF,0)
+END
+;Falz mit Rahmenfalzfräser
+WZF (Falz_WKZ,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-100,Falz_T,-Falz_H,2,0,_ANF,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-100,Falz_T,0,0,3,2)
+EP (0,_ANF,0)
+;Formatieren hinten mit Fase
+WZF (Form_WKZ,_VE,_V,_VA,_SD,_ANF,'1');BREAKPOINT
+IF (FaseL_WKZ) = (Form_WKZ)
+IF (Form_H = -1) & (Form_V = -1)
+SP (-100,0,FaseL_H_U,2,0,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,7,2)
+G01 (-50,0,FaseL_V_U,0,1,1)
+G01 (-50,0,0,0,3,2)
+EP (0,_ANF,0)
+END
+IF (Form_H = -1) & (Form_V = 0)
+;Formatieren nur hinten
+SP (-100,0,FaseL_H_U,2,0,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,7,2)
+EP (0,_ANF,0)
+END
+IF (Form_H = 0) & (Form_V = -1)
+;Formatieren nur vorne
+SP (-100,0,FaseL_H_U,1,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,1,2)
+EP (0,_ANF,0)
+END
+ELSE;BREAKPOINT
+;Formatieren hinten ohne  Fase
+IF (Form_H = -1) & (Form_V = -1)
+WZF (Form_WKZ,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-100,0,-2,2,0,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,7,2)
+G01 (-50,0,0,0,1,2)
+G01 (-50,0,0,0,3,2)
+EP (0,_ANF,0)
+END
+IF (Form_H = -1) & (Form_V = 0)
+;Formatieren nur hinten
+SP (-100,0,-2,2,0,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,7,2)
+EP (0,_ANF,0)
+END
+IF (Form_H = 0) & (Form_V = -1)
+;Formatieren nur vorne
+SP (-100,0,-2,1,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,1,2)
+EP (0,_ANF,0)
+END
+END
+;Fase unten längs mit Spez Faser wenn nicht in Hobelkopf
+IF (FaseL_WKZ) <> (Form_WKZ)
+WZF (FaseL_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+IF (FaseL_H_U > 0) & (FaseL_V_U > 0)
+;Fase hinten und vorne unten
+SP (-100,0,-FaseL_H_U,2,0,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,7,2)
+G01 (-50,0,-FaseL_V_U,0,1,1)
+G01 (-50,0,0,0,3,2)
+EP (0,_ANF,0)
+END
+IF (FaseL_H_U > 0) & (FaseL_V_U <= 0)
+;Fase hinten  unten
+SP (-100,0,-FaseL_H_U,2,0,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,7,2)
+EP (0,_ANF,0)
+END
+IF (FaseL_H_U <= 0) & (FaseL_V_U > 0)
+;Fase Vorne  unten
+SP (-100,0,-FaseL_V_U,2,0,_ANF,0,0,0,1,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,3,2)
+EP (0,_ANF,0)
+END
+END
+;Wenn für Fasen unten und oben nicht das gleiche Werkzeug
+IF (Fase_Q_O > 0 ) & (FaseUQ_Wkz <> FaseO_WKZ)
+;Fase quer oben links
+WZF (FaseO_WKZ,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,-45,-Fase_Q_O,2,0,_ANF,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-50,0,0,1,2)
+EP (0,_ANF,0)
+;Fase quer rechts
+SP (0,-45,-Fase_Q_O,2,0,_ANF,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-50,0,0,5,2)
+EP (0,_ANF,0)
+END
+;Fase vorne oben in Falztiefe
+WZF (FaseO_WKZ,_VE,_V,_VA,_SD,_ANF,'1')
+IF (Fase_O_Falz > 0) & (Fase_O_H >0)
+SP (-50,Falz_T,-Fase_O_Falz,1,0,_ANF,0,0,0,3,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,Falz_T,0,0,1,2)
+G01 (-50,0,-Fase_O_H,0,7,0)
+G01 (-50,0,0,0,5,2)
+EP (0,_ANF,0)
+END
+IF (Fase_O_Falz > 0) & (Fase_O_H <=0)
+;Fase vorne oben in Falztiefe
+SP (-50,Falz_T,-Fase_O_Falz,1,0,_ANF,0,0,0,3,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,Falz_T,0,0,1,2)
+EP (0,_ANF,0)
+END
+IF (Fase_O_Falz <= 0) & (Fase_O_H >0)
+;Fase hinten oben
+SP (-50,0,-Fase_O_Falz,1,0,_ANF,0,0,0,7,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,5,2)
+EP (0,_ANF,0)
+END
+IF (Fase_V_Falz > 0)
+;Fase hinten oben
+SP (-50,0,-(Falz_T + Fase_V_Falz),1,0,_ANF,0,0,0,3,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,1,2)
+EP (0,_ANF,0)
+END
+;Dübel
+WZB (Duebel_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+;Links
+HorzB (0,B_SY1,B_Z,B_DM,B_Tief,0,0,0,7,2,0,0)
+HorzB (0,B_SY2,B_Z,B_DM,B_Tief,0,0,0,7,2,0,0)
+;Rechts
+HorzB (0,B_SY1,B_Z,B_DM,B_Tief,0,0,180,5,2,0,0)
+HorzB (0,B_SY2,B_Z,B_DM,B_Tief,0,0,180,5,2,0,0)

@@ -1,0 +1,160 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.1062[Hops.exe]
+;BILD=ENDE3DG.WMF
+;INFO=
+;WZGV=7225K_V7_DEMO
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Ende3dg
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   ParkMode := 0;
+   ParkPosX := 0;
+   ParkPosY := 0;
+   toolID := 0;Lokale ToolID
+   _wh := 0;
+   _wv := 0;
+START
+;HOLZHER - Reich Spezialmaschinen GmbH
+;Copyright 2006
+;2006-08-22 - CC-Makros V1.0 KRI
+;3DG-Ende
+;Gehrungsaegeschnitt auswerten
+;Test Winkel
+IF _pVar_NoProcessV=1
+;Prozessvariable - Keine vertikale Bearbeitungen aktiv
+ELSE
+_pVar_PCount := _pVar_PCount+1
+;Teil wurde gedreht, 2 Bearbeitungsseite.
+IF _Format=1
+ELSE
+;Hier wurde schon gesägt. Von SägeWinkel Makro
+IF (_intern3wl=0) | (_intern4wr=0)&(_pVar_NoSaw=0);BREAKPOINT
+;Drehen ausschalten bei VCNC
+IF _wl<>0 | _wr<>0
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetSpecialSawID')
+WZS (toolID,_VE,_V,_VA,_SD,_ANF,'1')
+ELSE
+END
+IF _TeilGedreht=0
+IF _wl<0
+CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=-2,BL:=1,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=1,KW:=_wl,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=1,ESY:=5)
+ELSE
+IF (_wl>0)&(_intern3wl=0)
+;3
+CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=-((_lz+5)/cos(_wl)),BL:=2,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=-((_lz)*tan(_wl)),K:=1,KW:=-_wl,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=7,ESY:=3)
+ELSE
+END
+END
+;Tiefe über Cos  HB
+IF (_wr<0)& (_intern4wr=0)
+CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=-((_lz+2)/cos(_wr)),BL:=1,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=1,KW:=_wr,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=5,ESY:=3)
+ELSE
+IF (_wr>0)&(_intern4wr=0)
+;20_2_2014
+CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=-((_lz+5)/cos(_wr)),BL:=2,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=-((_lz)*tan(_wr)),K:=1,KW:=-_wr,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=3,ESY:=5)
+ELSE
+END
+END
+ELSE
+IF textsame(_Teiletyp,'mittelseite')
+ELSE
+;Wenn Teil Gedreht
+IF (_wl<0)& (_intern3wl=0)
+CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=-((_lz+5)/cos(_wl)),BL:=1,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=1,KW:=_wl,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=1,ESY:=5)
+ELSE
+IF (_wl>0)&(_intern3wl=0);BREAKPOINT
+CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=-((_lz+5)/cos(_wl)),BL:=2,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=-((_lz)*tan(_wl)),K:=1,KW:=-_wl,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=7,ESY:=3)
+ELSE
+END
+END
+IF _wr<0
+;2
+CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=-((_lz+2)/cos(_wr)),BL:=1,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=1,KW:=_wr,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=5,ESY:=3)
+ELSE
+IF (_wr>0)&(_intern4wr=0)
+CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=-((_lz+5)/cos(_wr)),BL:=2,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=-((_lz)*tan(_wr)),K:=1,KW:=-_wr,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=3,ESY:=5)
+ELSE
+END
+END
+END
+END
+END
+;Winkel hinten und vorne
+IF _wh<>0 | _wv<>0
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetSpecialSawID')
+WZS (toolID,_VE,_V,_VA,_SD,_ANF,'1')
+ELSE
+END
+IF _TeilGedreht=0
+IF _wv<0
+CALL _saege_x_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EZ:=-((_lz+5)/cos(_wv)),BL:=1,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=1,KW:=_wv,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=3,ESX:=1)
+ELSE
+IF _wv>0
+/CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=-2,BL:=1,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=0,KW:=_wl,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=1,ESY:=5)
+ELSE
+END
+END
+;Tiefe über Cos  HB
+IF _wh<0
+CALL _saege_x_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EZ:=-((_lz+5)/cos(_wh)),BL:=1,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=1,KW:=_wh,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=7,ESX:=3)
+ELSE
+IF _wh>0
+CALL _saege_x_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EZ:=-((_lz+5)/cos(_wh)),BL:=2,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=1,KW:=-_wh,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=5,ESX:=1)
+ELSE
+END
+END
+ELSE
+;Wenn Teil Gedreht
+IF _wv<0
+CALL _saege_x_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EZ:=-10,BL:=2,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=1,KW:=_wv,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=1,ESX:=3)
+ELSE
+IF _wv>0
+/CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EY:=0,EZ:=-2,BL:=2,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=1,KW:=-_wl,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=7,ESY:=3)
+ELSE
+END
+END
+IF _wh<0
+CALL _saege_x_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EZ:=-10,BL:=2,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=1,KW:=_wh,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=5,ESX:=1)
+ELSE
+IF _wh>0
+CALL _saege_x_V5 ( VAL SX:=0,SY:=0,SZ:=-3,EX:=0,EZ:=-((_lz+5)/cos(_wh)),BL:=1,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=1,KW:=-_wh,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=7,ESX:=3)
+ELSE
+END
+END
+END
+END
+END
+;Spiegeln, Drehen beenden
+SPIEGELNEND()
+;VCNC
+IF _MaschinenTYP=2
+;keine Drehung ENDE
+ELSE
+;CNC
+;Ende Drehung
+CALL _DrehenBBEnde ()
+END
+;-----------------------------------------------------------
+CALL _UserInterface3DG (REF RESULT:=ParkMode VAL INPUTTEXT:='GetParkMode')
+CALL _UserInterface3DG (REF RESULT:=ParkPosX VAL INPUTTEXT:='GetParkPosX')
+CALL _UserInterface3DG (REF RESULT:=ParkPosY VAL INPUTTEXT:='GetParkPosY')
+CALL HH_Park ( VAL PARK:=ParkMode,X:=ParkPosX,Y:=ParkPosY)
+IF _pVar_PreCutID>0
+ZText ('ProcessCount: ' + INTTOSTR(_pVar_PCount),150,-20,10,0,1,8421376,'Arial',0,0,0,0,5)
+ELSE
+END
+IF _pVar_PCount=0
+;Fehlermeldung ('No Process activ')
+ELSE
+END

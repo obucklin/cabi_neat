@@ -1,0 +1,280 @@
+;MAKROTYP=1
+;BILD=TascheWMF.bmp
+;INFO=Rechtecktasche
+;WZGV=demo
+;MASCHINE=Simu
+;NCNAME=_RechteckTasche_V4
+;KOMMENTAR=xxx
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   x_Mitte := ;*VAR*Taschenmitte in X
+   Y_Mitte := ;*VAR*Taschenmitte in Y
+   Taschenlaenge := 100;*VAR*Tasche in X
+   Taschenbreite := 60;*VAR*Tasche in Y
+   Radius := 0;*VAR*Eckenradius
+   Winkel := 0;*VAR*Winkel gegen X-Achse
+   Tiefe := 0;*VAR*Tiefe der Tasche
+   Zustellung := 0;*VAR*Tiefenzustellung pro Fräsgang
+   AB := 2;*VAR*Abfahrbewegung
+   ABF := _ANF;*VAR*Abfahrfaktor
+   Interpol := 0;*VAR*Interpolation auf 1. Kreis in der Mitte
+   umkehren := 0;*VAR*Bearbeitung umkehren   0=CW   1=CCW
+   versatz := 10;Überlappung in %
+   Schleifenzahl := 0;anzahl der Durchläufe
+   GX := 0;Übergröße in X Richtung
+   UW := 0;Zustellung Breite
+   RM := 0;momentaner Radius
+   GY := 0;Weg Y
+   Durchlauf := 1;Nummer des Durchlauf
+   RZ := 0;Radiuszustellung pro Durchgang
+   UL := 0;Überlappung der Fräsbahn
+   TU := 0;Nötiger fräsweg
+   I := 1;Zähler
+   ANZAHL := 0;
+   TM := 0;Momentane Tiefe
+   FRN := 0;
+   _GKZ := 0;
+   EPX := 1;
+   APX := 2;
+   winkel1 := 0;
+   ÜberfahrKreisbogen := 2;
+   KreisEndpunktY := 0;Kreisendpunkt in Y beim Überfahren des Endpunktes
+   LängeGeradenStück := 0;
+   Laenge := 0;
+   UeberfahrwegX := 0.5;Überfahrweg in X
+   MinimalerAbstand := 0.5;
+   Zu_X := 0;interpolative Zustellung in X-Richtung
+   Zu_Y := 0;interpolative Zustellung in Y-Richtung
+   Korr := 2;Radiuskorrektur
+   CW := 1;Uhrzeigersinn tauschen
+START
+Rohteil (200,200,20,0,0)
+;WZF (8,_VE,_V,_VA,_SD,_ANF)
+;GX := abs(Taschenlaenge-Taschenbreite)
+;was soll dass - mit dem ABS ??????????????
+;geändert auf OHNE ABS MW (21.10.2003)
+GX := Taschenlaenge-Taschenbreite
+;Tiefeneingabe prüfen
+IF Taschenbreite<_WZD
+Fehlermeldung (WERKZEUG_GROESSER_ALS_BREITE)
+END
+IF Taschenlaenge<_WZD
+Fehlermeldung (WERKZEUG_GROESSER_ALS_HOEHE)
+END
+IF Tiefe>0
+Tiefe := -tiefe
+END
+IF Zustellung<Tiefe
+Fehlermeldung (Zustelltiefe_ist_größer_als_Tiefe)
+ELSE
+END
+;Abfrage ob Schlitz
+;Bestimmen ob xoder y länger
+IF  GX<0
+GX := -GX
+TU := Taschenbreite-gx
+Winkel1 := Winkel+90
+ELSE
+tu := Taschenlaenge-gx
+Winkel1 := Winkel
+END
+IF Zustellung>0
+Zustellung := -Zustellung
+END
+IF Zustellung=0
+Zustellung := Tiefe
+END
+TM := 1
+Winkel := Winkel1
+TM := 1
+UL := _WZD/100*Versatz
+;Seitliche Zustellung vorberechnen
+UW := (_WZD/1.55)
+;Drehen wenn nötig
+IF Winkel<>0
+DrehenBB()
+END
+;Radius verkleinern wenn nötig
+IF Radius>TU/2
+Radius := TU/2
+END
+;*** Kontur umdrehen
+IF umkehren=0
+Korr := 2
+CW := 1
+ELSE
+Korr := 1
+CW := -1
+END
+;Abfragen ob Tasche groß genug
+IF TU<_WZD
+ZKBCW (X_Mitte,Y_Mitte,X_Mitte-_WZR,Y_Mitte,X_Mitte-_WZR,Y_Mitte,255)
+ZLinie (X_Mitte+(sin(Winkel)*(Taschenbreite/2))-(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte-(cos(Winkel)*(Taschenbreite/2))-(Sin(Winkel)*(Taschenlaenge/2)),X_Mitte-+(sin(Winkel)*(Taschenbreite/2))+(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte-(cos(Winkel)*(Taschenbreite/2))+(Sin(Winkel)*(Taschenlaenge/2)),255)
+ZLinie (X_Mitte+(sin(Winkel)*(Taschenbreite/2))+(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte-(cos(Winkel)*(Taschenbreite/2))+(Sin(Winkel)*(Taschenlaenge/2)),X_Mitte-(sin(Winkel)*(Taschenbreite/2))+(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte+(cos(Winkel)*(Taschenbreite/2))+(Sin(Winkel)*(Taschenlaenge/2)),255)
+ZLinie (X_Mitte-(sin(Winkel)*(Taschenbreite/2))+(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte+(cos(Winkel)*(Taschenbreite/2))+(Sin(Winkel)*(Taschenlaenge/2)),X_Mitte-(sin(Winkel)*(Taschenbreite/2))-(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte+(cos(Winkel)*(Taschenbreite/2))-(Sin(Winkel)*(Taschenlaenge/2)),255)
+ZLinie (X_Mitte-(sin(Winkel)*(Taschenbreite/2))-(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte+(cos(Winkel)*(Taschenbreite/2))-(Sin(Winkel)*(Taschenlaenge/2)),X_Mitte-+(sin(Winkel)*(Taschenbreite/2))-(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte-(cos(Winkel)*(Taschenbreite/2))-(Sin(Winkel)*(Taschenlaenge/2)),255)
+ELSE
+;Anzahl der Schleifen berechnen
+IF UW=0
+Fehlermeldung (Bitte_Werkzeug_definieren)
+END
+Schleifenzahl := TU/UW
+Schleifenzahl := (Schleifenzahl DIV 2)+1
+;Seitliche Zustellung anpassen
+UW := TU/Schleifenzahl
+IF UW<(_WZD+0.1)
+;Abfangen, dass 1. Schleife nicht
+;kleiner als das WZ sein kann
+;23.04.02  MM
+Schleifenzahl := Schleifenzahl-1
+UW := TU/Schleifenzahl
+END
+;Abfrage ob Radius zu groß
+IF Radius > TU/2
+Radius := TU/2
+ELSE
+END
+IF Radius=0
+ELSE
+IF  Schleifenzahl<2
+RZ := Radius
+ELSE
+RZ := Radius/(Schleifenzahl-1)
+END
+;Abfragen ob Radiuszustellung größer oder gleich Fräserradius
+IF RZ<_WZR
+RZ := _WZR
+ELSE
+END
+END
+WHILE TM > Tiefe
+IF TM=1
+TM := 0
+ELSE
+END
+TM := TM+Zustellung
+IF TM < Tiefe
+TM := Tiefe
+ELSE
+END
+IF Taschenlaenge>Taschenbreite
+GX := Taschenlaenge-TU+UW
+ELSE
+GX := Taschenbreite-TU+UW
+END
+GY := UW
+IF Durchlauf=1
+KreisEndpunktY := _WZD+ÜberfahrKreisbogen
+IF KreisEndpunktY>=GY
+KreisEndpunktY := _WZD+((GY-_WZD)/2)
+END
+IF KreisEndpunktY<_WZD
+;Dann erfolgt keine Bahnbewegung mehr
+KreisEndpunktY := 0
+END
+IF Interpol=0
+SP (X_Mitte,Y_Mitte-GY/2,TM,Korr,0,_ANF,0,0,0)
+ELSE
+;*** Berechnung der Z-Zustellung GX
+Zu_X := (GX*2 + GY*2) / Zustellung
+Zu_X := (GX)/Zu_X
+;*** Berechnung der Z-Zustellung GY
+Zu_Y := (GX*2 + GY*2) / Zustellung
+Zu_Y := (GY)/Zu_Y
+SP (X_Mitte,Y_Mitte-GY/2,0,Korr,0,_ANF,0,0,0)
+G01 (_X-GX/2*CW,_Y,_Z+Zu_X/2,RM)
+G01 (_X,_Y+GY,_Z+Zu_Y,RM)
+G01 (_X+GX*CW,_Y,_Z+Zu_X,RM)
+G01 (_X,_Y-GY,_Z+Zu_Y,RM)
+G01 (_X-GX/2*CW,_Y,_Z+Zu_X/2,0)
+END
+ELSE
+IF (Interpol=1)
+IF (_Z+Zustellung) < Tiefe
+;*** Berechnung der Z-Zustellung GX bei letzter Zustellung
+Zu_X := (GX*2 + GY*2) / (Tiefe-_Z)
+Zu_X := (GX)/Zu_X
+;*** Berechnung der Z-Zustellung GY bei letzter Zustellung
+Zu_Y := (GX*2 + GY*2) / (Tiefe-_Z)
+Zu_Y := (GY)/Zu_Y
+ELSE
+END
+G01 (X_Mitte,Y_Mitte-GY/2,_Z,0)
+G01 (_X-GX/2*CW,_Y,_Z+Zu_X/2,RM)
+G01 (_X,_Y+GY,_Z+Zu_Y,RM)
+G01 (_X+GX*CW,_Y,_Z+Zu_X,RM)
+G01 (_X,_Y-GY,_Z+Zu_Y,RM)
+G01 (_X-GX/2*CW,_Y,_Z+Zu_X/2,0)
+ELSE
+G01 (X_Mitte,Y_Mitte-GY/2,TM,0)
+END
+END
+FOR I := 1 TO Schleifenzahl STEP 1
+G01 (_X-GX/2*CW,_Y,_Z,RM)
+G01 (_X,_Y+GY,_Z,RM)
+G01 (_X+GX*CW,_Y,_Z,RM)
+G01 (_X,_Y-GY,_Z,RM)
+G01 (_X-GX/2*CW,_Y,_Z,0)
+IF I<Schleifenzahl
+GX := Gx+UW
+GY := GY+UW
+G01 (_X,_Y-(GY/2)/(I+1),_Z,0)
+RM := RM+RZ
+;Wenn der Radius größer als Werkzeugradius, dann Radius=0
+IF Radius< _WZR
+Radius := 0
+ELSE
+END
+IF RM > Radius
+RM := Radius
+ELSE
+END
+ELSE
+RM := 0
+END
+END
+Durchlauf := Durchlauf+1
+END
+;Um diesen Weg muß überfahren werden, damit nichts stehenbleibt
+UeberfahrWegX := _WZR+UeberfahrWegX
+IF _SDAKT>0
+;Ueberfahren wenn geradenstück lang genug
+IF ((GX-2*Radius)/2) > UeberfahrwegX
+;Ueberfahren Linear
+G01 (_X-UeberfahrwegX*CW,_Y,_Z,0)
+ELSE
+;Ueberfahren über Radius hinaus
+G01 (_X-(GX/2*CW),_Y,_Z,Radius)
+G01 (_X,_Y+GY,_Z,Radius)
+G01 (X_Mitte,_Y,_Z,Radius)
+END
+ELSE
+;Ueberfahren wenn geradenstück lang genug
+IF ((GX-2*Radius)/2) > UeberfahrwegX
+;Ueberfahren Linear
+G01 (_X-UeberfahrwegX*CW,_Y,_Z,0)
+ELSE
+;Ueberfahren über Radius hinaus
+G01 (_X+(GX/2*CW),_Y,_Z,Radius)
+G01 (_X,_Y+GY,_Z,Radius)
+G01 (X_Mitte,_Y,_Z,Radius)
+END
+END
+EP (AB,ABF,0)
+END
+IF Winkel<>0
+DrehenEB (X_Mitte,Y_Mitte,Winkel)
+END
+;*** Zu grössen Abfahrfaktor abfangen  ***
+IF AB>0
+IF ((ABF*_WZR) + _WZR) > GY-_WZR
+Fehlermeldung (ABfahrbewegung_zu_gross)
+END
+IF ((ABF*_WZR)+UeberfahrwegX) > GX/2
+Fehlermeldung (ABfahrbewegung_zu_gross)
+END
+END

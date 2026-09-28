@@ -1,0 +1,13 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowPowerOfTwoDialog
+;AUTOSCRIPTSTART=0
+VARS
+   pwr := 0;*VAR*
+   Result := ;*VAR**REF*
+   ii := 0;
+START
+result := 1
+FOR ii := 1 TO pwr STEP 1
+Result := Result * 2
+END

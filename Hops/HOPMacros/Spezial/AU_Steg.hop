@@ -1,0 +1,121 @@
+;MAKROTYP=1
+;INSTVERSION=6.4.0.4
+;EXEVERSION=6.6.2.165[Hops.exe]
+;BILD=AU_Steg.wmf
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=AU_Steg
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_EVO.Dll
+;DIALOGPROC=Show_AusSpezDialog_Evo
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   MX :=0;*VAR*Mitte des Ausschnittes
+   MY :=0;*VAR*Mitte des Ausschnittes y
+   Lang :=250;*VAR*Länge des Ausschnittes
+   Breit :=250;*VAR*Breite des Ausschnittes
+   Tiefe :=-(DZ + 2);*VAR*Tiefe
+   ZU :=0;*VAR*Zustellung pro umgang
+   Steg_B :=10;*VAR*Stegbreite
+   Steg_H :=2;*VAR*Steghöhe
+   ER1 :=0;*VAR*Eckenverrundung unten links
+   ER2 :=0;*VAR*Eckenverrundung oben links
+   ER3 :=0;*VAR*Eckenverrundung oben rechts
+   ER4 :=0;*VAR*Eckenverrundung unten rechts
+   P_Versatz :=0;*VAR*Parallelversatz
+   E_Typ :=2;*VAR*Einfahrtyp 0= ohne / 1= Linear / 2 Radial / 3= seitlich
+   Dreh_Winkel :=0;*VAR*Drehwinkel
+   BE_Art :=2;*VAR*Bearbeitungsrichtung
+   RK :=2;*VAR*Radius Korrektur
+   SnapXY :=9;*VAR*Easy Snap xy
+   ST1 :=0;*VAR*Steg 1 ja
+   ST2 :=0;*VAR*Steg 2 ja
+   ST3 :=0;*VAR*Steg 3 ja
+   ST4 :=0;*VAR*Steg 4 ja
+   Anf :=_ANF;*VAR*Anfahrfaktor
+   Abf :=_ANF;*VAR*Abfahrfaktor
+   Z_Inter :=0;*VAR*Z Interpolation
+   Laser :=0;*VAR*Laserbahn
+   Z_PS := 0;Zustellung gerechnet
+   Anz := 0;Interne
+   i := 0;Zähler
+   ; HHCH B.Achermann
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+IF Zu = 0
+Z_PS := (_Rz -Steg_H)
+Anz := 0
+ELSE
+Anz := Trunc((_Rz - Steg_H) / Zu)
+IF Anz = 0
+;Zustellung zu gross
+Z_PS := (_Rz -Steg_H)
+/Anz := 1
+ELSE
+Z_PS := Zu
+END
+END
+CALL _DrehenBBStart_V5 ( VAL DX:=MX,DY:=MY,DW:=Dreh_Winkel,ESXY1:=SnapXY)
+;Wenn Zustellung kleiner tiefe
+IF Anz > 0
+SP (MX,MY -(Breit/2),- (_Rz - Steg_H),RK,E_Typ,Anf,P_Versatz,0,0,SnapXY,0,Be_Art,0,Z_Ps,0,0,Laser,0,0,0,0,0,0)
+G01 (MX,MY- (Breit / 2),0,0,SnapXY,2)
+G01 (MX -(Lang / 2),MY- (Breit / 2),0,ER1,SnapXY,2)
+G01 (MX -(Lang / 2),MY+ (Breit / 2),0,ER2,SnapXY,2)
+G01 (MX  + (Lang / 2),MY+ (Breit / 2),0,ER3,SnapXY,2)
+G01 (MX  + (Lang / 2),MY- (Breit / 2),0,ER4,SnapXY,2)
+G01 (MX,MY- (Breit / 2),0,0,SnapXY,2)
+EP (E_Typ,ABF,0)
+END
+Z_PS := (_Rz -Steg_H)
+;Stege fräsen
+SP (MX,MY -(Breit/2),- (_Rz - Steg_H),RK,E_Typ,Anf,P_Versatz,0,0,SnapXY,0,Be_Art,0,0,0,0,Laser,0,0,0,0,0,0)
+IF St1 = 0
+G01 (MX - ((Steg_B / 2) +_Wzr),MY- (Breit / 2),-Z_Ps,0,SnapXY,0)
+ELSE
+;Ohne Steg 1
+G01 (MX,MY- (Breit / 2),Tiefe,0,SnapXY,0)
+END
+G01 (MX - ((Steg_B / 2) +_Wzr),MY- (Breit / 2),Tiefe,0,SnapXY,0)
+G01 (MX - (Lang / 2),MY- (Breit / 2),Tiefe,ER1,SnapXY,0)
+G01 (MX - (Lang / 2),MY- ((Steg_B / 2) + _Wzr),Tiefe,0,SnapXY,0)
+IF ST2= 0
+G01 (MX - (Lang / 2),MY- ((Steg_B / 2) + _Wzr),- Z_Ps,0,SnapXY,0)
+G01 (MX - (Lang / 2),MY+ ((Steg_B / 2) + _Wzr),- Z_Ps,0,SnapXY,0)
+G01 (MX - (Lang / 2),MY+ ((Steg_B / 2) + _Wzr),Tiefe,0,SnapXY,0)
+END
+G01 (MX - (Lang / 2),MY+ (Breit / 2),Tiefe,ER2,SnapXY,0)
+G01 (MX - ((Steg_B / 2) +_Wzr),MY+ (Breit / 2),Tiefe,0,SnapXY,0)
+IF ST3= 0
+G01 (MX - ((Steg_B / 2) +_Wzr),MY+ (Breit / 2),- Z_Ps,0,SnapXY,0)
+G01 (MX + ((Steg_B / 2) +_Wzr),MY+ (Breit / 2),- Z_Ps,0,SnapXY,0)
+G01 (MX + ((Steg_B / 2) +_Wzr),MY+ (Breit / 2),Tiefe,0,SnapXY,0)
+END
+G01 (MX + (Lang / 2),MY+ (Breit / 2),Tiefe,ER3,SnapXY,0)
+G01 (MX + (Lang / 2),MY+ ((Steg_B / 2) +_Wzr),Tiefe,0,SnapXY,0)
+IF ST4= 0
+G01 (MX + (Lang / 2),MY+ ((Steg_B / 2) +_Wzr),- Z_Ps,0,SnapXY,0)
+G01 (MX + (Lang / 2),MY- ((Steg_B / 2) +_Wzr),- Z_Ps,0,SnapXY,0)
+G01 (MX + (Lang / 2),MY- ((Steg_B / 2) +_Wzr),Tiefe,0,SnapXY,0)
+END
+G01 (MX + (Lang / 2),MY- (Breit / 2),Tiefe,Er4,SnapXY,0)
+G01 (MX + ((Steg_B / 2)+_Wzr),MY- (Breit / 2),Tiefe,0,SnapXY,0)
+IF ST1= 0
+G01 (MX + ((Steg_B / 2)+_Wzr),MY- (Breit / 2),- Z_Ps,0,SnapXY,0)
+G01 (MX - ((Steg_B / 2)+_Wzr),MY- (Breit / 2),- Z_Ps,0,SnapXY,0)
+ELSE
+G01 (MX - ((Steg_B / 2)+_Wzr),MY- (Breit / 2),Tiefe,0,SnapXY,0)
+END
+EP (E_Typ,ABF,0)
+CALL _DrehenBBEnde ()

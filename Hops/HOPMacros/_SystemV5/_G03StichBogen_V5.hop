@@ -1,0 +1,25 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_G03StichBogen_V5Dialog
+VARS
+   Breite := ;*VAR*Breite des Stichbogen
+   Hoehe := ;*VAR*Höhe des Stichbogen
+   Z := 0;*VAR*Zustelltiefe
+   R := 0;*VAR*Verrundungsradius
+   H := 0;Hilfsvariable
+   Radius := 0;
+   esd := 2;*VAR*
+START
+;Rohteil (1000,200,40,0,0)
+Transesd (z,esd)
+IF Hoehe<0
+H := -Hoehe
+ELSE
+H := Hoehe
+END
+Radius := (sqr(H)+sqr(Breite)/4)/(2*H)
+IF Hoehe>0
+G03R (_X-Breite,_Y,Z,Radius,R)
+ELSE
+G02R (_X-Breite,_Y,Z,Radius,R)
+END

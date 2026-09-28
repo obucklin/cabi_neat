@@ -1,0 +1,38 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=WriteVariables
+;MASCHINE=Simu
+;WZGV=Demo
+;BILD=
+VARS
+   SC_ZUSTELLUNG := 0;
+   BTiefe2_50000 := -10;
+   BTyp2_50000 := 10;
+   BTiefe3_00000 := -10;
+   BTyp3_00000 := 10;
+   BTiefe5_00000 := -5;
+   BTyp5_00000 := 20;
+   BTiefe8_00000 := -10;
+   BTyp8_00000 := 10;
+   BTiefe8_20000 := -10;
+   BTyp8_20000 := 10;
+   BTiefe10_00000 := -10;
+   BTyp10_00000 := 10;
+   BTiefe12_00000 := -15;
+   BTyp12_00000 := 10;
+   BTiefe15_00000 := -10;
+   BTyp15_00000 := 10;
+   BTiefe35_00000 := -6;
+   BTyp35_00000 := 30;
+START
+FZ := 32
+ToolNrDH := 501
+Rohteil (FX,FY,FZ,0,3)
+ToolNR := 1
+AnfahrB := 1
+AbfahrB := 1
+Rad_Korr := 1
+

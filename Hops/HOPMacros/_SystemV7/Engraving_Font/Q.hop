@@ -1,0 +1,46 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=1
+VARS
+   DX := 10;
+   DY := 10;
+   DZ := 19;
+   Tool := 38;WZ
+   Z := -1;*VAR*
+   Faktor := 1;*VAR*1=10mm
+START
+Fertigteil(DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;$F$Big Letters
+;WZF(Tool,_VE,_V,_VA,_SD,_ANF,'')
+KB ('Q','',4.6584*Faktor,1.2859*Faktor,0,'',0,0)
+KG02M ('',6.1276*Faktor,1.0728*Faktor,_Z,4.8182*Faktor,-2.7842*Faktor,'',0,0,0)
+KG02M ('',6.4533*Faktor,0.9465*Faktor,_Z,4.7983*Faktor,-2.8396*Faktor,'',0,0,0)
+KG02M ('',6.7673*Faktor,0.7936*Faktor,_Z,4.7630*Faktor,-2.9220*Faktor,'',0,0,0)
+KG02M ('',7.6151*Faktor,0.2182*Faktor,_Z,4.1780*Faktor,-3.9338*Faktor,'',0,0,0)
+KG03M ('',8.1277*Faktor,-0.1012*Faktor,_Z,12.0634*Faktor,6.7873*Faktor,'',0,0,0)
+KG03M ('',8.6637*Faktor,-0.3785*Faktor,_Z,11.7305*Faktor,6.2067*Faktor,'',0,0,0)
+KG03M ('',9.1802*Faktor,-0.5916*Faktor,_Z,11.2945*Faktor,5.2656*Faktor,'',0,0,0)
+KG02M ('',8.6637*Faktor,-0.3785*Faktor,_Z,11.2945*Faktor,5.2656*Faktor,'',0,0,0)
+KG02M ('',8.1277*Faktor,-0.1012*Faktor,_Z,11.7305*Faktor,6.2067*Faktor,'',0,0,0)
+KG02M ('',7.6151*Faktor,0.2182*Faktor,_Z,12.0634*Faktor,6.7873*Faktor,'',0,0,0)
+KG03M ('',7.09*Faktor,0.6*Faktor,_Z,4.1780*Faktor,-3.9338*Faktor,'',0,0,0)
+KG03M ('',7.7344*Faktor,1.0544*Faktor,_Z,4.8293*Faktor,4.5302*Faktor,'',0,0,0)
+KG03M ('',9.1385*Faktor,3.2653*Faktor,_Z,4.8121*Faktor,4.4615*Faktor,'',0,0,0)
+KG03M ('',9.3848*Faktor,4.9324*Faktor,_Z,2.7730*Faktor,5.0574*Faktor,'',0,0,0)
+KG01 ('',9.3901*Faktor,5.1933*Faktor,_Z,'',0,0)
+KG03M ('',9.1440*Faktor,6.8604*Faktor,_Z,2.7783*Faktor,5.0689*Faktor,'',0,0,0)
+KG03M ('',7.7401*Faktor,9.0715*Faktor,_Z,4.8175*Faktor,5.6646*Faktor,'',0,0,0)
+KG03M ('',4.6982*Faktor,10.1239*Faktor,_Z,4.8347*Faktor,5.5959*Faktor,'',0,0,0)
+KG03M ('',1.6561*Faktor,9.0723*Faktor,_Z,4.5606*Faktor,5.5959*Faktor,'',0,0,0)
+KG03M ('',0.2516*Faktor,6.8616*Faktor,_Z,4.5778*Faktor,5.6646*Faktor,'',0,0,0)
+KG03M ('',0.0051*Faktor,5.1945*Faktor,_Z,6.6168*Faktor,5.0684*Faktor,'',0,0,0)
+KG01 ('',-0.0003*Faktor,4.9320*Faktor,_Z,'',0,0)
+KG03M ('',0.2461*Faktor,3.2649*Faktor,_Z,6.6115*Faktor,5.0576*Faktor,'',0,0,0)
+KG03M ('',1.6504*Faktor,1.0541*Faktor,_Z,4.5724*Faktor,4.4615*Faktor,'',0,0,0)
+KG03M ('',4.6925*Faktor,0.0022*Faktor,_Z,4.5552*Faktor,4.5302*Faktor,'',0,0,0)
+KG03M ('',7.0878*Faktor,0.6033*Faktor,_Z,4.8293*Faktor,4.5302*Faktor,'',0,0,0)
+KSP('???','???',Z,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen('Q','KSP','KEP',0,0,0,0,0,0,0,0)
+EP(0,_ANF,0)
+deletecontour ('Q',0)

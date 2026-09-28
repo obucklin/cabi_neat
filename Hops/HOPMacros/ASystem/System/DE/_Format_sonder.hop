@@ -1,0 +1,399 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCName
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=_FORMAT_sonder.bmp
+VARS
+   Startpunkt := 0;*VAR*Startpunkt
+   Richtung := 0;*VAR*0=Uhrzeiger,1=gegenUhrzeiger
+   anf_bew := 2;*VAR*Anfahrbewegung  0=ohne   1=linear    2=radial
+   X1 := 0;
+   Y1 := 0;
+   X2 := 0;
+   Y2 := 0;
+   X3 := 0;
+   Y3 := 0;
+   X4 := 0;
+   Y4 := 0;
+   X41 := 0;
+   Y41 := 0;
+   X12 := 0;
+   Y12 := 0;
+   X23 := 0;
+   Y23 := 0;
+   X34 := 0;
+   Y34 := 0;
+   rad1 := 0;*VAR*Radius Links unten
+   rad2 := 0;*VAR*Radius Rechts unten
+   rad3 := 0;*VAR*Radius Rechts oben
+   rad4 := 0;*VAR*Radius Links oben
+   T := -_RZ-2;*VAR*Frästiefe
+   L1 := 0;Länge unten
+   L2 := 0;
+   L3 := 0;
+   L4 := 0;
+START
+;direkt cnc systeme NCHOPS Version 4
+;Formatieren /MD/04.01
+;WZF (1,_VA,_V,_VE,_SD,_ANF)
+;EINGABE
+;Rohteil (300,200,30,0,0)
+;------------- Zuweisungen
+X2 := _rx
+Y2 := 0
+X3 := _rx
+Y3 := _ry
+X4 := 0
+Y4 := _ry
+X12 := _rx/2
+Y12 := 0
+X23 := _rx
+Y23 := _ry/2
+X34 := _rx/2
+Y34 := _ry
+X41 := 0
+Y41 := _ry/2
+;------------- Sicherheit
+L1 := x2-rad1-rad2
+L2 := y3-rad2-rad3
+L3 := x3-rad3-rad4
+L4 := y4-rad4-rad1
+IF L1<0
+Fehlermeldung (Radius1_oder_Radius2_zu_gross)
+END
+IF L2<0
+Fehlermeldung (Radius2_oder_Radius3_zu_gross)
+END
+IF L3<0
+Fehlermeldung (Radius3_oder_Radius4_zu_gross)
+END
+IF L4<0
+Fehlermeldung (Radius1_oder_Radius4_zu_gross)
+END
+;------------- Neu setzen
+X12 := rad1+L1/2
+Y23 := rad2+L2/2
+X34 := rad4+L3/2
+Y41 := rad1+L4/2
+;------------- setzen
+;IF startpunkt=41
+IF (startpunkt=0) & (anf_bew=1)
+anf_bew := 2
+Hinweismeldung (Anfahrbewegung_wurde_auf_radial_umgestellt)
+END
+;IF startpunkt=12
+IF (startpunkt=2) & (anf_bew=1)
+anf_bew := 2
+Hinweismeldung (Anfahrbewegung_wurde_auf_radial_umgestellt)
+END
+;IF startpunkt=23
+IF (startpunkt=1) & (anf_bew=1)
+anf_bew := 2
+Hinweismeldung (Anfahrbewegung_wurde_auf_radial_umgestellt)
+END
+;IF startpunkt=34
+IF (startpunkt=3) & (anf_bew=1)
+anf_bew := 2
+Hinweismeldung (Anfahrbewegung_wurde_auf_radial_umgestellt)
+END
+;------------- Bearbeitung
+;------- IM UHRZEIGER
+IF Richtung=0
+;------- Start links
+;IF startpunkt=41
+IF startpunkt=0
+IF anf_bew=0
+SP (x41,y41,T,1,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x41,y41,T,1,1,_ANFAKT,0,0,0)
+END
+IF anf_bew=2
+SP (x41,y41,T,1,2,_ANFAKT,0,0,0)
+END
+G01 (x4,y4,_Z,rad4)
+G01 (x3,y3,_Z,rad3)
+G01 (x2,y2,_Z,rad2)
+G01 (x1,y1,_Z,rad1)
+G01 (x41,y41+_WZR,_Z,0)
+END
+;------- Start oben
+;IF startpunkt=34
+IF startpunkt=3
+IF anf_bew=0
+SP (x34,y34,T,1,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x34,y34,T,1,1,_ANFAKT,0,0,0)
+END
+IF anf_bew=2
+SP (x34,y34,T,1,2,_ANFAKT,0,0,0)
+END
+G01 (x3,y3,_Z,rad3)
+G01 (x2,y2,_Z,rad2)
+G01 (x1,y1,_Z,rad1)
+G01 (x4,y4,_Z,rad4)
+G01 (x34+_WZR,y34,_Z,0)
+END
+;------- Start rechts
+;IF startpunkt=23
+IF startpunkt=1
+IF anf_bew=0
+SP (x23,y23,T,1,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x23,y23,T,1,1,_ANFAKT,0,0,0)
+END
+IF anf_bew=2
+SP (x23,y23,T,1,2,_ANFAKT,0,0,0)
+END
+G01 (x2,y2,_Z,rad2)
+G01 (x1,y1,_Z,rad1)
+G01 (x4,y4,_Z,rad4)
+G01 (x3,y3,_Z,rad3)
+G01 (x23,y23-_WZR,_Z,0)
+END
+;------- Start unten
+;IF startpunkt=12
+IF startpunkt=2
+IF anf_bew=0
+SP (x12,y12,T,1,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x12,y12,T,1,1,_ANFAKT,0,0,0)
+END
+IF anf_bew=2
+SP (x12,y12,T,1,2,_ANFAKT,0,0,0)
+END
+G01 (x1,y1,_Z,rad1)
+G01 (x4,y4,_Z,rad4)
+G01 (x3,y3,_Z,rad3)
+G01 (x2,y2,_Z,rad2)
+G01 (x12-_WZR,y12,_Z,0)
+END
+;------- Start links unten
+;IF startpunkt=1
+IF startpunkt=4
+IF anf_bew=0
+SP (x1,y1,T,1,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x1,y1,T,1,1,_ANFAKT,0,0,0)
+END
+IF anf_bew=2
+SP (x1,y1,T,1,2,_ANFAKT,0,0,0)
+END
+G01 (x4,y4,_Z,rad4)
+G01 (x3,y3,_Z,rad3)
+G01 (x2,y2,_Z,rad2)
+G01 (x1,y1,_Z,rad1)
+END
+;------- Start rechts unten
+;IF startpunkt=2
+IF startpunkt=5
+IF anf_bew=0
+SP (x2,y2,T,1,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x2,y2,T,1,1,_ANFAKT,0,0,0)
+END
+IF anf_bew=2
+SP (x2,y2,T,1,2,_ANFAKT,0,0,0)
+END
+G01 (x1,y1,_Z,rad1)
+G01 (x4,y4,_Z,rad4)
+G01 (x3,y3,_Z,rad3)
+G01 (x2,y2,_Z,rad2)
+END
+;------- Start rechts oben
+;IF startpunkt=3
+IF startpunkt=6
+IF anf_bew=0
+SP (x3,y3,T,1,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x3,y3,T,1,1,_ANFAKT,0,0,0)
+END
+IF anf_bew=2
+SP (x3,y3,T,1,2,_ANFAKT,0,0,0)
+END
+G01 (x2,y2,_Z,rad2)
+G01 (x1,y1,_Z,rad1)
+G01 (x4,y4,_Z,rad4)
+G01 (x3,y3,_Z,rad3)
+END
+;------- Start links oben
+;IF startpunkt=4
+IF startpunkt=7
+IF anf_bew=0
+SP (x4,y4,T,1,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x4,y4,T,1,1,_ANFAKT,0,0,0)
+END
+IF anf_bew=2
+SP (x4,y4,T,1,2,_ANFAKT,0,0,0)
+END
+G01 (x3,y3,_Z,rad3)
+G01 (x2,y2,_Z,rad2)
+G01 (x1,y1,_Z,rad1)
+G01 (x4,y4,_Z,rad4)
+END
+ELSE
+;------- GEGEN UHRZEIGER
+;------- Start links
+;IF startpunkt=41
+IF startpunkt=0
+IF anf_bew=0
+SP (x41,y41,T,2,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x41,y41,T,2,1,_ANFAKT,0,0,0)
+END
+IF  anf_bew=2
+SP (x41,y41,T,2,2,_ANFAKT,0,0,0)
+END
+G01 (x1,y1,_Z,rad1)
+G01 (x2,y2,_Z,rad2)
+G01 (x3,y3,_Z,rad3)
+G01 (x4,y4,_Z,rad4)
+G01 (x41,y41-_WZR,_Z,0)
+END
+;------- Start unten
+;IF startpunkt=12
+IF startpunkt=2
+IF anf_bew=1
+SP (x12,y12,T,2,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x12,y12,T,2,1,_ANFAKT,0,0,0)
+END
+IF  anf_bew=2
+SP (x12,y12,T,2,2,_ANFAKT,0,0,0)
+END
+G01 (x2,y2,_Z,rad2)
+G01 (x3,y3,_Z,rad3)
+G01 (x4,y4,_Z,rad4)
+G01 (x1,y1,_Z,rad1)
+G01 (x12+_WZR,y12,_Z,0)
+END
+;------- Start rechts
+;IF startpunkt=23
+IF startpunkt=1
+IF anf_bew=0
+SP (x23,y23,T,2,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x23,y23,T,2,1,_ANFAKT,0,0,0)
+END
+IF  anf_bew=2
+SP (x23,y23,T,2,2,_ANFAKT,0,0,0)
+END
+G01 (x3,y3,_Z,rad3)
+G01 (x4,y4,_Z,rad4)
+G01 (x1,y1,_Z,rad1)
+G01 (x2,y2,_Z,rad2)
+G01 (x23,y23+_WZR,_Z,0)
+END
+;------- Start oben
+;IF startpunkt=34
+IF startpunkt=3
+IF anf_bew=0
+SP (x34,y34,T,2,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x34,y34,T,2,1,_ANFAKT,0,0,0)
+END
+IF  anf_bew=2
+SP (x34,y34,T,2,2,_ANFAKT,0,0,0)
+END
+G01 (x4,y4,_Z,rad4)
+G01 (x1,y1,_Z,rad1)
+G01 (x2,y2,_Z,rad2)
+G01 (x3,y3,_Z,rad3)
+G01 (x34-_WZR,y34,_Z,0)
+END
+;------- Start links unten
+;IF startpunkt=1
+IF startpunkt=4
+IF anf_bew=0
+SP (x1,y1,T,2,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x1,y1,T,2,1,_ANFAKT,0,0,0)
+END
+IF  anf_bew=2
+SP (x1,y1,T,2,2,_ANFAKT,0,0,0)
+END
+G01 (x2,y2,_Z,rad2)
+G01 (x3,y3,_Z,rad3)
+G01 (x4,y4,_Z,rad4)
+G01 (x1,y1,_Z,rad1)
+END
+;------- Start rechts unten
+;IF startpunkt=2
+IF startpunkt=5
+IF anf_bew=0
+SP (x2,y2,T,2,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x2,y2,T,2,1,_ANFAKT,0,0,0)
+END
+IF  anf_bew=2
+SP (x2,y2,T,2,2,_ANFAKT,0,0,0)
+END
+G01 (x3,y3,_Z,rad3)
+G01 (x4,y4,_Z,rad4)
+G01 (x1,y1,_Z,rad1)
+G01 (x2,y2,_Z,rad2)
+END
+;------- Start rechts oben
+;IF startpunkt=3
+IF startpunkt=6
+IF anf_bew=0
+SP (x3,y3,T,2,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x3,y3,T,2,1,_ANFAKT,0,0,0)
+END
+IF  anf_bew=2
+SP (x3,y3,T,2,2,_ANFAKT,0,0,0)
+END
+G01 (x4,y4,_Z,rad4)
+G01 (x1,y1,_Z,rad1)
+G01 (x2,y2,_Z,rad2)
+G01 (x3,y3,_Z,rad3)
+END
+;------- Start links oben
+;IF startpunkt=4
+IF startpunkt=7
+IF anf_bew=0
+SP (x4,y4,T,2,0,_ANFAKT,0,0,0)
+END
+IF anf_bew=1
+SP (x4,y4,T,2,1,_ANFAKT,0,0,0)
+END
+IF  anf_bew=2
+SP (x4,y4,T,2,2,_ANFAKT,0,0,0)
+END
+G01 (x1,y1,_Z,rad1)
+G01 (x2,y2,_Z,rad2)
+G01 (x3,y3,_Z,rad3)
+G01 (x4,y4,_Z,rad4)
+END
+END
+;------- Abfahren
+IF anf_bew=0
+EP (0,_ANF,0)
+END
+IF anf_bew=1
+EP (1,_ANF,0)
+END
+IF anf_bew=2
+EP (2,_ANF,0)
+END
+

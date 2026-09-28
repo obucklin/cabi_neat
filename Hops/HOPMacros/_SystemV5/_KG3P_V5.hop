@@ -1,0 +1,39 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsSys.Dll
+;DIALOGPROC=ShowKG3PDialog
+;AUTOSCRIPTSTART=0
+VARS
+   X := 0;*VAR*X-Wert Punkt 1
+   Y := 0;*VAR*y-Wert Punkt 1
+   Z := 0;*VAR*Zustelltiefe
+   X2 := 0;*VAR*x-Wert Punkt 2
+   Y2 := 0;*VAR*y-Wert Punkt 2
+   esxy := 0;*VAR*Easysnap in xy
+   esd := 2;*VAR*Easysnap depth
+   esxy2 := 0;*VAR*Easysnap in xy 2
+   Name := '';*VAR*Name des Konturelements
+   Info := '';*VAR*Informationsfeld
+   mx := 0;
+   my := 0;
+   Gtyp := 0;
+   SX := 0;
+   SY := 0;
+START
+transesxy (x,y,esxy,0)
+transesxy (x2,y2,esxy2,0)
+transesd (Z,esd)
+SX := _X
+SY := _Y
+CALL _KB_3P (REF GTYP:=GTyp,MX:=Mx,MY:=My VAL SX:=SX,SY:=SY,P1X:=X,P1Y:=Y,P2X:=X2,P2Y:=Y2)
+IF (Gtyp<1)|(Gtyp>3)
+Fehlermeldung ('Error-G3P')
+END
+IF GTyp=1
+KG01 (name,x2,y2,z,info,0,0)
+END
+IF GTyp=2
+KG02M (name,x2,y2,z,mx,my,info,0,0,0)
+END
+IF GTyp=3
+KG03M (Name,X2,Y2,z,mx,my,Info,0,0,0)
+END

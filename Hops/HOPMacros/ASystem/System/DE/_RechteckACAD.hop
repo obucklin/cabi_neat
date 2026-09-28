@@ -1,0 +1,33 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=xxx
+;NCNAME=1
+;MASCHINE=DIREKT
+;WZGV=1
+;BILD=RechteckWMF.bmp
+VARS
+   x_Mitte := 100;*VAR*Rechteckmitte in X
+   Y_Mitte := 100;*VAR*Rechteckmitte in Y
+   Laenge := 0;*VAR*
+   Breite := 0;*VAR*
+   Winkel := 45;*VAR*Winkel gegen X-Achse
+   WerkzeugBox := 1;*VAR*
+   Tiefe := _Z;*VAR*Tiefe der Tasche
+   Radius := 25;*VAR*Eckenradius
+   Radiuskorrektur := 1;*VAR*0=Mitte,1=Auserhalb,2=Innerhalb
+   AB := 1;*VAR*0 -> keine Abfahrbewegung, <> 0 -> Abfahrbewegung
+START
+;direkt cnc systeme NCHOPS Version3.0
+;Rechteck für ACAD - BLOCK V 3.0/MW/
+;negative Werte denkbar, wenn Symbol über Mausinput eingefügt
+IF laenge<0
+laenge := -laenge
+END
+IF breite<0
+breite := -breite
+END
+WZF (WerkzeugBox,_VE,_V,_VA,_SD,_ANF)
+CALL _Rechteck (VAL x_Mitte:=x_Mitte,Y_Mitte:=Y_Mitte,laenge:=Laenge,breite:=Breite,Radius:=Radius,Winkel:=Winkel,Tiefe:=Tiefe,Radiuskorrektur:=Radiuskorrektur,AB:=AB)
+

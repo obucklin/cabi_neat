@@ -1,0 +1,23 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=WriteVariables
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=
+VARS
+   DDepth5_00000 := -5;
+   DType5_00000 := 20;
+   DDepth35_00000 := -6;
+   DType35_00000 := 20;
+   DDepth8_00000 := -10;
+   DType8_00000 := 10;
+START
+FinishedPart (FX,FY,FZ,0,3)
+ToolNo := 1
+SMove := 1
+EMove := 1
+TRC := 1
+

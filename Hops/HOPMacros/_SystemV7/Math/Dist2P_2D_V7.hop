@@ -1,0 +1,12 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowDist2P_2D_V7Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   P1X := 0;*VAR*
+   P1Y := 0;*VAR*
+   P2X := 100;*VAR*
+   P2Y := 100;*VAR*
+   Dist := ;*VAR**REF*
+START
+Dist := sqrt(sqr(P2X-P1X)+sqr(P2Y-P1Y))

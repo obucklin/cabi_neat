@@ -1,0 +1,89 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   x_Mitte := 100;*VAR*Taschenmitte in X
+   Y_Mitte := 100;*VAR*Taschenmitte in Y
+   Taschenlaenge := 50;*VAR*Tasche in X
+   Taschenbreite := 100;*VAR*Tasche in Y
+   Radius := 12;*VAR*Eckenradius
+   AktRad := 0;Eckenradius
+   GX := 1;*VAR*uebergroeﬂe in X Richtung
+   CW := -1;*VAR*Uhrzeigersinn tauschen
+   Schleifenzahl := 2;*VAR*anzahl der Durchlaeufe
+   UW := 0;*VAR*Zustellung Breite
+   i := 0;
+START
+;------------------------------------------------------------------------
+;DIREKT CNC-SYSTEME : NC-HOPS Version 5.x
+;-              RechteckTasche : Konturen
+;------------------------------------------------------------------------
+;--
+FERTIGTEIL(200,200,20,0,0,0,0,0,'',0,0,0)
+;--
+;-- Kontur aufbauen...
+IF GX < 0
+;-
+;- Tasche in Y L‰nger...
+KB ('ReTa','',X_Mitte+TaschenLaenge/2,Y_Mitte,0,'',0,0)
+KG01 ('',0,-Taschenbreite/2*cw,0,'',10,2)
+KVerrundung ('',0,Radius,'',2)
+KG01 ('',-TaschenLaenge,0,0,'',10,2)
+KVerrundung ('',0,Radius,'',2)
+KG01 ('',0,TaschenBreite*cw,0,'',10,2)
+KVerrundung ('',0,Radius,'',2)
+KG01 ('',TaschenLaenge,0,0,'',10,2)
+KVerrundung ('',0,Radius,'',2)
+KG01 ('',0,-Taschenbreite/2*cw,0,'',10,2)
+;-
+KB ('ReTaEckig','',X_Mitte+TaschenLaenge/2,Y_Mitte,0,'',0,0)
+KG01 ('',0,-Taschenbreite/2*cw,0,'',10,2)
+KG01 ('',-TaschenLaenge,0,0,'',10,2)
+KG01 ('',0,TaschenBreite*cw,0,'',10,2)
+KG01 ('',TaschenLaenge,0,0,'',10,2)
+KG01 ('',0,-Taschenbreite/2*cw,0,'',10,2)
+ELSE
+;-
+;- Tasche in X L‰nger...
+KB ('ReTa','',X_Mitte,Y_Mitte+TaschenBreite/2,0,'',0,0)
+KG01 ('',Taschenlaenge/2*cw,0,0,'',10,2)
+KVerrundung ('',0,Radius,'',2)
+KG01 ('',0,-Taschenbreite,0,'',10,2)
+KVerrundung ('',0,Radius,'',2)
+KG01 ('',-Taschenlaenge*cw,0,0,'',10,2)
+KVerrundung ('',0,Radius,'',2)
+KG01 ('',0,Taschenbreite,0,'',10,2)
+KVerrundung ('',0,Radius,'',2)
+KG01 ('',Taschenlaenge/2*cw,0,0,'',10,2)
+;-
+KB ('ReTaEckig','',X_Mitte,Y_Mitte+TaschenBreite/2,0,'',0,0)
+KG01 ('',Taschenlaenge/2*cw,0,0,'',10,2)
+KG01 ('',0,-Taschenbreite,0,'',10,2)
+KG01 ('',-Taschenlaenge*cw,0,0,'',10,2)
+KG01 ('',0,Taschenbreite,0,'',10,2)
+KG01 ('',Taschenlaenge/2*cw,0,0,'',10,2)
+END
+;--
+AktRad := Radius
+;SF 16.06.2009
+;Abstand muss bei gedrehter Richtung negiert werden
+UW := CW*UW
+;--
+FOR i := 0 TO Schleifenzahl-1 STEP 1
+IF AktRad<_WZR
+;- Wenn Radius kleiner als WZR
+Contour_Parallel ('ReTaEckig',UW/2 * i,0,0,1,'ReTa' + IntToStr(i),'','',0)
+ELSE
+;- sonst immer mit Radius
+Contour_Parallel ('ReTa',UW/2 * i,0,1,1,'ReTa' + IntToStr(i),'','',0)
+END
+;AktRad := AktRad -(UW)/2
+;-- MW 14.09.2010
+;-- die Negierung vom 16.06.2010 verursacht eine Vergrˆﬂerung des AktRad - dadurch Verrundungen von R=2mm
+AktRad := AktRad - abs(UW)/2
+END
+;--
+;- Originale lˆschen, da nicht mehr nˆtig !
+deletecontour ('ReTa',0)
+deletecontour ('ReTaEckig',0)

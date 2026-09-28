@@ -1,0 +1,134 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.6.4.165[Hops.exe]
+;BILD=OVVO_KANTE_HI_VO.WMF
+;INFO=
+;WZGV=7405_1030
+;WZGVCONFIG=
+;MASCHINE=SIMU
+;NCNAME=OVVO_DialogHIVO
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=HHDialogs_OVVO.Dll
+;DIALOGPROC=ShowOVVO_HIVO
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;
+   DY := 400;
+   DZ := 19;
+   EITI := 12.9;*VAR*Eintauchtiefe des Werkzeuges 12.7 - 13.1
+   APV_1 := 1;*VAR*Auswahl Position Verbinder vorne links
+   APV_2 := 1;*VAR*Auswahl Position Verbinder vorne mitte
+   APV_3 := 1;*VAR*Auswahl Position Verbinder vorne rechts
+   APV_4 := 1;*VAR*Auswahl Position Verbinder hinten rechts
+   APV_5 := 1;*VAR*Auswahl Position Verbinder hinten mitte
+   APV_6 := 1;*VAR*Auswahl Position Verbinder hinten links
+   PDV_Z_ := 0;Position des Verbinders in Z von der Innenkante
+   PDV := 75;Position des Verbinders X / Y
+   PDV_X_1 := 60;*VAR*Position des Verbinder in X vorne links
+   PDV_X_2 := 0;*VAR*Position des Verbinder in X vorne mitte
+   PDV_X_3 := 60;*VAR*Position des Verbinder in X vorne rechts
+   PDV_X_5 := 0;*VAR*Position des Verbinder in X hinten rechts
+   PDV_X_4 := 60;*VAR*Position des Verbinder in X hinten mitte
+   PDV_X_6 := 60;*VAR*Position des Verbinder in X  hinten links
+   Z_Stum_hinten := DZ/2;*VAR*Z-Wert bei stumpfen nuten
+   Z_Stum_vorne := DZ/2;*VAR*Z-Wert bei stumpfen nuten
+   ZH_R := 20;Z_Höhe auf der Ebene von Innenkante
+   ZH_L := 0;Z-Höhe auf der Ebene von Innenkante
+   easyZ_hi := 1;*VAR*Easysnap für Z-Position
+   easyZ_vo := 1;*VAR*Easysnap für Z-Position
+   DIST := 40;Travel Distance (ii)
+   WKZ_NUT_VO := 1420;*VAR*FIX_WERKZEUGNUMMER DES NUTERS vorne
+   WKZ_NUT_HI := 1420;*VAR*FIX_WERKZEUGNUMMER DES NUTERS hinten
+   OVVO_TYP := 0;*VAR*0=1230 / 1=1240 / 2=free /3=free
+START
+;OVVO_30.10.2020 S.K INDEX 1.2
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+IF OVVO_TYP=0
+DIST := 20.7
+END
+IF OVVO_TYP=1
+DIST := 39.3
+END
+IF OVVO_TYP=2
+/DIST := 20.7
+Fehlermeldung ('_444_Not used, please Check the Makro settings')
+END
+IF OVVO_TYP=3
+/DIST := 20.7
+Fehlermeldung ('_445_Not used, please Check the Makro settings')
+END
+;FEHLERMELDUNG wenn EASYSNAP Z= RELATIV
+Ebene0()
+WZF (WKZ_NUT_HI,_VE,_V,_VA,_SD,_ANF,'1')
+IF (easyZ_hi = 2) | (easyZ_vo = 2)
+Fehlermeldung ('relativ nicht möglich')
+END
+;Easysnap Z LI (oben/unten)
+TransEsD (Z_STUM_hinten,easyZ_hi)
+;Easysnap Z RE (oben/unten)
+TransEsD (Z_STUM_vorne,easyZ_vo)
+;Kante Hinten
+;rechts
+IF APV_4=1
+Ebene3()
+SP (-_RX+(PDV_X_4-(DIST/2)),_RZ+Z_Stum_hinten,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+Ebene0()
+ZRechteck (PDV_X_4+(DIST/2),0,DIST,-EITI,1,16711680,5,0,0)
+END
+;mitte
+IF APV_5=1
+Ebene3()
+SP (-_rx/2-(PDV_X_5+(DIST/2)),_RZ+Z_Stum_hinten,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+Ebene0()
+ZRechteck (PDV_X_5-(DIST/2),0,DIST,-EITI,1,16711680,6,0,0)
+END
+;links
+IF APV_6=1
+Ebene3()
+SP (-PDV_X_6-(DIST/2),_RZ+Z_Stum_hinten,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+Ebene0()
+ZRechteck (PDV_X_6-(DIST/2),0,DIST,-EITI,1,16711680,7,0,0)
+END
+;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+;Kante vorne
+;links
+WZF (WKZ_NUT_VO,_VE,_V,_VA,_SD,_ANF,'1')
+IF APV_1=1
+Ebene1()
+SP (PDV_X_1-(DIST/2),_RZ+Z_Stum_vorne,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+Ebene0()
+ZRechteck (PDV_X_1-(DIST/2),0,DIST,EITI,1,16711680,1,0,0)
+END
+;mitte
+IF APV_2=1
+Ebene1()
+SP (_rx/2+(PDV_X_2-(DIST/2)),_RZ+Z_Stum_vorne,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+Ebene0()
+ZRechteck (PDV_X_2-(DIST/2),0,DIST,EITI,1,16711680,2,0,0)
+END
+;rechts
+IF APV_3=1
+Ebene1()
+SP (_rx-(PDV_X_3+(DIST/2)),_RZ+Z_Stum_vorne,-EITI,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (DIST,0,0,0,10,2)
+EP (0,_ANF,0)
+Ebene0()
+ZRechteck (PDV_X_3+(DIST/2),0,DIST,EITI,1,16711680,3,0,0)
+END
+Ebene0()

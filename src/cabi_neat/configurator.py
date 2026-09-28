@@ -17,12 +17,16 @@ from .config import CabinetConfig
 from .layout import part_category_group
 from .layout import resolve_layout
 from .planner import Planner
+from .sections import sectioned
 
 MATERIALS = {
     "carcass": Material(color=Color.from_hex("#d9b98c"), roughness=0.8),
     "front": Material(color=Color.from_hex("#f2efe9"), roughness=0.6),
     "drawer_box": Material(color=Color.from_hex("#c49a6c"), roughness=0.8),
 }
+
+# parts highlighted from the planner (e.g. the shelf being edited)
+HIGHLIGHT = Material(color=Color.from_hex("#2f6fdb"), roughness=0.5)
 
 # the model is in millimetres, the viewer's default camera and lights are set up for metres
 DISPLAY_SCALE = Scale.from_factors([0.001, 0.001, 0.001])
@@ -46,7 +50,12 @@ class Configurator:
         self.show_fronts = True
         self.open_fronts = False
         self._objects = []
+        self._part_objects = {}  # part name -> (displayed geometry, material group)
+        self.highlighted = set()
+        self.picked = None  # the part last clicked in the 3D view
+        self.pick_count = 0
         self._lock = threading.Lock()
+        self._watch_picks()
         self.version = 0  # incremented on every applied config, so the planner page can notice changes
         self.last_error = None
         self.stale = True  # the 3D model doesn't show the current config yet
@@ -104,12 +113,48 @@ class Configurator:
                 self.open_fronts = bool(open_fronts)
             self._redraw()
 
+    def _material(self, name, group):
+        return HIGHLIGHT if name in self.highlighted else MATERIALS[group]
+
+    def set_highlight(self, names):
+        """Show the parts ``names`` highlighted in the 3D view (and only those). Unknown names are ignored."""
+        with self._lock:
+            new = set(names) & set(self._part_objects)
+            old, self.highlighted = self.highlighted, new
+            for name in new ^ old:
+                geometry, group = self._part_objects[name]
+                self.app.remove_object(geometry)
+                self.app.add_geometry(geometry, self._material(name, group))
+
+    def _watch_picks(self):
+        """Learn which part is clicked in the 3D view.
+
+        compas_threejs handles picks internally (to show metadata) without telling the app, so wrap its handler. If
+        its internals change, picking just doesn't reach the planner.
+        """
+        handlers = getattr(self.app.inbox, "_handlers", None)
+        if not isinstance(handlers, dict) or "object_picked" not in handlers:
+            return
+        original = handlers["object_picked"]
+
+        def picked(message, outbox, workspace_id):
+            original(message, outbox, workspace_id)
+            guid = str(message.get("guid"))
+            name = next((n for n, (geometry, _) in self._part_objects.items() if str(geometry.guid) == guid), None)
+            if name:
+                self.picked = name
+                self.pick_count += 1
+
+        handlers["object_picked"] = picked
+
     def _redraw(self):
         self.app.start_spinner("Building cabinet")
         try:
             for obj in self._objects:
                 self.app.remove_object(obj)
             self._objects = []
+            self._part_objects = {}
+            self.highlighted = set()
             for part in self.cabinet.layout.parts:
                 group = part_category_group(part.category)
                 if group == "front" and not self.show_fronts:
@@ -124,11 +169,17 @@ class Configurator:
                 geometry = self.cabinet.plates[part.name].modelgeometry.transformed(transformation).to_viewmesh()
                 self.app.add_geometry(geometry, MATERIALS[group])
                 self._objects.append(geometry)
+                self._part_objects[part.name] = (geometry, group)
         finally:
             self.app.stop_spinner()
 
     def start(self, show=True):
         """Start the server and, with ``show``, open the planner in the browser."""
+        # build the section form the planner edits, so parts have the same names in the plan and in the 3D view
+        try:
+            self.config = sectioned(self.config)
+        except ValueError:
+            pass
         if not self.apply(self.config):
             raise ValueError("The initial configuration is invalid: {}".format(self.last_error))
         c = self.config

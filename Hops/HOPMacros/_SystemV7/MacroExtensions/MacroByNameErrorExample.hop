@@ -1,0 +1,19 @@
+;MAKROTYP=1
+VARS
+   MacroName := '';*VAR*
+   CallErrorType := -1;*VAR*
+   ErrorStr := '';*VAR*
+START
+;cetMacro=1,cetTooManyPara=2,cetTooFewPara=3,cetParaNotDef=4
+IF CallErrorType=1
+Fehlermeldung (INTTOSTR(CallErrorType)+': '+MacroName)
+END
+IF CallErrorType=2
+Fehlermeldung (INTTOSTR(CallErrorType)+': '+MacroName+' '+ErrorStr)
+END
+IF CallErrorType=3
+Fehlermeldung (INTTOSTR(CallErrorType)+': '+MacroName+' '+ErrorStr)
+END
+IF CallErrorType=4
+Fehlermeldung (INTTOSTR(CallErrorType)+': '+MacroName+' '+ErrorStr)
+END

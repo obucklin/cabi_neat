@@ -1,0 +1,35 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   Konturname := '';*VAR*
+   Konturlayer := '';*VAR*
+   Konturinfo := '';*VAR*
+   Z := 0;*VAR*
+   Text := '';*VAR*
+   Hoehe := 20;*VAR*
+   Zeichenabstand := 0;*VAR*
+   Schriftart := 'Arial';*VAR*
+   Schriftausrichtung_H := 0;*VAR*
+   Schriftausrichtung_V := 0;*VAR*
+   Schriftstil := 0;*VAR*
+   Spiegelverkehrt := 0;*VAR*
+   Ausgerichtet_An := 0;*VAR*
+   PX := 0;*VAR*
+   PY := 0;*VAR*
+   SX := 0;*VAR*
+   SY := 0;*VAR*
+   EX := 0;*VAR*
+   EY := 0;*VAR*
+   Winkel := 0;*VAR*
+   Laenge := 0;*VAR*
+   LinienArt := 0;*VAR*
+   MX := 0;*VAR*
+   MY := 0;*VAR*
+   Radius := 0;*VAR*
+   Startwinkel := 0;*VAR*
+   Endwinkel := 0;*VAR*
+   Drehrichtung := 0;*VAR*
+   Contour_Count := 0;*VAR**REF*
+START
+CALLDLL KTEXT(Fraesen,DefaultStr,REF CONTOUR_COUNT:=Contour_Count VAL KONTURNAME:=Konturname,KONTURLAYER:=Konturlayer,KONTURINFO:=Konturinfo,Z:=Z,TEXT:=Text,HOEHE:=Hoehe,ZEICHENABSTAND:=Zeichenabstand,SCHRIFTART:=Schriftart,SCHRIFTAUSRICHTUNG_H:=Schriftausrichtung_H,SCHRIFTAUSRICHTUNG_V:=Schriftausrichtung_V,SCHRIFTSTIL:=Schriftstil,SPIEGELVERKEHRT:=Spiegelverkehrt,AUSGERICHTET_AN:=Ausgerichtet_An,PX:=PX,PY:=PY,SX:=SX,SY:=SY,EX:=EX,EY:=EY,WINKEL:=Winkel,LAENGE:=Laenge,LINIENART:=LinienArt,MX:=MX,MY:=MY,RADIUS:=Radius,STARTWINKEL:=Startwinkel,ENDWINKEL:=Endwinkel,DREHRICHTUNG:=Drehrichtung,TOLERANZ:=0.8)

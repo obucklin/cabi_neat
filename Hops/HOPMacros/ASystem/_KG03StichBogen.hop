@@ -1,0 +1,33 @@
+;MAKROTYP=1
+;BILD=_G03Stichbogen.wmf
+;INFO=_G03StichBogen
+;WZGV=demo
+;MASCHINE=Simu
+;NCNAME=_KG03StichBogen
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   Name := '';*VAR*Konturelementname
+   Breite := ;*VAR*Breite des Stichbogen
+   Hoehe := ;*VAR*Höhe des Stichbogen
+   Z := _Z;*VAR*Zustelltiefe
+   H := 0;Hilfsvariable
+   Radius := 0;
+   Info := '';*VAR*Konturelementinfo
+START
+;Rohteil (1000,200,40,0,0)
+IF Hoehe<0
+H := -Hoehe
+ELSE
+H := Hoehe
+END
+Radius := (sqr(H)+sqr(Breite)/4)/(2*H)
+IF Hoehe>0
+CALL _KG03R ( VAL EN:=Name,EX:=_X-Breite,EY:=_Y,EZ:=Z,R:=Radius,EI:=Info)
+ELSE
+CALL _KG02R ( VAL EN:=Name,EX:=_X-Breite,EY:=_Y,EZ:=Z,R:=Radius,EI:=Info)
+END

@@ -1,0 +1,42 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   KN_Bogen := '';*VAR*
+   KN_Neu := '';*VAR*
+   View_X := 0;*VAR*
+   View_Y := 0;*VAR*
+   View_Z := 0;*VAR*
+   View_DW := 0;*VAR*
+   View_KW := 0;*VAR*
+   ax := 0;
+   ay := 0;
+   az := 0;
+   vx := 0;
+   vy := 0;
+   vz := 0;
+   vx2 := 0;
+   vy2 := 0;
+   vz2 := 0;
+   Count := 0;
+START
+;Ersten Punkt auf Ebene umrechnen
+ax := GETKP_X(KN_Bogen,0)
+ay := GETKP_Y(KN_Bogen,0)
+az := _RZ+GETKP_Z(KN_Bogen,0)
+CALL AxyzToVxyz_V7 (REF VX:=vx,VY:=vy,VZ:=vz VAL OFFSETX:=View_X,OFFSETY:=View_Y,OFFSETZ:=View_Z,DW:=View_DW,KW:=View_KW,AX:=ax,AY:=ay,AZ:=az)
+;Startpunkt setzten
+KB (KN_Neu,'',vx,vy,0,'',0,0)
+;Zweiten Punkt auf Ebene umrechnen
+Count := GETCE_COUNT(KN_Bogen)
+ax := GETKP_X(KN_Bogen,Count)
+ay := GETKP_Y(KN_Bogen,Count)
+az := _RZ+GETKP_Z(KN_Bogen,Count)
+CALL AxyzToVxyz_V7 (REF VX:=vx,VY:=vy,VZ:=vz VAL OFFSETX:=View_X,OFFSETY:=View_Y,OFFSETZ:=View_Z,DW:=View_DW,KW:=View_KW,AX:=ax,AY:=ay,AZ:=az)
+;Dritten Punkt auf Ebene umrechnen
+Count := Count div 2
+ax := GETKP_X(KN_Bogen,Count)
+ay := GETKP_Y(KN_Bogen,Count)
+az := _RZ+GETKP_Z(KN_Bogen,Count)
+CALL AxyzToVxyz_V7 (REF VX:=vx2,VY:=vy2,VZ:=vz2 VAL OFFSETX:=View_X,OFFSETY:=View_Y,OFFSETZ:=View_Z,DW:=View_DW,KW:=View_KW,AX:=ax,AY:=ay,AZ:=az)
+;Bogen über 3 Punkte setzten
+CALL _KG3P_V5 ( VAL X:=vx2,Y:=vy2,Z:=0,X2:=vx,Y2:=vy,ESXY:=0,ESD:=2,ESXY2:=0,NAME:='',INFO:='')

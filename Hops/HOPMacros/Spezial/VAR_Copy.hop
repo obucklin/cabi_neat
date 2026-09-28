@@ -1,0 +1,11 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogBA_8.Dll
+;DIALOGPROC=ShowVar_CopyDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+VARS
+  DX1 := 600;*VAR*Dimension X
+   DY1 := 400;*VAR*Dimension Y
+   DZ1 := 40;*VAR*Dimension Z 
+START

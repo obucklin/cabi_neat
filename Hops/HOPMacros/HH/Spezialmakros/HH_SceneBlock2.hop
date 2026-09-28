@@ -1,0 +1,75 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.974[Hops.exe]
+;BILD=HH_SCENEBLOCK2.WMF
+;INFO=
+;WZGV=7225X_153
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=HH_SceneBlock
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   SceneCount := 1;*VAR*Numbers of scenes
+   StopForScene := 0;*VAR*
+   StopAfterScene := 0;*VAR*
+   SceneMessage := '';*VAR*Meldungstext
+   ii := 1;
+   count := 0;
+   mode := 0;
+   SceneID := 1;
+   TmpMessage := '';
+START
+;Mode Bit 0=Stop After Szene; 1=Ohne ReposY; 2=StopBefore Szene, 7=Multiszenen - ohne Toolspeed
+count := SceneCount
+mode := 0
+;Schleife Szenen ohne ReposY
+WHILE count>1
+;Erste Szene
+IF (count=SceneCount)
+IF (StopForScene=1)
+;ohne ReposY + Parken am Anfang
+mode := 6
+ELSE
+;ohne ReposY
+mode := 2
+END
+ELSE
+;ohne ReposY
+mode := 2
+END
+mode := mode + 128
+IF TEXTSAME(SceneMessage,'')=0
+TmpMessage := SceneMessage + '(' + INTTOSTR(SceneID) + ')'
+ELSE
+TmpMessage := ''
+END
+CALL HH_Scene2 ( VAL GROUPNAME:=TmpMessage,MODE:=mode)
+SceneID := SceneID+1
+count := count -1
+END
+mode := 2
+;Sonderfall: Nur eine Szene programmiert
+IF (SceneCount=1)
+IF StopForScene=1
+mode := mode + 4
+END
+END
+;letzte Szene mit ReposY und optional Stop am Ende
+IF StopAfterScene=1
+mode := mode + 1
+END
+IF TEXTSAME(SceneMessage,'')=0
+TmpMessage := SceneMessage + '(' + INTTOSTR(SceneID) + ')'
+ELSE
+TmpMessage := ''
+END
+CALL HH_Scene2 ( VAL GROUPNAME:=TmpMessage,MODE:=mode)

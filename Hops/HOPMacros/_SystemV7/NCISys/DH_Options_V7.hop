@@ -1,0 +1,11 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowDH_Options_V7Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   Para1 := 0;*VAR*Retreat
+   Para2 := 0;*VAR*Reserve
+   Para3 := 0;*VAR*Reserve
+   Para4 := 0;*VAR*Reserve
+START
+nciext (-100058,'NCISys',0,0,0,Para1,Para2,Para3,Para4)

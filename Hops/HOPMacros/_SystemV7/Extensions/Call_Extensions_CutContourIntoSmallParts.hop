@@ -1,0 +1,20 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   CONTOURNAME_OContourname := '';*VAR*Name der Aussenkontur
+   CONTOURNAME_IContournames := '';*VAR*Namen der Innenkonturen
+   ContourName := '';*VAR*Name der erzeugten Schnittkonturen
+   ContourInfo := '';*VAR*Info der erzeugten Schnittkonturen
+   ContourLayer := '';*VAR*Layer der erzeugten Schnittkonturen
+   DistContour := 0;*VAR*Abstand zu den Uebergebenen Konturen
+   DistBorderX := 0;*VAR*Abstand vom Rand in X
+   DistBorderY := 0;*VAR*Abstand vom Rand in Y
+   DistX := 0;*VAR*Schnittabstand in X
+   DistY := 0;*VAR*Schnittabstand in Y
+   DistModeX := 0;*VAR*0 - DistX links | 1 - Schnitte ausmitteln | 2 - DistX rechts
+   DistModeY := 0;*VAR*0 - DistY unten | 1 - Schnitte ausmitteln | 2 - DistY oben
+   Count := 0;*VAR**REF*Anzahl der Schnittlinien
+   CreatePartContours := 0;Restflaechen erzeugen (nicht implementiert)
+   CountPartContours := 0;Anzahl fuer Restflaechen (nicht implementiert)
+START
+CALLDLL GETCUTCONTOURINTOSMALLPARTSPARSEREXTCONTOURS(Extensions,DefaultStr,REF COUNT:=Count,COUNTPARTCONTOURS:=CountPartContours VAL CONTOURNAME_OCONTOURNAME:=CONTOURNAME_OContourname,CONTOURNAME_ICONTOURNAMES:=CONTOURNAME_IContournames,CONTOURNAME:=ContourName,CONTOURINFO:=ContourInfo,CONTOURLAYER:=ContourLayer,DISTCONTOUR:=DistContour,DISTBORDERX:=DistBorderX,DISTBORDERY:=DistBorderY,DISTX:=DistX,DISTY:=DistY,DISTMODEX:=DistModeX,DISTMODEY:=DistModeY,CREATEPARTCONTOURS:=CreatePartContours)

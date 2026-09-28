@@ -1,0 +1,83 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=PLANET_FRAESEN.WMF
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Planet fräsen
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA.Dll
+;DIALOGPROC=ShowPlanetDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 400;Dimension X
+   DY := 980mm;Dimension Y
+   DZ := 45.00;Dimension Z
+   PL_Wkz := 137;*VAR*Planetfräser Ref. Schneide oben
+   Pl_Wkz_Breite := 10;*VAR*Planetfräser Schneidenbreite oben
+   PL_Falz_H := 25.00;*VAR*Falzhöhe
+   PL_Vers_Fa_PL := -1;*VAR*Dist. Falz zu Planet
+   PL_Breite := 13;*VAR*Planetbreite
+   PL_Tiefe := 30;*VAR*Planettiefe
+   PL_Zustell_T := 5.00;*VAR*Zugabe bei der Planetnut in der Tiefe
+   Buendig := 1;*VAR*Buendig = 1 / Falz = 0
+   PL_Hoehe := dz/2;*VAR*Planethöhe mitte
+   Anz := 1;Anzahl Durchgänge
+   Rest := 0.00;Zustellung letzter Durchgang
+   I := 0.00;Zählvariable
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+; (c) Holz-Her Schweiz AG
+;  B. Achermann
+;Planet Nut
+IF Buendig = 1
+PL_Falz_H := PL_Hoehe + (PL_Breite/2)
+PL_Vers_Fa_PL := 0
+END
+WZF (PL_WKZ,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-250,-80,PL_Falz_H - PL_Vers_Fa_PL,2,0,_ANF,0,0,0,3,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (PL_Tiefe,-80,0,0,3,2)
+G01 (PL_Tiefe,10,0,0,3,2)
+G01 (PL_Tiefe + PL_Zustell_T,80,0,0,3,2)
+G01 (PL_Tiefe + PL_Zustell_T,80,0,0,5,2)
+G01 (PL_Tiefe,10,0,0,5,2)
+G01 (PL_Tiefe,-80,0,0,5,2)
+G01 (-200,-80,0,0,5,2)
+Anz := Trunc((Pl_Breite-Pl_Wkz_Breite) / Pl_Wkz_Breite)
+Rest := Pl_Breite - (Anz * Pl_Wkz_Breite)-Pl_Wkz_Breite
+IF Anz >= 1
+;Zustellung in Z- Nutbreite
+FOR I := 1 TO Anz STEP 1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=50000)
+G01 (-220,-80,- PL_Wkz_Breite,0,3,2)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (PL_Tiefe,-80,0,0,3,2)
+G01 (PL_Tiefe,10,0,0,3,2)
+G01 (PL_Tiefe + PL_Zustell_T,80,0,0,3,2)
+G01 (PL_Tiefe + PL_Zustell_T,80,0,0,5,2)
+G01 (PL_Tiefe,10,0,0,5,2)
+G01 (PL_Tiefe,-80,0,0,5,2)
+G01 (-200,-80,0,0,5,2)
+END
+END
+IF Rest <> 0
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=50000)
+G01 (-220,-80,- Rest,0,3,2)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_V)
+G01 (PL_Tiefe,-80,0,0,3,2)
+G01 (PL_Tiefe,10,0,0,3,2)
+G01 (PL_Tiefe + PL_Zustell_T,80,0,0,3,2)
+G01 (PL_Tiefe + PL_Zustell_T,80,0,0,5,2)
+G01 (PL_Tiefe,10,0,0,5,2)
+G01 (PL_Tiefe,-80,0,0,5,2)
+G01 (-200,-80,0,0,5,2)
+END
+EP (0,_ANF,0)

@@ -1,0 +1,72 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopKonturen.Dll
+;DIALOGPROC=Show_KKorb_5R_G03_V5Dialog
+VARS
+   Name := '';*VAR*KonturElementname
+   SX := 2000;Startpunkt in X
+   SY := 0;Startpunkt in Y
+   Br := 2000;*VAR*Gesamtbreite
+   Stich := 400;*VAR*Stich
+   HolzBr := 0;*VAR*Holzbreite
+   Z := 0;*VAR*Zustelltiefe
+   Info := '';*VAR*KonturElementinfo
+   L := 800;
+   e := 0;
+   Q := 0;
+   V := 0;
+   R1 := 0;
+   R2 := 0;
+   R3 := 0;
+   _K5R1 := 0;Kleinster Radius
+   _K5R2 := 0;Mittlerer Radius
+   _K5R3 := 0;Grosser Radius
+   esd := 2;*VAR*
+START
+;direkt cnc systeme NCHOPS Version 4
+transesd (z,esd)
+Rohteil (Br,Stich,19,0,0)
+L := Br/2
+e := sqrt(2)*(L-Stich)
+Q := (2-sqrt(2))*(Stich-L)
+IF (Q<>0)&((L-e)>0)
+V := sqr(e)/(4*Q+2*e)-sqr(Q)/(2*Q+e)
+R1 := L-e
+R2 := L-e+sqrt(2)*e/2
+R3 := V+Stich
+_K5R1 := R1
+_K5R2 := R2
+_K5R3 := R3
+IF (R1>0)&(R2>0)&(R3>0)
+HGNeu()
+SY := _Y
+SX := _X
+HLineY (SY)
+IF HolzBr=0
+HKreismpr (SX-R1,SY,R1)
+HKreismpr (SX-(Br/2-e/2),SY-e/2,R2)
+HKreismpr (SX-Br/2,SY-V,R3)
+HKreismpr (SX-(Br-R1),SY,R1)
+HKreismpr (SX-(Br-(Br/2-e/2)),SY-e/2,R2)
+CALL _KG03R ( VAL EN:=Name,EX:=_SPX5,EY:=_SPY5,EZ:=Z,R:=_K5R1,EI:=Info)
+CALL _KG03R ( VAL EN:='',EX:=_SPX11,EY:=_SPY11,EZ:=Z,R:=_K5R2,EI:=Info)
+CALL _KG03R ( VAL EN:='',EX:=_SPX27,EY:=_SPY27,EZ:=Z,R:=_K5R3,EI:=Info)
+CALL _KG03R ( VAL EN:='',EX:=_SPX29,EY:=_SPY29,EZ:=Z,R:=_K5R2,EI:=Info)
+CALL _KG03R ( VAL EN:='',EX:=_SPX14,EY:=_SPY14,EZ:=Z,R:=_K5R1,EI:=Info)
+ELSE
+IF R1<HolzBr/2
+Fehlermeldung (GetMessageText('11','Nicht konstruierbar !'))
+END
+HKreismpr (SX-R1,SY,R1-HolzBr)
+HKreismpr (SX-(Br/2-e/2),SY-e/2,R2-HolzBr)
+HKreismpr (SX-Br/2,SY-V,R3-HolzBr)
+HKreismpr (SX-(Br/2+e/2),SY-e/2,R2-HolzBr)
+HKreismpr (SX-(Br-R1),SY,R1-HolzBr)
+CALL _KG03R ( VAL EN:=Name,EX:=_SPX5,EY:=_SPY5,EZ:=Z,R:=_K5R1-HolzBr,EI:=Info)
+CALL _KG03R ( VAL EN:='',EX:=_SPX11,EY:=_SPY11,EZ:=Z,R:=_K5R2-HolzBr,EI:=Info)
+CALL _KG03R ( VAL EN:='',EX:=_SPX19,EY:=_SPY19,EZ:=Z,R:=_K5R3-HolzBr,EI:=Info)
+CALL _KG03R ( VAL EN:='',EX:=_SPX29,EY:=_SPY29,EZ:=Z,R:=_K5R2-HolzBr,EI:=Info)
+CALL _KG03R ( VAL EN:='',EX:=_SPX22,EY:=_SPY22,EZ:=Z,R:=_K5R1-HolzBr,EI:=Info)
+END
+HGNeuEnd()
+END
+END

@@ -1,0 +1,15 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=Show_KSP_5ACHS_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   Z := 0;*VAR*Zustelltiefe
+   WZK := 0;*VAR*Bearbeitungslage rechts/mitte/links
+   AB := 0;*VAR*Anfahrbewegung
+   AF := _ANF;*VAR*Anfahrfaktor
+   ABST := 0;*VAR*Abstand zur Kontur
+   esd := 1;*VAR*Easysnap depth
+   DepthCount := 0;*VAR*Depth count
+   Depth := 0;*VAR*
+START
+KSP ('???','???',Z,WZK,AB,AF,ABST,0,0,0,esd,0,DepthCount,Depth,0,0,0,0,0,3,0,0,0)

@@ -10,13 +10,14 @@ from fastapi import Body
 from fastapi import Response
 
 from .config import CabinetConfig
+from .config import Cell
 from .joints import CupHingeJoint
 from .layout import resolve_layout
 from .sections import sectioned
 
 FRONTEND_DIR = Path(__file__).parent / "planner_frontend"
 
-_PART_ATTRIBUTES = ("split", "gap", "hinge_side", "drawer", "joint", "joint_parameters")
+_PART_ATTRIBUTES = ("split", "gap", "hinge_side", "drawer", "joint", "joint_parameters", "hinges", "cup_diameter", "node")
 
 
 def layout_to_data(layout):
@@ -39,11 +40,25 @@ def layout_to_data(layout):
     return {"parts": parts, "regions": {k: list(v) for k, v in layout.regions.items()}}
 
 
+def _export_error(kind, error, message=None):
+    """A plain-text 500 response saying why an export failed, also printed in the server's console."""
+    import traceback
+
+    traceback.print_exc()
+    text = message or "{} export failed: {}: {}".format(kind, type(error).__name__, error)
+    return Response(content=text, status_code=500, media_type="text/plain")
+
+
 def _download_headers(filename, report):
     from .export import _short_summary
 
     summary = _short_summary(report).encode("ascii", "replace").decode("ascii")
     return {"Content-Disposition": 'attachment; filename="{}"'.format(filename), "X-Export-Summary": summary, "Access-Control-Expose-Headers": "X-Export-Summary"}
+
+
+def new_config():
+    """A fresh cabinet: the default dimensions and settings, and an empty interior (no shelves, drawers or door)."""
+    return CabinetConfig(interior=Cell(door_style="none"))
 
 
 class Planner:
@@ -61,9 +76,14 @@ class Planner:
     ``POST /planner/api/generate``
         Build the current config and show it in the 3D view: ``{"ok", "errors"}`` plus the new state.
     ``GET /planner/api/version``
-        ``{"version"}``, which increments whenever the configurator applies a config.
+        ``{"version", "pick": {"name", "count"}}``: the version increments whenever the configurator applies a config;
+        the pick is the part last clicked in the 3D view.
+    ``POST /planner/api/highlight``
+        ``{"parts": [names]}``: highlight these parts in the 3D view.
     ``GET /planner/api/cutlist``
         ``{"rows": [[category, name, length, width, thickness], ...]}`` for the current cabinet.
+    ``GET /planner/api/new``
+        A fresh cabinet's config: default dimensions and settings, and an empty interior.
     ``GET /planner/api/export/btlx``, ``GET /planner/api/export/hops``
         The cabinet as a BTLx file, or its HOPS jobs as a zip (generating the model first if needed). The header
         ``X-Export-Summary`` says what couldn't be exported.
@@ -79,6 +99,8 @@ class Planner:
         app.add_route("/planner/api/config", self.post_config, methods=("POST",))
         app.add_route("/planner/api/cutlist", self.get_cut_list)
         app.add_route("/planner/api/generate", self.post_generate, methods=("POST",))
+        app.add_route("/planner/api/new", self.get_new)
+        app.add_route("/planner/api/highlight", self.post_highlight, methods=("POST",))
         app.add_route("/planner/api/export/btlx", self.get_btlx)
         app.add_route("/planner/api/export/hops", self.get_hops)
         app.add_route("/planner/api/display", self.post_display, methods=("POST",))
@@ -90,7 +112,16 @@ class Planner:
         return "http://{}:{}/planner/".format(app.host, app.websocket_port)
 
     def get_version(self):
-        return {"version": self.configurator.version}
+        c = self.configurator
+        return {
+            "version": c.version,
+            "pick": {"name": getattr(c, "picked", None), "count": getattr(c, "pick_count", 0)},
+            "highlight": sorted(getattr(c, "highlighted", ())),
+        }
+
+    def post_highlight(self, data: dict = Body(...)):
+        self.configurator.set_highlight(data.get("parts") or [])
+        return {"ok": True}
 
     def get_state(self):
         config = self.configurator.config
@@ -115,6 +146,9 @@ class Planner:
             return {"ok": False, "error": self.configurator.last_error}
         return dict(self.get_state(), ok=True, errors=[str(getattr(e, "debug_info", e)) for e in errors])
 
+    def get_new(self):
+        return new_config().to_data()
+
     def _built_cabinet(self):
         if self.configurator.stale:
             self.configurator.generate()
@@ -123,13 +157,19 @@ class Planner:
     def get_btlx(self):
         from . import export
 
-        xml, report = export.btlx(self._built_cabinet())
+        try:
+            xml, report = export.btlx(self._built_cabinet())
+        except Exception as e:
+            return _export_error("BTLx", e)
         return Response(content=xml, media_type="application/xml", headers=_download_headers("cabinet.btlx", report))
 
     def get_hops(self):
         from . import export
 
-        data, report = export.hops_zip(self._built_cabinet())
+        try:
+            data, report = export.hops_zip(self._built_cabinet())
+        except Exception as e:
+            return _export_error("HOPS", e)
         return Response(content=data, media_type="application/zip", headers=_download_headers("cabinet_hops.zip", report))
 
     def get_cut_list(self):

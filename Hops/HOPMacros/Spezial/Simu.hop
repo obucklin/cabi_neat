@@ -1,0 +1,58 @@
+;MAKROTYP=1
+;INSTVERSION=6.4.0.3
+;EXEVERSION=6.6.2.154[Hops.exe]
+;BILD=Simu.wmf
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Simu
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_5.Dll
+;DIALOGPROC=ShowT_SimuDiag
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   Hi :=10;*VAR*Aufmass hinten
+   Re :=10;*VAR*Aufmass rechts
+   Vo :=10;*VAR*Aufmass vorne
+   Li :=10;*VAR*Aufmass links
+   O :=0;*VAR* Aufmass oben
+   PosX := 0;*VAR*
+   PosY := 0;*VAR*
+   Auswahl :=1;*VAR*Auswahl 0= keine / 1= Aufmass
+   Auswahl1 :=0;*VAR*Auswahl 0= keine / 1= Rest entfernen
+   Auswahl2 :=0;*VAR*Auswahl 0= keine / 1= Freiform Rohteil
+   KN :='';*VAR*Konturname für das Rohteil
+   P_X :=0;*VAR*
+   P_Y :=0;*VAR*
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+IF (Auswahl = 1)
+Call Rohteil_V7 (VAL RB:=Hi,RL:=Li,RF:=Vo,RR:=Re,RT:=O)
+END
+IF (Auswahl1 = 1)
+PosX := (P_X *_Rx) /100
+PosY := (P_Y *_Ry) / 100
+WZF (4444,_VE,_V,_VA,_SD,_ANF,'1')
+ncinfoprocess (4444,POSX,POSY,0,0,0,0,'','',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+WZF (9999,_VE,_V,_VA,_SD,_ANF,'1')
+ZRechteck (POSX-10,POSY-10,20,20,1,0,0,0,0)
+ZRechteck (POSX-7,POSY-7,14,14,0,33023,0,0,0)
+ZLinie (POSX-10,POSY-10,POSX+10,POSY+10,0,0,0,2,1)
+ZLinie (POSX-10,POSY+10,POSX+10,POSY-10,0,0,0,2,1)
+END
+IF (Auswahl2 = 1)
+WZF (4444,_VE,_V,_VA,_SD,_ANF,'1')
+KSP ('???','???',-0.1,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen (KN,'KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+END

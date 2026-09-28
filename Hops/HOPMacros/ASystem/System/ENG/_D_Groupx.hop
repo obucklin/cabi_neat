@@ -1,0 +1,53 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=Bohgx
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=Bohgx.WMF
+VARS
+   SPY := 10;*VAR*Startwert (y)
+   BIX := 64;*VAR*Bohrung1 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIX := 64+37;*VAR*Bohrung2 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIIX := 0;*VAR*Bohrung3 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIIIX := 0;*VAR*Bohrung4 (Wert=0-> Bohrung wird nicht abgesetzt)
+   Spiegeln := 0;*VAR*1=>gespiegelt
+   T := -13;*VAR*Bohrtiefe
+   D := 8;*VAR*Bohrdurchmesser
+   TLF := 0;*VAR*Tieflochflag
+START
+;direkt cnc systeme NCHOPS Version3.4
+;Bohrgruppe in X
+IF T>0
+T := -T
+END
+IF (BIX<>0)
+DRILLING(BIX,SPY,D,T,TLF,0,0)
+END
+IF (BIIX<>0)
+DRILLING(BIIX,SPY,D,T,TLF,0,0)
+END
+IF (BIIIX<>0)
+DRILLING(BIIIX,SPY,D,T,TLF,0,0)
+END
+IF (BIIIIX<>0)
+DRILLING(BIIIIX,SPY,D,T,TLF,0,0)
+END
+;Gespiegelte Bohrungen
+IF Spiegeln <> 0
+IF (BIX<>_RX/2)&(BIX<>0)
+DRILLING(_RX-BIX,SPY,D,T,TLF,0,0)
+END
+IF (BIIX<>_RX/2)&(BIIX<>0)
+DRILLING(_RX-BIIX,SPY,D,T,TLF,0,0)
+END
+IF (BIIIX<>_RX/2)&(BIIIX<>0)
+DRILLING(_RX-BIIIX,SPY,D,T,TLF,0,0)
+END
+IF (BIIIIX<>_RX/2)&(BIIIIX<>0)
+DRILLING(_RX-BIIIIX,SPY,D,T,TLF,0,0)
+END
+END
+

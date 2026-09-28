@@ -1,0 +1,73 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_hg_lot_V5Dialog
+VARS
+   Breite := 500;breite
+   Stärke := 30;Stärke
+   Höhe := 300;Höhe
+   para := 0;*VAR*Parallele
+   x1 := 0;*VAR*1. Schnittpunkt in X
+   y1 := 0;*VAR*1. Schnittpunkt in Y
+   x2 := 0;*VAR*2. Schnittpunkt in X
+   y2 := 0;*VAR*2. Schnittpunkt in Y
+   x11 := 0;
+   x3 := 0;*VAR*Durchgangspunkt in X
+   y3 := 0;*VAR*Durchgangspunkt in Y
+   Eingabe_Art := 0;*VAR*0=2 Punkte   1=Winkel
+   y11 := 0;
+   x12 := 0;
+   y12 := 0;
+   LY := 0;Abstand in Y
+   LX := 0;Abstand in X
+   winkel := 0;*VAR*Winkel der Eingangspunkte
+   X_Versatz := 0;
+   Y_Versatz := 0;
+   fertig := 0;Wenn bereits senkrecht oder waagerecht
+   diff := 0;
+   esxy1 := 0;*VAR*
+   esxy2 := 0;*VAR*
+   esxy3 := 0;*VAR*
+START
+;direkt cnc systeme NCHOPS Version 4.x
+;Hilfsgeometrie Lot mit Parallelversatz
+;--- Wenn über 2 Punkte eingegeben wurde
+transesxy (x1,y1,esxy1,0)
+transesxy (x2,y2,esxy2,0)
+transesxy (x3,y3,esxy3,0)
+IF Eingabe_Art=0
+;---- Wenn Punkte horizontal
+IF y1=y2
+IF x1<x2
+Winkel := 90
+ELSE
+Winkel := -90
+END
+CALL _hg_para_winkel (VAL para:=para,x1:=x3,y1:=y3,winkel:=winkel)
+fertig := 1
+END
+;---- Wenn Punkte senkrecht
+diff := x1-x2
+IF diff<0
+diff := -diff
+END
+IF (x1=x2)|(diff<0.0001)
+IF y1<y2
+Winkel := 180
+ELSE
+Winkel := 0
+END
+CALL _hg_para_winkel (VAL para:=para,x1:=x3,y1:=y3,winkel:=winkel)
+fertig := 1
+END
+;--- wenn nicht Achsparallel
+IF fertig=0
+;---- Abstände und Winkel berechnen
+LX := x2-x1
+LY := y2-y1
+winkel := arctan(LY/LX)
+CALL _hg_para_winkel (VAL para:=para,x1:=x3,y1:=y3,winkel:=winkel+90)
+END
+ELSE
+;--- Wenn über 1 Punkt und Winkel eingegeben wurde
+CALL _hg_para_winkel (VAL para:=para,x1:=x3,y1:=y3,winkel:=winkel+90)
+END

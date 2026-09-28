@@ -1,0 +1,50 @@
+;MAKROTYP=0
+;BILD=VX029Lappe.wmf
+;INFO=
+;WZGV=7123K_021
+;MASCHINE=HOLZHER
+;NCNAME=VX029Lappe
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 820;*VAR*Dimension X
+   DY := 510;*VAR*Dimension Y
+   DZ := 38;*VAR*Dimension Z
+   Band_O := 400;*VAR*Position Band oben
+   Tiefe := 3.5;
+   Z_wert := 30;*VAR*Hoehe in Z
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+CALL HH_Park ( VAL PARK:=2,X:=0,Y:=0)
+WZF (3,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Band_O-59.5,-20,-3,0,0,_ANF,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Band_O- 59.5,3,0,0,1,2)
+G01 (Band_O + 59.5,3,0,0,1,2)
+G01 (Band_O +59.5,-20,0,0,1,2)
+EP (0,_ANF,0)
+Ebene1()
+WZF (152,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Band_O- 60,-20,-Tiefe,1,0,_ANF,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Band_O - 60,Z_Wert,0,12,7,2)
+G01 (Band_O +60,Z_Wert,0,12,7,2)
+G01 (Band_O + 60,- (_WZR),0,0,7,2)
+G01 (Band_O - (60 -(_WZR*1.55)),-(_WZR),0,0,7,2)
+G01 (Band_O - (60 -(_WZR * 1.55)),Z_Wert -(_WZR*1.55),0,0,7,2)
+G01 (Band_O + (60 -(_WZR * 1.55)),Z_Wert -(_WZR*1.55),0,0,7,2)
+G01 (Band_O + (60 -(_WZR*1.55)),(_WZR-3),0,0,7,2)
+G01 (Band_O -40,_WZR-3,0,0,7,2)
+EP (0,_ANF,0)
+WZF (22,_VE,_V,_VA,_SD,_ANF,'1')
+Bohrung (Band_O - 48.5,Z_Wert -12,3,-10,20,0,0,7,0,0,0,0)
+Bohrung (Band_O-24.5,Z_Wert -21.5,3,-10,20,0,0,7,0,0,0,0)
+Bohrung (Band_O,Z_Wert -7.5,3,-10,20,0,0,7,0,0,0,0)
+Bohrung (Band_O+24,Z_Wert -21.5,3,-10,20,0,0,7,0,0,0,0)
+Bohrung (Band_O + 48,Z_Wert -12,3,-10,20,0,0,7,0,0,0,0)
+Ebene0()

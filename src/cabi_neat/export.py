@@ -1,11 +1,10 @@
-"""Fabrication output: BTLx (through compas_timber) and HOPS (through easyhops).
+"""Fabrication output: BTLx (through compas_timber) and HOPS (see :mod:`cabi_neat.hops`).
 
-Both work from a built :class:`cabi_neat.Cabinet`. Features that aren't BTLx processings (the Clamex P-14 grooves) can't
-go into BTLx and are left out of both; every export returns a report of what it left out.
+Both work from a built :class:`cabi_neat.Cabinet` and return a report of what they left out. Features that aren't
+BTLx processings (the Clamex P-14 grooves) can't go into BTLx; the HOPS programs make them with the Clamex macros.
 """
 
 import io
-import math
 import zipfile
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -94,213 +93,36 @@ def btlx(cabinet, filepath=None, project_name="cabi_neat"):
 # ==========================================================================
 
 
-@dataclass
-class HopsTools:
-    """Machine tools for the HOPS export. Positions are machine-specific: set them to match your tool changer.
+def _access_directions(cabinet):
+    """Where each plate's Clamex access holes should face (world vectors).
 
-    Parameters
-    ----------
-    router
-        For pockets (rabbets, grooves, mortises, hinge pots). Default: easyhops' SRSLD12 (Ø11.8, position 404).
-    small_router
-        For pockets narrower than ``router``'s diameter (e.g. 8 mm grooves). Default: a Ø6 router at position 405 -
-        a placeholder, adjust it to your machine.
-    small_router_diameter
-        Diameter of ``small_router``, for the pockets it can mill.
-    drill
-        For drillings. ``None`` uses a drill at position 607 (easyhops' default).
+    Horizontal plates: down (the underside of shelves and of the top), except the carcass bottom: up, into the cabinet.
+    Upright plates: towards the middle of their assembly (the drawer box they belong to, else the carcass).
     """
-
-    router: object = None
-    router_diameter: float = 11.8
-    small_router: object = None
-    small_router_diameter: float = 6.0
-    drill: object = None
-
-    def __post_init__(self):
-        from easyhops.tool_library import SRSLD12
-        from easyhops.tool_library import MachiningTool
-        from easyhops.tool_library import ToolCallType
-
-        if self.router is None:
-            self.router = SRSLD12()
-        if self.small_router is None:
-            self.small_router = MachiningTool(position=405, tool_type=ToolCallType.ROUTER, name="Router D6")
-
-
-def _is_rectangle(points, box_dims, tol=1e-3):
-    """True if a closed polyline's points are the corners of an axis-aligned rectangle of ``box_dims``."""
-    xs = sorted(set(round(p[0], 3) for p in points))
-    ys = sorted(set(round(p[1], 3) for p in points))
-    return len(xs) == 2 and len(ys) == 2 and abs(xs[1] - xs[0] - box_dims[0]) < tol and abs(ys[1] - ys[0] - box_dims[1]) < tol
-
-
-def _pocket_width(points):
-    """The narrowest dimension of a pocket: the shorter side of a rectangle, else of its bounding box."""
-    pts = points[:-1] if len(points) > 1 and points[0] == points[-1] else points
-    if len(pts) == 4:
-        sides = [math.dist(pts[i][:2], pts[(i + 1) % 4][:2]) for i in range(4)]
-        return min(sides)
-    xs, ys = [p[0] for p in pts], [p[1] for p in pts]
-    return min(max(xs) - min(xs), max(ys) - min(ys))
-
-
-class PlateHopsJob:
-    """Builds the HOPS job of one plate: its face with the most features on top, the other face machined first."""
-
-    def __init__(self, plate, tools=None):
-        self.plate = plate
-        self.tools = tools or HopsTools()
-        self.skipped = []
-        self._pockets = 0
-
-    def _face_sides(self):
-        """The plate's two faces as reference side indices: the one with more features first (it ends up on top)."""
-        counts = {0: 0, 2: 0}
-        for feature in self.plate.features:
-            if isinstance(feature, BTLxProcessing) and feature.ref_side_index in counts:
-                counts[feature.ref_side_index] += 1
-        top = 2 if counts[2] > counts[0] else 0
-        return top, (top + 2) % 4
-
-    def build(self):
-        from easyhops.hop_core import FinishedPart
-        from easyhops.hop_core import ParkMode
-        from easyhops.hop_core import ParkPosition
-        from easyhops.hop_core import VarsDefinition
-        from easyhops.hop_job import HOPSJob
-        from easyhops.utility_commands import MachineStop
-
-        plate = self.plate
-        top, bottom = self._face_sides()
-        length, width, height = self._size()
-        vars = VarsDefinition(dx=length, dy=width, dz=height)
-        vars.add_variable("RSI", str(top), "ReferenceSideIndex (0-5)")
-        job = HOPSJob(vars=vars, finished_part=FinishedPart(), park_mode=ParkPosition(mode=ParkMode.RIGHT_FRONT), machinings=[], ref_side_index=top)
-
-        first, second = [], []
-        for index, feature in enumerate(plate.features):
-            if not isinstance(feature, BTLxProcessing):
-                self.skipped.append("{}: {} (not a BTLx processing)".format(plate.name, _describe(feature)))
-                continue
-            side = feature.ref_side_index
-            if index == 0 and not feature.counter_sink:
-                self._outline(feature)  # the plate's outline: cut to size, nothing to machine if it's a rectangle
-            elif side == bottom:
-                first.extend(self._convert(feature, machine_side=bottom))
-            elif side in (0, 1, 2, 3):
-                second.extend(self._convert(feature, machine_side=top))
-            else:
-                self.skipped.append("{}: {} into an end (reference side {}) - not supported by easyhops".format(plate.name, type(feature).__name__, side + 1))
-
-        if first:
-            job.add(first)
-            job.add(MachineStop("Turn the panel over (reference side {} up)".format(top + 1)))
-        if second:
-            job.add(second)
-        return job
-
-    def _size(self):
-        """(length, width, thickness) of the plate's blank, including what joints extended it by.
-
-        (``get_dimensions_relative_to_side`` reports the plate's original width, before any extension.)
-        """
-        blank = self.plate.blank
-        return blank.xsize, blank.ysize, blank.zsize
-
-    def _outline(self, feature):
-        contour = feature.contour_param_object
-        points = list(getattr(contour, "polyline", None) or [])
-        if points and not _is_rectangle(points, self._size()[:2]):
-            self.skipped.append("{}: non-rectangular outline - not supported yet, cut it to shape separately".format(self.plate.name))
-
-    def _convert(self, feature, machine_side):
-        name = type(feature).__name__
-        if name == "Drilling":
-            return self._drilling(feature, machine_side)
-        if name == "FreeContour" and feature.counter_sink:
-            return self._pocket(feature, machine_side)
-        self.skipped.append("{}: {} - not supported yet".format(self.plate.name, name))
-        return []
-
-    def _drilling(self, drilling, machine_side):
-        """A drilling, with easyhops' conventions for the top face and the long edges, to the drilling's own depth.
-
-        Mirrors ``easyhops.strategies.drilling.DrillingStrategies.drilling``, which can't be imported at the moment
-        (its package imports ``AngledLine`` from the wrong module) and always drills to the tool's maximum depth.
-        """
-        from compas.tolerance import TOL
-        from easyhops.hop_core import EasySnapXY
-        from easyhops.hop_core import EasySnapZ
-        from easyhops.hop_job import HOPSMachining
-        from easyhops.machining_commands import DrillingOperation
-        from easyhops.tool_library import MachiningTool
-        from easyhops.tool_library import ToolCallType
-        from easyhops.work_planes import WorkPlane
-
-        diff = (drilling.ref_side_index - machine_side) % 4
-        if diff == 0:  # the face on top
-            x, y, z = drilling.start_x, drilling.start_y, 0.0
-            rotation, tilt = 180 - drilling.angle, -drilling.inclination
-            snap = EasySnapXY.FRONT_LEFT
-        elif diff == 1:  # the front edge
-            x, y, z = drilling.start_x, 0.0, drilling.start_y
-            rotation, tilt = drilling.inclination, 180 - drilling.angle
-            snap = EasySnapXY.FRONT_LEFT
-        elif diff == 3:  # the back edge
-            x, y, z = drilling.start_x, 0.0, drilling.start_y
-            rotation = 180 - drilling.inclination if TOL.is_close(drilling.angle, 180) else -(180 - drilling.inclination)
-            tilt = drilling.angle
-            snap = EasySnapXY.REAR_LEFT
+    centers = {}
+    for name, plate in cabinet.plates.items():
+        centers.setdefault(_assembly(name), []).append(list(plate.blank.frame.point))
+    centers = {k: [sum(c) / len(points) for c in zip(*points)] for k, points in centers.items()}
+    directions = {}
+    for part in cabinet.layout.parts:
+        frame = cabinet.plates[part.name].blank.frame
+        normal = frame.zaxis
+        if abs(normal[2]) > 0.5:
+            directions[part.name] = (0, 0, 1) if part.category == "bottom" else (0, 0, -1)
         else:
-            self.skipped.append("{}: drilling from the underside - not supported".format(self.plate.name))
-            return []
-        depth = drilling.depth if drilling.depth_limited else self._size()[2] + 1.0
-        operation = DrillingOperation(x=x, y=y, z=z, depth=-depth, diameter=drilling.diameter, rotation=rotation, tilt=tilt, easy_snap_xy=snap, easy_snap_z=EasySnapZ.TOP_SIDE)
-        tool = self.tools.drill or MachiningTool(position=607, tool_type=ToolCallType.DRILLER)
-        comment = "\n".join(["; ---------------------------------", "; Drilling D{:g}, {:.1f} deep".format(drilling.diameter, depth), "; ---------------------------------"])
-        return [HOPSMachining(tool=tool, work_plane=WorkPlane.TOP, operations=operation, comments=[comment])]
+            center = centers[_assembly(part.name)]
+            directions[part.name] = tuple(c - p for c, p in zip(center, frame.point))
+    return directions
 
-    def _pocket(self, free_contour, machine_side):
-        from easyhops.contour_commands import CloseContour
-        from easyhops.contour_commands import ContourLine
-        from easyhops.contour_commands import ContourStart
-        from easyhops.hop_core import EasySnapXY
-        from easyhops.hop_job import HOPSMachining
-        from easyhops.hop_macros import FreeFormPocket
-        from easyhops.work_planes import WorkPlane
 
-        contour = free_contour.contour_param_object
-        points = list(getattr(contour, "polyline", None) or [])
-        if not points or any(abs(i) > 1e-6 for i in getattr(contour, "inclination", [0.0])):
-            self.skipped.append("{}: FreeContour with inclined sides - not supported yet".format(self.plate.name))
-            return []
-        if free_contour.ref_side_index != machine_side:
-            self.skipped.append("{}: pocket on an edge (reference side {}) - not supported yet".format(self.plate.name, free_contour.ref_side_index + 1))
-            return []
-        width = _pocket_width(points)
-        if width >= self.tools.router_diameter:
-            tool = self.tools.router
-        elif width >= self.tools.small_router_diameter:
-            tool = self.tools.small_router
-        else:
-            self.skipped.append("{}: pocket {:.1f} wide - narrower than the smallest router".format(self.plate.name, width))
-            return []
-
-        self._pockets += 1
-        name = "P{}".format(self._pockets)
-        if points[0] != points[-1]:
-            points.append(points[0])
-        commands = [ContourStart(name, x=round(points[0][0], 3), y=round(points[0][1], 3), easy_snap_xy=EasySnapXY.FRONT_LEFT)]
-        commands += [ContourLine(x=round(p[0], 3), y=round(p[1], 3), easy_snap_xy=EasySnapXY.FRONT_LEFT) for p in points[1:-1]]
-        commands.append(CloseContour())
-        commands.append(FreeFormPocket(contour_name=name, depth=-round(contour.depth, 3)))
-        comment = "\n".join(["; ---------------------------------", "; Pocket {:.1f} deep".format(contour.depth), "; ---------------------------------"])
-        return [HOPSMachining(tool=tool, work_plane=WorkPlane.TOP, operations=commands, comments=[comment])]
+def _assembly(name):
+    return "_".join(name.split("_")[:3]) if name.startswith("drawer_") else "carcass"
 
 
 def hops(cabinet, directory=None, tools=None):
-    """One HOPS job per plate of the cabinet, written to ``directory`` as ``<part name>.hop`` if given.
+    """One HOPS program per plate of the cabinet, written to ``directory`` as ``<part name>.hop`` if given.
+
+    See :mod:`cabi_neat.hops` for what they contain and :class:`cabi_neat.hops.HopsTools` for the tools.
 
     Returns
     -------
@@ -309,23 +131,33 @@ def hops(cabinet, directory=None, tools=None):
     """
     import os
 
+    from .hops import HopsTools
+    from .hops import PlateProgram
+
+    tools = tools or HopsTools()
     report = ExportReport()
     files: Dict[str, str] = {}
+    directions = _access_directions(cabinet)
     for part in cabinet.layout.parts:
-        builder = PlateHopsJob(cabinet.plates[part.name], tools)
+        program = PlateProgram(cabinet.plates[part.name], tools, directions.get(part.name), comment=part.category)
         try:
-            job = builder.build()
+            text = program.text()
         except Exception as e:  # keep going: one part's problem shouldn't stop the others
             report.errors.append("{}: {}".format(part.name, e))
             continue
-        report.skipped.extend(builder.skipped)
-        files["{}.hop".format(part.name)] = str(job)
+        report.skipped.extend(program.skipped)
+        files["{}.hop".format(part.name)] = text
     if directory:
         os.makedirs(directory, exist_ok=True)
         for name, text in files.items():
-            with open(os.path.join(directory, name), "w") as f:
-                f.write(text)
+            with open(os.path.join(directory, name), "wb") as f:
+                f.write(hops_bytes(text))
     return files, report
+
+
+def hops_bytes(text):
+    """A program as the machine's files are: Windows line endings, Latin-1."""
+    return text.replace("\n", "\r\n").encode("latin-1", "replace")
 
 
 def hops_zip(cabinet, tools=None):
@@ -334,7 +166,7 @@ def hops_zip(cabinet, tools=None):
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
         for name, text in files.items():
-            archive.writestr(name, text)
+            archive.writestr(name, hops_bytes(text))
         archive.writestr("report.txt", report.summary())
     return buffer.getvalue(), report
 

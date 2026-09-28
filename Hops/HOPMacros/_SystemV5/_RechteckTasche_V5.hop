@@ -1,0 +1,384 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_Rechtecktasche_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   x_Mitte := 0;*VAR*Taschenmitte in X
+   Y_Mitte := 0;*VAR*Taschenmitte in Y
+   Taschenlaenge := 200;*VAR*Tasche in X
+   Taschenbreite := 50;*VAR*Tasche in Y
+   Radius := 0;*VAR*Eckenradius
+   AktRad := 0;Eckenradius
+   Winkel := 0;*VAR*Winkel gegen X-Achse
+   Tiefe := -5;*VAR*Tiefe der Tasche
+   Zustellung := _AT_MAXDEPTH;*VAR*Tiefenzustellung pro Fraesgang
+   AB := 2;*VAR*Abfahrbewegung
+   ABF := _ANF;*VAR*Abfahrfaktor
+   Interpol := 1;*VAR*Interpolation auf 1. Kreis in der Mitte
+   umkehren := 0;*VAR*Bearbeitung umkehren   0=CW   1=CCW
+   versatz := 10;ueberlappung in %
+   Schleifenzahl := 0;anzahl der Durchlaeufe
+   GX := 0;uebergroeße in X Richtung
+   UW := 0;Zustellung Breite
+   RM := 0;momentaner Radius
+   Durchlauf := 1;Nummer des Durchlauf
+   UL := 0;Üeberlappung der Fraesbahn
+   TU := 0;Kleine Taschenlänge
+   I := 1;Zaehler
+   ANZAHL := 0;
+   TM := 0;Momentane Tiefe
+   FRN := 0;
+   _GKZ := 0;
+   EPX := 1;
+   APX := 2;
+   Korr := 2;Radiuskorrektur
+   CW := 1;Uhrzeigersinn tauschen
+   esxy := 9;*VAR*
+   esmd := 0;*VAR*
+   laser := 0;*VAR*
+   xschw := 0;
+   UeberfahrOK := 0;Schalter ob am Ende eine Überfahrt stattfinden kann
+   LFirstEle := 0;Länge erstes Element
+   LastWi := 0;Letzter gefahrener Winkel
+   Verläng := 0.5mm;Verlängerung bei Überfahrt
+   Merker_V := 0;Vorschubmerker für Verbindungsfräsung
+   HaveToSplit := 0;
+   InClampArea := 0;
+   Posy := 0;Position der inneren Schleife oben
+   Posx := 0;Position der inneren Schleife links
+   LastPosx := 0;Position ganz links des äußersten Rechtecks
+   mx := 0;
+   my := 0;
+   dist := 0;
+   halflengthpocket := 0;
+   DiffPunktPos := 0;
+   HGWinkel := 90;
+START
+;-- HH_EXTS
+;------------------------------------------------------------------------
+;DIREKT CNC-SYSTEME : NC-HOPS Version 5.x
+;-                    Rechtecktasche fraesen
+;------------------------------------------------------------------------
+;--
+Rohteil (200,200,20,0,0)
+;--
+;WZF (30,_VE,_V,_VA,_SD,_ANF,'12')
+;-
+;xschw := _WZD*2-2*0.5
+;xschw := _WZD*1.55
+;--
+;-- MW 22.12.2010 beim prüfen, ob durch Abfahrbewegung Tasche verletzt wird, muss
+;-- anstelle _WZR -> _AT_COLLRADIUS verwendet werden, da das System diesen zur Berrechnung Anfahrt/Abfahrt verwendet!
+;--------------------------------------------------------
+transesxy (X_Mitte,Y_Mitte,esxy,0)
+Transesd (Tiefe,esmd)
+;--------------------------------------------------------
+GX := Taschenlaenge-Taschenbreite
+;--------------------------------------------------------
+;Eingaben pruefen
+IF Taschenbreite<_WZD
+Fehlermeldung (GetMessageText('22','Werkzeugdurchmesser groesser als Breite'))
+END
+IF Taschenlaenge<_WZD
+Fehlermeldung (GetMessageText('23','Werkzeugdurchmesser groesser als Hoehe'))
+END
+IF Tiefe>0
+Tiefe := -tiefe
+END
+IF Zustellung<Tiefe
+Fehlermeldung (GetMessageText('16','Zustelltiefe ist groeßer als Tiefe'))
+ELSE
+END
+;--------------------------------------------------------
+;Bestimmen ob x oder y laenger
+IF  GX<0
+TU := Taschenlaenge
+ELSE
+TU := Taschenbreite
+END
+IF Zustellung>0
+Zustellung := -Zustellung
+END
+IF Zustellung=0
+Zustellung := Tiefe
+END
+TM := 1
+TM := 1
+UL := _WZD/100*Versatz
+;Seitliche Zustellung vorberechnen
+UW := (_WZD/1.55)
+;Radius verkleinern wenn noetig
+IF Radius>TU/2
+Radius := TU/2
+END
+;- KEIN negativer Radius erlaubt !!!!
+IF Radius<0
+Radius := 0
+END
+;Radius kleiner als Werkzeugradius
+IF Radius<_WZR
+Hinweismeldung (GetMessageText('32','Eckradius wird geloescht da Werkzeug zu gross ist'))
+Radius := 0
+END
+;.
+IF (_MNCDC_SplitKind>=-1)
+;Werte berechnen zum Prüfen, ob Rechteck aufgeteilt werden muss
+KB ('Kontur_RechteckTasche','',x_Mitte,Y_Mitte-Taschenbreite/2,0,'',0,0)
+KG01 ('',x_Mitte+Taschenlaenge/2,Y_Mitte-Taschenbreite/2,0,'',0,2)
+KVerrundung ('',0,Radius,'',2)
+KG01 ('',x_Mitte+Taschenlaenge/2,Y_Mitte+Taschenbreite/2,0,'',0,2)
+KVerrundung ('',0,Radius,'',2)
+KG01 ('',x_Mitte-Taschenlaenge/2,Y_Mitte+Taschenbreite/2,0,'',0,2)
+KVerrundung ('',0,Radius,'',2)
+KG01 ('',x_Mitte-Taschenlaenge/2,Y_Mitte-Taschenbreite/2,0,'',0,2)
+KVerrundung ('',0,Radius,'',2)
+KG01 ('',x_Mitte,Y_Mitte-Taschenbreite/2,0,'',0,2)
+CALL _MNCDC_RotateContours ( VAL CONTOURNAME_CONTOURNAMES:='Kontur_RechteckTasche',CONTOURNAME:='Rotated',CX:=x_Mitte,CY:=Y_Mitte,ANGLE:=Winkel)
+deletecontour ('Kontur_RechteckTasche',0)
+CALL _MNCDC_HaveToSplitContours (REF RESULT:=HaveToSplit,INCLAMPAREA:=InClampArea VAL CONTOURNAME_CONTOURNAMES:='RotatedKontur_RechteckTasche',TIEFE:=Tiefe,TOOLID:=_BOXID,MAXARCTOL:=0.1mm,VIEW_OFFX:=_AV_OFFSETX,VIEW_OFFY:=_AV_OFFSETY,VIEW_OFFZ:=_AV_OFFSETZ,VIEW_ROTA:=_AV_ROTA,VIEW_TIPA:=_AV_TIPA)
+END
+;.
+IF (HaveToSplit=1) & (_MNCDC_SplitKind<>-2)
+CALL _MNCDC_RechteckTasche ( VAL KONTURNAME:='RotatedKontur_RechteckTasche',X_MITTE:=x_Mitte,Y_MITTE:=Y_Mitte,TASCHENLAENGE:=Taschenlaenge,TASCHENBREITE:=Taschenbreite,RADIUS:=Radius,INCLAMPAREA:=InClampArea,WINKEL:=Winkel,TIEFE:=Tiefe,ZUSTELLUNG:=Zustellung,AB:=AB,ABF:=ABF,INTERPOL:=Interpol,UMKEHREN:=umkehren,LASER:=laser)
+ELSE
+;----------------------------------------------------
+;IF (Taschenlaenge < xschw) | (TaschenBreite < xschw)
+;IF ( (Taschenlaenge  = _WZD) | (TaschenBreite = _WZD) ) | ( (Taschenlaenge=TaschenBreite) & (Radius=TaschenBreite/2) )
+IF ( (Taschenlaenge  = _WZD) | (TaschenBreite = _WZD) ) | ( (Taschenlaenge=TaschenBreite) & (Radius=TaschenBreite/2) | ( (Taschenlaenge < _WZD*2)|(Taschenbreite < _WZD*2) ) )
+;----------------------------------------------------
+;Abfrage ob nur Schlitz fraesen...
+;IF (Taschenlaenge  = _WZD) | (TaschenBreite = _WZD)
+;- Wenn kein ausräumen erforderlich ist...
+;IF (( (Taschenlaenge  = _WZD) | (TaschenBreite = _WZD) ) | ( (Taschenlaenge < _WZD*2)|(Taschenbreite < _WZD*2) ))
+;Abfrage ob Kreistasch auch über den Radius nicht nur _WZD  ; MAM
+IF (( (Taschenlaenge  = _WZD) | (TaschenBreite = _WZD) ) | ( (Taschenlaenge < _WZD*2)|(Taschenbreite < _WZD*2) ))&((Radius*2<>Taschenlaenge)|(Radius*2<>Taschenbreite))
+;-
+IF interpol=1
+CALL _Rechteck_V5 ( VAL X_MITTE:=x_mitte,Y_MITTE:=y_mitte,LAENGE:=taschenlaenge,BREITE:=taschenbreite,RADIUS:=radius,WINKEL:=winkel,TIEFE:=tiefe,ZUTIEFE:=Zustellung,RADIUSKORREKTUR:=2,AB:=ab,AUFMASS:=0,ANF:=ABF,ABF:=ABF,UMKEHREN:=umkehren,RAMPE:=1,RAMPENLAENGE:=50,QUADRANT:=3,INTERPOL:=Interpol,ESXY:=0,ESMD:=0,LASER:=Laser)
+;CALL _Rechteck_V5 ( VAL X_MITTE:=x_mitte,Y_MITTE:=y_mitte,LAENGE:=taschenlaenge,BREITE:=taschenbreite,RADIUS:=radius,WINKEL:=winkel,TIEFE:=tiefe,ZUTIEFE:=Zustellung,RADIUSKORREKTUR:=2,AB:=ab,AUFMASS:=0,ANF:=_ANF,ABF:=_ANF,UMKEHREN:=umkehren,RAMPE:=1,RAMPENLAENGE:=50,QUADRANT:=3,INTERPOL:=0,ESXY:=0,ESMD:=0,LASER:=Laser)
+ELSE
+CALL _Rechteck_V5 ( VAL X_MITTE:=x_mitte,Y_MITTE:=y_mitte,LAENGE:=taschenlaenge,BREITE:=taschenbreite,RADIUS:=radius,WINKEL:=winkel,TIEFE:=tiefe,ZUTIEFE:=Zustellung,RADIUSKORREKTUR:=2,AB:=0,AUFMASS:=0,ANF:=ABF,ABF:=ABF,UMKEHREN:=umkehren,RAMPE:=0,RAMPENLAENGE:=50,QUADRANT:=1,INTERPOL:=Interpol,ESXY:=0,ESMD:=0,LASER:=Laser)
+END
+;-
+ELSE
+;- Wenn Vollkreis, dann Kreistasche...
+CALL _Kreistasche_V5 ( VAL X_MITTE:=X_Mitte,Y_MITTE:=Y_Mitte,RADIUS:=Taschenbreite/2,TIEFE:=Tiefe,ZUSTELLUNG:=Zustellung,AB:=AB,ABF:=_ANF,INTERPOL:=interpol,UMKEHREN:=umkehren,ESXY:=0,ESMD:=0,LASER:=Laser)
+END
+;----------------------------------------------------
+ELSE
+;Drehen wenn noetig
+IF Winkel<>0
+;Drehen auf Ebene frei schalten SF 17.03.2008
+DrehenBB(1)
+END
+;*** Kontur umdrehen
+IF umkehren=0
+Korr := 2
+CW := 1
+ELSE
+Korr := 1
+CW := -1
+END
+;----------------------------------------------------
+;Abfragen ob Tasche groß genug
+IF TU<_WZD
+ZKBCW (X_Mitte,Y_Mitte,X_Mitte-_WZR,Y_Mitte,X_Mitte-_WZR,Y_Mitte,255)
+ZLinie (X_Mitte+(sin(Winkel)*(Taschenbreite/2))-(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte-(cos(Winkel)*(Taschenbreite/2))-(Sin(Winkel)*(Taschenlaenge/2)),X_Mitte-+(sin(Winkel)*(Taschenbreite/2))+(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte-(cos(Winkel)*(Taschenbreite/2))+(Sin(Winkel)*(Taschenlaenge/2)),255)
+ZLinie (X_Mitte+(sin(Winkel)*(Taschenbreite/2))+(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte-(cos(Winkel)*(Taschenbreite/2))+(Sin(Winkel)*(Taschenlaenge/2)),X_Mitte-(sin(Winkel)*(Taschenbreite/2))+(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte+(cos(Winkel)*(Taschenbreite/2))+(Sin(Winkel)*(Taschenlaenge/2)),255)
+ZLinie (X_Mitte-(sin(Winkel)*(Taschenbreite/2))+(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte+(cos(Winkel)*(Taschenbreite/2))+(Sin(Winkel)*(Taschenlaenge/2)),X_Mitte-(sin(Winkel)*(Taschenbreite/2))-(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte+(cos(Winkel)*(Taschenbreite/2))-(Sin(Winkel)*(Taschenlaenge/2)),255)
+ZLinie (X_Mitte-(sin(Winkel)*(Taschenbreite/2))-(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte+(cos(Winkel)*(Taschenbreite/2))-(Sin(Winkel)*(Taschenlaenge/2)),X_Mitte-+(sin(Winkel)*(Taschenbreite/2))-(cos(Winkel)*(Taschenlaenge/2)),Y_Mitte-(cos(Winkel)*(Taschenbreite/2))-(Sin(Winkel)*(Taschenlaenge/2)),255)
+ELSE
+;Anzahl der Schleifen berechnen
+IF UW=0
+Fehlermeldung (GetMessageText('17','Bitte Werkzeug definieren'))
+END
+Schleifenzahl := TU/UW
+Schleifenzahl := (Schleifenzahl DIV 2)+1
+;Seitliche Zustellung anpassen
+UW := TU/Schleifenzahl
+IF UW<(_WZD+0.1mm)
+;Abfangen, dass 1. Schleife nicht
+;kleiner als das WZ sein kann
+Schleifenzahl := Schleifenzahl-1
+UW := TU/Schleifenzahl
+END
+;--
+;- Konturen aufbauen....
+CALL _RechteckTasche_V5_Kontur ( VAL X_MITTE:=x_Mitte,Y_MITTE:=Y_Mitte,TASCHENLAENGE:=Taschenlaenge,TASCHENBREITE:=Taschenbreite,RADIUS:=Radius,GX:=GX,CW:=CW,SCHLEIFENZAHL:=Schleifenzahl,UW:=UW)
+LFirstEle := (GETKE_LAENGE('ReTa0',1))
+;--
+;--
+;Abfrage ob Radius zu groß
+;Ermittelt Schnittpunkt inneres Rechteck zu äußerem Rechteck
+HGNeu()
+IF GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))>6
+;Mit Verrundung müssen andere Punkte genommen werden
+DiffPunktPos := -1
+END
+;Linie über Winkel, da die zwei Punkte gleich sein können
+IF  GX<0
+HGWinkel := 0
+END
+HLineW (GETKP_X('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-1+DiffPunktPos),GETKP_Y('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-1+DiffPunktPos),HGWinkel,0)
+IF Radius=0
+HLine2P (GETKP_X('ReTa0',2),GETKP_Y('ReTa0',2),GETKP_X('ReTa0',3),GETKP_Y('ReTa0',3),0,0)
+Mx := (GETKP_X('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-2)+GETKP_X('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-3))/2
+My := (GETKP_Y('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-2)+GETKP_Y('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-3))/2
+ELSE
+HLine2P (GETKP_X('ReTa0',4),GETKP_Y('ReTa0',4),GETKP_X('ReTa0',5),GETKP_Y('ReTa0',5),0,0)
+Mx := (GETKP_X('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-4)+GETKP_X('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-5))/2
+My := (GETKP_Y('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-4)+GETKP_Y('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-5))/2
+END
+Posx := _SPX1
+Posy := _SPY1
+CALL Dist2P_V4 (REF DIST:=Dist VAL P1X:=Posx,P1Y:=Posy,P2X:=Mx,P2Y:=My)
+HGNeuEnd()
+IF  GX<0
+HalfLengthPocket := Taschenbreite
+ELSE
+HalfLengthPocket := Taschenlaenge
+END
+WHILE TM > Tiefe
+IF TM=1
+TM := 0
+ELSE
+END
+TM := TM+Zustellung
+IF TM < Tiefe
+TM := Tiefe
+ELSE
+END
+;-
+IF Durchlauf=1
+;- ERSTE Zustellung !!!!
+IF Interpol=0
+KSP ('???','???',TM,Korr,0,_ANF,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+ELSE
+SP (GETKP_X('ReTa' + IntToStr(Schleifenzahl-1),0),GETKP_Y('ReTa' + IntToStr(Schleifenzahl-1),0),0,Korr,0,_ANF,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+CALL _RechteckTasche_V5_Interpol ( VAL KN:='ReTa' + IntToStr(Schleifenzahl-1),DZ:=tm)
+END
+ELSE
+;- WEITERE Zustellungen !!!!
+Merker_V := _VAkt
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=_VAkt*2)
+IF (Interpol=1)
+;SF 16.12.2013 Element sonst zu klein
+IF UeberfahrOK<>1
+G01 (GETKP_X('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-1),GETKP_Y('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-1),0,0,0,2)
+END
+G01 (GETKP_X('ReTa' + IntToStr(Schleifenzahl-1),1),GETKP_Y('ReTa' + IntToStr(Schleifenzahl-1),1),0,0,0,2)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=Merker_V)
+CALL _RechteckTasche_V5_Interpol ( VAL KN:='ReTa' + IntToStr(Schleifenzahl-1),DZ:=tm-_z)
+ELSE
+;SF 16.12.2013 Element sonst zu klein
+IF UeberfahrOK<>1
+G01 (GETKP_X('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-1),GETKP_Y('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-1),0,0,0,2)
+G01 (GETKP_X('ReTa' + IntToStr(Schleifenzahl-1),0),GETKP_Y('ReTa' + IntToStr(Schleifenzahl-1),0),0,0,0,2)
+END
+G01 (GETKP_X('ReTa' + IntToStr(Schleifenzahl-1),0),GETKP_Y('ReTa' + IntToStr(Schleifenzahl-1),0),tm,0,0,0)
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=Merker_V)
+END
+END
+FOR i := Schleifenzahl-1 TO 0 STEP -1
+;- nächstes Rechteck fräsen
+KonturFraesen ('ReTa' + IntToStr(i),'KSP','KEP',0,0,0,0,0,0,0,0)
+IF i<>0
+;- Verbindungsfräsung zum nächst größeren Rechteck...
+;- Nur nach Äußerstem nicht mehr !!!
+G01 (GETKP_X('ReTa' + IntToStr(i-1),0),GETKP_Y('ReTa' + IntToStr(i-1),0),0,0,0,2)
+END
+END
+;--
+UeberfahrOK := 1
+CALL GetWinkel2P_V4 (REF WINKEL2P:=LastWi VAL P1X:=GETKP_X('ReTa0',0),P1Y:=GETKP_Y('ReTa0',0),P2X:=GETKP_X('ReTa0',1),P2Y:=GETKP_Y('ReTa0',1))
+;-
+IF TM > Tiefe
+;- Überfahren bei Mehrfachzustellung
+UeberfahrOK := (LFirstEle > (_WZD+Verläng)) & (TU>(_WZD+Verläng))
+ELSE
+;- Überfahren bei LETZTER Bahn
+;-- 10.05.2010
+;-- MW + SF -> Sicherstellen, dass keine Verletzung der Tasche durch "ohne" abfahren geschieht
+;--
+IF AB>0
+;-- MW 22.12.2010
+UeberfahrOK := (LFirstEle > ((AB>0)*ABF*_AT_COLLRADIUS+_WZD+Verläng))
+ELSE
+UeberfahrOK := LFirstEle > (_WZR+_WZD+Verläng)
+END
+END
+;-
+IF UeberfahrOK
+;- Überfahrweg, wenn Element lang genug...
+CALL _WGerade_V5 ( VAL LAENGE:=_WZD+Verläng,WINKEL:=LastWi,Z:=0,R:=_WZR+Verläng/2,ESD:=2)
+IF TM > Tiefe
+;- Bei Mehfachzustellung immer kleines Zwangsrechteck fahren...
+;SF 16.09.2009
+;Umkehren berücksichtigen
+IF umkehren
+CALL _WGerade_V5 ( VAL LAENGE:=_WZD+Verläng,WINKEL:=LastWi-90+180,Z:=0,R:=_WZR+Verläng/2,ESD:=2)
+ELSE
+CALL _WGerade_V5 ( VAL LAENGE:=_WZD+Verläng,WINKEL:=LastWi-90,Z:=0,R:=_WZR+Verläng/2,ESD:=2)
+END
+CALL _WGerade_V5 ( VAL LAENGE:=(_WZD*2)+1mm,WINKEL:=LastWi-180,Z:=0,R:=_WZR+Verläng/2,ESD:=2)
+IF umkehren
+CALL _WGerade_V5 ( VAL LAENGE:=_WZD+Verläng,WINKEL:=LastWi-270+180,Z:=0,R:=_WZR+Verläng/2,ESD:=2)
+ELSE
+CALL _WGerade_V5 ( VAL LAENGE:=_WZD+Verläng,WINKEL:=LastWi-270,Z:=0,R:=_WZR+Verläng/2,ESD:=2)
+END
+CALL _WGerade_V5 ( VAL LAENGE:=_WZD+Verläng,WINKEL:=LastWi,Z:=0,R:=0,ESD:=2)
+END
+ELSE
+IF Radius <> 0
+;- Überfahrweg, nach Gegenüber, wenn Eckradius vorhanden.... (andere Konturnummer !)
+IF TM > Tiefe
+KonturFraesen ('ReTa0','KSp',4,0,0,0,0,0,0,0,1)
+IF (HalfLengthPocket-Radius)>Dist
+G01 (Posx,Posy,0,0,0,2)
+ELSE
+G01 (GETKP_X('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-2),GETKP_Y('ReTa' + IntToStr(Schleifenzahl-1),GETKE_ANZAHL('ReTa' + IntToStr(Schleifenzahl-1))-2),0,0,0,2)
+END
+ELSE
+KonturFraesen ('ReTa0','KSp',5,0,0,0,0,0,0,-50,1)
+END
+ELSE
+IF TM > Tiefe
+;- Überfahrweg, nach Gegenüber,wenn KEIN Eckradius vorhanden... (andere Konturnummer !)
+KonturFraesen ('ReTa0','KSp',2,0,0,0,0,0,0,0,1)
+G01 (Posx,Posy,0,0,0,2)
+ELSE
+KonturFraesen ('ReTa0','KSp',3,0,0,0,0,0,0,-50,1)
+END
+END
+END
+Durchlauf := Durchlauf+1
+END
+EP (AB,ABF,0)
+END
+;-
+;- Drehen, wenn nötig...
+IF Winkel<>0
+DrehenEB (X_Mitte,Y_Mitte,Winkel)
+END
+;-
+;*** Zu groessen Abfahrfaktor abfangen  ***
+IF AB>0
+;IF ((ABF*_AT_COLLRADIUS)> LFirstEle+Radius) | (TU<(_WZD+Verläng))
+;IF ((ABF*_AT_COLLRADIUS)> LFirstEle+Radius) | (TU<(_WZD+Verläng))|((ABF*(_AT_COLLRADIUS)+_AT_COLLRADIUS)>TU)
+IF ((ABF*_AT_COLLRADIUS)> LFirstEle+Radius) | (TU<(_WZD+Verläng))|((ABF*(_AT_COLLRADIUS)+_AT_COLLRADIUS)>TU)|(((ABF*_AT_COLLRADIUS)> LFirstEle)&((ABF*(_AT_COLLRADIUS))>TU-RADIUS+_AT_COLLRADIUS))
+Fehlermeldung (GetMessageText('13','Abfahrbewegung zu gross'))
+END
+;-- MW 22.12.2010 * Überprüfung, ob durch Abfahrbewegung gegenüberliegende Kante verletzt wird
+;IF (((ABF*_AT_COLLRADIUS) + _WZR) > TU)
+;Fehlermeldung (GetMessageText('12','Anfahrbewegung zu gross'))
+END
+;END
+;-
+;- Alle Konturen wieder löschen...
+FOR i := Schleifenzahl-1 TO 0 STEP -1
+deletecontour ('ReTa' + IntToStr(i),0)
+END
+;-
+END
+END
+deletecontour ('RotatedKontur_RechteckTasche',0)

@@ -1,0 +1,9 @@
+;AUTOSCRIPTSTART=0
+;MAKROTYP=1
+VARS
+   MacroName := '';*VAR*Macroname
+   k := '';*VAR*Paramter1
+   lan := 0;*VAR*Paramter2
+   bogen := 0;*VAR*Paramter3
+START
+CALLDLL MACROBYNAME2(MacroExtensions,Dummy, VAL MacroName:=macroname,Param1:=k,Param2:=lan,Param3:=bogen)

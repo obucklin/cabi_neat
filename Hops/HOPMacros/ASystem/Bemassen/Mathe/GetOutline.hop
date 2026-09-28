@@ -1,0 +1,177 @@
+;MAKROTYP=1
+;BILD=
+;INFO=
+;WZGV=Demo
+;MASCHINE=Simu
+;NCNAME=GetOutline
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   SX := 0;*VAR*
+   SY := 0;*VAR*
+   EX := 0;*VAR*
+   EY := 0;*VAR*
+   MX := 0;*VAR*
+   MY := 0;*VAR*
+   DR := 0;*VAR*
+   Minx := 0;*VAR**REF*
+   Miny := 0;*VAR**REF*
+   Maxx := 0;*VAR**REF*
+   Maxy := 0;*VAR**REF*
+   Minx_ := 0;
+   Miny_ := 0;
+   Maxx_ := 0;
+   Maxy_ := 0;
+   AW := 0;
+   EW := 0;
+   Radius := 0;
+   Innerhalb := 0;
+START
+Minx_ := SX
+Miny_ := SY
+Maxx_ := SX
+Maxy_ := SY
+IF DR=1
+;ZLinie (SX,SY,EX,EY,0)
+CALL Min (REF W:=Minx_ VAL W1:=SX,W2:=EX)
+CALL Min (REF W:=Miny_ VAL W1:=SY,W2:=EY)
+CALL Max (REF W:=Maxx_ VAL W1:=SX,W2:=EX)
+CALL Max (REF W:=Maxy_ VAL W1:=SY,W2:=EY)
+END
+IF (DR=2)|(DR=3)
+CALL GetWinkel2P_V4 (REF Winkel2P:=AW VAL P1X:=MX,P1Y:=MY,P2X:=SX,P2Y:=SY)
+CALL GetWinkel2P_V4 (REF Winkel2P:=EW VAL P1X:=MX,P1Y:=MY,P2X:=EX,P2Y:=EY)
+CALL Dist2P_V4 (REF Dist:=Radius VAL P1X:=SX,P1Y:=SY,P2X:=MX,P2Y:=MY)
+IF DR=2
+;ZKBCW (MX,MY,SX,SY,EX,EY,0)
+IF EW>AW
+;0°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=0,BU:=AW,BO:=EW)
+IF Innerhalb=0
+Maxx_ := MX+Radius
+ELSE
+CALL Max (REF W:=Maxx_ VAL W1:=SX,W2:=EX)
+END
+;90°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=90,BU:=AW,BO:=EW)
+IF Innerhalb=0
+Maxy_ := MY+Radius
+ELSE
+CALL Max (REF W:=Maxy_ VAL W1:=SY,W2:=EY)
+END
+;180°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=180,BU:=AW,BO:=EW)
+IF Innerhalb=0
+Minx_ := MX-Radius
+ELSE
+CALL Min (REF W:=Minx_ VAL W1:=SX,W2:=EX)
+END
+;270°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=270,BU:=AW,BO:=EW)
+IF Innerhalb=0
+Miny_ := MY-Radius
+ELSE
+CALL Min (REF W:=Miny_ VAL W1:=SY,W2:=EY)
+END
+ELSE
+;0°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=0,BU:=EW,BO:=AW)
+IF Innerhalb=1
+Maxx_ := MX+Radius
+ELSE
+CALL Max (REF W:=Maxx_ VAL W1:=SX,W2:=EX)
+END
+;90°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=90,BU:=EW,BO:=AW)
+IF Innerhalb=1
+Maxy_ := MY+Radius
+ELSE
+CALL Max (REF W:=Maxy_ VAL W1:=SY,W2:=EY)
+END
+;180°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=180,BU:=EW,BO:=AW)
+IF Innerhalb=1
+Minx_ := MX-Radius
+ELSE
+CALL Min (REF W:=Minx_ VAL W1:=SX,W2:=EX)
+END
+;270°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=270,BU:=EW,BO:=AW)
+IF Innerhalb=1
+Miny_ := MY-Radius
+ELSE
+CALL Min (REF W:=Miny_ VAL W1:=SY,W2:=EY)
+END
+END
+END
+IF DR=3
+;ZKBCCW (MX,MY,SX,SY,EX,EY,0)
+IF EW>AW
+;0°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=0,BU:=AW,BO:=EW)
+IF Innerhalb=1
+Maxx_ := MX+Radius
+ELSE
+CALL Max (REF W:=Maxx_ VAL W1:=SX,W2:=EX)
+END
+;90°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=90,BU:=AW,BO:=EW)
+IF Innerhalb=1
+Maxy_ := MY+Radius
+ELSE
+CALL Max (REF W:=Maxy_ VAL W1:=SY,W2:=EY)
+END
+;180°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=180,BU:=AW,BO:=EW)
+IF Innerhalb=1
+Minx_ := MX-Radius
+ELSE
+CALL Min (REF W:=Minx_ VAL W1:=SX,W2:=EX)
+END
+;270°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=270,BU:=AW,BO:=EW)
+IF Innerhalb=1
+Miny_ := MY-Radius
+ELSE
+CALL Min (REF W:=Miny_ VAL W1:=SY,W2:=EY)
+END
+ELSE
+;0°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=0,BU:=EW,BO:=AW)
+IF Innerhalb=0
+Maxx_ := MX+Radius
+ELSE
+CALL Max (REF W:=Maxx_ VAL W1:=SX,W2:=EX)
+END
+;90°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=90,BU:=EW,BO:=AW)
+IF Innerhalb=0
+Maxy_ := MY+Radius
+ELSE
+CALL Max (REF W:=Maxy_ VAL W1:=SY,W2:=EY)
+END
+;180°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=180,BU:=EW,BO:=AW)
+IF Innerhalb=0
+Minx_ := MX-Radius
+ELSE
+CALL Min (REF W:=Minx_ VAL W1:=SX,W2:=EX)
+END
+;270°
+CALL WertInBereich (REF Innerhalb:=Innerhalb VAL Wert:=270,BU:=EW,BO:=AW)
+IF Innerhalb=0
+Miny_ := MY-Radius
+ELSE
+CALL Min (REF W:=Miny_ VAL W1:=SY,W2:=EY)
+END
+END
+END
+END
+Minx := Minx_
+Miny := Miny_
+Maxx := Maxx_
+Maxy := Maxy_

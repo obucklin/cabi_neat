@@ -1,0 +1,167 @@
+;MAKROTYP=0
+;BILD=Rahmen mit Band.wmf
+;INFO=
+;WZGV=7023K_067
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Rahmen mit Band
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 860;*VAR*Dimension X
+   DY := 94;*VAR*Dimension Y
+   DZ := 43;*VAR*Dimension Z
+   Travers_B := DY;*VAR*Traversbreite
+   Falz_H := 29;*VAR*Falz_Höhe
+   Falz_T := 15;Falztiefe
+   Tuerluft := 8;*VAR*Tuerluft
+   Anz_Band := 3;*VAR*anzahl Bänder
+   Band_Typ := 20;18= 18  Herkula / 20= 20 Herkula / 3= Triplex
+   Fase1 := 1;*VAR*Fase hinten längs
+   Fase_Q := 2;*VAR*Fase oben und unten Quer (ja wenn > 0)
+   Fuge := 1;*VAR*Fuge mit Fase durchgehend
+   Band_pos := Travers_B - 27 + 200;Position erstes Band
+   Senk_T := -5;Senkertiefe
+START
+Fertigteil (DX,DY,DZ,0,0,10,0.5,0,'',0,0,0)
+CALL HH_Park ( VAL PARK:=3,X:=0,Y:=0)
+WZF (102,_VE,_V,_VA,_SD,_ANF,'1')
+;Links ablängen
+SP (0,-30,20,2,0,_ANF,0,0,0,7,1,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-30,0,0,1,2)
+G01 (0,-30,-2,0,1,1)
+TP (1,_VAkt,_DW,_KW)
+G01 (0,-30,0,0,7,2)
+EP (0,_ANF,0)
+;Rechts ablängen
+SP (0,-30,20,2,0,_ANF,0,0,0,3,1,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-30,0,0,5,2)
+G01 (0,-30,-2,0,5,1)
+TP (1,_VAkt,_DW,_KW)
+G01 (0,-30,0,0,3,2)
+EP (0,_ANF,0)
+;Falz mit Rahmenfalzfräser
+WZF (144,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-100,Falz_T,-Falz_H,2,0,_ANF,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-100,Falz_T,0,0,3,2)
+EP (0,_ANF,0)
+IF Fase_Q > 0
+WZF (228,_VE,_V,_VA,_SD,_ANF,'1')
+;Fase quer links
+SP (0,-50,-Fase_Q,2,0,_ANF,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-50,0,0,1,2)
+EP (0,_ANF,0)
+END
+;Formatieren hinten mit Fase
+WZF (128,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-100,0,Fase1,2,0,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,7,2)
+IF Fuge = 1
+G01 (0,0,0,0,1,2)
+;Formatieren vorne mt Fase
+G01 (-50,0,0,0,3,2)
+ELSE
+G01 (0,-50,0,0,1,2)
+EP (0,_ANF,0)
+;Fase bei 0
+SP (Travers_B,-100,Fase1,2,0,_ANF,0,0,0,1,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Travers_B,0,0,0,1,2)
+G01 (-100,0,0,0,3,2)
+EP (0,_ANF,0)
+;Fase im Falz
+WZF (228,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Travers_B - Falz_T,-100,-Fase1,2,0,_ANF,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Travers_B - Falz_T,Falz_T,0,0,1,2)
+G01 (-100,Falz_T,0,0,3,2)
+EP (0,_ANF,0)
+END
+EP (0,_ANF,0)
+;Fase vorne oben in Falztiefe
+WZF (228,_VE,_V,_VA,_SD,_ANF,'1');BREAKPOINT
+SP (-50,Falz_T,-Fase1,1,0,_ANF,0,0,0,3,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,Falz_T,0,0,1,2)
+IF Fase_Q > 0
+G01 (-50,0,-Fase_Q,0,7,0)
+G01 (-50,0,0,0,5,2)
+END
+EP (0,_ANF,0)
+;Dübel
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+;Oben
+HorzB (20,0,14,8,-39,0,0,90,1,2,0,0)
+HorzB (60,0,14,8,-39,0,0,90,1,2,0,0)
+IF Band_Typ =18
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+Bohrung (Band_Pos -17.3,(Falz_T * 2) +  9.0,8,-30,10,0,0,1,0,0,0,0)
+Bohrung (Band_Pos + 17.3,(Falz_T*2) +  9.0,8,-30,10,0,0,1,0,0,0,0)
+IF Anz_Band =3
+Bohrung ((Band_Pos -17.3) +  400,(Falz_T * 2) +  9.0,8,-30,10,0,0,1,0,0,0,0)
+Bohrung ((Band_Pos + 17.3) + 400,(Falz_T*2) +  9.0,8,-30,10,0,0,1,0,0,0,0)
+END
+Bohrung (TuerLuft + 250 + 17.3,(Falz_T * 2) +  9.0,8,-30,10,0,0,3,0,0,0,0)
+Bohrung (TuerLuft + 250 - 17.3,(Falz_T*2) +  9.0,8,-30,10,0,0,3,0,0,0,0)
+END
+IF Band_Typ =20
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+Bohrung (Band_Pos -24.00,(Falz_T * 2) +  10,8,-30,10,0,0,1,0,0,0,0)
+Bohrung (Band_Pos + 24,(Falz_T*2) + 10,8,-30,10,0,0,1,0,0,0,0)
+IF Anz_Band =3
+Bohrung ((Band_Pos -24) +  400,(Falz_T * 2) +  10,8,-30,10,0,0,1,0,0,0,0)
+Bohrung ((Band_Pos + 24) + 400,(Falz_T*2) +  10,8,-30,10,0,0,1,0,0,0,0)
+END
+Bohrung (TuerLuft + 250 + 24,(Falz_T * 2) +  10,8,-30,10,0,0,3,0,0,0,0)
+Bohrung (TuerLuft + 250 - 24,(Falz_T*2) +  10,8,-30,10,0,0,3,0,0,0,0)
+END
+IF Band_Typ =3
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+Bohrung (Band_Pos +12.5,(Falz_T * 2) +  10,8,-30,10,0,0,1,0,0,0,0)
+Bohrung (Band_Pos +32 +12.5,(Falz_T*2) + 10,8,-30,10,0,0,1,0,0,0,0)
+IF Anz_Band =3
+Bohrung ((Band_Pos+12.5) +  400,(Falz_T * 2) +  10,8,-30,10,0,0,1,0,0,0,0)
+Bohrung ((Band_Pos + 12.5 +32 ) + 400,(Falz_T*2) +  10,8,-30,10,0,0,1,0,0,0,0)
+END
+Bohrung (TuerLuft + 250 -12.5,(Falz_T * 2) +  10,8,-30,10,0,0,3,0,0,0,0)
+Bohrung (TuerLuft + 250 - 12.5 -32,(Falz_T*2) +  10,8,-30,10,0,0,3,0,0,0,0)
+END
+;Ansenken
+CALL HH_StopDHOpt ()
+IF Band_Typ =18
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+Bohrung (Band_Pos -17.3,(Falz_T * 2) +  9.0,22,Senk_T,40,0,0,1,0,0,0,0)
+Bohrung (Band_Pos + 17.3,(Falz_T*2) +  9.0,22,Senk_T,40,0,0,1,0,0,0,0)
+IF Anz_Band =3
+Bohrung ((Band_Pos -17.3) +  400,(Falz_T * 2) +  9.0,22,Senk_T,40,0,0,1,0,0,0,0)
+Bohrung ((Band_Pos + 17.3) + 400,(Falz_T*2) +  9.0,22,Senk_T,40,0,0,1,0,0,0,0)
+END
+Bohrung (TuerLuft + 250 + 17.3,(Falz_T * 2) +  9.0,22,Senk_T,40,0,0,3,0,0,0,0)
+Bohrung (TuerLuft + 250 - 17.3,(Falz_T*2) +  9.0,22,Senk_T,40,0,0,3,0,0,0,0)
+END
+IF Band_Typ =20
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+Bohrung (Band_Pos -24.00,(Falz_T * 2) +  10,22,Senk_T,40,0,0,1,0,0,0,0)
+Bohrung (Band_Pos + 24,(Falz_T*2) + 10,22,Senk_T,40,0,0,1,0,0,0,0)
+IF Anz_Band =3
+Bohrung ((Band_Pos -24) +  400,(Falz_T * 2) +  10,22,Senk_T,40,0,0,1,0,0,0,0)
+Bohrung ((Band_Pos + 24) + 400,(Falz_T*2) +  10,22,Senk_T,40,0,0,1,0,0,0,0)
+END
+Bohrung (TuerLuft + 250 + 24,(Falz_T * 2) +  10,22,Senk_T,40,0,0,3,0,0,0,0)
+Bohrung (TuerLuft + 250 - 24,(Falz_T*2) +  10,22,Senk_T,40,0,0,3,0,0,0,0)
+END
+IF Band_Typ =3
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+Bohrung (Band_Pos +12.5,(Falz_T * 2) +  10,22,Senk_T,40,0,0,1,0,0,0,0)
+Bohrung (Band_Pos +32 +12.5,(Falz_T*2) + 10,22,Senk_T,40,0,0,1,0,0,0,0)
+IF Anz_Band =3
+Bohrung ((Band_Pos+12.5) +  400,(Falz_T * 2) +  10,22,Senk_T,40,0,0,1,0,0,0,0)
+Bohrung ((Band_Pos + 12.5 +32 ) + 400,(Falz_T*2) +  10,22,Senk_T,40,0,0,1,0,0,0,0)
+END
+Bohrung (TuerLuft + 250 -12.5,(Falz_T * 2) +  10,22,Senk_T,40,0,0,3,0,0,0,0)
+Bohrung (TuerLuft + 250 - 12.5 -32,(Falz_T*2) +  10,22,Senk_T,40,0,0,3,0,0,0,0)
+END

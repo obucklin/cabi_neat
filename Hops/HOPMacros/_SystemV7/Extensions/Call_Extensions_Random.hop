@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowRANDOMDialog
+VARS
+   Value := 1000;*VAR*
+   Result := ;*VAR**REF*
+START
+CALLDLL RANDOM(Extensions,DefaultStr,REF Result:=Result VAL Value:=Value)

@@ -1,0 +1,55 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=8.1.0.688[Hops.exe]
+;BILD=HH_SONDERFORMAT_TANG.WMF
+;INFO=
+;WZGV=7507D_176
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=HH_SONDERFORMAT_Tang
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   Bearbeitungsart := 0;*VAR*0 = CW  / 1=CCW
+   ABST := 0;
+   Tiefe := -2;*VAR*Frästiefe von der Unterkante
+   Tang_Offset := 0;*VAR*zusätzlicher Überfahr Offset
+START
+;HH_Sonderformat_Tang
+;30.08.2023 HH
+IF ABST<=_WZD
+ABST := _WZD+2+Tang_Offset
+Hinweismeldung ('Überfahrt wird automatisch auf ' + INTTOSTR(ABST)+'mm (WZD+Tang_Offset+2mm) gesetzt');BREAKPOINT
+END
+;Im Uhrzeigersin / clockwise (CW)
+IF Bearbeitungsart=0
+SP (0,-ABST,Tiefe,1,1,_ANF,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0.5mm)
+G01 (0,-ABST,0,0,7,2)
+TANG (-ABST,0,0,0,7,2)
+G01 (-ABST,0,0,0,5,2)
+TANG (0,-ABST,0,0,5,2)
+G01 (0,-ABST,0,0,3,2)
+TANG (-ABST,0,0,0,3,2)
+G01 (-ABST,0,0,0,1,2)
+EP (1,_ANF,0)
+END
+;Gegenuhrzeigersinn / counterclockwise (CCW)
+IF Bearbeitungsart=1
+SP (-ABST,0,Tiefe,2,1,_ANF,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0.5mm)
+G01 (-ABST,0,0,0,3,2)
+TANG (0,-ABST,0,0,3,2)
+G01 (0,-ABST,0,0,5,2)
+TANG (-ABST,0,0,0,5,2)
+G01 (-ABST,0,0,0,7,2)
+TANG (0,-ABST,0,0,7,2)
+G01 (0,-ABST,0,0,1,2)
+EP (1,_ANF,0)
+END

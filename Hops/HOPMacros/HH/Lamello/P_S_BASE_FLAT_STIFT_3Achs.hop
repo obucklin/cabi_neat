@@ -1,0 +1,56 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.7.12.80[Hops.exe]
+;BILD=P_S_BASE_FLAT_STIFT_3ACHS.WMF
+;INFO=
+;WZGV=7405_1184
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=P_S_BASE_FLAT_STIFT_3Achs
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   EITI := 0;
+   LFF := 0;
+   tiefe_Clamex := 10;*VAR*Clamex Tiefe
+   x_pos := 100;*VAR*X Position mitte Clamex
+   y_pos := 100;*VAR*Y Position Clamex
+   DrehW := 0;*VAR*Drehwinkel Clamex
+   Werkzeug_finger := 139;*VAR*Fingerfräser
+   versatz := 0;7mm-Fräser Durchmesser
+START
+HGNeu()
+EbeneF (x_pos,y_pos,tiefe_Clamex,90,DrehW,0,2,0)
+HKreismpr (0,50.2,50.2,0)
+HLineY (EITI,5)
+CALL Dist2P_V4 (REF DIST:=LFF VAL P1X:=_SPX1,P1Y:=_SPY1,P2X:=_SPX2,P2Y:=_SPY2)
+HGNeuEnd()
+WZF (Werkzeug_finger,_VE,_V,_VA,_SD,_ANF,'1')
+;Wenn der Durchmesser<7mm eingegeben wurde, dann wird eine 2 Bahn gefahren !
+IF _wzd<7
+versatz := 7-_wzd
+SP (_spx2,_spy2,versatz/2,0,0,0,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,1,0,0,0)
+G03R (_spx1,_spy1,0,50.2,0,0,2)
+G01 (0,0,-versatz,0,10,2)
+G02R (_spx2,_spy2,0,50.2,0,0,2)
+EP (1,_ANF,0)
+Ebene0()
+ELSE
+;Nur 1 mal fräsen
+versatz := 0
+SP (_spx2,_spy2,0,0,0,0,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,1,0,0,0)
+G03R (_spx1,_spy1,0,50.2,0,0,2)
+EP (1,_ANF,0)
+END
+Ebene0()
+CALL _DrehenBBStart_V5 ( VAL DX:=x_pos,DY:=y_pos,DW:=DrehW,ESXY1:=0)
+CALL _ZRechteck_2P_V7 ( VAL SX:=x_pos-18-tiefe_Clamex,SY:=y_pos-3,EX:=x_pos+18+tiefe_Clamex,EY:=y_pos+3,FUELLEN:=1,FARBE:=13816530,ESXY1:=0,ESXY2:=0,THICKNESS:=0,THICKNESSKIND:=0,USEDNCDATA:=1)
+CALL _DrehenBBEnde ()

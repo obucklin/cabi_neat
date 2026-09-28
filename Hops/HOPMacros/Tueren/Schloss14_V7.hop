@@ -1,0 +1,149 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=SCHLOSS14_V7.WMF
+;INFO=
+;WZGV=7225K_136
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Schloss14_1
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA.Dll
+;DIALOGPROC=ShowSchloss14Dialog_V7
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DY := 980mm;Dimension Y
+   DZ := 45;Dimension Z
+   DR_Wkz :=132;*VAR*Drückerfräser
+   Schloss_Wkz :=70;*VAR*Schlosskastenfräser
+   DX := 2080mm;Dimension X
+   VB_Wkz :=108;*VAR*Winkelkopf zum Vorbohren
+   Stulp_Wkz :=70;*VAR*Fräser zum Stulp fraesen
+   Ros_Wkz :=1102;*VAR*Fräser zum Rosette bohren
+   DR_Hoehe :=DX -980;*VAR*Drückerhöhe
+   Falz_H :=25;*VAR*Falzhöhe
+   Falz_T :=15.00;*VAR*Falztiefe
+   D_Falz_H :=9.00;*VAR*Doppel Falzhöhe
+   VorB_T :=10.00;*VAR*Lochtiefe vorbohren
+   Stulp_L :=230;*VAR*Stulplänge
+   Stulp_B :=18.00;*VAR*Stulpbreite
+   Kasten_L :=174;*VAR*Kastenlänge
+   Kasten_B :=15;*VAR*Kastenbreite
+   Dorn_M :=60.00;*VAR*Dornmass
+   Ver_K_D :=28.00;*VAR*Versatz Kasten <-> Drücker
+   Ver_S_D :=28.00;*VAR*Versatz Stulp <-> Drücker
+   Ver_S_K :=0;*VAR*Versatz Stulp <-> Kasten
+   Dist_Falz_Stu :=0;*VAR*Distance Falz <-> Stulp
+   Stulp_T :=3.00;*VAR*Stulptiefe
+   DR_Zu :=4;*VAR*Zustellung Drücker
+   DR_Dm :=25;*VAR*Drückerdurchmesser
+   VB_Dm :=3.00;*VAR*Vorbohren DM
+   I := 0;Zustellen in der Tiefe
+   CB_Druecker :=-1;*VAR*Drücker Ja / Nein
+   CB_Zylinder :=-1;*VAR*Zylinder Ja / Nein
+   CB_Bart :=-1;*VAR*Bart Ja / Nein
+   CB_VorBohren :=0;*VAR*Vor Bohren Ja / Nein
+   CB_Rosette :=0;*VAR*Rosette bohren  Ja / Nein
+   Ros_Tiefe :=-(_Rz + 3);*VAR*Bohrtiefe von oben
+   Ros_Dm :=7;*VAR*Bohr DM
+   Ros_Dist :=7.5;*VAR*Distanz vom Zylinder (7.5)
+   E_Mass :=78.00;*VAR*Distanz vom Drücker zum Zylinder (78)
+   BR_Bart :=19.00;*VAR*Breite  Bart (19)
+   SK_Versatz :=0.1;*VAR*Versatz in der Breite bei 0 ohne
+   Durch_T :=-5;*VAR*Durchfrästiefe beim Drücker
+   Durch_T_Schl :=5;*VAR*Durchfrästiefe beimBart Schloss
+   Tiefe1 :=35.00;*VAR*Tiefe Kasten Teil 1
+   Tiefe2 :=92;*VAR*Tiefe Kasten Teil 2
+   Zu_1 :=3;*VAR*Zustellung Teil1
+   Zu_2 :=5;*VAR*Zustellung Teil2
+   Buendig :=0;*VAR*Buendig = 1 / Falz = 0 / DFalz=2
+   Schl_H :=DZ / 2;*VAR*Schlosshöhe bei bündig
+   M_Anz :=-1;*VAR*Bemassung anzeigen
+   Pendeln := 1;Pendeln ja / nein
+   Umkehr := 0;Gleichlauf gegenlauf
+START
+Fertigteil (2000,1000,45,0,0,0,0,0,'',0,0,0)
+;Standartschloss
+;(c) HH Schweiz B. Achermann
+IF Buendig = 1;BREAKPOINT
+Falz_H := Schl_H;BREAKPOINT
+D_Falz_H := 0
+Falz_T := 0.00
+Dist_Falz_Stu := 0
+END
+IF Buendig =2
+Falz_H := Falz_H + D_Falz_H
+END
+WZF (DR_WKZ,_VE,_V,_VA,_SD,_ANF,'1')
+IF (DR_Zu  > _AT_MAXDEPTH) & (_AT_MAXDEPTH <> 0)
+DR_Zu := _AT_MAXDEPTH
+END
+;Drücker
+IF CB_Druecker=-1
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=DR_Hoehe,Y_MITTE:=Falz_T + Dorn_M,TIEFE:=Durch_T,ZUTIEFE:=DR_Zu,RADIUS:=DR_Dm / 2,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=360,ANF:=_ANF,ABF:=_ANF,RAMPE:=1,INTERPOL:=0,ESXY:=7,ESMD:=1,LASER:=0)
+END
+;Schloss
+IF CB_Zylinder=-1
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=DR_Hoehe + E_Mass,Y_MITTE:=Falz_T + Dorn_M,TIEFE:=Durch_T_Schl,ZUTIEFE:=DR_Zu,RADIUS:=DR_Dm / 2,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=360,ANF:=_ANF,ABF:=_ANF,RAMPE:=1,INTERPOL:=0,ESXY:=7,ESMD:=1,LASER:=0)
+END
+IF CB_Bart=-1
+;Bart
+IF BR_Bart < _WzD +0.1
+/Hinweismeldung ('Breite Bart zu klein < WKZ')
+Fehlermeldung ('Breite Bart zu klein < WKZ')
+ELSE
+/CALL _Rechteck_V5 ( VAL X_MITTE:=DR_Hoehe + E_Mass +13,Y_MITTE:=Falz_T + Dorn_M,LAENGE:=27,BREITE:=BR_Bart,RADIUS:=0,WINKEL:=0,TIEFE:=Durch_T_Schl,ZUTIEFE:=DR_Zu,RADIUSKORREKTUR:=2,AB:=0,AUFMASS:=0,ANF:=_ANF,ABF:=_ANF,UMKEHREN:=0,RAMPE:=0,RAMPENLAENGE:=50,QUADRANT:=3,INTERPOL:=0,ESXY:=7,ESMD:=1,LASER:=0)
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=DR_Hoehe + E_Mass +13,Y_MITTE:=Falz_T + Dorn_M,TASCHENLAENGE:=27,TASCHENBREITE:=BR_Bart,RADIUS:=0,WINKEL:=0,TIEFE:=Durch_T_Schl,ZUSTELLUNG:=DR_Zu,AB:=0,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=7,ESMD:=1,LASER:=0)
+END
+END
+WZF (Stulp_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+IF _Job_MirX =1
+Umkehr := 1
+ELSE
+Umkehr := 0
+END
+;Stulp
+IF (DR_Zu  > _AT_MAXDEPTH) & (_AT_MAXDEPTH <> 0)
+DR_Zu := _AT_MAXDEPTH
+END
+IF Buendig =1
+;Bündig
+CALL _HorTasche_V5 ( VAL EBENE:=2,XPOS:=DR_Hoehe+Ver_S_D,YPOS:=Falz_T,ZPOS:=Falz_H,BREITE:=Stulp_L,HOEHE:=Stulp_B,TIEFE:=-Stulp_T,ZUTIEFE:=DR_Zu,RADIUS:=Stulp_B/2,UMKEHREN:=Umkehr,INTERPOL:=0,PENDELN:=0,ESXY:=7,ESZ:=0)
+ELSE
+;Falz
+CALL _HorTasche_V5 ( VAL EBENE:=2,XPOS:=DR_Hoehe+Ver_S_D,YPOS:=Falz_T,ZPOS:=Falz_H-Dist_Falz_Stu-(Stulp_B/2),BREITE:=Stulp_L,HOEHE:=Stulp_B,TIEFE:=-Stulp_T,ZUTIEFE:=DR_Zu,RADIUS:=Stulp_B/2,UMKEHREN:=Umkehr,INTERPOL:=0,PENDELN:=0,ESXY:=7,ESZ:=0)
+END
+;Kasten
+WZF (Schloss_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+CALL SK_Spez ( VAL DR_HOEHE:=DR_Hoehe,FALZ_H:=Falz_H,FALZ_T:=Falz_T,D_FALZ_H:=D_Falz_H,KASTEN_L:=Kasten_L,KASTEN_B:=Kasten_B,ZU_1:=Zu_1,ZU_2:=Zu_2,TIEFE1:=Tiefe1,TIEFE2:=Tiefe2,VER_K_D:=Ver_K_D,VER_S_K:=Ver_S_K,DIST_FALZ_STU:=Dist_Falz_Stu,SK_VERSATZ:=SK_Versatz,BUENDIG:=Buendig,STULP_B:=Stulp_B)
+;Masse anzeigen
+IF M_Anz = -1
+CALL B2Punkte_V5 ( VAL P1X:=DR_Hoehe,P1Y:=Falz_T,P2X:=Dr_Hoehe,P2Y:=Dorn_M + Falz_T,ABSTAND:=20,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=0,ESXY1:=7,ESXY2:=7)
+CALL B2Punkte_V5 ( VAL P1X:=DR_Hoehe,P1Y:=Falz_T,P2X:=Dr_Hoehe,P2Y:=Tiefe2 + Falz_T,ABSTAND:=-150,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=0,ESXY1:=7,ESXY2:=7)
+END
+;Vorbohren
+IF CB_VorBohren = -1
+WZF (VB_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+IF Buendig = 1
+HorzB (DR_Hoehe -78,0,Falz_H - Dist_Falz_Stu,VB_Dm,-(Falz_T + Stulp_T + VorB_T),0,0,270,7,0,0,0);BREAKPOINT
+HorzB (DR_Hoehe +135,0,Falz_H - Dist_Falz_Stu,VB_Dm,-(Falz_T + Stulp_T + VorB_T),0,0,270,7,0,0,0)
+ELSE
+HorzB (DR_Hoehe -78,0,Falz_H - Dist_Falz_Stu - 9,VB_Dm,-(Falz_T + Stulp_T + VorB_T),0,0,270,7,0,0,0)
+HorzB (DR_Hoehe +135,0,Falz_H - Dist_Falz_Stu - 9,VB_Dm,-(Falz_T + Stulp_T + VorB_T),0,0,270,7,0,0,0)
+END
+END
+;Rosette bohren
+IF CB_Rosette = -1
+WZB (Ros_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+Bohrung (DR_Hoehe,(Falz_T+ Dorn_M)-19,Ros_DM,Ros_Tiefe,10,0,0,7,0,0,0,0)
+Bohrung (DR_Hoehe,(Falz_T+ Dorn_M)+19,Ros_DM,Ros_Tiefe,10,0,0,7,0,0,0,0)
+;Bei Schlieser
+Bohrung (DR_Hoehe + E_Mass + Ros_Dist,(Falz_T+ Dorn_M)+19,Ros_Dm,Ros_Tiefe,10,0,0,7,0,0,0,0)
+Bohrung (DR_Hoehe + E_Mass + Ros_Dist,(Falz_T+ Dorn_M)-19,Ros_Dm,Ros_Tiefe,10,0,0,7,0,0,0,0)
+END

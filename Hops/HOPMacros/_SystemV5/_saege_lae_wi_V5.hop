@@ -1,0 +1,259 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_saege_lae_wi_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   Breite := 500;breite
+   hoehe := 300;hoehe
+   Staerke := 30;Staerke
+   winkel := 0;Saegewinkel
+   abst_x := 0;
+   abst_y := 0;
+   saegelaenge := 0;
+   SX := ;*VAR*Startpunkt in X
+   SY := ;*VAR*Startpunkt in Y
+   SZ := -3;*VAR*Tiefe in Z
+   Laenge := ;*VAR*Schnittlaenge
+   SchnittWinkel := 0;*VAR*Schnittwinkel
+   EX := 0;Endpunkt in X
+   EY := 0;Endpunkt in Y
+   EZ := -2;*VAR*Tiefe in Z
+   BL := 2;*VAR*Lage   0=mittig    1=links   2=rechts
+   Einpassen := 0;*VAR*Einpassen  0/1
+   EL := 0;*VAR*Einlauf in mm
+   AL := 0;*VAR*Auslauf in mm
+   Parallel := 0;*VAR*Schnitt parallel versetzen
+   K := 0;*VAR*Kenner
+   KW := 0;*VAR*Kippwinkel
+   BH := 0;*VAR*Bezugshoehe
+   SX_Versatz := 0;Versatz in X beim Einlauf
+   SY_Versatz := 0;Versatz in Y beim Einlauf
+   EX_Versatz := 0;Versatz in X beim Auslauf
+   EY_Versatz := 0;Versatz in Y beim Auslauf
+   SX_Para := 0;Parallelversatz in x
+   SY_Para := 0;Parallelversatz in y
+   Saege_Art := 1;Saege fix = 0     Saegeaggregat = 1
+   SX_Para_ritz := 0;
+   SY_Para_ritz := 0;
+   ritzversatz := 0.05;*VAR*Versatz beim Ritzen
+   esz := 0;*VAR*
+   esxy1 := 1;*VAR*
+   KWVer := 10;
+   DX_KWVer := 0;
+   DY_KWVer := 0;
+START
+;--
+;--
+;DIREKT CNC SYSTEME NCHOPS
+;--
+;-- MW 03.11.2011
+;-- Sägeschnitt wird doppelt ausgeführt!
+;--
+;--
+;--------------------------------------------------------
+Transesz (bh,esz)
+transesxy (sx,sy,esxy1,1)
+;- ACHTUNG:
+;-
+;- Die Schnitte koennen nur editiert werden,
+;- wenn sie auskommentiert sind !!
+;- Weil Einpassen und Bearbeitungslage
+;- sonst nicht mehr variabel sind
+;-
+;- ACHTUNG:
+;--------------------------------------------------------
+;-
+;- Wenn eingepasst saegen, dann kein Einlauf/Auslauf
+ex := sx+(cos(schnittwinkel)*Laenge)
+ey := sy+(sin(schnittwinkel)*Laenge)
+IF Einpassen=1
+el := 0
+al := 0
+END
+;-
+IF KW>60
+;Fehlermeldung (KIPPWINKEL_MAXIMAL_60_GRAD)
+END
+abst_x := ex-sx
+abst_y := ey-sy
+IF (abst_x=0)&(abst_y=0)
+Fehlermeldung (START_UND_ENDPUNKT_GLEICH)
+END
+;---- Versatz Ritzen nur wenn ritzen angewaehlt wurde
+;Neu MW 22.08.2001  Kenner=3
+IF (k<>2) & (k<>3)
+ritzversatz := 0
+SZ := EZ
+END
+saegelaenge := sqrt(sqr(abst_x)+sqr(abst_y))
+winkel := arccos(abst_x/saegelaenge)
+;----- Versaetze fuer Ein-Auslauf
+SX_Versatz := cos(winkel)*EL
+SY_Versatz := sin(winkel)*EL
+EX_Versatz := cos(winkel)*AL
+EY_Versatz := sin(winkel)*AL
+;----- Versaetze fuer Parallele
+SX_Para := cos(winkel)*parallel
+SY_Para := sin(winkel)*parallel
+SX_Para_ritz := cos(winkel)*ritzversatz
+SY_Para_ritz := sin(winkel)*ritzversatz
+;Versatz bei Kippwinkel <> 0 und
+;Bezugshöhe nicht Fertigteil Oberkante
+;berücksichtigen
+;SF 02.02.2006
+CALL GetWinkel2P_V4 (REF WINKEL2P:=Winkel VAL P1X:=SX,P1Y:=SY,P2X:=EX,P2Y:=EY)
+IF (BH<>_RZ) & (KW<>0)
+KWVer := tan(KW)*(_RZ-BH)
+DX_KWVer := cos(winkel-90)*KWVer
+DY_KWVer := sin(winkel-90)*KWVer
+END
+;**************** 0 Grad *******
+IF (SX<EX) & (abst_y=0)
+IF (k=0) | (k=1)
+Saegen (SX-SX_Versatz,SY-parallel,EZ,EX+EX_Versatz,EY-parallel,EZ,BL,Einpassen,0,k,KW,BH,0,0,0,0,0)
+END
+IF k=2
+Saegen (SX-SX_Versatz+DX_KWVer,SY-parallel+DY_KWVer,SZ,EX+EX_Versatz+DX_KWVer,EY-parallel+DY_KWVer,SZ,BL,Einpassen,0,0,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-SX_Versatz,SY-parallel-ritzversatz,EZ,EX+EX_Versatz,EY-parallel-ritzversatz,EZ,BL,Einpassen,0,1,KW,BH,0,0,0,0,0)
+END
+IF k=3
+;-- 11.11.2009
+Saegen (SX-SX_Versatz+DX_KWVer,SY-parallel+DY_KWVer,SZ,EX+EX_Versatz+DX_KWVer,EY-parallel+DY_KWVer,SZ,BL,Einpassen,0,1,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-SX_Versatz,SY-parallel-ritzversatz,EZ,EX+EX_Versatz,EY-parallel-ritzversatz,EZ,BL,Einpassen,0,0,KW,BH,0,0,0,0,0)
+END
+END
+;**************** 90 Grad *******
+IF (SY<EY) & (abst_x=0)
+IF (k=0) | (k=1)
+Saegen (SX+parallel,SY-SY_Versatz,EZ,EX+parallel,EY+EY_Versatz,EZ,BL,Einpassen,0,k,KW,BH,0,0,0,0,0)
+END
+IF k=2
+;-- 11.11.2009
+Saegen (SX+parallel+DX_KWVer,SY-SY_Versatz+DY_KWVer,SZ,EX+parallel+DX_KWVer,EY+EY_Versatz+DY_KWVer,SZ,BL,Einpassen,0,0,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX+parallel+ritzversatz,SY-SY_Versatz,EZ,EX+parallel+ritzversatz,EY+EY_Versatz,EZ,BL,Einpassen,0,1,KW,BH,0,0,0,0,0)
+END
+IF k=3
+;-- 11.11.2009
+Saegen (SX+parallel+DX_KWVer,SY-SY_Versatz+DY_KWVer,SZ,EX+parallel+DX_KWVer,EY+EY_Versatz+DY_KWVer,SZ,BL,Einpassen,0,1,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX+parallel+ritzversatz,SY-SY_Versatz,EZ,EX+parallel+ritzversatz,EY+EY_Versatz,EZ,BL,Einpassen,0,0,KW,BH,0,0,0,0,0)
+END
+END
+;**************** 180 Grad *******
+IF (SX>EX) & (abst_y=0)
+IF (k=0) | (k=1)
+Saegen (SX-SX_Versatz,SY+parallel,EZ,EX+EX_Versatz,EY+parallel,EZ,BL,Einpassen,0,k,KW,BH,0,0,0,0,0)
+END
+IF k=2
+;-- 11.11.2009
+Saegen (SX-SX_Versatz+DX_KWVer,SY+parallel+DY_KWVer,SZ,EX+EX_Versatz+DX_KWVer,EY+parallel+DY_KWVer,SZ,BL,Einpassen,0,0,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-SX_Versatz,SY+parallel+ritzversatz,EZ,EX+EX_Versatz,EY+parallel+ritzversatz,EZ,BL,Einpassen,0,1,KW,BH,0,0,0,0,0)
+END
+IF k=3
+;-- 11.11.2009
+Saegen (SX-SX_Versatz+DX_KWVer,SY+parallel+DY_KWVer,SZ,EX+EX_Versatz+DX_KWVer,EY+parallel+DY_KWVer,SZ,BL,Einpassen,0,1,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-SX_Versatz,SY+parallel+ritzversatz,EZ,EX+EX_Versatz,EY+parallel+ritzversatz,EZ,BL,Einpassen,0,0,KW,BH,0,0,0,0,0)
+END
+END
+;**************** 270 Grad *******
+IF (SY>EY) & (abst_x=0)
+IF (k=0) | (k=1)
+Saegen (SX-parallel,SY+SY_Versatz,EZ,EX-parallel,EY-EY_Versatz,EZ,BL,Einpassen,0,k,KW,BH,0,0,0,0,0)
+END
+IF k=2
+;-- 11.11.2009
+Saegen (SX-parallel+DX_KWVer,SY+SY_Versatz+DY_KWVer,SZ,EX-parallel+DX_KWVer,EY-EY_Versatz+DY_KWVer,SZ,BL,Einpassen,0,0,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-parallel-ritzversatz,SY+SY_Versatz,EZ,EX-parallel-ritzversatz,EY-EY_Versatz,EZ,BL,Einpassen,0,1,KW,BH,0,0,0,0,0)
+END
+IF k=3
+;-- 11.11.2009
+Saegen (SX-parallel+DX_KWVer,SY+SY_Versatz+DY_KWVer,SZ,EX-parallel+DX_KWVer,EY-EY_Versatz+DY_KWVer,SZ,BL,Einpassen,0,1,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-parallel-ritzversatz,SY+SY_Versatz,EZ,EX-parallel-ritzversatz,EY-EY_Versatz,EZ,BL,Einpassen,0,0,KW,BH,0,0,0,0,0)
+END
+END
+;*********************************
+;*********************************
+;*********************************
+;*********** 0 - 90 Grad *******
+IF (SX<EX) & (SY<EY) & (Abst_x<>0) & (Abst_y<>0)
+;-- MW 03.11.2011 & (Abst_x<>0) & (Abst_y<>0)
+IF (k=0) | (k=1)
+Saegen (SX-SX_Versatz+SY_Para,SY-SY_Versatz-SX_Para,EZ,EX+EX_Versatz+SY_Para,EY+EY_Versatz-SX_Para,EZ,BL,Einpassen,0,k,KW,BH,0,0,0,0,0)
+END
+IF k=2
+;-- 11.11.2009
+Saegen (SX-SX_Versatz+SY_Para+DX_KWVer,SY-SY_Versatz-SX_Para+DY_KWVer,SZ,EX+EX_Versatz+SY_Para+DX_KWVer,EY+EY_Versatz-SX_Para+DY_KWVer,SZ,BL,Einpassen,0,0,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-SX_Versatz+SY_Para+SY_Para_ritz,SY-SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz+SY_Para+SY_Para_ritz,EY+EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,1,KW,BH,0,0,0,0,0)
+END
+IF k=3
+;-- 11.11.2009
+Saegen (SX-SX_Versatz+SY_Para+DX_KWVer,SY-SY_Versatz-SX_Para+DY_KWVer,SZ,EX+EX_Versatz+SY_Para+DX_KWVer,EY+EY_Versatz-SX_Para+DY_KWVer,SZ,BL,Einpassen,0,1,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-SX_Versatz+SY_Para+SY_Para_ritz,SY-SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz+SY_Para+SY_Para_ritz,EY+EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,0,KW,BH,0,0,0,0,0)
+END
+END
+;*********** 90 - 180 Grad *******
+IF (SX>EX) & (SY<EY) & (Abst_x<>0) & (Abst_y<>0)
+;-- MW 03.11.2011 & (Abst_x<>0) & (Abst_y<>0)
+IF (k=0) | (k=1)
+Saegen (SX-SX_Versatz+SY_Para,SY-SY_Versatz-SX_Para,EZ,EX+EX_Versatz+SY_Para,EY+EY_Versatz-SX_Para,EZ,BL,Einpassen,0,k,KW,BH,0,0,0,0,0)
+END
+IF k=2
+;-- 11.11.2009
+Saegen (SX-SX_Versatz+SY_Para+DX_KWVer,SY-SY_Versatz-SX_Para+DY_KWVer,SZ,EX+EX_Versatz+SY_Para+DX_KWVer,EY+EY_Versatz-SX_Para+DY_KWVer,SZ,BL,Einpassen,0,0,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-SX_Versatz+SY_Para+SY_Para_ritz,SY-SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz+SY_Para+SY_Para_ritz,EY+EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,1,KW,BH,0,0,0,0,0)
+END
+IF k=3
+;-- 11.11.2009
+Saegen (SX-SX_Versatz+SY_Para+DX_KWVer,SY-SY_Versatz-SX_Para+DY_KWVer,SZ,EX+EX_Versatz+SY_Para+DX_KWVer,EY+EY_Versatz-SX_Para+DY_KWVer,SZ,BL,Einpassen,0,1,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-SX_Versatz+SY_Para+SY_Para_ritz,SY-SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz+SY_Para+SY_Para_ritz,EY+EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,0,KW,BH,0,0,0,0,0)
+END
+END
+;*********** 180 - 270 Grad *******
+IF (SX>EX) & (SY>EY) & (Abst_x<>0) & (Abst_y<>0)
+;-- MW 03.11.2011 & (Abst_x<>0) & (Abst_y<>0)
+IF (k=0) | (k=1)
+Saegen (SX-SX_Versatz-SY_Para,SY+SY_Versatz-SX_Para,EZ,EX+EX_Versatz-SY_Para,EY-EY_Versatz-SX_Para,EZ,BL,Einpassen,0,k,KW,BH,0,0,0,0,0)
+END
+IF k=2
+;-- 11.11.2009
+Saegen (SX-SX_Versatz-SY_Para+DX_KWVer,SY+SY_Versatz-SX_Para+DY_KWVer,SZ,EX+EX_Versatz-SY_Para+DX_KWVer,EY-EY_Versatz-SX_Para+DY_KWVer,SZ,BL,Einpassen,0,0,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-SX_Versatz-SY_Para-SY_Para_ritz,SY+SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz-SY_Para-SY_Para_ritz,EY-EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,1,KW,BH,0,0,0,0,0)
+END
+IF k=3
+;-- 11.11.2009
+Saegen (SX-SX_Versatz-SY_Para+DX_KWVer,SY+SY_Versatz-SX_Para+DY_KWVer,SZ,EX+EX_Versatz-SY_Para+DX_KWVer,EY-EY_Versatz-SX_Para+DY_KWVer,SZ,BL,Einpassen,0,1,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-SX_Versatz-SY_Para-SY_Para_ritz,SY+SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz-SY_Para-SY_Para_ritz,EY-EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,0,KW,BH,0,0,0,0,0)
+END
+END
+;*********** 270 - 0 Grad *******
+IF (SX<EX) & (SY>EY) & (Abst_x<>0) & (Abst_y<>0)
+;-- MW 03.11.2011 & (Abst_x<>0) & (Abst_y<>0)
+IF (k=0) | (k=1)
+Saegen (SX-SX_Versatz-SY_Para,SY+SY_Versatz-SX_Para,EZ,EX+EX_Versatz-SY_Para,EY-EY_Versatz-SX_Para,EZ,BL,Einpassen,0,k,KW,BH,0,0,0,0,0)
+END
+IF k=2
+;-- 11.11.2009
+Saegen (SX-SX_Versatz-SY_Para+DX_KWVer,SY+SY_Versatz-SX_Para+DY_KWVer,SZ,EX+EX_Versatz-SY_Para+DX_KWVer,EY-EY_Versatz-SX_Para+DY_KWVer,SZ,BL,Einpassen,0,0,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-SX_Versatz-SY_Para-SY_Para_ritz,SY+SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz-SY_Para-SY_Para_ritz,EY-EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,1,KW,BH,0,0,0,0,0)
+END
+IF k=3
+;-- 11.11.2009
+Saegen (SX-SX_Versatz-SY_Para+DX_KWVer,SY+SY_Versatz-SX_Para+DY_KWVer,SZ,EX+EX_Versatz-SY_Para+DX_KWVer,EY-EY_Versatz-SX_Para+DY_KWVer,SZ,BL,Einpassen,0,1,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-SX_Versatz-SY_Para-SY_Para_ritz,SY+SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz-SY_Para-SY_Para_ritz,EY-EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,0,KW,BH,0,0,0,0,0)
+END
+END

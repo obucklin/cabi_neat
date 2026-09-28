@@ -1,0 +1,15 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowRotPoint00Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   Px := ;*VAR**REF*
+   Py := ;*VAR**REF*
+   W := 45;*VAR*
+   y := 0;
+   x := 0;
+START
+x := Px
+y := Py
+Px := x*cos(W) + y*sin(W)
+Py := -x * sin(W) + y * cos(W)

@@ -1,0 +1,11 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowPARK_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   Mode := 0;*VAR*
+   PosX := 0;*VAR*
+   PosY := 0;*VAR*
+START
+nciext (-100055,'NCISys',0,0,0,Mode,PosX,PosY)

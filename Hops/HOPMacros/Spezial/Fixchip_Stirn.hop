@@ -1,0 +1,107 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=FIXCHIP_STIRN.WMF
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=Fixchip_Stirn
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   ToolID := 128;*VAR*
+   X_Pos := 0;*VAR*X_Wert
+   Y_Pos := 60;*VAR*Y-Wert
+   MaschinenTyp := 3;*VAR*3= Nesting / 0= Standart
+   Bohren := 1;*VAR*35 mm Bohren 1= ja / 0= Nein
+   Seite := 3;*VAR*1= Vorne / 2=Links /3= hinten / 4= Rechts
+   EXECUTELEADINOUT := 0;
+   Tiefe := 13;Nuttiefe
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;Weinig Holzher Schweiz AG B. Achermann
+/CALL _UserInterface3DG (REF RESULT:=ToolID VAL INPUTTEXT:='GetStandardRouterID')
+IF MaschinenTyp=3
+EXECUTELEADINOUT := 1
+ELSE
+EXECUTELEADINOUT := 0
+END
+IF EXECUTELEADINOUT=1
+WZF (9999,_VE,_V,_VA,_SD,_ANF,'1')
+IF Seite=1
+CALL LeadInOutKontur_V7 ()
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=X_Pos,Y_MITTE:=-18.5,TIEFE:=1,ZUTIEFE:=0,RADIUS:=18.5,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=180,ANF:=_ANF,ABF:=_ANF,RAMPE:=0,INTERPOL:=1,ESXY:=0,ESMD:=0,LASER:=0)
+END
+IF Seite=2
+CALL LeadInOutKontur_V7 ()
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=-18.5,Y_MITTE:=Y_Pos,TIEFE:=1,ZUTIEFE:=0,RADIUS:=18.5,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=180,ANF:=_ANF,ABF:=_ANF,RAMPE:=0,INTERPOL:=1,ESXY:=0,ESMD:=0,LASER:=0)
+END
+IF Seite=3
+CALL LeadInOutKontur_V7 ()
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=X_Pos,Y_MITTE:=Y_Pos +18.5,TIEFE:=1,ZUTIEFE:=0,RADIUS:=18.5,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=180,ANF:=_ANF,ABF:=_ANF,RAMPE:=0,INTERPOL:=1,ESXY:=0,ESMD:=0,LASER:=0)
+END
+IF Seite=4
+CALL LeadInOutKontur_V7 ()
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=X_Pos +18.5,Y_MITTE:=Y_Pos,TIEFE:=1,ZUTIEFE:=0,RADIUS:=18.5,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=180,ANF:=_ANF,ABF:=_ANF,RAMPE:=0,INTERPOL:=1,ESXY:=0,ESMD:=0,LASER:=0)
+END
+END
+IF Seite = 1
+;Vorne
+IF Bohren = 1
+WZB (501,_VE,_V,_VA,_SD,_ANF,'51')
+Bohrung (X_Pos,-18.5,35,3,30,0,0,0,1,0,0,0)
+END
+WZF (ToolID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (X_Pos,-18.5,_Rz / 2,0,0,_ANF,0,0,0,0,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,(Tiefe+1),0,0,10,2)
+G01 (0,- (Tiefe+1),0,0,10,2)
+EP (0,_ANF,0)
+END
+IF Seite=2
+;Links
+IF Bohren = 1
+WZB (501,_VE,_V,_VA,_SD,_ANF,'51')
+Bohrung (X_Pos -18.5,Y_Pos,35,3,30,0,0,0,1,0,0,0)
+END
+WZF (ToolID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (X_Pos -18.5,Y_Pos,_Rz / 2,0,0,_ANF,0,0,0,0,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 ((Tiefe+1),0,0,0,10,2)
+G01 (- (Tiefe+1),0,0,0,10,2)
+EP (0,_ANF,0)
+END
+IF Seite = 3
+;Hinten
+IF Bohren = 1
+WZB (501,_VE,_V,_VA,_SD,_ANF,'51')
+Bohrung (X_Pos,Y_Pos +18.5,35,3,30,0,0,0,1,0,0,0)
+END
+WZF (ToolID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (X_Pos,Y_Pos +18.5,_Rz / 2,0,0,_ANF,0,0,0,0,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,-(Tiefe+1),0,0,10,2)
+G01 (0,(Tiefe+1),0,0,10,2)
+EP (0,_ANF,0)
+END
+IF Seite=4
+;Rechts
+IF Bohren = 1
+WZB (501,_VE,_V,_VA,_SD,_ANF,'51')
+Bohrung (X_Pos  + 18.5,Y_Pos,35,3,30,0,0,0,1,0,0,0)
+END
+WZF (ToolID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (X_Pos + 18.5,Y_Pos,_Rz / 2,0,0,_ANF,0,0,0,0,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (- (Tiefe+1),0,0,0,10,2)
+G01 ((Tiefe+1),0,0,0,10,2)
+EP (0,_ANF,0)
+END

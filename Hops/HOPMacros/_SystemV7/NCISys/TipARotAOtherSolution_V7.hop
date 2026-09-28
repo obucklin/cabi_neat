@@ -1,0 +1,13 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowTIPAROTAOTHERSOLUTION_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   Hold := 0;*VAR*1 bis zum Werkzeugwechsel verwenden
+   HoldCloneMoveZ := 0;*VAR*1 Fräsbahnen mit mehrfach Z-Zustellung einfügen
+   SenkrechtIndex := 0;*VAR*
+   SenkrechtWinkel := 0;*VAR*
+   GekipptOther := 0;*VAR*= 1 alternative Lösung
+START
+nciext (-100000,'NCISys',1,Hold,HoldCloneMoveZ,SenkrechtIndex,SenkrechtWinkel,GekipptOther)

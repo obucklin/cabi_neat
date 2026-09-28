@@ -1,0 +1,95 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_Sphere_Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   Width := 250;*VAR*
+   Height := 250-150;*VAR*
+   DX := 250;*VAR*
+   DY := 250;*VAR*
+   DZ := 0;*VAR*
+   MaxArcDistCircle := 0.1;
+   MaxArcDistArc := 0.1;
+   Resolution := 1;*VAR*
+   Axis := 0;*VAR*[0] 5Axis [1] 3Axis
+   Radius := 0;
+   GTyp := 0;
+   Mx := 0;
+   My := 0;
+   x := 0;
+   y := 0;
+   z := 0;
+   WZ := 0;
+   WB := 0;
+   BL := 0;
+   DeltaW := 180;
+   AnzahlCircle := 64*2*2;
+   StepCircle := 0;
+   AnzahlArc := 50;
+   StepArc := 0;
+   i := 0;
+   j := 0;
+   Dir := -1;
+   Off := 0;
+   KW := 0;
+   DW := 0;
+   Nx := 0;
+   Ny := 0;
+   Nz := 0;
+   DeltaN := 0;
+   NF := 1;
+   esxy := 0;*VAR*
+START
+Fertigteil (2*Width,2*Width,Height,0,0,0,0,0,'',0,0,0)
+transesxy (DX,DY,esxy,0)
+MaxArcDistCircle := Resolution
+Width := abs(Width)
+NF := Height/abs(Height)
+KB ('KB_sphere','',-Width,0,0,'',0,0);
+CALL _KB_3P (REF GTYP:=GTyp,MX:=Mx,MY:=My VAL SX:=_X,SY:=_Y,P1X:=0,P1Y:=Height,P2X:=Width,P2Y:=0)
+IF (Gtyp<2)|(Gtyp>3)
+Fehlermeldung ('Error-G3P')
+END
+IF GTyp=2
+KG02M ('',Width,0,0,mx,my,'',0,2,0)
+END
+IF GTyp=3
+KG03M ('',Width,0,0,mx,my,'',0,2,0)
+END
+CALL Dist2P_V4 (REF DIST:=Radius VAL P1X:=MX,P1Y:=MY,P2X:=Width,P2Y:=0)
+BL := 2*pi*Radius
+CALL GetArcDW (REF DW:=DeltaW VAL SX:=GETCP_X('KB_sphere',0),SY:=GETCP_Y('KB_sphere',0),EX:=GETCP_X('KB_sphere',1),EY:=GETCP_Y('KB_sphere',1),MX:=MX,MY:=MY,GTYP:=GTyp)
+CALL GetSegmentCount (REF COUNT:=AnzahlCircle,SINGLESTEP:=StepCircle VAL DW:=180,RADIUS:=Width,MAXARCDIST:=MaxArcDistCircle)
+CALL GetSegmentCount (REF COUNT:=AnzahlArc,SINGLESTEP:=StepArc VAL DW:=DeltaW,RADIUS:=Width,MAXARCDIST:=MaxArcDistArc)
+WZ := 0
+FOR i := 0 TO AnzahlCircle STEP 1;
+WB := 0
+FOR j := 0 TO AnzahlArc STEP 1
+CALL GetArcPointAt (REF PX:=x,PY:=z VAL SX:=GETCP_X('KB_sphere',0),SY:=GETCP_Y('KB_sphere',0),EX:=GETCP_X('KB_sphere',1),EY:=GETCP_Y('KB_sphere',1),MX:=MX,MY:=MY,GTYP:=GTyp,T:=Off-Dir*WB)
+y := 0
+CALL RotPoint00 (REF PX:=x,PY:=y VAL W:=WZ)
+Nx := NF*x
+Ny := NF*y
+Nz := NF*(z-My)
+DeltaN := sqrt(sqr(Nx)+sqr(Ny)+sqr(Nz))
+CALL Calc_DW_KW_NV (REF KW:=KW,DW:=DW VAL NX:=Nx/DeltaN,NY:=Ny/DeltaN,NZ:=Nz/DeltaN)
+IF (j=0)
+IF (i=0)
+IF Axis=0
+vsp (x+DX,y+DY,z+DZ,DW,KW,0,0,0,0,3,1,1,0)
+ELSE
+vsp (x+DX,y+DY,z+DZ,DW,KW,0,0,0,0,3,1,0,0)
+END
+ELSE
+vg01 (x+DX,y+DY,z+DZ,DW,KW,_VAKT)
+END
+END
+vg01 (x+DX,y+DY,z+DZ,DW,KW,_VAKT)
+WB := WB+StepArc/DeltaW
+END
+WZ := WZ+StepCircle
+Dir := -Dir
+Off := 1-Off
+END
+vep (0)
+deletecontour ('KB_sphere',0)

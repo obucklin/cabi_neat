@@ -1,0 +1,78 @@
+;MAKROTYP=0
+;BILD=Ausschnitt_Spezial.wmf
+;INFO=
+;WZGV=7123K_021
+;MASCHINE=HOLZHER
+;NCNAME=Ausschnitt_Spezial
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_EVO.Dll
+;DIALOGPROC=Show_AusSpezDialog_Evo
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   Mx :=0.00;*VAR*Mittelpunkt in X
+   My :=0.00;*VAR*Mittelpunkt in Y
+   Lang :=100;*VAR*Länge der Tasche
+   Breit :=100.00;*VAR*Breite der Tasche
+   Tiefe :=-10;*VAR*Tiefe des Ausschnittes
+   Radius :=0.00;*VAR*Eckenradius
+   Winkel :=0;*VAR*Drehwinkel
+   Zustellung :=0.00;*VAR*Zustellung inZ
+   Abst :=0.00;*VAR*Abstand zur Kontur
+   Drehricht :=0;*VAR*Fräsrichtung
+   Seite :=2;*VAR*Bearbeitungs-Seite 0=innen / 1= aussen
+   Laser :=0;*VAR*Laser Ja / Nein
+   SnapXY :=9;*VAR*Easy Snap in XY
+   SnapZ :=1;*VAR*Easy Snap in Z
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+WZF (5,_VE,_V,_VA,_SD,_ANF,'1')
+transesxy (MX,MY,SnapXY,0)
+Transesd (Tiefe,SnapZ)
+CALL _DrehenBBStart_V5 ( VAL DX:=MX,DY:=MY,DW:=Winkel,ESXY1:=0)
+IF Seite=0
+;Innenseite
+SP (Mx,My-(( Breit/2) - _WZD*2),0,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+g02m (Mx + _WzD,My-( (Breit/2) - _WZD),Tiefe,Mx,My-( (Breit/2) - _WZD),0,0,0,0)
+g02m (Mx,My- (Breit/2),0,Mx,My- ((Breit/2) - _WzD),0,0,2,0)
+G01 (Mx -(Lang / 2),My-(Breit / 2),0,Radius,0,2)
+G01 (Mx -(Lang / 2),My+(Breit/2),0,Radius,0,2)
+G01 (Mx + (Lang / 2),My+(Breit/2),0,Radius,0,2)
+G01 (Mx + (Lang / 2),My-(Breit/2),0,Radius,0,2)
+G01 (Mx -0.5,My-(Breit/2),0,0,0,2)
+g02m (Mx -( _WzD +0.5),MY - ((Breit / 2) - _WzD),0,Mx-0.5,MY -((Breit / 2) - _WzD),0,0,0,0)
+EP (0,_ANF,0)
+END
+IF Seite=1
+;Aussenseite
+SP (Mx,My-(( Breit/2) + _WZD*2),0,2,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+g02m (Mx - _WzD,My-( (Breit/2)+ _WZD),Tiefe,Mx,My-( (Breit/2) + _WZD),0,0,0,0)
+g02m (Mx,My- (Breit/2),0,Mx,My- ((Breit/2) + _WzD),0,0,2,0)
+G01 (Mx + (Lang / 2),My-(Breit / 2),0,Radius,0,2)
+G01 (Mx + (Lang / 2),My+(Breit/2),0,Radius,0,2)
+G01 (Mx -  (Lang / 2),My+(Breit/2),0,Radius,0,2)
+G01 (Mx - (Lang / 2),My-(Breit/2),0,Radius,0,2)
+G01 (Mx + 0.5,My-(Breit/2),0,0,0,2)
+G02M (Mx +( _WzD +0.5),MY - ((Breit / 2) + _WzD),0,Mx +0.5,MY -((Breit / 2) + _WzD),0,0,2,0)
+EP (0,_ANF,0)
+END
+IF Seite=2
+;Mitte
+SP (Mx+_WzD,My-( Breit/2),0,0,0,_ANF,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Mx - _WzD,My-(Breit / 2),Tiefe,Radius,0,0)
+G01 (Mx - (Lang / 2),My-(Breit / 2),0,Radius,0,2)
+G01 (Mx - (Lang / 2),My+(Breit/2),0,Radius,0,2)
+G01 (Mx +  (Lang / 2),My+(Breit/2),0,Radius,0,2)
+G01 (Mx + (Lang / 2),My-(Breit/2),0,Radius,0,2)
+G01 (Mx - _WzD,My-(Breit/2),0,0,0,2)
+G01 (Mx - (_WzD*2),My-(Breit/2),0,0,0,2)
+EP (0,_ANF,0)
+END
+CALL _DrehenBBEnde ()

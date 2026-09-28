@@ -1,0 +1,40 @@
+;MAKROTYP=1
+;BILD=
+;INFO=Fuchs
+;WZGV=DEMO
+;MASCHINE=SIMU
+;NCNAME=Ausspitzen_V4
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   X := 0;*VAR*X-Position
+   Y := 0;*VAR*Y-Position
+   Dreh := 135;*VAR*Drehwinkel
+   Kipp := 70;*VAR*Kippwinkel
+   SY := 0;
+   EZ := 0;Z-Änderung
+   EY := 0;
+   über := 20;Überfahren oben
+   Ueber2 := 5;*VAR*unten
+START
+;*****************************************************
+;direkt cnc systeme NCHOPS Version 4.x
+;MW 15.05.2003
+;*****************************************************
+;Überfahren oben und unten funktioniert jetzt
+;bei jeder Winkellage
+;*****************************************************
+EbeneF (X,Y,0,Kipp,Dreh)
+;EZ := tan(90-kipp)*(_RZ+über)
+EZ := cos(kipp)*(_RZ+über)
+;EY := _RZ+über
+EY := Sin(Kipp)*(_RZ+über)
+SP (0,-ueber2*Sin(kipp),-ueber2*Cos(kipp),0,0,_ANF,0,0,0)
+G01 (_X,_Y+EY+(Ueber2*SIN(Kipp)),_Z+EZ+(Ueber2*COS(Kipp)),0)
+EP (0,_ANF,0)
+Ebene0()
+ZText ('Ausspitzen',x,Y,30,dreh-90,1,0,'',0,0,0,0)

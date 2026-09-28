@@ -1,0 +1,78 @@
+;MAKROTYP=1
+;BILD=_KKorb_3R_G03.bmp
+;INFO=KORBBOGEN_3R_FLÜGEL_OBEN_AUSSENKONTUR
+;WZGV=DEMO
+;MASCHINE=SIMU
+;NCNAME=_KKorb_3R_G03
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   Name := '';*VAR*KonturElementname
+   SX := 0;Startpunkt in X
+   SY := 0;Startpunkt in Y
+   Br := 2000;*VAR*Gesamtbreite
+   Stich := 400;*VAR*Stich
+   HolzBr := 0;*VAR*Holzbreite
+   Z := _Z;*VAR*Zustelltiefe
+   Info := '';*VAR*KonturElementinfo
+   _K3R2 := 0;Radius Gross Aussen
+   _K3R1 := 0;Radius Klein Aussen
+   _K3R4 := 0;Radius Gross Innen
+   _K3R3 := 0;Radius Klein Innen
+   X := 0;Schnittpunkt in X
+   Y := 0;Schnittpunkt in Y
+   a := 0;Variablenberechnung
+   S := 0;Variablenberechnung
+   S1 := 0;Variablenberechnung
+   W1 := 0;Winkel1
+   R1 := 0;Radius erster Bogen
+   b := 0;Variablenberechnung
+   R2 := 0;Radius2
+   S2 := 0;Variablenberechnung
+   W2 := 0;Winkel2
+START
+;direkt cnc systeme NCHOPS Version 4
+Rohteil (Br,Stich,1,0,0)
+;*********
+a := (Br/2)-(Stich)
+S := sqrt(sqr(Br/2)+sqr(Stich))
+S1 := (S-a)/2
+W1 := arccos((Br/2)/(S))
+R1 := S1/cos(W1)
+b := (Br/2)-R1
+S2 := b/tan(W1)
+R2 := (Stich)+S2
+W2 := 360-90-W1
+X := -cos(W2)*R1
+Y := -sin(W2)*R1
+HGNeu()
+IF Holzbr=0
+HLineY (_Y)
+HKreismpr (_X-Br/2,_Y+Stich-R2,R2)
+HKreismpr (_X-R1,_Y,R1)
+HKreismpr (_X-Br+R1,_Y,R1)
+_K3R2 := R2
+_K3R1 := R1
+ZText ('_K3R2='+ FloatToStr(R2,8,3)+' / _K3R1='+ FloatToStr(R1,8,3),_X-Br/2,_Y+Stich+10,10,0,8,0,'',0,0,0,0)
+CALL _KG03R ( VAL EN:=Name,EX:=_SPX5,EY:=_SPY5,EZ:=_Z,R:=_K3R1,EI:='')
+CALL _KG03R ( VAL EN:='',EX:=_SPX9,EY:=_SPY9,EZ:=_Z,R:=_K3R2,EI:='')
+CALL _KG03R ( VAL EN:='',EX:=_SPX8,EY:=_SPY8,EZ:=_Z,R:=_K3R1,EI:='')
+ELSE
+_X := _X+HolzBr
+HLineY (_Y)
+HKreismpr (_X-Br/2,_Y+Stich-R2,R2-HolzBr)
+HKreismpr (_X-R1,_Y,R1-HolzBr)
+HKreismpr (_X-Br+R1,_Y,R1-HolzBr)
+_X := _spx3
+_K3R4 := R2-HolzBr
+_K3R3 := R1-HolzBr
+ZText ('_K3R4='+ FloatToStr(R2,8,3)+' / _K3R3='+ FloatToStr(R1,8,3),_X-Br/2+HolzBr,_Y+Stich-HolzBr+10,01,0,8,0,'',0,0,0,0)
+CALL _KG03R ( VAL EN:=Name,EX:=_SPX5,EY:=_SPY5,EZ:=_Z,R:=_K3R3,EI:='')
+CALL _KG03R ( VAL EN:='',EX:=_SPX9,EY:=_SPY9,EZ:=_Z,R:=_K3R4,EI:='')
+CALL _KG03R ( VAL EN:='',EX:=_SPX8,EY:=_SPY8,EZ:=_Z,R:=_K3R3,EI:='')
+END
+HGNeuEnd()

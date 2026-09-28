@@ -1,0 +1,82 @@
+;MAKROTYP=1
+;INSTVERSION=6.4.2.1
+;EXEVERSION=6.6.2.197[Hops.exe]
+;BILD=_KG02R.WMF
+;INFO=NC1000
+;WZGV=HALI_WEEKE
+;WZGVCONFIG=
+;MASCHINE=NC1000
+;NCNAME=_KG02R
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   EN := '';*VAR*Elementname
+   EX := _X;*VAR*Endpunkt in X
+   EY := _Y;*VAR*Endpunkt in Y
+   EZ := _Z;*VAR*Endpunkt Z
+   R := 50;*VAR*Radius
+   EI := '';*VAR*ElementInfo
+   SX := 0;Startpunkt in X
+   SY := 0;Startpunkt in Y
+   MX := 0;Mitte in X errechnet
+   MY := 0;Mitte in Y errechnet
+   FehlerText := '';
+   Toleranz := 0.001;
+START
+;**************************************************
+;*******  Zeichne Kreis mit R-Eingabe  *******
+;**************************************************
+Rohteil (2000,2000,19,0,0)
+;**************************************************
+SX := _X
+SY := _Y
+;///////  Abstand zwischen End- und Startpunkt berechnen
+CALL _LZWIPU ( VAL X1:=SX,Y1:=SY,X2:=EX,Y2:=EY)
+;**************************************************
+;///////  Abstand zwischen End- und Startpunkt
+;///////  über eingegebenen Radius ist nicht konstruierbar
+IF abs(_LZWIPU)<Toleranz
+FehlerText := 'Start und Endpunkt sind gleich  --  Vollkreis_nicht möglich !!'
+Fehlermeldung (Fehlertext)
+END
+;**************************************************
+;///////  Abstand zwischen End- und Startpunkt zu gross
+IF _LZWIPU > (2*abs(R))
+IF abs(_LZWIPU-(2*abs(R)))<Toleranz
+ELSE
+FehlerText := 'Nicht konstruierbar  --  Radius zu klein !!'
+Fehlermeldung (Fehlertext)
+END
+END
+;**************************************************
+HGNeu()
+;**************************************************
+;///////  Abstand zwischen End- und Startpunkt exakt 2 mal Radius
+IF abs(_LZWIPU-(2*abs(R)))<Toleranz
+HKreismpr (SX,SY,abs(R))
+HKreismpr (EX,EY,abs(R))
+MX := _SPX1
+MY := _SPY1
+ELSE
+HKreismpr (SX,SY,abs(R))
+HKreismpr (EX,EY,abs(R))
+IF R>0
+MX := _SPX1
+MY := _SPY1
+ELSE
+MX := _SPX2
+MY := _SPY2
+END
+END
+;**************************************************
+HGNeuEnd()
+;**************************************************
+KG02M (EN,EX,EY,EZ,MX,MY,EI)

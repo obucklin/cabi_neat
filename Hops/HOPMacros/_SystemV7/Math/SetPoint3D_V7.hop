@@ -1,0 +1,14 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowSetPoint3D_V7Dialog
+VARS
+   X := 0;*VAR*
+   Y := 0;*VAR*
+   Z := 0;*VAR*
+   PointX := ;*VAR**REF*
+   PointY := ;*VAR**REF*
+   PointZ := ;*VAR**REF*
+START
+PointX := X
+PointY := Y
+PointZ := Z

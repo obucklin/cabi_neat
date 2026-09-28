@@ -1,0 +1,10 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowTipALimit_V7Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   Hold := 0;*VAR*1 bis zum Werkzeugwechsel verwenden
+   HoldCloneMoveZ := 0;*VAR*1 Fräsbahnen mit mehrfach Z-Zustellung einfügen
+   TipALimit := 30;*VAR*
+START
+nciext (-100001,'NCISys',1,Hold,HoldCloneMoveZ,TipALimit)

@@ -1,0 +1,50 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.8.0.2[Hops.exe]
+;BILD=START_REL_Z.WMF
+;INFO=
+;WZGV=7235C_001
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Start_rel_Z
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   SX := 0;*VAR*Startpunkt X-Richtung
+   SY := 0;*VAR*Startpunkt Y-Richtung
+   TZO := 0;*VAR*Tiefe ab Oberkante
+   Anfahrbewegung := 0;*VAR*0=keine; 1=linear; 2=radial; 3=seitlich
+   Korrektur := 0;*VAR*0=Mitte; 1=Links; 2=Rechst
+   MesspunktNR := 1;*VAR*Messpunktnummer für Startpunkt
+   KName := '1';*VAR*Konturname
+   _countMPNR := 1;
+   _count := 0;
+   _MesspunktNRalt := -1;
+   _TZO := 0;Globale Variable Tiefe ab OK
+START
+IF _countMPNR<_HHMPNR
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=0,MODE:=0,STR:='#VAR')
+WHILE _countMPNR<=_HHMPNR
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=0,MODE:=0,STR:='V.L.MEASPOINT' + INTTOSTR(_countMPNR))
+_countMPNR := _countMPNR+1
+END
+_TZO := TZO
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=0,MODE:=0,STR:='#ENDVAR')
+ELSE
+END
+CALL UseMeasuredPoint_V7 ( VAL HOLD:=0,ACTIVE:=1,IDX:=0,IDY:=0,IDZ:=MesspunktNR,FAKTORX:=1,FAKTORZ:=1,FAKTORY:=1)
+SP (SX,SY,TZO,Korrektur,Anfahrbewegung,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KB (KName,'',0,0,0,'',10,0)
+_MesspunktNRalt := MesspunktNR
+CALL NCLineDirekt_V7 ( VAL HOLD:=0,HOLDCLONEMOVEZ:=0,MODE:=0,STR:='G90 F' + INTTOSTR(_V))

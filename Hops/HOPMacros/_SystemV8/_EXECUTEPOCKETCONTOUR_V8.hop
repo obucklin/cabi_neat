@@ -1,0 +1,63 @@
+;MAKROTYP=0
+;BILD=_EXECUTEPOCKETCONTOUR_V8.WMF
+;INFO=_EXECUTEPOCKETCONTOUR_V5
+;WZGV=1000008874SB
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=_EXECUTEPOCKETCONTOUR_V8
+;KOMMENTAR=
+;DX=1
+;DY=2
+;DZ=3
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   KN := '';*VAR*Konturnamen
+   LastTiefe := 0;*VAR*
+   Tiefe := -10;*VAR*Tiefe
+   FliegendEintauchen := 1;*VAR*
+   MaxEintauchLaenge := 20;*VAR*
+   LastCall := 0;*VAR*
+   InterpolDist := 0.5mm;*VAR*Abstand für Interpolationsfräsung
+   KELänge := 0;
+   ElePos := 0;
+   Typ := 0;
+   P1X := 0;
+   P1Y := 0;
+START
+IF FliegendEintauchen=0
+KSP ('???','???',Tiefe,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen (KN,'KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+ELSE
+KELänge := GetKE_Laenge(KN,1)
+IF MaxEintauchLaenge>KELänge
+ElePos := 1
+ELSE
+ElePos := (MaxEintauchLaenge/KELänge)
+END
+CALL _CalcPunktOnKontur_V5 (REF P1X:=P1X,P1Y:=P1Y VAL K:=KN,KINDEX:=1,POS:=ElePos)
+SP (P1X,P1Y,LastTiefe+InterpolDist,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+Typ := GetKE_Typ(KN,1)
+IF Typ=1
+G01 (GetKP_X(KN,0),GetKP_Y(KN,0),Tiefe,0,0,0)
+ELSE
+IF Typ=2
+G03M (GetKP_X(KN,0),GetKP_Y(KN,0),Tiefe,GetKE_MX(KN,1),GetKE_MY(KN,1),0,0,0,0)
+ELSE
+g02m (GetKP_X(KN,0),GetKP_Y(KN,0),Tiefe,GetKE_MX(KN,1),GetKE_MY(KN,1),0,0,0,0)
+END
+END
+KonturFraesen (KN,'KSP','KEP',0,0,0,0,0,0,0,0)
+EP (0,_ANF,0)
+END
+IF LastCall
+ELSE
+;Bearebitungen kleben
+Call GLUEPROCESS_V7 ()
+END
+;CALL _DrawToolOnKontur_V5 ( VAL KN:=KN)

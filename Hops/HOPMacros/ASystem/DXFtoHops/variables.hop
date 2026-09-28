@@ -1,0 +1,40 @@
+;MAKROTYP=1
+;BILD=
+;INFO=SchreibeVariablen
+;WZGV=Demo
+;MASCHINE=Simu
+;NCNAME=variables
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   attribution := 0;
+   B_profondeur2_50000 := -10;
+   B_type2_50000 := 10;
+   B_profondeur3_00000 := -10;
+   B_type3_00000 := 10;
+   B_profondeur5_00000 := -5;
+   B_type5_00000 := 20;
+   B_profondeur8_00000 := -10;
+   B_type8_00000 := 10;
+   B_profondeur8_20000 := -10;
+   B_type8_20000 := 10;
+   B_profondeur10_00000 := -10;
+   B_type10_00000 := 10;
+   B_profondeur12_00000 := -15;
+   B_type12_00000 := 10;
+   B_profondeur15_00000 := -10;
+   B_type15_00000 := 10;
+   B_profondeur35_00000 := -6;
+   B_type35_00000 := 30;
+START
+FZ := 32
+no_de_l_outilDH := 501
+Rohteil (FX,FY,FZ,0,3)
+no_de_l_outil := 1
+approcheB := 1
+sortie_B := 1
+correction_du_rayon := 1

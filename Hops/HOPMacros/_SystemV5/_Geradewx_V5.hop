@@ -1,0 +1,30 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_Geradewx_V5Dialog
+VARS
+   X := ;*VAR*Strecke in X-Richtung
+   Winkel := ;*VAR*Winkel der Strecke
+   Z := 0;*VAR*Zustelltiefe
+   R := 0;*VAR*verrundungsradius
+   esd := 2;*VAR*
+START
+;DIREKT CNC SYSTEME NCHOPS VERSION 3.0
+;Gerade mit X-Wert und Winkel
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+Transesd (z,esd)
+WHILE Winkel>360
+Winkel := Winkel-360
+END
+WHILE Winkel<0
+Winkel := Winkel+360
+END
+IF ((Winkel<90.0001)&(Winkel>89.9999))|((Winkel<270.0001)&(Winkel>269.9999))
+;Keine Lösung
+Hinweismeldung (GetMessageText('36','Keine Loesung'))
+ELSE
+IF (winkel>90)&(winkel<270)
+G01 (_X-X,_Y-(X*Tan(Winkel)),Z,R)
+ELSE
+G01 (_X+X,_Y+(X*Tan(Winkel)),Z,R)
+END
+END

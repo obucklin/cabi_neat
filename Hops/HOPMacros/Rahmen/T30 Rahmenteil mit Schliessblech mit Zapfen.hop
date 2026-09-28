@@ -1,0 +1,183 @@
+;MAKROTYP=0
+;BILD=T30 Rahmenteil mit Schliessblech mit Zapfen.wmf
+;INFO=
+;WZGV=7223K_023
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=T30 Rahmenteil mit Schliessblech mit Zapfen
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_2.Dll
+;DIALOGPROC=ShowTR_ZapfenSb_Dialog
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 1980;*VAR*Dimension X
+   DY := 95;*VAR*Dimension Y
+   DZ := 45;*VAR*Dimension Z
+   Druecker_H := 1000;*VAR*Kasten Mitte
+   Falz_T := 15;*VAR*Falztiefe
+   Falz_H := 29;*VAR*Falz hoehe
+   Loch_Dm := 15.00;Dübellochdurchmesser
+   Fase := 1.00;Fase
+   S_Blech := 1;*VAR*Schliessblech Ja=1 / Nein=0
+   Roku_Strip := 0;*VAR*Roku Strip Band fraesen
+   Bolzen := 0;*VAR*Bolzen zu Sicherheits-Schliessblech
+   Schwellenwinkel := 0;*VAR*Schwellenwinkel-Nut
+   Querstueck := DY;*VAR*Querstueck oben
+   Vorschruppen := 1;*VAR*Schliessbleche vorschruppen
+   Fase_Q := 2.00;*VAR*Fase oben Quer
+START
+Fertigteil (DX,DY,DZ,0,0,5,2.5,60,'',0,0,0)
+CALL HH_Park ( VAL PARK:=2,X:=0,Y:=0)
+;Ablaengen
+WZS (200,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _saege_y_V5 ( VAL SX:=0,SY:=-50,SZ:=-10,EY:=-50,EZ:=-50,BL:=1,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=2,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=1,ESY:=5)
+CALL _saege_y_V5 ( VAL SX:=0,SY:=-50,SZ:=-10,EY:=-50,EZ:=-50,BL:=2,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=2,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=2,ESXY1:=3,ESY:=5)
+IF Schwellenwinkel=1
+;Schwellenwinkel
+WZF (137,_VE,_V,_VA,_SD,_ANF,'1')
+SP (30,-150,-Falz_H,2,0,_ANF,0,0,0,3,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (30,-150,0,0,5,2)
+EP (0,_ANF,0)
+SP (30,-150,-(Falz_H+3),2,0,_ANF,0,0,0,3,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (30,-150,0,0,5,2)
+EP (0,_ANF,0)
+;Falz abfraesen
+SP (6.5,-150,3.5,2,0,_ANF,0,0,0,3,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (6.5,-150,0,0,5,2)
+EP (0,_ANF,0)
+SP (6.5,-150,7.5,2,0,_ANF,0,0,0,3,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (6.5,-150,0,0,5,2)
+EP (0,_ANF,0)
+SP (6.5,-150,10.00,2,0,_ANF,0,0,0,3,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (6.5,-150,0,0,5,2)
+EP (0,_ANF,0)
+END
+IF S_Blech=1
+IF Vorschruppen =1
+;Kasten oben
+WZF (104,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Druecker_H -776-25.00,-50,-21,2,0,_ANF,3,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Druecker_H-776-25,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H-676-25,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H-676-25,-50,0,0,1,2)
+EP (0,_ANF,0)
+;Kasten mitte
+SP (Druecker_H -90,-50,-21,2,0,_ANF,3,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Druecker_H-90,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H+127,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H+127,-50,0,0,1,2)
+EP (0,_ANF,0)
+;Kasten unten
+SP (Druecker_H +714+19,-50,-21,2,0,_ANF,3,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Druecker_H+714+19,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H+814+19,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H+814+19,-50,0,0,1,2)
+EP (0,_ANF,0)
+END
+WZF (186,_VE,_V,_VA,_SD,_ANF,'1')
+;Kasten oben
+SP (Druecker_H -776-25.00,-50,-21,2,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Druecker_H-776-25,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H-676-25,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H-676-25,-50,0,0,1,2)
+EP (0,_ANF,0)
+;Kasten mitte
+SP (Druecker_H -90,-50,-21,2,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Druecker_H-90,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H+127,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H+127,-50,0,0,1,2)
+EP (0,_ANF,0)
+;Kasten unten
+SP (Druecker_H +714+19,-50,-21,2,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Druecker_H+714+19,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H+814+19,Falz_T + 8,0,0,1,2)
+G01 (Druecker_H+814+19,-50,0,0,1,2)
+EP (0,_ANF,0)
+END
+;Falz
+WZF (187,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-150,Falz_T,-Falz_H,2,0,_ANF,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-150,Falz_T,0,0,3,2)
+EP (0,_ANF,0)
+;Formatieren hinten
+WZF (130,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-100,0,1,1,0,_ANF,0,0,0,7,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-100,0,0,0,5,2)
+EP (0,_ANF,0)
+;Fasen Vorne im Falz
+WZF (150,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,-100,-Fase,2,0,_ANF,0,0,0,7,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,Falz_T,0,0,1,2)
+G01 (-100,Falz_T,0,0,3,2)
+EP (0,_ANF,0)
+;Fasen hinten
+WZF (150,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-50,0,-Fase,1,0,_ANF,0,0,0,7,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,5,2)
+EP (0,_ANF,0)
+;Fase oben Quer
+IF Fase_Q >0
+SP (0,-100,-Fase_Q,2,0,_ANF,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-100,0,0,1,2)
+EP (0,_ANF,0)
+END
+;Formatieren mit Fase unten
+WZF (130,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-100,0,Fase,2,0,_ANF,0,0,0,1,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-100,0,0,0,3,2)
+EP (0,_ANF,0)
+;Fasen im Falz
+WZF (150,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-50,0,-(Falz_H + Fase),2,0,_ANF,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,3,2)
+EP (0,_ANF,0)
+;Fase oben und unten Quer
+SP (0,-50,- Fase,2,0,_ANF,0,0,0,3,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-100,0,0,5,2)
+EP (0,_ANF,0)
+;Roku_Strip
+IF Roku_Strip=1
+WZF (8,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-150,Falz_T+1.5,-5,2,0,_ANF,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-150,Falz_T+1.5,0,0,3,2)
+EP (0,_ANF,0)
+SP (-150,Falz_T+1.5,-10,2,0,_ANF,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-150,Falz_T+1.5,0,0,3,2)
+EP (0,_ANF,0)
+END
+IF Bolzen=1
+;Sicherungsbolzen
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+HorzB (Druecker_H -52,Falz_T,11,8,-40,0,0,90,1,2,0,0)
+HorzB (Druecker_H +21,Falz_T,13,8,-40,0,0,90,1,2,0,0)
+HorzB (Druecker_H +94,Falz_T,11,8,-40,0,0,90,1,2,0,0)
+END
+;Zapfenloch fraesen
+WZF (151,_VE,_V,_VA,_SD,_ANF,'1')
+Ebene1()
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=(dy/2) -7.5,Y_MITTE:=12.5,TASCHENLAENGE:=50,TASCHENBREITE:=14,RADIUS:=7,WINKEL:=0,TIEFE:=-40,ZUSTELLUNG:=20,AB:=0,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=7,ESMD:=0,LASER:=0)
+;Kastenlöcher /o /m /u fräsen
+Ebene0()
+;Riegelloecher
+WZF (151,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _HorTasche_V5 ( VAL EBENE:=0,XPOS:=Druecker_H -776-25.00+70,YPOS:=Falz_T,ZPOS:=10,BREITE:=22,HOEHE:=15,TIEFE:=-25,ZUTIEFE:=10,RADIUS:=0,UMKEHREN:=0,INTERPOL:=0,PENDELN:=0,ESXY:=1,ESZ:=2)
+CALL _HorTasche_V5 ( VAL EBENE:=0,XPOS:=Druecker_H -90+150,YPOS:=Falz_T,ZPOS:=10,BREITE:=55,HOEHE:=14,TIEFE:=-25,ZUTIEFE:=10,RADIUS:=0,UMKEHREN:=0,INTERPOL:=0,PENDELN:=0,ESXY:=1,ESZ:=2)
+CALL _HorTasche_V5 ( VAL EBENE:=0,XPOS:=Druecker_H +714+19+70,YPOS:=Falz_T,ZPOS:=10,BREITE:=22,HOEHE:=15,TIEFE:=-25,ZUTIEFE:=10,RADIUS:=0,UMKEHREN:=0,INTERPOL:=0,PENDELN:=0,ESXY:=1,ESZ:=2)
+;3 mm Loecher zu Schliessblech
+WZF (152,_VE,_V,_VA,_SD,_ANF,'1')
+HorzB (Druecker_H -776-25.00+8,Falz_T,13,3,-25,0,0,90,1,2,0,0)
+HorzB (Druecker_H -776-25.00+8+82,Falz_T,13,3,-25,0,0,90,1,2,0,0)
+;Schloss
+HorzB (Druecker_H -90+10,Falz_T,13,3,-25,0,0,90,1,2,0,0)
+HorzB (Druecker_H -90+10+25,Falz_T,11,3,-25,0,0,90,1,2,0,0)
+HorzB (Druecker_H -90+10+98,Falz_T,13,3,-25,0,0,90,1,2,0,0)
+HorzB (Druecker_H -90+10+172,Falz_T,11,3,-25,0,0,90,1,2,0,0)
+HorzB (Druecker_H -90+10+98+98,Falz_T,13,3,-25,0,0,90,1,2,0,0)
+;Unten
+HorzB (Druecker_H +714+19 +9,Falz_T,13,3,-25,0,0,90,1,2,0,0)
+HorzB (Druecker_H +714+19 +9+82,Falz_T,13,3,-25,0,0,90,1,2,0,0)

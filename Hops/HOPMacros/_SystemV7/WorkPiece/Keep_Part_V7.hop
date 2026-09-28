@@ -1,0 +1,48 @@
+;MAKROTYP=1
+
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=ShowKeep_Part_V7Dialog
+
+VARS
+   PosX := 50;*VAR*Gutteil Positionbestimmung X
+   PosY := 50;*VAR*Gutteil Positionbestimmung Y
+   PosZ := 0;*VAR*Gutteil Positionbestimmung Z (von Oberkante)
+   PosX2 := 50;*VAR*Gutteil Positionbestimmung X2
+   PosY2 := 50;*VAR*Gutteil Positionbestimmung Y2
+   PosZ2 := 0;*VAR*Gutteil Positionbestimmung Z2 (von Oberkante)
+   AsLine := 0;*VAR*Punkt / Linie
+   PixB := 3;
+   Farb1 := 79797;
+   Farb2 := 8453;
+   b := 10;Breite Zeichnungselement
+   esxy := 9;*VAR*
+   esz := 0;*VAR*
+   esxy2 := 0;*VAR*
+   esz2 := 2;*VAR*
+START
+;HH_EXTS
+;------------------------------------------------
+;-- DiREKT CNC SYSTEME GmbH
+;--
+;-- Dieses Makro definiert das "Gutteil" für die MW-Simu
+;--
+;------------------------------------------------
+Fertigteil (1000,2000,40,0,0,0,0,0,'',0,0,0)
+Ebene0()
+transesxy (PosX,PosY,esxy,0);
+transesz (PosZ,esz)
+transesxy (PosX2,PosY2,esxy2,0)
+transesz (PosZ2,esz2)
+;------------------------------------------------
+IF _MNCDC_SplitKind<>-1
+ZText ('EVO',PosX,PosY,10,0,1,0,'Times New Roman',0,0,0,0,0,1)
+ELSE
+ZText ('CNC',PosX,PosY,10,0,1,0,'Times New Roman',0,0,0,0,0,1)
+WZF (4444,_VE,_V,_VA,_SD,_ANF,'1')
+ncinfoprocess (4444,PosX,PosY,PosZ-_RZ,PosX2,PosY2,PosZ2-_RZ,'','',AsLine,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+CALL _ZRechteck_2P_V6 ( VAL SX:=PosX-b/2,SY:=PosY-b/2,EX:=PosX+b/2,EY:=PosY+b/2,FUELLEN:=0,FARBE:=Farb1,ESXY1:=0,ESXY2:=0,THICKNESS:=PixB,THICKNESSKIND:=1)
+ZLinie (PosX-b/2,PosY,PosX,PosY-b/2,Farb2,0,0,PixB,1)
+ZLinie (PosX+b/2,PosY+b/2,PosX,PosY-b/2,Farb2,0,0,PixB,1)
+/CALL _ZKBCWR_V6 ( VAL SX:=PosX-5,SY:=PosY,EX:=PosX+5,EY:=PosY,R:=5,FARBE:=Farb2,ESXY1:=0,ESXY2:=0,THICKNESS:=PixB,THICKNESSKIND:=1)
+/CALL _ZKBCWR_V6 ( VAL SX:=PosX,SY:=PosY-5,EX:=PosX,EY:=PosY+5,R:=10,FARBE:=Farb2,ESXY1:=0,ESXY2:=0,THICKNESS:=PixB,THICKNESSKIND:=1)
+END

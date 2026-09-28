@@ -1,0 +1,192 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=FIX_CHIP.WMF
+;INFO=
+;WZGV=7535D_129
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=Fixchip_Stirn_test
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_7.Dll
+;DIALOGPROC=ShowFixChip_Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   Stirn_Wkz := 1;*VAR*Wkz zur Kantenbearbeitung
+   Vert_Wkz := 6;*VAR*Wkz zur flachseitigen Bearbeitung
+   VorB_Wkz := 6;*VAR*Wkz Vorbohren
+   Maschine := 1;*VAR*Maschine 0= Normale 1= Nesting
+   Art := 0;*VAR*0= Stirnseitig / 1=Flachseitig
+   Snap_XY := 8;*VAR*Easy Snap
+   Winkel := 90;*VAR*0= nach rechts im guz
+   Tiefe := -13.00;*VAR*Tiefe FixChip horizontal
+   V_Tiefe := -13.00;*VAR*Tiefe FixChip vertikal
+   Z_Hoehe := (DZ/2);*VAR*Höhe FixChip
+   Tiefe_VB := -(DZ-1);*VAR*Tiefe Vorbohren FixChip
+   X_Pos := 60.00;*VAR*X Position
+   Y_Pos := 0.00;*VAR*Y-Position
+   Z_Zu := 5.00;*VAR*Zustellung in Z
+   Z_Zu_VorF := Z_Zu;Zustellung beim vorfräsen
+   Bohren := 1;35 mm Bohren 1= ja / 0= Nein
+   Off_X := 0;Berechnete Pos X
+   Off_Y := 0;Berechnete Pos Y
+   TempX := 0;X-Wert
+   TempY := 0;Y-Wert
+   EXECUTELEADINOUT := 0;
+   Seite := 1;1= Vorne / 2 Links / 3 Hinten /4=Rechts
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;Weinig Holzher Schweiz AG B. Achermann
+Z_Zu_VorF := Z_Zu
+IF (Maschine=1) & (Art=0);BREAKPOINT
+EXECUTELEADINOUT := 1
+Bohren := 1
+ELSE
+EXECUTELEADINOUT := 0
+Bohren := 0
+END
+IF Winkel = 0
+Seite := 2
+;Links
+END
+IF Winkel = 90
+Seite := 1
+;Vorne
+END
+IF Winkel = 180
+Seite := 4
+;Rechts
+END
+IF Winkel = 270
+Seite := 3
+;Hinten
+END
+IF EXECUTELEADINOUT=1
+WZF (9999,_VE,_V,_VA,_SD,_ANF,'1')
+IF Seite=1
+CALL LeadInOutKontur_V7 ()
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=X_Pos,Y_MITTE:=Y_Pos - 18.5,TIEFE:=1,ZUTIEFE:=0,RADIUS:=18.5,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=180,ANF:=_ANF,ABF:=_ANF,RAMPE:=0,INTERPOL:=1,ESXY:=Snap_XY,ESMD:=0,LASER:=0)
+END
+IF Seite=2
+CALL LeadInOutKontur_V7 ()
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=X_Pos - 18.5,Y_MITTE:=Y_Pos,TIEFE:=1,ZUTIEFE:=0,RADIUS:=18.5,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=180,ANF:=_ANF,ABF:=_ANF,RAMPE:=0,INTERPOL:=1,ESXY:=Snap_XY,ESMD:=0,LASER:=0)
+END
+IF Seite=3
+CALL LeadInOutKontur_V7 ()
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=X_Pos,Y_MITTE:=Y_Pos - 18.5,TIEFE:=1,ZUTIEFE:=0,RADIUS:=18.5,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=180,ANF:=_ANF,ABF:=_ANF,RAMPE:=0,INTERPOL:=1,ESXY:=Snap_XY,ESMD:=0,LASER:=0)
+END
+IF Seite=4
+CALL LeadInOutKontur_V7 ()
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=X_Pos - 18.5,Y_MITTE:=Y_Pos,TIEFE:=1,ZUTIEFE:=0,RADIUS:=18.5,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=180,ANF:=_ANF,ABF:=_ANF,RAMPE:=0,INTERPOL:=1,ESXY:=Snap_XY,ESMD:=0,LASER:=0)
+END
+END
+IF Seite = 1
+IF Art = 0
+;Vorne
+IF Bohren = 1
+IF VorB_Wkz = 501
+;Bohren
+WZB (VorB_Wkz,_VE,_V,_VA,_SD,_ANF,'51')
+Bohrung (X_Pos,Y_Pos - 18.5,35,Tiefe_VB,30,0,0,Snap_XY,0,0,0,0)
+ELSE
+;Fraesen
+WZB (VorB_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _Kreistasche_V5_1 ( VAL X_MITTE:=X_Pos,Y_MITTE:=Y_Pos - 18.5,RADIUS:=17.5,TIEFE:=Tiefe_Vb,ZUSTELLUNG:=Z_Zu_VorF,AB:=0,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=1,UW:=67,ESXY:=Snap_XY,ESMD:=0,LASER:=0)
+END
+END
+WZF (Stirn_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (X_Pos,Y_Pos - 18.5,Z_Hoehe,0,0,_ANF,0,0,0,Snap_XY,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,(Tiefe+1),0,0,10,2)
+G01 (0,- (Tiefe+1),0,0,10,2)
+EP (0,_ANF,0)
+;Flachseitig
+ELSE
+WZF (Vert_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=X_Pos,Y_MITTE:=Y_Pos,TASCHENLAENGE:=40,TASCHENBREITE:=_WzD,RADIUS:=0,WINKEL:=0,TIEFE:=V_Tiefe,ZUSTELLUNG:=Z_Zu,AB:=0,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=Snap_XY,ESMD:=0,LASER:=0)
+END
+END
+IF Seite=2
+;Links
+IF Art = 0
+IF Bohren = 1
+IF VorB_Wkz = 501
+;Bohren
+WZB (VorB_Wkz,_VE,_V,_VA,_SD,_ANF,'51')
+Bohrung (X_Pos - 18.5,Y_Pos,35,Tiefe_VB * -1,30,0,0,Snap_XY,0,0,0,0)
+ELSE
+;Fraesen
+WZB (VorB_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _Kreistasche_V5_1 ( VAL X_MITTE:=X_Pos -18.5,Y_MITTE:=Y_Pos,RADIUS:=17.5,TIEFE:=Tiefe_Vb,ZUSTELLUNG:=Z_Zu_VorF,AB:=0,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=1,UW:=67,ESXY:=Snap_XY,ESMD:=0,LASER:=0)
+END
+END
+WZF (Stirn_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (X_Pos -18.5,Y_Pos,_Rz / 2,0,0,_ANF,0,0,0,Snap_XY,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 ((Tiefe+1),0,0,0,10,2)
+G01 (- (Tiefe+1),0,0,0,10,2)
+EP (0,_ANF,0)
+/END
+;Flachseitig
+ELSE
+WZF (Vert_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=X_Pos,Y_MITTE:=Y_Pos,TASCHENLAENGE:=40,TASCHENBREITE:=_WzD,RADIUS:=0,WINKEL:=90,TIEFE:=Tiefe_V,ZUSTELLUNG:=Z_Zu,AB:=0,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=Snap_XY,ESMD:=0,LASER:=0)
+END
+END
+IF Seite = 3
+IF Art = 0
+;Hinten
+IF Bohren = 1
+IF VorB_Wkz = 501
+;Bohren
+WZB (VorB_Wkz,_VE,_V,_VA,_SD,_ANF,'51')
+Bohrung (X_Pos,Y_Pos - 18.5,35,Tiefe_VB,30,0,0,Snap_XY,0,0,0,0)
+ELSE
+;Fraesen
+WZB (VorB_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _Kreistasche_V5_1 ( VAL X_MITTE:=X_Pos,Y_MITTE:=Y_Pos - 18.5,RADIUS:=17.5,TIEFE:=Tiefe_Vb,ZUSTELLUNG:=Z_Zu_VorF,AB:=0,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=1,UW:=67,ESXY:=Snap_XY,ESMD:=0,LASER:=0)
+END
+END
+WZF (Stirn_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (X_Pos,Y_Pos - 18.5,_Rz / 2,0,0,_ANF,0,0,0,Snap_XY,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,-(Tiefe+1),0,0,10,2)
+G01 (0,(Tiefe+1),0,0,10,2)
+EP (0,_ANF,0)
+;Flachseitig
+ELSE
+WZF (Vert_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=X_Pos,Y_MITTE:=Y_Pos,TASCHENLAENGE:=40,TASCHENBREITE:=_WzD,RADIUS:=0,WINKEL:=0,TIEFE:=Tiefe_V,ZUSTELLUNG:=Z_Zu,AB:=0,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=Snap_XY,ESMD:=0,LASER:=0)
+END
+END
+IF Seite=4
+;Rechts
+IF Art = 0
+IF Bohren = 1
+IF VorB_Wkz = 501
+;Bohren
+WZB (VorB_Wkz,_VE,_V,_VA,_SD,_ANF,'51')
+Bohrung (X_Pos  - 18.5,Y_Pos,35,Tiefe_VB,30,0,0,Snap_XY,0,0,0,0)
+ELSE
+;Fraesen
+WZB (VorB_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _Kreistasche_V5_1 ( VAL X_MITTE:=X_Pos - 18.5,Y_MITTE:=Y_Pos,RADIUS:=17.5,TIEFE:=Tiefe_Vb,ZUSTELLUNG:=Z_Zu_Vorf,AB:=0,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=1,UW:=67,ESXY:=Snap_XY,ESMD:=0,LASER:=0)
+END
+END
+WZF (Stirn_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (X_Pos - 18.5,Y_Pos,_Rz / 2,0,0,_ANF,0,0,0,Snap_XY,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (- (Tiefe+1),0,0,0,10,2)
+G01 ((Tiefe+1),0,0,0,10,2)
+EP (0,_ANF,0)
+;Flachseitig
+ELSE
+WZF (Vert_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=X_Pos,Y_MITTE:=Y_Pos,TASCHENLAENGE:=40,TASCHENBREITE:=_WzD,RADIUS:=0,WINKEL:=90,TIEFE:=Tiefe_V,ZUSTELLUNG:=Z_Zu,AB:=0,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=Snap_XY,ESMD:=0,LASER:=0)
+END
+END

@@ -1,0 +1,26 @@
+;MAKROTYP=1
+;BILD=_LR_Hor_li_hi.bmp
+;INFO=4712___1
+;WZGV=NC1000
+;MASCHINE=NC1000
+;NCNAME=_LR_Hor_li_hi
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   i := 0;
+   du := 8;*VAR*Durchmesser
+   abh := 0;*VAR*Abstand von hinten
+   abv := 0;*VAR*Abstand von vorne
+   Tiefe := 22;*VAR*Tiefe der Bohrungen
+   Raster := 64;*VAR*Raster
+   Drehen := 0;0=Nein 1=Ja um 180 Grad
+START
+Rohteil (1000,650,19,0,3)
+WZB (501,_VE,_V,_VA,_SD,_ANF)
+FOR i := abv TO _ry-abh STEP Raster
+HorzB (0,_ry-i,_rz/2,du,-Tiefe,0,0,0)
+END

@@ -1,0 +1,144 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.8.0.2[Hops.exe]
+;BILD=HH_MEASURE_V7.WMF
+;INFO=Measure_V7
+;WZGV=7507D_176
+;WZGVCONFIG=
+;MASCHINE=HH7
+;NCNAME=HH_Measure_V7
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowMeasure_V7Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   XPos := 0;*VAR*Position in X der Messung
+   YPos := 0;*VAR*Position in Y der Messung
+   esxy := 4;*VAR*
+   ZPos := 0;*VAR*Position in Z der Messung
+   esz := 2;*VAR*
+   MA := 20;*VAR*Messabstand
+   Toleranz := 10;*VAR*Toleranz in mm (Erlaubter Überfahrweg des Tasters)
+   MR := 0;*VAR*Messrichtung 0=Z- 1=Y+ 2=X+ 3=Y- 4=X- 6=Z+
+   WCS := 1;*VAR*WorkCenter Sichtbar
+   MeasureKind := 1;*VAR*Messtyp
+   SXPos := _RX;Position in X der Messung
+   SYPos := _RY / 2;Position in Y der Messung
+   SZPos := _RZ / 2;Position in Z der Messung
+   ZPZU := 0;ZUSCHLAG Nullpunkt
+   _MPNR := 0;MesspunktNummer
+   Text := '';
+   Dist := 1.5mm;
+   Beschriftung := '';
+   _HHMPNR := 0;Hilfsvariable für Gerade_Rel_z
+START
+;*************************************************
+;** Tastpunkt absetzen
+;*************************************************
+;** ProcessNCIInfo für Tasterkennung in ZM;YP,XP,YM;XM;ZP
+Fertigteil (50,50,19,0,0,0,0,0,'',0,0,0)
+;-
+Transesz (ZPos,esz)
+transesxy (XPos,YPos,esxy,1)
+;Auf Ebene von Oben umrechnen
+ZPos := ZPos-_RZ
+;-
+IF MA>0
+IF (MR>=0)&(MR<=5)
+;-
+_MPNR := _MPNR+1
+_HHMPNR := _MPNR
+;-
+IF _Job_ZPIndex>0
+ZPZU := _Job_ZPIndex*1000
+ELSE
+ZPZU := 0
+END
+;-
+Beschriftung := 'MP('+INTTOSTR(_MPNR+ZPZU)+') '
+;-
+/IF MR=5
+/MR := 10
+/END
+;-
+;- Z- Messen
+;-
+IF MR=0
+SXPos := XPos
+SYPos := YPos
+SZPos := ZPos+MA
+Text := 'Z-'
+END
+IF MR<>0
+Fehlermeldung ('Measuring direction not permitted (only Z-)')
+END
+;-
+;- Y+ Messen
+;-
+/IF MR=1
+/SXPos := XPos
+/SYPos := YPos-MA
+/SZPos := ZPos
+/Text := ''
+/END
+;-
+;- X+ Messen
+;-
+/IF MR=2
+/SXPos := XPos-MA
+/SYPos := YPos
+/SZPos := ZPos
+/Text := ''
+/END
+;-
+;- Y- Messen
+;-
+/IF MR=3
+/SXPos := XPos
+/SYPos := YPos+MA
+/SZPos := ZPos
+/Text := ''
+/END
+;-
+;- X- Messen
+;-
+/IF MR=4
+/SXPos := XPos+MA
+/SYPos := YPos
+/SZPos := ZPos
+/Text := ''
+/END
+;-
+;- Z+ Messen
+;-
+/IF MR=10
+/SXPos := XPos
+/SYPos := YPos
+/SZPos := ZPos-MA
+/Text := 'Z+'
+/END
+;-
+;Ausgeben
+IF (MR=0)|(MR=10)
+Dist := 2mm
+CALL _ZRechteck_2P_V7 ( VAL SX:=XPOS-Dist,SY:=YPOS-Dist,EX:=XPOS+Dist,EY:=YPOS+Dist,FUELLEN:=1,FARBE:=255,ESXY1:=0,ESXY2:=0,THICKNESS:=0,THICKNESSKIND:=0,USEDNCDATA:=WCS)
+ELSE
+Dist := MA
+CALL Pfeil_V7 ( VAL P1X:=XPos,P1Y:=YPos,P2X:=SXPos,P2Y:=SYPos,LÄNGE:=Dist,FARBE:=255,PFEILWINKEL:=15,WCS:=WCS)
+END
+ZText (Beschriftung+Text,XPos,YPos-Dist-0.5mm,20,0,4,0,'',0,0,0,0,0,WCS)
+Ebene0()
+NCInfoProcess (-210001,SXPos,SYPos,SZPos,XPos,YPos,ZPos,'','',_MPNR+ZPZU,Toleranz,MeasureKind,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2)
+;-
+ELSE
+Fehlermeldung (GetMessageText('1009','Messrichtung existiert nicht'))
+END
+ELSE
+Fehlermeldung (GetMessageText('1010','Messdistant muss größer 0 sein'))
+END

@@ -1,0 +1,75 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.5.3.10[Hops.exe]
+;BILD=FIXCHIP_K.WMF
+;INFO=
+;WZGV=7535DR_105
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=FixChip
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   SPX := 0;*VAR*Coordinate X
+   SPY := 0;*VAR*Coordinate Y
+   SPZ := 0;*VAR*Coordinate Z
+   WKLXY := 0;*VAR*Angle
+   ToolID := 210;ToolID FixChip
+   PreDrill := 0;Pre-Drill with 35mm On/Off --> 1/0
+   DM_K := 36;Diameter Contour
+   OffsetPreDrill := 17.5;Offset for PreDrill
+   OffsetX := 0;Calculated Offset X
+   OffsetY := 0;Calculated Offset Y
+   LaengeY := 0;Lenght Y
+   LaengeX := 0;Lenght X
+   OffsetX_K := 0;Offset Contour X
+   OffsetY_K := 0;Offset Contour Y
+START
+;HOLZ-HER GmbH
+;Copyright 2019
+;2019-12-03 - FixChip V1.2 DSO
+;Änderung auf 1 Werkzeug DSO
+;Mit Vorbohren (35mm) ja/nein
+IF PreDrill
+OffsetPreDrill := 17.5
+ELSE
+OffsetPreDrill := 18
+END
+;Berechnung Bohrung + Fraesung
+OffsetX := -1*(OffsetPreDrill*sin(WKLXY+90))
+OffsetY := -1*(OffsetPreDrill*sin((WKLXY)))
+LaengeX := 13.5*sin(WKLXY+90)
+LaengeY := 13.5*sin((WKLXY))
+/ZText ('OffsetX '+floattostr(OffsetX,5,2),SPX,SPY+20,30,0,1,0,'Times New Roman',0,0,0,0,0,1)
+/ZText ('OffsetY '+floattostr(OffsetY,5,2),SPX,SPY+5,30,0,1,0,'Times New Roman',0,0,0,0,0,1)
+/ZText ('LaengeX '+floattostr(LaengeX,5,2),SPX,SPY-10,30,0,1,0,'Times New Roman',0,0,0,0,0,1)
+/ZText ('LaengeY '+floattostr(LaengeY,5,2),SPX,SPY -25,30,0,1,0,'Times New Roman',0,0,0,0,0,1)
+;Ghostkontur für Bohrer
+;Berechnung An- und Abfahrkontur
+OffsetX_K := -1*((DM_K/2)*sin(WKLXY+90))
+OffsetY_K := -1*((DM_K/2)*sin((WKLXY)))
+WZF (9999,_VE,_V,_VA,_SD,_ANF,'1')
+Call LEADINOUTKONTUR_V7 ()
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=SPX+OffsetX_K,Y_MITTE:=SPY+OffsetY_K,TIEFE:=-1,ZUTIEFE:=0,RADIUS:=DM_K/2,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=180,ANF:=_ANF,ABF:=_ANF,RAMPE:=0,INTERPOL:=0,ESXY:=0,ESMD:=0,LASER:=0)
+;Ende Ghost
+;Vorbohren
+IF PreDrill
+WZB (501,_VE,_V,_VA,_SD,_ANF,'51')
+Bohrung (SPX+OffsetX,SPY+OffsetY,35,SPZ-4,30,0,0,0,1,0,0,0)
+END
+;Werkzeug ID vom FixChip-Fraeser
+WZF (ToolID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (SPX+OffsetX,SPY+OffsetY,SPZ,0,0,_ANF,0,0,0,0,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,SPZ,0,10,1)
+G01 (LaengeX,LaengeY,0,0,10,2)
+G01 (-LaengeX,-LaengeY,0,0,10,2)
+G01 (0,0,1,0,10,0)
+EP (0,_ANF,0)

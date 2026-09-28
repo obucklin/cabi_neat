@@ -1,0 +1,8 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowOptiStop_V7Dialog
+VARS
+   Text := '';*VAR*
+START
+nciext (-100280,'NCISys',3,0,0,0,0,0,0,0,0,Text)

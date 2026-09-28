@@ -1,0 +1,92 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.8.0.2[Hops.exe]
+;BILD=FALZ_HH.WMF
+;INFO=
+;WZGV=7405_1241
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=FALZ_HH
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   nutsx := -10;*VAR*
+   nutsy := -10;*VAR*
+   nutex := 500;*VAR*
+   nutey := 500;*VAR*
+   nuty := 100;
+   nutz := 10;*VAR*
+   nutd := 5;*VAR*
+   NutOffset := 0;
+   toolID := 0;
+   Nut_in := 99999;*VAR*0==in x   1=in Y
+START
+;HOLZHER GmbH
+;Copyright 15.02.2021
+;Version 15.02.2021 (Freigabe HH)
+;---------Änderungen hier reinschreiben: ----------***
+;Version 15.02.2021
+;-Falz
+IF _pVar_NoProcessV=1
+;Prozessvariable - Keine vertikale Bearbeitungen aktiv
+ELSE
+_pVar_PCount := _pVar_PCount+1
+IF nutd<3
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetStandardSawID')
+;Rohteil (555,555,20,0,0)
+WZS (toolID,_VE,_V,_VA,_SD,_ANF)
+;Berechnung Nutoffset bezogen auf Sägedurchmesser
+;Nutposition X bezogen auf Nuttiefe
+NutOffset := sqrt(sqr(_WZR)-sqr(_WZR-nutz))
+CALL _Nuten_X ( VAL NB:=nutd,NT:=nutz,EBENE:=0,ARAND:=_ry-nuty-nutd,ALINKS:=nutsx-NutOffset,ARECHTS:=_rx-nutex-NutOffset,RK:=1)
+ELSE
+IF (nutsy=0)&(nut_in=0);BREAKPOINT
+;Nut in x kante 1
+/ZText ('1',100,100,30,0,1,0,'Times New Roman',0,0,0,0,2,1)
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetStandardRouterID')
+WZF (toolID,_VE,_V,_VA,_SD,_ANF)
+SP (nutsx,nutey,-nutz,2,-1,_ANF,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (nutex,nutey,-nutz,0,0,0)
+EP (-1,_ANF,0)
+ELSE
+END
+IF (nutsy>30)&(nut_in=0)
+;Nut in x kante 3
+/ZText ('3',100,100,30,0,1,0,'Times New Roman',0,0,0,0,6,1)
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetStandardRouterID')
+WZF (toolID,_VE,_V,_VA,_SD,_ANF)
+SP (nutsx,nutsy,-nutz,1,-1,_ANF,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (nutex,nutsy,-nutz,0,0,0)
+EP (-1,_ANF,0)
+ELSE
+END
+IF (nutsy=0)&(nut_in=1)
+;Nut in x kante 2
+/ZText ('2',100,100,30,0,1,0,'Times New Roman',0,0,0,0,8,1)
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetStandardRouterID')
+WZF (toolID,_VE,_V,_VA,_SD,_ANF)
+SP (nutex,nutey,-nutz,2,-1,_ANF,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (nutsx,nutsy,-nutz,0,0,0)
+EP (-1,_ANF,0)
+ELSE
+END
+IF (nutsx>30)&(nut_in=1)
+;Nut in x kante 4
+/ZText ('4',100,100,30,0,1,0,'Times New Roman',0,0,0,0,4,1)
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetStandardRouterID')
+WZF (toolID,_VE,_V,_VA,_SD,_ANF)
+SP (nutsx,nutey,-nutz,2,-1,_ANF,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (nutsx,nutsy,-nutz,0,0,0)
+EP (-1,_ANF,0)
+ELSE
+END
+END
+END

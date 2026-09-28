@@ -1,0 +1,53 @@
+;MAKROTYP=1
+;BILD=
+;INFO=
+;WZGV=
+;MASCHINE=
+;NCNAME=Falz2_Fraesen
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA.Dll
+;DIALOGPROC=ShowFalz_2Dialog
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2080mm;Dimension X
+   DY := 980mm;Dimension Y
+   DZ := 45mm;Dimension Z
+   Falz1_Wkz :=104;*VAR* Werkzeug für Falz1 von unten
+   Falz2_Wkz :=137;*VAR* Kombi Werkzeug (Garnitur)
+   Falz1_T :=15.00;*VAR* Falz1-Tiefe
+   Falz1_H :=12.00;*VAR* Falz1-Höhe
+   Falz2_T :=13.00;*VAR* Falz2-Tiefe
+   Falz2_H :=25.00;*VAR* Falz2-Höhe
+   F_Radius :=2.00;*VAR* Radius oben im Überschlag
+   CheckDoppelFalz1 :=0;*VAR* Falz1 Ja/Nein
+   CheckDoppelFalz2 :=-1;*VAR* Falz2 Ja/Nein
+   ;;*********************************
+   ; HolzHer Schweiz AG B. Achermann   
+   ;*********************************
+; Falz fr„sen  
+START
+;Falz fraesen
+IF CheckDoppelFalz1 = -1
+WZF (Falz1_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+Falz1_T := Falz1_T + Falz2_T
+SP (-150,Falz1_T,Falz1_H,2,0,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Falz1_T,Falz1_T,0,0,7,2)
+G01 (Falz1_T,Falz1_T,0,0,1,2)
+G01 (-150,Falz1_T,0,0,3,2)
+EP (0,_ANF,0)
+Falz2_H := Falz2_H + Falz1_H
+End
+;Fraesen mit Garnitur
+IF CheckDoppelFalz2= -1
+WZF (Falz2_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-150,0,Falz2_H,2,0,_ANF,0,0,0,5,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,F_Radius,7,2)
+G01 (0,0,0,F_Radius,1,2)
+G01 (-150,0,0,0,3,2)
+EP (0,_ANF,0)
+END

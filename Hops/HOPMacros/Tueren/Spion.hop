@@ -1,0 +1,47 @@
+;MAKROTYP=1
+;INSTVERSION=6.3.0.3_Patch_6.3.0.3b
+;EXEVERSION=6.6.1.59[Hops.exe]
+;BILD=Spion.wmf
+;INFO=
+;WZGV=7225K_136
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Spion-Fräsung
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA.Dll
+;DIALOGPROC=ShowSpionDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 2080mm;Dimension X
+   DY := 980mm;Dimension Y
+   DZ := 45;Dimension Z
+   Spion_Wkz := 131;*VAR*Spionbohrer
+   Spion_Zu := 6.00;*VAR*Zustellung Spion
+   Spion_Hoehe := DX-1600.00;*VAR*Spionhöhe
+   Spion_Y := DY/2;*VAR*Posiotion in Y
+   Spion_Dm := 14;*VAR*Spiondurchmesser
+   Spion_Durch := 5.00;*VAR*Durchstichmass
+   ;
+   ;
+   ;
+   ;
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+WZF (Spion_Wkz,_VE,_V,_VA,_SD,_ANF,'1')
+IF _WZD > Spion_DM
+Fehlermeldung ('Werkzeugdurchmesser  zu gross')
+END
+IF _WZD = Spion_DM
+SP (Spion_Hoehe,Spion_Y,0,0,0,_ANF,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Spion_Hoehe,Spion_Y,-Spion_Durch,0,7,1)
+EP (0,_ANF,0)
+END
+IF _WZD < Spion_DM
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=Spion_Hoehe,Y_MITTE:=Spion_Y,TIEFE:=- Spion_Durch,ZUTIEFE:=Spion_Zu,RADIUS:=Spion_Dm / 2,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=0,WINKEL:=360,ANF:=_ANF,ABF:=_ANF,RAMPE:=1,INTERPOL:=0,ESXY:=7,ESMD:=1,LASER:=0)
+END

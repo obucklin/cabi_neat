@@ -1,0 +1,95 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=FIXCHIP_FLA.WMF
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=Fixchip_Fla
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   ToolID := 3;*VAR*
+   X_Pos := 0;*VAR*X Position
+   Y_Pos := 0;*VAR*Y-Wert
+   Tiefe := 13;Nuttiefe
+   ZuS := 3;*VAR*Z Zustellung
+   Seite := 4;*VAR*1= Vorne / 2=Links /3= hinten / 4= Rechts
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;Weinig Holzher Schweiz AG B. Achermann
+WZF (ToolID,_VE,_V,_VA,_SD,_ANF,'1')
+IF Seite = 1
+;Vorne
+SP (X_Pos,Y_Pos,0,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (17,0,-2.5,0,10,2)
+G01 (-34,0,-2.5,0,10,2)
+G01 (34,0,-2.5,0,10,2)
+G01 (-34,0,-2.5,0,10,2)
+G01 (34,0,-2.5,0,10,2)
+G01 (-34,0,-0.5,0,10,2)
+G01 (34,0,0,0,10,2)
+G01 (-17,0,0,0,10,2)
+EP (0,_ANF,0)
+SP (X_Pos,Y_Pos,0,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (17,0,-2.5,0,10,2)
+G01 (-34,0,-2.5,0,10,2)
+G01 (34,0,-2.5,0,10,2)
+G01 (-34,0,-2.5,0,10,2)
+G01 (34,0,-2.5,0,10,2)
+G01 (-34,0,-0.5,0,10,2)
+G01 (34,0,0,0,10,2)
+G01 (-17,0,0,0,10,2)
+EP (0,_ANF,0)
+END
+IF Seite = 2
+;Links
+SP (X_Pos,Y_Pos,0,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,17,-2.5,0,10,2);BREAKPOINT
+G01 (0,-34,-2.5,0,10,2)
+G01 (0,34,-2.5,0,10,2)
+G01 (0,-34,-2.5,0,10,2)
+G01 (0,34,-2.5,0,10,2)
+G01 (0,-34,-0.5,0,10,2)
+G01 (0,34,0,0,10,2)
+G01 (0,-17,0,0,10,2)
+EP (0,_ANF,0)
+END
+IF Seite = 3
+;Hinten
+SP (X_Pos,Y_Pos,0,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (17,0,-2.5,0,10,2)
+G01 (-34,0,-2.5,0,10,2)
+G01 (34,0,-2.5,0,10,2)
+G01 (-34,0,-2.5,0,10,2)
+G01 (34,0,-2.5,0,10,2)
+G01 (-34,0,-0.5,0,10,2)
+G01 (34,0,0,0,10,2)
+G01 (-17,0,0,0,10,2)
+EP (0,_ANF,0)
+END
+IF Seite = 4
+;Rechts
+SP (X_Pos,Y_Pos,0,0,0,_ANF,0,0,0,0,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,17,-2.5,0,10,2)
+G01 (0,-34,-2.5,0,10,2)
+G01 (0,34,-2.5,0,10,2)
+G01 (0,-34,-2.5,0,10,2)
+G01 (0,34,-2.5,0,10,2)
+G01 (0,-34,-0.5,0,10,2)
+G01 (0,34,0,0,10,2)
+G01 (0,-17,0,0,10,2)
+EP (0,_ANF,0)
+END

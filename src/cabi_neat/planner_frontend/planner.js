@@ -19,6 +19,8 @@ const state = {
   display: { show_fronts: true, open_fronts: false },
   version: -1,
   selection: [], // path of the selected section, [] = the whole interior
+  highlight: new Set(), // names of the highlighted parts (e.g. the shelf being edited), in the plan and in 3D
+  pickCount: null, // how many 3D picks the server has seen; null until the first check
   hover: null, // pointer position in mm
   drag: null, // {group, origin, delta, moved}
   busy: false,
@@ -218,6 +220,42 @@ function groupsFor(path) {
   }));
 }
 
+/** Names of the parts (shelves, dividers) of a panel group. */
+function groupParts(group) {
+  const keys = new Set(group.members.map((m) => `${T.key(m.split)}/${m.gap}`));
+  return state.layout.parts.filter((p) => keys.has(`${p.attributes.split}/${p.attributes.gap}`)).map((p) => p.name);
+}
+
+/** A part was clicked in the 3D view: go to its section and highlight it. */
+function showPicked(name) {
+  const part = state.layout.parts.find((p) => p.name === name);
+  if (!part) return;
+  let path = null;
+  if (part.attributes.split !== undefined) path = pathFromKey(part.attributes.split);
+  else if (part.attributes.drawer !== undefined) path = part.attributes.drawer.split("_").map(Number);
+  else if (part.attributes.node !== undefined) path = part.attributes.node === "" ? [] : part.attributes.node.split("_").map(Number);
+  if (path) {
+    // a shelf of a column in a divided section is edited from the divided section
+    const parent = path.length ? T.getNode(root(), path.slice(0, -1)) : null;
+    if (part.attributes.split !== undefined && parent && parent.direction === T.COLUMNS && T.isSplit(T.getNode(root(), path))) path = path.slice(0, -1);
+    if (T.key(path) in regions()) select(path);
+  }
+  highlight([name]);
+}
+
+/** Highlight parts in the plan, the sidebar and the 3D view. */
+function highlight(names) {
+  const next = new Set(names);
+  if (next.size === state.highlight.size && [...next].every((n) => state.highlight.has(n))) return;
+  state.highlight = next;
+  render();
+  props.querySelectorAll(".panel-row").forEach((row) => {
+    const parts = row.dataset.parts ? row.dataset.parts.split(",") : [];
+    row.classList.toggle("highlight", parts.some((n) => next.has(n)));
+  });
+  fetch("api/highlight", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ parts: [...next] }) }).catch(() => {});
+}
+
 /** Editable panel groups of the selected section. */
 function ownGroups() {
   return groupsFor(state.selection);
@@ -297,7 +335,7 @@ function render() {
     let cls = "panel";
     if (part.y > 0.5) cls += " setback";
     const inside = isPrefix(sel, pathFromKey(part.attributes.split));
-    if (dragged.has(id)) cls += " selected-panel";
+    if (dragged.has(id) || state.highlight.has(part.name)) cls += " selected-panel";
     else if (hoveredKeys.has(id)) cls += " hover-panel own";
     else if (own.has(id)) cls += " own";
     else if (inside) cls += " locked";
@@ -321,6 +359,12 @@ function render() {
         const hinge = part.attributes.hinge_side === "right" ? part.x + part.w : part.x;
         const free = part.attributes.hinge_side === "right" ? part.x : part.x + part.w;
         out.push(line([[free, part.z + part.h], [hinge, part.z + part.h / 2], [free, part.z]], "swing"));
+        // the hinges' pots, on the back of the door
+        const r = (part.attributes.cup_diameter || 35) / 2;
+        for (const [hx, hz] of part.attributes.hinges || []) {
+          out.push(`<circle cx="${hx}" cy="${H - hz}" r="${r}" class="hinge-pot" vector-effect="non-scaling-stroke"/>`);
+          out.push(`<line x1="${hinge}" y1="${H - hz}" x2="${hx}" y2="${H - hz}" class="hinge-arm" vector-effect="non-scaling-stroke"/>`);
+        }
       } else if (part.category === "drawer_front") {
         out.push(rect(part.x, part.z, part.w, part.h, "drawer-front"));
         const cx = part.x + part.w / 2;
@@ -537,7 +581,9 @@ function panelRows(path) {
     const label = g.direction === T.ROWS ? (hasPanel ? `Shelf ${n}` : `Drawer ${n} top`) : `Divider ${n}`;
     const joint = T.panelJointOf(root(), g, c.interior_joint);
     const options = Object.entries(T.JOINTS).map(([value, text]) => `<option value="${value}" ${value === joint.type ? "selected" : ""}>${text}</option>`);
-    html += `<div class="panel-row"><span>${label}</span>
+    const names = groupParts(g);
+    const lit = names.some((n) => state.highlight.has(n)) ? " highlight" : "";
+    html += `<div class="panel-row${lit}" data-parts="${names.join(",")}" data-group="${i}"><span>${label}</span>
       <input type="number" value="${round(groupPosition(g, path))}" min="0" step="1" data-action="position" data-group="${i}" aria-label="${label} position" />
       ${hasPanel ? `<select data-action="joint" data-group="${i}" aria-label="${label} joint">${options.join("")}</select>` : "<span></span>"}
     </div>`;
@@ -652,6 +698,7 @@ function jointFields(joint, group, label, at = "") {
 
 function select(path) {
   state.selection = path;
+  highlight([]);
   render();
   renderProps();
   props.scrollTop = 0;
@@ -676,7 +723,15 @@ document.getElementById("crumbs").addEventListener("click", (evt) => {
   select(crumb === "up" ? state.selection.slice(0, -1) : pathFromKey(crumb));
 });
 
+// clicking into a panel's row (its label, position or joint) highlights that panel
+props.addEventListener("focusin", (evt) => {
+  const row = evt.target.closest(".panel-row");
+  if (row && row.dataset.parts) highlight(row.dataset.parts.split(","));
+});
+
 props.addEventListener("click", async (evt) => {
+  const row = evt.target.closest(".panel-row");
+  if (row && row.dataset.parts) highlight(row.dataset.parts.split(","));
   const button = evt.target.closest("button[data-action]");
   if (!button || state.busy) return;
   const { action } = button.dataset;
@@ -775,6 +830,7 @@ svg.addEventListener("pointerdown", (evt) => {
   if (group) {
     svg.setPointerCapture(evt.pointerId);
     state.drag = { group, origin: p, delta: 0, moved: false };
+    highlight(groupParts(group));
     render();
     return;
   }
@@ -835,6 +891,22 @@ document.addEventListener("keydown", (evt) => {
   }
 });
 
+/** Replace the cabinet with a fresh, empty one. It's an ordinary edit, so Undo brings the previous cabinet back. */
+async function newCabinet() {
+  if (state.busy) return;
+  try {
+    const res = await fetch("api/new");
+    const config = await res.json();
+    if (await post(config)) {
+      select([]);
+      setMessage("New cabinet. Undo brings the previous one back.");
+    }
+  } catch (e) {
+    setMessage(`Could not start a new cabinet: ${e.message}`, "error");
+  }
+}
+
+document.getElementById("new").addEventListener("click", newCabinet);
 document.getElementById("undo").addEventListener("click", undo);
 document.getElementById("redo").addEventListener("click", redo);
 document.getElementById("snap").addEventListener("change", (evt) => (state.snap = Number(evt.target.value)));
@@ -922,7 +994,7 @@ async function exportFile(kind) {
   setMessage(state.stale ? "Generating 3D and exporting…" : "Exporting…");
   try {
     const res = await fetch(`api/export/${kind}`);
-    if (!res.ok) throw new Error(`the server answered ${res.status}`);
+    if (!res.ok) throw new Error((await res.text()) || `the server answered ${res.status}`);
     const summary = res.headers.get("X-Export-Summary") || "";
     const saved = await saveFile(await res.blob(), name, description, accept);
     setMessage(saved ? `Exported ${saved}. ${summary}` : null);
@@ -962,9 +1034,15 @@ setInterval(async () => {
   if (state.busy || state.drag) return;
   try {
     const res = await fetch("api/version");
-    const { version } = await res.json();
-    if (version !== state.version) load();
+    const { version, pick } = await res.json();
+    if (version !== state.version) await load();
+    if (pick && pick.count !== state.pickCount) {
+      // on the first check just take note: don't jump to something picked before this page opened
+      const first = state.pickCount === null;
+      state.pickCount = pick.count;
+      if (!first && pick.name) showPicked(pick.name);
+    }
   } catch {
     // server stopped; keep the last state on screen
   }
-}, 1500);
+}, 1000);

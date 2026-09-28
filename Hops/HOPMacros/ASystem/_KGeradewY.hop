@@ -1,0 +1,38 @@
+;MAKROTYP=1
+;BILD=Geradewy.wmf
+;INFO=_GeradewY
+;WZGV=demo
+;MASCHINE=Simu
+;NCNAME=_KGeradewY
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   Name := '';*VAR*Konturelementname
+   Y := ;*VAR*Strecke in Y-Richtung
+   Winkel := ;*VAR*Winkel der Strecke gegenüber X-Achse
+   Z := _Z;*VAR*Zustelltiefe
+   dx := 0;
+   Info := '';*VAR*Konturelementinfo
+START
+;DIREKT CNC SYSTEME NCHOPS VERSION 3.0
+;Gerade mit y-Wert und Winkel
+WHILE Winkel>360
+Winkel := Winkel-360
+END
+WHILE Winkel<0
+Winkel := Winkel+360
+END
+IF (Winkel=0) | (Winkel=180) | (Winkel=360)
+Hinweismeldung (Gerade_in_Y_kann_nicht_erzeugt_werden_Laenge_ist_0)
+ELSE
+dx := Y/Tan(Winkel)
+IF (Winkel>0)&(Winkel<180)
+KG01(Name,_X+dx,_Y+Y,Z,Info)
+ELSE
+KG01(Name,_X-dx,_Y-Y,Z,Info)
+END
+END

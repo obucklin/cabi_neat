@@ -1,0 +1,132 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.5.4.618[Hops.exe]
+;BILD=OPENPOCKET_SORTCONT.WMF
+;INFO=18138609
+;WZGV=THEUNS_HUELLHORST
+;WZGVCONFIG=
+;MASCHINE=THEUNS_HUELLHORST
+;NCNAME=OpenPocket_SortCont
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   Ecke := 0;*VAR*0=LU / 1=U / 2=RU.......
+   Angle_Switch := 0;*VAR*0=0 / 1=90
+   PocketKonturName := 'xPocket';*VAR*
+   Lines := 0;*VAR*
+   Direct := 0;*VAR*switch direction
+   X1 := 0;Analyce X of contour
+   X2 := 0;Analyce X of contour
+   Y1 := 0;Analyce Y of contour
+   Y2 := 0;Analyce Y of contour
+   i := 0;
+START
+;--------------------------------------------------------------------------------------------
+;- direkt cnc systeme NC-HOPS (Version 7.5.5.x)
+;--------------------------------------------------------------------------------------------
+;- Rectangel pocket open
+;- 0 = LU
+;- 1 = U
+;- 2 = RU
+;- 3 = R
+;- 4 = RO
+;- 5 = O
+;- 6 = LO
+;- 7 = L
+;--------------------------------------------------------------------------------------------
+;-
+IF Ecke = 0
+;- Edge LU
+IF Angle_Switch=0
+;- 0 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=0,SORTY:=1,SP_EP:='XP',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=0)
+ELSE
+;- 90 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=1,SORTY:=0,SP_EP:='YP',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=90)
+END
+END
+;-
+IF Ecke = 1
+;- U
+IF Angle_Switch=0
+;- 0 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=0,SORTY:=1,SP_EP:='XP',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=90)
+ELSE
+;- 90 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=1,SORTY:=0,SP_EP:='YP',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=90)
+END
+END
+;-
+IF Ecke = 2
+;- Edge RU
+IF Angle_Switch=0
+;- 0 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=0,SORTY:=1,SP_EP:='XM',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=180)
+ELSE
+;- 90 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=-1,SORTY:=0,SP_EP:='YP',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=90)
+END
+END
+;-
+IF Ecke = 3
+;- R
+IF Angle_Switch=0
+;- 0 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=0,SORTY:=1,SP_EP:='XM',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=180)
+ELSE
+;- 90 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=-1,SORTY:=0,SP_EP:='YP',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=180)
+END
+END
+;-
+IF Ecke = 4
+;- Edge RO
+IF Angle_Switch=0
+;- 0 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=0,SORTY:=-1,SP_EP:='XM',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=180)
+ELSE
+;- 90 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=-1,SORTY:=0,SP_EP:='YM',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=270)
+END
+END
+;-
+IF Ecke = 5
+;- O
+IF Angle_Switch=0
+;- 0 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=0,SORTY:=-1,SP_EP:='XM',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=270)
+ELSE
+;- 90 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=-1,SORTY:=0,SP_EP:='YM',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=270)
+END
+END
+;-
+IF Ecke = 6
+;- Edge LO
+IF Angle_Switch=0
+;- 0 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=0,SORTY:=-1,SP_EP:='XP',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=0)
+ELSE
+;- 90 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=1,SORTY:=0,SP_EP:='YM',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=270)
+END
+END
+;-
+IF Ecke = 7
+;- L
+IF Angle_Switch=0
+;- 0 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=0,SORTY:=-1,SP_EP:='XP',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=0)
+ELSE
+;- 90 Degrees
+CALL OpenPocket_SortCont_Dir ( VAL ECKE:=Ecke,SORTX:=1,SORTY:=0,SP_EP:='YM',ANGLE_SWITCH:=Angle_Switch,POCKETKONTURNAME:=PocketKonturName,LINES:=Lines,DIRECT:=Direct,SMOVE:=0)
+END
+END

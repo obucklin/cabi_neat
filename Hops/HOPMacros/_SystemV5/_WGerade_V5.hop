@@ -1,0 +1,12 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_WGerade_V5Dialog
+VARS
+   Laenge := ;*VAR*Länge der Geraden
+   Winkel := ;*VAR*Winkel gegen X
+   Z := 0;*VAR*Zustelltiefe
+   R := 0;*VAR*verrundungsradius
+   esd := 2;*VAR*
+START
+Transesd (z,esd)
+G01 (_X+laenge*cos(Winkel),_Y+laenge*sin(Winkel),Z,R)

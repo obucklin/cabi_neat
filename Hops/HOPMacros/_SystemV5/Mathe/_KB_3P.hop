@@ -1,0 +1,56 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   SX := 0;*VAR*Startpunkt in X
+   SY := 0;*VAR*Startpunkt in Y
+   P1X := 200;*VAR*Endpunkt in X
+   P1Y := 0;*VAR*Endpunkt in Y
+   P2X := 500;*VAR*
+   P2Y := -300;*VAR*
+   GTyp := 0;*VAR**REF*1.2.3
+   Mx := 0;*VAR**REF*
+   My := 0;*VAR**REF*
+   M1X := 0;
+   M1Y := 0;
+   M2X := 0;
+   M2Y := 0;
+   OK := 0;
+   V1X := 0;
+   V1Y := 0;
+   V2X := 0;
+   V2Y := 0;
+   XX := 0;
+   YY := 0;
+   Winkel := 0;
+   Wert := 0;
+START
+;Über Lage des letzten Punktes zur Linie der beiden ersten Punkte
+;den Typ ermitteln (Gerade, G02, G03)
+CALL GetWinkel2P_V4 (REF WINKEL2P:=Winkel VAL P1X:=SX,P1Y:=SY,P2X:=P1X,P2Y:=P1Y)
+XX := P2X-SX
+YY := P2Y-SY
+Wert := XX
+XX := XX*cos(Winkel)+YY*sin(Winkel)
+YY := -Wert*sin(Winkel)+YY*cos(Winkel)
+IF YY=0
+GTyp := 1
+ELSE
+M1X := (SX+P1X)/2
+M1Y := (SY+P1Y)/2
+M2X := (P1X+P2X)/2
+M2Y := (P1Y+P2Y)/2
+V1Y := -(SX-P1X)
+V1X := (SY-P1Y)
+V2Y := -(P1X-P2X)
+V2X := (P1Y-P2Y)
+;Mittelsenkrechte der beiden Verbindungslinien schneiden
+;-> Mittelpunkt des Kreises
+CALL _SchnittLinie_Linie (REF SPX:=Mx,SPY:=My,OK:=OK VAL SX1:=M1X,SY1:=M1Y,EX1:=M1X+V1X,EY1:=M1Y+V1Y,SX2:=M2X,SY2:=M2Y,EX2:=M2X+V2X,EY2:=M2Y+V2Y)
+IF YY>0
+GTyp := 3
+ELSE
+GTyp := 2
+END
+END

@@ -1,0 +1,21 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowGetAngleQuadrant_V7Dialog
+VARS
+   Winkel := 0;*VAR*
+   Quadrant := ;*VAR**REF*
+START
+CALL WinkelNormieren_V7 (REF WINKEL:=Winkel)
+IF (Winkel >= 0) & (Winkel <= 90)
+Quadrant := 1
+ELSE
+IF (Winkel > 90) & (Winkel <= 180)
+Quadrant := 2
+ELSE
+IF (Winkel > 180) & (Winkel < 270)
+Quadrant := 3
+ELSE
+Quadrant := 4
+END
+END
+END

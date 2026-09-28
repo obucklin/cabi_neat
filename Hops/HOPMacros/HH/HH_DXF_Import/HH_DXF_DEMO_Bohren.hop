@@ -1,0 +1,38 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.8.0.2[Hops.exe]
+;BILD=BOHREN.WMF
+;INFO=
+;WZGV=7535D_222
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Bohren
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   P1 := 0;*VAR*X Position
+   P2 := 0;*VAR*Y Position
+   P3 := 0;*VAR*
+   P4 := 0;*VAR*Durchmesser
+   P5 := '';*VAR*Layername
+START
+;Mustermakro V1_2022
+;
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+;Topfbandbohrer 15mm / 35mm
+IF (P4=15) | (P4=35)
+Bohrung (P1,P2,P4,-13,30,0,0,0,0,0,0,0)
+ELSE
+;Saklochboher
+Bohrung (P1,P2,P4,-13,10,0,0,0,0,0,0,0)
+END
+;
+;

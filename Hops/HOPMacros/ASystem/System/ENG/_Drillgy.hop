@@ -1,0 +1,53 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=Bohgy
+;MASCHINE=demo
+;WZGV=demo
+;BILD=Bohgy.WMF
+VARS
+   SPX := 10;*VAR*starting point in x
+   BIY := _RY/5;*VAR*drilling1 (value=0-> drilling will not be executed)
+   BIIY := _RY/5*2;*VAR*drilling2 (value=0-> drilling will not be executed)
+   BIIIY := 0;*VAR*drilling3 (value=0-> drilling will not be executed)
+   BIIIIY := 0;*VAR*drilling4 (value=0-> drilling will not be executed)
+   mirror := 1;*VAR*1=>mirror
+   T := -13;*VAR*depth of drilling
+   D := 8;*VAR*diameter of drilling
+   TL := 0;loops of depth
+START
+;direkt cnc systeme NCHOPS Version3.0
+;drill group in y V3.0/SF/09.98
+IF T>0
+T := -T
+END
+IF (BIY<>0)
+DRILLING(SPX,BIY,D,T,TL,0,0)
+END
+IF (BIIY<>0)
+DRILLING(SPX,BIIY,D,T,TL,0,0)
+END
+IF (BIIIY<>0)
+DRILLING(SPX,BIIIY,D,T,TL,0,0)
+END
+IF (BIIIIY<>0)
+DRILLING(SPX,BIIIIY,D,T,TL,0,0)
+END
+;mirror drillings
+IF mirror <> 0
+IF (BIY<>_RY/2)&(BIY<>0)
+DRILLING(SPX,_RY-BIY,D,T,TL,0,0)
+END
+IF (BIIY<>_RY/2)&(BIIY<>0)
+DRILLING(SPX,_RY-BIIY,D,T,TL,0,0)
+END
+IF (BIIIY<>_RY/2)&(BIIIY<>0)
+DRILLING(SPX,_RY-BIIIY,D,T,TL,0,0)
+END
+IF (BIIIIY<>_RY/2)&(BIIIIY<>0)
+DRILLING(SPX,_RY-BIIIIY,D,T,TL,0,0)
+END
+END
+

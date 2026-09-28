@@ -1,0 +1,24 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   LUX := 0;*VAR*
+   LUY := 0;*VAR*
+   ROX := 0;*VAR*
+   ROY := 0;*VAR*
+   UZ := 0;*VAR*
+   OZ := 0;*VAR*
+   SicherHorz := 0;*VAR*
+   SicherTop := 0;*VAR*
+   SicherBottom := 0;*VAR*
+   Radius := 100;*VAR*
+   SBB := 4;*VAR*
+   KW := 0;*VAR*
+   DW := 0;*VAR*
+   axu := 0;*VAR**REF*
+   ayu := 0;*VAR**REF*
+   azu := 0;*VAR**REF*
+   axo := 0;*VAR**REF*
+   ayo := 0;*VAR**REF*
+   azo := 0;*VAR**REF*
+START
+CALLDLL MATH_LIMITLLINEFP(MathFunctionsExt,DefaultStr,REF AXU:=axu,AYU:=ayu,AZU:=azu,AXO:=axo,AYO:=ayo,AZO:=azo VAL LUX:=LUX,LUY:=LUY,ROX:=ROX,ROY:=ROY,UZ:=UZ,OZ:=OZ,SICHERHORZ:=SicherHorz,SICHERTOP:=SicherTop,SICHERBOTTOM:=SicherBottom,RADIUS:=Radius,SBB:=SBB,KW:=KW,DW:=DW)

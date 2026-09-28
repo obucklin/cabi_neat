@@ -1,0 +1,114 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   KN := '';*VAR*Konturname
+   Ex := 0;*VAR*Einfügepunkt in X der Ebene
+   Ey := 0;*VAR*Einfügepunkt in Y der Ebene
+   Ez := 0;*VAR*Einfügepunkt in Z der Ebene
+   DW := 0;*VAR*Drehwinkel der Ebene
+   KW := 90;*VAR*Kippwinkel der Ebene
+   Tiefe := -200;*VAR*Länge der Fläche (Tiefe auf die Ebene des Bogen bezogen)
+   SchruStep := 5;*VAR*Zustellungtiefe pro Schritt
+   UeberstandV := 0;*VAR*Überstand vorne
+   UeberstandH := 0;*VAR*Überstand hinten
+   UeberstandRand := 0;*VAR*Überstand Rand
+   AbstandKontur := 2;*VAR*Abstand seitlich zum Bogen
+   Bogenlänge := 0;
+   LastPosV := 0;
+   AktPosV := 0;
+   LastPosH := 0;
+   AktPosH := 0;
+   Richtung := 0;
+   OK := 1;=1 Funktion wurde korrekt ausgeführt
+   BH := 0;Bogenhöhe
+   MPx := 0;Mittelpunkt in X
+   MPy := 0;Mittelpunkt in Y
+   Radius := 0;
+   Konkav := 1;1=konkav (Wölbung nach oben); 0=konvex (Wölbung nach unten)
+   SPx := 0;
+   SPy := 0;
+   EPx := 0;
+   EPy := 0;
+   AktStep := 0;
+   AktY := 0;Aktuelle Zustellung
+   YRef := 0;
+   Lx := 0;
+   Rx := 0;
+   TB := 0;
+   TH := 0;
+   KDW := 0;
+   E_z := 0;
+START
+Fertigteil (300,200,19,0,0,0,0,0,'',0,0,0)
+;KB (KN,'',0,0,0,'',0,0)
+;CALL _KG02R_V5 ( VAL EN:='',EX:=0,EY:=0,EZ:=0,R:=1000,EI:='',ESXY:=3,ESD:=0)
+;KB (KN,'',0,_RZ,0,'',1,0)
+;CALL _KG03R_V5 ( VAL EN:='',EX:=_RX,EY:=_RZ,EZ:=0,R:=500,EI:='',ESXY:=0,ESD:=0)
+;EbeneF (Ex,Ey,Ez,KW,DW,0,0)
+;KSP ('???','???',0,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+;KonturFraesen (KN,'KSP','KEP',0,0,0,0,0,0,0,0)
+;EP (0,_ANF,0)
+;.
+;Parameter des Kreisbogen ermitteln
+CALL Solid_GetKonturBogenPara (REF OK:=OK,BH:=BH,MPX:=MPx,MPY:=MPy,RADIUS:=Radius,KONKAV:=Konkav,SPX:=SPx,SPY:=SPy,EPX:=EPx,EPY:=EPy,WINKEL:=KDW VAL KN:=KN)
+AbstandKontur := abs(AbstandKontur)
+SchruStep := abs(SchruStep)
+AktStep := SchruStep
+Tiefe := abs(Tiefe)
+IF Konkav=1
+;Wölbung des Bogen geht nach oben
+;Mitte ist höchster Punkt
+AktY := SPY+BH-SchruStep
+ELSE
+;Wölbung des Bogen geht nach unten
+;außen ist höchster Punkt
+AktY := SPY-SchruStep
+END
+;Bogenoberkante
+YRef := AktY+SchruStep
+IF Konkav=0
+AbstandKontur := -AbstandKontur
+END
+WHILE AktStep<BH
+HGNeu()
+;Schnittpunkt ermitteln zwischen Bogen und
+;aktueller Y bzw. Z-Position (Schrupptiefe)
+HKreismpr (MPx,MPy,Radius,0)
+HLineY (AktY,0)
+;linker Schnittpunkt
+Lx := _SPx2-AbstandKontur
+;Rechter Schnittpunkt
+Rx := _SPx1+AbstandKontur
+HGNeuEnd()
+IF Konkav=1
+;Taschenbreite ergibt sich aus Bogenaussenkante und Schnittpunkt
+TB := abs(SPX-Lx)
+TH := Tiefe
+;Tasche vergrößern, damit sie mit diesem Werkzeug bearbeitet werden kann
+IF (TB>0) & (TB<=_WZD)
+UeberstandRand := _WZR+TB+0.2
+TB := TB+UeberstandRand
+ELSE
+TB := TB+UeberstandRand
+END
+SPX := SPx-UeberstandRand
+EPx := EPx+UeberstandRand
+E_z := EZ+YRef
+CALL Solid_ZERSPANESTUFE ( VAL X_MITTE:=(SPX+Lx)/2,Y_MITTE:=E_z,Z_MITTE:=-Tiefe/2,TASCHENLAENGE:=TB,TASCHENBREITE:=TH,TIEFE:=-AktStep,VIEW_X:=Ex,VIEW_Y:=Ey,VIEW_Z:=Ez,VIEW_DW:=DW,VIEW_KW:=KW,UEBERSTANDVORNE:=UeberstandV,UEBERSTANDHINTEN:=UeberstandH,POSKIND:=0)
+CALL GlueProcess_V7 ()
+CALL Solid_ZERSPANESTUFE ( VAL X_MITTE:=(EPX+Rx)/2,Y_MITTE:=E_z,Z_MITTE:=-Tiefe/2,TASCHENLAENGE:=TB,TASCHENBREITE:=TH,TIEFE:=-AktStep,VIEW_X:=Ex,VIEW_Y:=Ey,VIEW_Z:=Ez,VIEW_DW:=DW,VIEW_KW:=KW,UEBERSTANDVORNE:=UeberstandV,UEBERSTANDHINTEN:=UeberstandH,POSKIND:=2)
+SPX := SPx+UeberstandRand
+EPx := EPx-UeberstandRand
+ELSE
+TB := abs(Rx-Lx)
+TH := Tiefe
+E_z := EZ+YRef
+CALL Solid_ZERSPANESTUFE ( VAL X_MITTE:=(Rx+Lx)/2,Y_MITTE:=E_z,Z_MITTE:=-Tiefe/2,TASCHENLAENGE:=TB,TASCHENBREITE:=TH,TIEFE:=-AktStep,VIEW_X:=Ex,VIEW_Y:=Ey,VIEW_Z:=Ez,VIEW_DW:=DW,VIEW_KW:=KW,UEBERSTANDVORNE:=UeberstandV,UEBERSTANDHINTEN:=UeberstandH,POSKIND:=1)
+END
+AktY := AktY-SchruStep
+AktStep := AktStep+SchruStep
+IF AktStep<BH
+CALL GlueProcess_V7 ()
+END
+END
+Ebene0()

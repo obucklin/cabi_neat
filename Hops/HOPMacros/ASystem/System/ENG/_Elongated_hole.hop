@@ -1,0 +1,87 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCName
+;MASCHINE=Simu
+;WZGV=DEMO
+;BILD=Langloch.bmp
+VARS
+   Drehung_um_Mitte := 0;*VAR*Drehung um Mitte
+   ebene := 0;*VAR*Ebene
+   rad := 10;*VAR*Radius
+   Länge := 60;*VAR*Länge Lochkreis
+   posx := 100;*VAR*MITTELPUNKT
+   posy := 25;*VAR*MITTELPUNKT
+   T := 0;*VAR*Frästiefe
+   innen := 1;Innen fräsen
+   _AktPosX := 0;
+   _AktPosY := 0;
+   min_länge := 0;Mindestlänge
+START
+;direkt cnc systeme NCHOPS Version3.4
+;Langloch
+;----------------------------------
+;Auf Ebene 0  über  DrehenBlock
+;Auf Ebene 1-4  über  Sonderroutine
+;----------------------------------
+IF ebene=0
+VIEW0()
+END
+IF ebene=1
+VIEW1()
+END
+IF ebene=2
+VIEW2()
+END
+IF ebene=3
+VIEW3()
+END
+IF ebene=4
+VIEW4()
+END
+;WZF (9,_VA,_V,_VE,_SD,_ANF)
+IF länge=0
+CALL _Kreisbahn (VAL X_Mitte:=posx,Y_Mitte:=posy,Z:=t,Radius:=rad,Radiuskorrektur:=2,AB:=0)
+ELSE
+IF ebene<>0
+min_länge := 2*rad
+IF min_länge>länge
+GIVEOUTERROR(LANGLOCH_ZU_KURZ)
+END
+CALL SetRotPara (VAL MX:=Posx,MY:=Posy,RotW:=Drehung_um_Mitte)
+CALL SetPunkt (VAL X:=posx,Y:=posy-rad)
+CALL RotUmPunkt ()
+_AktPosSaveX := posx
+_AktPosSaveY := posy-rad
+IF innen=1
+SP(_AKTPOSX,_AKTPOSY,T,1,0,_ANF,0,0,0)
+ELSE
+SP(_AKTPOSX,_AKTPOSY,T,2,0,_ANF,0,0,0)
+END
+CALL WGerade (VAL Laenge:=länge/2-rad,Winkel:=0,Z:=_z,R:=0)
+CALL Kreis_M_R (VAL EX:=posx+länge/2-rad,EY:=posy+rad,Z:=_Z,MX:=posx+länge/2-rad,MY:=posy,R:=0)
+CALL WGerade (VAL Laenge:=länge-2*rad,Winkel:=180,Z:=_z,R:=0)
+CALL Kreis_M_R (VAL EX:=posx-länge/2+rad,EY:=posy-rad,Z:=_Z,MX:=posx-länge/2+rad,MY:=posy,R:=0)
+CALL WGerade (VAL Laenge:=länge/2-rad,Winkel:=0,Z:=_z,R:=0)
+EP(0,_ANF,0)
+ELSE
+CALL _RotateBBStart (VAL DX:=posx,DY:=posy,Dw:=Drehung_um_Mitte)
+IF innen=1
+SP(POSX,POSY-RAD,T,1,0,_ANF,0,0,0)
+ELSE
+SP(POSX,POSY-RAD,T,2,0,_ANF,0,0,0)
+END
+G01(_X+LÄNGE/2-RAD,_Y,_Z,0)
+G03C(_X,_Y+RAD*2,_Z,_X,_Y+RAD,0)
+G01(_X-LÄNGE+RAD*2,_Y,_Z,0)
+G03C(_X,_Y-RAD*2,_Z,_X,_Y-RAD,0)
+G01(POSX,POSY-RAD,_Z,0)
+EP(0,_ANF,0)
+CALL _RotateBBEnd ()
+;CALL _DrehenBBEnde ()
+END
+END
+VIEW0()
+

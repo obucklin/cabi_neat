@@ -1,0 +1,79 @@
+;MAKROTYP=1
+;INSTVERSION=6.4.0.3
+;EXEVERSION=6.6.2.154[Hops.exe]
+;BILD=Spez_Tasche.wmf
+;INFO=
+;WZGV=7123K_021
+;MASCHINE=HOLZHER
+;NCNAME=Spez_Tasche
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_2.Dll
+;DIALOGPROC=ShowSpezialTasche
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;*VAR*Dimension X
+   DY := 400;*VAR*Dimension Y
+   DZ := 19;*VAR*Dimension Z
+   SPX := 0.00;*VAR*Startpunkt in X
+   SPY := 0.00;*VAR*Startpunkt in Y
+   Lang := 100.00;*VAR*Länge der Tasche
+   Breite := 100.00;*VAR*Breite der Tasche
+   A_Tiefe := 0;*VAR*Anfangstiefe
+   E_Tiefe := 5.00;*VAR*Endtiefe
+   Versatz := 10.00;*VAR*Versatz des Fräsers
+   Eckenradius := 0.00;*VAR*Eckenradius
+   Wkz := 20;*VAR*Werkzeug
+   WerkzeugDM := 25;*VAR*Werkzeugdurchmesser
+   SnapXY := 1;*VAR*Easy Snap
+   Verhältnis := Lang /(Lang - 18);
+   Differenz := ((E_Tiefe-A_Tiefe) / Verhältnis)/2;
+   Differenz_Z := ((E_Tiefe-A_Tiefe) - (E_Tiefe-A_Tiefe) / Verhältnis)/2;
+   RA_Tiefe := A_Tiefe + Differenz_Z;
+   RE_Tiefe := E_Tiefe- Differenz_Z;
+   DistX := Lang -  2;
+   Merker := 0;
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;Fertigfraesen
+WZF (WKZ,_VE,_V,_VA,_SD,_ANF,'1')
+SP (SPX,SPY+ (Breite/2),-A_Tiefe,1,-1,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,- (Breite /2),-A_Tiefe,Eckenradius,10,0)
+G01 (Lang,0,-E_Tiefe,Eckenradius,10,0)
+G01 (0,Breite,-E_Tiefe,Eckenradius,10,0)
+G01 (-Lang,0,-A_Tiefe,Eckenradius,10,0)
+G01 (0,-(Breite/2),-A_Tiefe,0,10,0)
+EP (1,_ANF,0)
+;Ende Kontur
+WZF (WKZ,_VE,_V,_VA,_SD,_ANF,'1');BREAKPOINT
+Verhältnis := Lang / (Lang -( _WZD + 2))
+Differenz_Z := ((E_Tiefe-A_Tiefe) - (E_Tiefe-A_Tiefe) / Verhältnis)/2
+RA_Tiefe := A_Tiefe + Differenz_Z
+RE_Tiefe := E_Tiefe- Differenz_Z
+SP (SPX+_WZR+1,SPY+ _WZD,-RA_Tiefe,0,0,_ANF,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
+WHILE _Y < (SPY+ (Breite -(_WZD)))
+IF _Y < (SPY+ (Breite -(_WZD)))
+G01 (DistX -( _WZD+1),0,-RE_Tiefe,Eckenradius,10,0)
+Merker := 1
+END
+IF _Y <= (SPY+ (Breite -(_WZD)))
+G01 (0,Versatz,-RE_Tiefe,Eckenradius,10,0)
+END
+IF _Y <= (SPY+ (Breite -(_WZD)))
+G01 (-(DistX - (_WZD+1)),0,-RA_Tiefe,Eckenradius,10,0)
+Merker := 2
+END
+IF _Y <= ((SPY + Breite) - _WZD)
+G01 (0,Versatz,-RA_Tiefe,Eckenradius,10,0)
+END
+END
+IF Merker =1
+G01 (-(DistX -( _WZD+1)),0,-RA_Tiefe,Eckenradius,10,0)
+ELSE
+G01 (DistX -(_WZD+1),0,-RE_Tiefe,Eckenradius,10,0)
+END
+EP (0,_ANF,0)

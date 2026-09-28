@@ -1,0 +1,120 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_saege_y_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   Breite := 500;breite
+   Hoehe := 300;Hoehe
+   Staerke := 30;Staerke
+   SX := 0;*VAR*Startpunkt in X
+   SY := 0;*VAR*Startpunkt in Y
+   SZ := -3;*VAR*Tiefe in Z
+   EY := 0;*VAR*Endpunkt in Y
+   EZ := 0;*VAR*Tiefe in Z
+   BL := 0;*VAR*Lage   0=mittig    1=links   2=rechts
+   Einpassen := 0;*VAR*Einpassen  0/1
+   EL := 0;*VAR*Einlauf in mm
+   AL := 0;*VAR*Auslauf in mm
+   Parallel := 0;*VAR*Schnitt parallel versetzen
+   K := 0;*VAR*Kenner
+   KW := 0;*VAR*Kippwinkel
+   BH := 0;*VAR*Bezugshoehe
+   Saege_Art := 1;Saege fix = 0     Saegeaggregat = 1
+   ritzversatz := 0.05;*VAR*Versatz beim Ritzen
+   esz := 0;*VAR*
+   esxy1 := 1;*VAR*
+   esy := 5;*VAR*
+   dummy := 0;
+   DX_KWVer := 0;
+   DY_KWVer := 0;
+   Winkel := 0;
+   KWVer := 0;
+START
+;direkt cnc systeme NCHOPS Version 3.4
+;Saegen in Y / MD / 07.01
+;Einlauf / Auslauf getrennt / Parallele
+;-
+;-
+;-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+;-  aeNDERUNGSSTAND !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+;-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+;-  MW 22.08.2001
+;-  Kenner = 3 eingefuegt Vorritzen vom Endpunkt zum Startpunkt hin
+;-
+;-
+;-
+;-
+;--------------------------------------------------------
+;- ACHTUNG:
+;-
+;- Die Schnitte koennen nur editiert werden,
+;- wenn sie auskommentiert sind !!
+;- Weil Einpassen und Bearbeitungslage
+;- sonst nicht mehr variabel sind
+;-
+;- ACHTUNG:
+;--------------------------------------------------------
+;- Wenn eingepasst saegen, dann kein Einlauf/Auslauf
+IF Einpassen=1
+el := 0
+al := 0
+END
+;-
+Transesz (bh,esz)
+transesxy (sx,sy,esxy1,1)
+transesxy (dummy,ey,esy,1)
+;---- Versatz Ritzen nur wenn ritzen angewaehlt wurde
+;Neu MW 22.08.2001  Kenner=3
+IF (k<>2) & (k<>3)
+ritzversatz := 0
+SZ := EZ
+END
+;Versatz bei Kippwinkel <> 0 und
+;Bezugshöhe nicht Fertigteil Oberkante
+;berücksichtigen
+;SF 08.06.2006
+CALL GetWinkel2P_V4 (REF WINKEL2P:=Winkel VAL P1X:=SX,P1Y:=SY,P2X:=SX,P2Y:=EY)
+IF (BH<>_RZ) & (KW<>0)
+KWVer := tan(KW)*(_RZ-BH)
+DX_KWVer := cos(winkel-90)*KWVer
+DY_KWVer := sin(winkel-90)*KWVer
+END
+;-
+;*********** ---------------------->
+IF EY>SY
+IF (k=0) | (k=1)
+Saegen (SX+Parallel,SY-EL,EZ,SX+Parallel,EY+AL,EZ,BL,einpassen,0,k,KW,BH)
+END
+IF k=2
+;SF 08.06.2006
+;Saegen (SX+Parallel,SY-EL,SZ,SX+Parallel,EY+AL,SZ,BL,einpassen,0,0,KW,0,0,0,2,0,0)
+Saegen (SX+Parallel+DX_KWVer,SY-EL+DY_KWVer,SZ,SX+Parallel+DX_KWVer,EY+AL+DY_KWVer,SZ,BL,einpassen,0,0,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX+Parallel+ritzversatz,SY-EL,EZ,SX+Parallel+ritzversatz,EY+AL,EZ,BL,einpassen,0,1,KW,BH)
+END
+IF k=3
+;SF 08.06.2006
+;Saegen (SX+Parallel,SY-EL,SZ,SX+Parallel,EY+AL,SZ,BL,einpassen,0,1,KW,0,0,0,2,0,0)
+Saegen (SX+Parallel+DX_KWVer,SY-EL+DY_KWVer,SZ,SX+Parallel+DX_KWVer,EY+AL+DY_KWVer,SZ,BL,einpassen,0,1,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX+Parallel+ritzversatz,SY-EL,EZ,SX+Parallel+ritzversatz,EY+AL,EZ,BL,einpassen,0,0,KW,BH)
+END
+ELSE
+IF (k=0) | (k=1)
+Saegen (SX-Parallel,SY+EL,EZ,SX-Parallel,EY-AL,EZ,BL,einpassen,0,k,KW,BH)
+END
+IF k=2
+;SF 08.06.2006
+;Saegen (SX-Parallel,SY+EL,SZ,SX-Parallel,EY-AL,SZ,BL,einpassen,0,0,KW,0,0,0,2,0,0)
+Saegen (SX-Parallel+DX_KWVer,SY+EL+DY_KWVer,SZ,SX-Parallel+DX_KWVer,EY-AL+DY_KWVer,SZ,BL,einpassen,0,0,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-Parallel-ritzversatz,SY+EL,EZ,SX-Parallel-ritzversatz,EY-AL,EZ,BL,einpassen,0,1,KW,BH)
+END
+IF k=3
+;SF 08.06.2006
+;Saegen (SX-Parallel,SY+EL,SZ,SX-Parallel,EY-AL,SZ,BL,einpassen,0,1,KW,0,0,0,2,0,0)
+Saegen (SX-Parallel+DX_KWVer,SY+EL+DY_KWVer,SZ,SX-Parallel+DX_KWVer,EY-AL+DY_KWVer,SZ,BL,einpassen,0,1,KW,0,0,0,2,0,0)
+Call GLUEPROCESS_V7 ()
+Saegen (SX-Parallel-ritzversatz,SY+EL,EZ,SX-Parallel-ritzversatz,EY-AL,EZ,BL,einpassen,0,0,KW,BH)
+END
+END

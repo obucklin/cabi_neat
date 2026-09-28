@@ -1,0 +1,10 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.1
+VARS
+   _MirrorFlag := 0;0 -> aus 1 -> an
+START
+;direkt cnc systeme gmbh
+;--------------------------------------------------------------
+SPIEGELNEND()
+_MirrorFlag := 0

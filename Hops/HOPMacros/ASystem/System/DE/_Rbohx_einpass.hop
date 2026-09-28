@@ -1,0 +1,81 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=Rbohx
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=_Rbohx_einpass.wmf
+VARS
+   einpassen := 0;*VAR*Einpassen   1=Ja   0=Nein
+   SPX := 64;*VAR*Mindestwert für Strartpunkt
+   SPY := 37;*VAR*StartPunkt (y)
+   SPY2 := 0;*VAR*Lage der 2. Reihe
+   Raster := 32;*VAR*Rasterwerte
+   EPX := _RX-64;*VAR*Mindestwert für Endpunkt
+   T := -13;*VAR*Bohrtiefe
+   D := 5;*VAR*Bohrdurchmesser
+   TLF := 0;*VAR*Tieflochflag
+   Anzahl := 0;Anzahl Löcher
+   Rest := 0;Restwert links
+   i := 0;
+   länge := 0;
+   MerkerSPX := 0;
+START
+;direkt cnc systeme NCHOPS Version 3.4
+;Lochreihe in X / MD/04.01
+IF T>0
+T := -T
+END
+;*****   1. Reihe  *****
+MerkerSPX := SPX
+IF einpassen = 1
+länge := epx-spx
+anzahl := (länge)/Raster
+anzahl := anzahl DIV 1 +1
+rest := (länge-(anzahl-1)*Raster)/2
+FOR i := 0 TO anzahl-1 STEP 1
+Bohrung (spx+rest+i*raster,spy,D,T,TLF,0,0)
+END
+ELSE
+IF EPX > SPX
+WHILE SPX <= EPX
+Bohrung (SPX,SPY,D,T,TLF,0,0)
+SPX := SPX + Raster
+END
+ELSE
+WHILE SPX >= EPX
+Bohrung (SPX,SPY,D,T,TLF,0,0)
+SPX  :=  SPX - Raster
+END
+END
+END
+;*****   2. Reihe  *****
+IF SPY2<>0
+SPX := MerkerSPX
+i := 0
+SPY := SPY2
+IF einpassen = 1
+länge := epx-spx
+anzahl := (länge)/Raster
+anzahl := anzahl DIV 1 +1
+rest := (länge-(anzahl-1)*Raster)/2
+FOR i := 0 TO anzahl-1 STEP 1
+Bohrung (spx+rest+i*raster,spy,D,T,TLF,0,0)
+END
+ELSE
+IF EPX > SPX
+WHILE SPX <= EPX
+Bohrung (SPX,SPY,D,T,TLF,0,0)
+SPX := SPX + Raster
+END
+ELSE
+WHILE SPX >= EPX
+Bohrung (SPX,SPY,D,T,TLF,0,0)
+SPX  :=  SPX - Raster
+END
+END
+END
+END
+

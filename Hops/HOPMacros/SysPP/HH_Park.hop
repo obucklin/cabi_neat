@@ -1,0 +1,40 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.1.405[Hops.exe]
+;BILD=HH_PARK.WMF
+;INFO=
+;WZGV=7225K_121
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=HH_Park
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=DialogsPPHH.Dll
+;DIALOGPROC=ShowParkDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   Park := 0;*VAR*
+   X := 0;*VAR*Parkpos X
+   Y := 0;*VAR*Parkpos Y
+START
+;0=ohne alles
+;1=links hinten
+;2=rechts hinten
+;3=mitte hinten
+;4=links vorne
+;5=rechts vorne
+;6=mitte vorne
+;7=links mitte
+;8=rechts mitte
+;9=mitte mitte
+;10 =(X, Y)
+IF _HOPSVERSION=7
+NCIExt (-100055,'NCISys',0,0,0,Park,X,Y)
+ELSE
+NCINFO (55,Park,X,Y,0,0,0,Parkpos,0,0,0)
+END

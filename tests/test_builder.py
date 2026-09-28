@@ -368,3 +368,14 @@ def test_one_piece_drawer_front_uses_clamex():
     box = front.modelgeometry.aabb
     part = cabinet.layout.part(f"{d}_front")
     assert (box.xmin, box.xmax) == pytest.approx((part.origin[0], part.max[0]), abs=1e-3)
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_layout_hinge_positions_match_the_joint(side):
+    """The plan draws the pots from the layout; they must be where the hinge joint drills them."""
+    cabinet = Cabinet(CabinetConfig(hinge_side=side, hinges={"hinge_count": 3, "cup_edge_distance": 4}))
+    door = next(p for p in cabinet.layout.parts if p.category == "door")
+    joint = next(j for j in cabinet.model.joints if isinstance(j, CupHingeJoint))
+    drilled = sorted((round(f.point.x, 3), round(f.point.z, 3)) for f in joint.hinge_frames())
+    drawn = sorted((round(x, 3), round(z, 3)) for x, z in door.attributes["hinges"])
+    assert drawn == drilled and len(drawn) == 3

@@ -1,0 +1,51 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCNAME
+;MASCHINE=demo
+;WZGV=demo
+;BILD=_NutInY.WMF
+VARS
+   width := 5;*VAR*width of groove
+   depth := -5;*VAR*depth of groove
+   view := 1;*VAR*side: 1 = right of center, 2 = left of center
+   distance := 5;*VAR*distance from groove to border
+   DBelow := 0;*VAR*0 ->finished part border below, <>0 -> distance to finished part border below with fit in
+   DAbove := 0;*VAR*0 -> finished part border above, <>0 -> distance to finished part border above with fit in
+   X := 0;
+   Y1 := 0;
+   Y2 := 0;
+   EP1 := 0;Einpassen
+   EP2 := 0;Einpassen
+   Korr := 0;
+START
+;direkt cnc systeme NCHOPS Version3.0
+;groove of sawing in y V 3.0/SF/01.10.98
+;finished part (1000,2000,19,0,0)
+;WZS (13,_VE,_V,_VA,_SD,_ANF)
+IF view=2
+;Linke Rohteilseite
+X := distance
+Korr := 2
+ELSE
+;Rechte Rohteilseite
+X := _RX-distance
+Korr := 1
+END
+Y1 := DBelow
+Y2 := _RY-DAbove
+;Einpassen bestimmen
+IF DBelow=0
+EP1 := 0
+ELSE
+EP1 := -1
+END
+IF DAbove=0
+EP2 := 0
+ELSE
+EP2 := -1
+END
+CALL _groove (VAL X1:=X,Y1:=Y1,X2:=X,Y2:=Y2,width:=width,depth:=depth,position:=Korr,SPEGA:=EP1,EPEGA:=EP2)
+

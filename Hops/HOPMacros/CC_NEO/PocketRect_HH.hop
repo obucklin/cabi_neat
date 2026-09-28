@@ -1,0 +1,47 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.7.12.80[Hops.exe]
+;BILD=POCKETRECT_HH.WMF
+;INFO=
+;WZGV=ActiveMachine
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=PocketRect_HH
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   X := 0;*VAR*X-POSITION
+   Y := 0;*VAR*Y-Position
+   R := 0;*VAR*Radius = Verrundung
+   L := 100;*VAR*Länge
+   B := 50;*VAR*Breite
+   T := -13;*VAR*Tiefe
+   W1 := 0;*VAR*Drehwinkel
+   A := 0;*VAR*Abstand zur Kontur
+   Abfahren := 0;*VAR*Abfahren 0=ohne 1=linear 2=radial
+   Z_inter := 1;*VAR*Z Interpolierend
+   Zu_pro_Schritt := _AT_MAXDEPTH;*VAR*zustellung pro schritt Standart ( _AT_MAXDEPTH )
+   Ri := 0;*VAR*Fräsrichtung 0=Rechts 1=Links
+   laser := 0;*VAR*Laserbahn 0=aus 1=ein
+   Bearbeitungs_lage := 1;*VAR*Bearbeitungs_lage 0=mitte 1=innen 2=aussen
+   res2 := 0;*VAR*reserve2
+START
+;HOLZHER GmbH
+;Copyright 15.02.2021
+;Version 15.02.2021 (Freigabe HH)
+;---------Änderungen hier reinschreiben: ----------***
+;Version 15.02.2021
+IF _pVar_NoProcessV=1
+;Prozessvariable - Keine Bearbeitung aktiv
+ELSE
+WZF (_Router_Standard_ID,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=X,Y_MITTE:=Y,TASCHENLAENGE:=L,TASCHENBREITE:=B,RADIUS:=R,WINKEL:=W1,TIEFE:=-T,ZUSTELLUNG:=Zu_pro_Schritt,AB:=Abfahren,ABF:=_ANF,INTERPOL:=Z_inter,UMKEHREN:=Ri,ESXY:=0,ESMD:=0,LASER:=laser)
+END

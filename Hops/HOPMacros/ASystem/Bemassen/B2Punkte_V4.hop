@@ -1,0 +1,99 @@
+;MAKROTYP=1
+;BILD=B2Punkte.bmp
+;INFO=BT_B2Punkte
+;WZGV=demo
+;MASCHINE=Simu
+;NCNAME=BWaagrecht
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   P1X := ;*VAR*Punkt1 X Wert
+   P1Y := ;*VAR*Punkt1 Y Wert
+   P2X := ;*VAR*Punkt2 X Wert
+   P2Y := ;*VAR*Punkt2 Y Wert
+   Abstand := -120;*VAR*Abstand der Bemaßung
+   Farbe := 0;*VAR*Farbe der Bemaßung
+   Text := '';*VAR*Text zum überschreiben
+   TextHöhe := 20;*VAR*Texthöhe
+   Pfeillänge := 20;*VAR*Länge des Bemaßungspfeils
+   PfeileInnerhalb := 0;*VAR*Bemaßungspfeile innerhalb
+   _AktDimValue := 0;
+   dx := 0;
+   dy := 0;
+   dxn := 0;
+   dyn := 0;
+   w := 0;
+   Pos1X := 0;
+   Pos1Y := 0;
+   Pos2X := 0;
+   Pos2Y := 0;
+   Dist := 0;
+   dxHilf := 0;
+   dyHilf := 0;
+   HilfsLinienL := Pfeillänge*2;
+   Pfeilwinkel := 15;
+   PfeilBreite := 0;
+   dyPfeil := 0;
+   dxPfeil := 0;
+START
+;DIRECT CNC SYSTEME NCHOPS Version 4.x
+Rohteil (1000,400,19,0,0)
+IF (P1X=P2X)&(P1Y=P2Y)
+Fehlermeldung (Bitte_2_Punkte_eintragen)
+END
+dx := P2X-P1X
+dy := P2Y-P1Y
+dx := (round(dx*1000))/1000
+dy := (round(dy*1000))/1000
+Pfeillänge := abs(Pfeillänge)
+IF (dx<>0) | (dy<>0)
+CALL Dist2P_V4 (REF Dist:=Dist VAL P1X:=P1X,P1Y:=P1Y,P2X:=P2X,P2Y:=P2Y)
+PfeilBreite := tan(Pfeilwinkel)*Pfeillänge
+dxn := Abstand*(dy/Dist)
+dyn := -Abstand*(dx/Dist)
+dxPfeil := (abs(Abstand)/Abstand)*Pfeilbreite*(dy/Dist)
+dyPfeil := -(abs(Abstand)/Abstand)*Pfeilbreite*(dx/Dist)
+ZLinie(P1X,P1Y,P1X+dxn+dxPfeil,P1Y+dyn+dyPfeil,Farbe)
+ZLinie(P2X,P2Y,P2X+dxn+dxPfeil,P2Y+dyn+dyPfeil,Farbe)
+IF PfeileInnerhalb
+CALL Pfeil_V4 (REF EndPosX:=Pos1X,EndPosY:=Pos1Y VAL P1X:=P1X+dxn,P1Y:=P1Y+dyn,P2X:=P2X+dxn,P2Y:=P2Y+dyn,Länge:=Pfeillänge,Farbe:=Farbe,Pfeilwinkel:=Pfeilwinkel)
+CALL Pfeil_V4 (REF EndPosX:=Pos2X,EndPosY:=Pos2Y VAL P1X:=P2X+dxn,P1Y:=P2Y+dyn,P2X:=P1X+dxn,P2Y:=P1Y+dyn,Länge:=Pfeillänge,Farbe:=Farbe,Pfeilwinkel:=Pfeilwinkel)
+ZLinie(Pos1X,Pos1Y,Pos2X,Pos2Y,Farbe)
+ELSE
+dxHilf := HilfsLinienL*dx/Dist
+dyHilf := HilfsLinienL*dy/Dist
+CALL Pfeil_V4 (REF EndPosX:=Pos1X,EndPosY:=Pos1Y VAL P1X:=P1X+dxn,P1Y:=P1Y+dyn,P2X:=P1X-dx+dxn,P2Y:=P1Y-dy+dyn,Länge:=Pfeillänge,Farbe:=Farbe,Pfeilwinkel:=Pfeilwinkel)
+CALL Pfeil_V4 (REF EndPosX:=Pos2X,EndPosY:=Pos2Y VAL P1X:=P2X+dxn,P1Y:=P2Y+dyn,P2X:=P2X+dx+dxn,P2Y:=P2Y+dy+dyn,Länge:=Pfeillänge,Farbe:=Farbe,Pfeilwinkel:=Pfeilwinkel)
+ZLinie(P1X+dxn,P1Y+dyn,P2X+dxn,P2Y+dyn,Farbe)
+ZLinie(Pos1X,Pos1Y,Pos1X-dxHilf,Pos1Y-dyHilf,Farbe)
+ZLinie(Pos2X,Pos2Y,Pos2X+dxHilf,Pos2Y+dyHilf,Farbe)
+END
+END
+IF StrLength(Text)=0
+CALL FloatToStr_V4 (REF StrWert:=Text VAL Wert:=Dist)
+_AktDimValue := Dist
+END
+IF dx <> 0
+w := arctan(dy/dx)
+ELSE
+w := 90
+END
+IF (dyn<0)|((dyn=0)&(dxn>0))
+w := w+180
+END
+IF (w>90.01) & (w<=270)
+w := w-180
+Abstand := Abstand*0.9
+dxn := Abstand*(dy/Dist)
+dyn := -Abstand*(dx/Dist)
+ELSE
+Abstand := Abstand*1.1
+dxn := Abstand*(dy/Dist)
+dyn := -Abstand*(dx/Dist)
+END
+ZText(Text,p2x+dxn-dx/2,p2y+dyn-dy/2,Texthöhe,w,8,Farbe)
+END

@@ -1,0 +1,39 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowUseMeasuredPoint_V7Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   Hold := 0;*VAR*
+   Active := 1;*VAR*0->abschalten <>0->einschalten
+   IDX := 0;*VAR*
+   IDY := 0;*VAR*
+   IDZ := 0;*VAR*
+   FaktorX := 1;*VAR*
+   FaktorZ := 1;*VAR*
+   FaktorY := 1;*VAR*
+   IDOffsetX := 0;
+   IDOffsetY := 0;
+   IDOffsetZ := 0;
+START
+IF (IDx>0)
+IF (_Job_ZPIndex>=0)
+IDOffsetX := _Job_ZPIndex*1000
+ELSE
+IDOffsetX := 0
+END
+END
+IF (IDY>0)
+IF (_Job_ZPIndex>=0)
+IDOffsetY := _Job_ZPIndex*1000
+ELSE
+IDOffsetY := 0
+END
+END
+IF (IDZ>0)
+IF (_Job_ZPIndex>=0)
+IDOffsetZ := _Job_ZPIndex*1000
+ELSE
+IDOffsetZ := 0
+END
+END
+nciext (-210001,'NCISys',1,Hold,1,Active,IDX+IDOffsetX,IDY+IDOffsetY,IDZ+IDOffsetZ,FaktorX,FaktorY,FaktorZ)

@@ -1,0 +1,11 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowCheckerCollTestOff_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   Hold := 0;*VAR*
+   HoldCloneMoveZ := 0;*VAR*
+   Levels := 0;*VAR*0 -> alle
+START
+nciext (-200200,'NCISys',1,Hold,HoldCloneMoveZ,1,Levels)

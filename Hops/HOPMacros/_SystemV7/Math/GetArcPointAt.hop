@@ -1,0 +1,25 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowGetArcPointAtDialog
+;AUTOSCRIPTSTART=0
+VARS
+   SX := 0;*VAR*
+   SY := 0;*VAR*
+   EX := 0;*VAR*
+   EY := 0;*VAR*
+   MX := 0;*VAR*
+   MY := 0;*VAR*
+   GTyp := 2;*VAR*
+   t := 0;*VAR*
+   Px := ;*VAR**REF*
+   Py := ;*VAR**REF*
+   DW := 0;
+START
+CALL GetArcDW (REF DW:=DW VAL SX:=SX,SY:=SY,EX:=EX,EY:=EY,MX:=MX,MY:=MY,GTYP:=GTyp)
+dw := dw*t
+IF GTyp=3
+dw := -dw
+END
+CALL RotPointXY (REF PX:=Sx,PY:=Sy VAL W:=DW,MX:=Mx,MY:=My)
+Px := Sx
+Py := Sy

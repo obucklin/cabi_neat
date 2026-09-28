@@ -1,0 +1,79 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   KN := 'RADIUS_AUSSEN';*VAR*
+   Pz := 0;*VAR*
+   KonturPos := 0.7;*VAR*0 - 1
+   KW := 9;*VAR*
+   FRadius := 20;*VAR*
+   VektorOffset := 50;*VAR*
+   ViewOffx := 0;*VAR*
+   ViewOffy := 0;*VAR*
+   ViewOffz := 0;*VAR*
+   Vxx := 1;*VAR*
+   Vxy := 0;*VAR*
+   Vxz := 0;*VAR*
+   Vyx := 0;*VAR*
+   Vyy := 0;*VAR*
+   Vyz := 1;*VAR*
+   Vzx := 0;*VAR*
+   Vzy := -1;*VAR*
+   Vzz := 0;*VAR*
+   PKx := 0;*VAR**REF*
+   PKy := 0;*VAR**REF*
+   PKz := 0;*VAR**REF*
+   Winkel := 0;
+   KOffx := 0;
+   KOffy := 0;
+   KOffz := 0;
+   Px := 0;
+   Py := 0;
+   Mx := 0;
+   My := 0;
+   dx := 0;
+   dy := 0;
+   dz := 0;
+   L := 0;
+START
+;$$Fertigteil
+Fertigteil (505,347,101,0,0,0,0,0,'',0,0,0)
+;KB('RADIUS_INNEN','F',0.0000,0.0000,0.0000,'')
+;KG03M('',289.9138,0.0000,0.0000,144.9569,144.9569,'315.0000|45.0000|')
+;KB('RADIUS_AUSSEN','F',0.0000,0.0000,0.0000,'')
+;KG02M('',346.4823,0.0000,0.0000,173.2412,-173.2412,'45.0000|315.0000|')
+CALL Solid_CalcPunktOnKontur (REF P1X:=Px,P1Y:=Py VAL K:=KN,KINDEX:=1,POS:=KonturPos)
+IF (VektorOffset<>0)
+FRadius := abs(FRadius)
+Mx := GetKE_Mx(KN,1)
+My := GetKE_My(KN,1)
+dx := Px-Mx
+dy := Py-My
+CALL GetWinkel2P_V4 (REF WINKEL2P:=Winkel VAL P1X:=0,P1Y:=0,P2X:=dx,P2Y:=dy)
+IF Winkel>180
+FRadius := -FRadius
+END
+Winkel := Winkel-90
+;.
+CALL SetPunkt ( VAL X:=0,Y:=dy)
+CALL SetRotPara ( VAL MX:=0,MY:=0,ROTW:=KW)
+CALL RotUmPunkt ()
+dz := _AktPosX
+dy := _AktPosY
+;.
+CALL SetPunkt ( VAL X:=0,Y:=dy)
+CALL SetRotPara ( VAL MX:=0,MY:=0,ROTW:=Winkel)
+CALL RotUmPunkt ()
+dx := _AktPosX
+dy := _AktPosY
+END
+;.
+;.
+IF VektorOffset=0
+CALL Solid_CalcViewAxAyAz (REF AX:=PKx,AY:=PKy,AZ:=PKz VAL OFFX:=ViewOffx,OFFY:=ViewOffy,OFFZ:=ViewOffz,VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz,VX:=Px+KOffx,VY:=Py+KOffy,VZ:=Pz+KOffz)
+ELSE
+L := sqrt(sqr(dx)+sqr(dy)+sqr(dz))
+dx := VektorOffset*dx/L
+dy := VektorOffset*dy/L
+dz := VektorOffset*dz/L
+CALL Solid_CalcViewAxAyAz (REF AX:=PKx,AY:=PKy,AZ:=PKz VAL OFFX:=ViewOffx,OFFY:=ViewOffy,OFFZ:=ViewOffz,VXX:=Vxx,VXY:=Vxy,VXZ:=Vxz,VYX:=Vyx,VYY:=Vyy,VYZ:=Vyz,VZX:=Vzx,VZY:=Vzy,VZZ:=Vzz,VX:=Px+KOffx+dx,VY:=Py+KOffy+dy,VZ:=Pz+KOffz+dz)
+END

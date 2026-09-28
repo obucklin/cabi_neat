@@ -1,0 +1,260 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_Kreistasche_V5_1Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   X_Mitte := 0;*VAR*KREISTASCHENMITTELPUNKT X
+   Y_Mitte := 0;*VAR*KREISTASCHENMITTELPUNKT Y
+   Radius := 2*_WZR+1;*VAR*RADIUS
+   Tiefe := -2;*VAR*KREISTASCHENTIEFE
+   Zustellung := 2;*VAR*Zustellung
+   AB := 2;*VAR*Abfahrbewegung
+   ABF := _ANF;*VAR*Abfahrfaktor
+   Interpol := 0;*VAR*Interpolation auf 1. Kreis in der Mitte
+   umkehren := 1;*VAR*Bearbeitung umkehren   0=CW   1=CCW
+   UW := 67;*VAR*
+   RM := 0;momentaner Radius
+   Durchlauf := 1;Nummer des Durchlauf
+   RZ := 0;Radiuszustellung pro Durchgang
+   I := 1;Zaehler
+   ANZAHL := 0;
+   TM := 0;Momentane Tiefe
+   FRN := 0;
+   _GKZ := 0;
+   EPX := 1;
+   APX := 2;
+   esxy := 9;*VAR*
+   esmd := 0;*VAR*
+   laser := 0;*VAR*
+   EPX2 := 0;
+START
+;DIREKT CNC SYSTEME NCHOPS
+;*** Kreistasche fraesen
+Rohteil (200,200,20,0,0)
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+transesxy (X_Mitte,Y_Mitte,esxy,0)
+Transesd (Tiefe,esmd)
+;*** Fehleingaben abfangen
+IF AB=1
+AB := 2
+END
+IF Tiefe>0
+Tiefe := -Tiefe
+END
+IF Zustellung>0
+Zustellung := -Zustellung
+END
+IF Zustellung=0
+Zustellung := Tiefe
+END
+;IF Zustellung<Tiefe
+;Fehlermeldung (GetMessageText('16','Zustelltiefe ist groeßer als Tiefe'))
+;ELSE
+;END
+IF UW>=100
+Fehlermeldung (GetMessageText('39','Überlappungswert zu groß'))
+END
+IF _WZD=0
+Fehlermeldung (GetMessageText('17','Bitte Werkzeug definieren'))
+END
+;*** Anzahl der Schleifen berechnen
+;**** Zustellung anpassen
+TM := 1
+IF umkehren=0
+WHILE TM>Tiefe
+IF TM=1
+TM := 0
+END
+TM := TM+Zustellung
+IF TM<Tiefe
+TM := Tiefe
+END
+IF (_WZR<Radius)&(_WZR>0)&(_WZR*2<Radius)
+_GKZ := (Radius/(_WZR*((100-UW)/100)))/2
+CALL _ROUND ()
+ANZAHL := _GKZ*2+1
+FRN := Radius/ANZAHL
+FOR I := (ANZAHL DIV 2) TO 1 STEP -1
+IF I=(ANZAHL DIV 2)
+IF Interpol=0
+SP (X_Mitte-(Radius-(2*I-1)*FRN),Y_Mitte,TM,2,0,0,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+ELSE
+;SF 01.04.2009
+;Kreisbogen mit SP=EP werden nicht mehr unterstützt
+EPX := X_Mitte-(Radius-(2*I-1)*FRN)
+EPX2 := X_Mitte+(Radius-(2*I-1)*FRN)
+SP (EPX,Y_Mitte,0,2,0,0,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+G02M (EPX2,Y_Mitte,_Z+TM/4,X_Mitte,Y_Mitte,0,0,0,0)
+G02M (EPX,Y_Mitte,_Z+TM/4,X_Mitte,Y_Mitte,0,0,0,0)
+G02M (EPX2,Y_Mitte,_Z+TM/4,X_Mitte,Y_Mitte,0,0,0,0)
+G02M (EPX,Y_Mitte,_Z+TM/4,X_Mitte,Y_Mitte,0,0,0,0)
+END
+END
+IF I<>(ANZAHL DIV 2)
+APX := X_Mitte+(Radius-(2*I+1)*FRN)
+EPX := X_Mitte-(Radius-(2*I-1)*FRN)
+G02M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+END
+APX := X_Mitte-(Radius-(2*I-1)*FRN)
+EPX := X_Mitte+(Radius-(2*I-1)*FRN)
+G02M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+END
+;** Letzte XY-Zustellung auf den original Radius
+IF _X<X_Mitte+Radius
+APX := _X
+EPX := X_Mitte-Radius
+G02M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+APX := X_Mitte-Radius
+EPX := X_Mitte+Radius
+G02M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+G02M (X_Mitte-Radius,Y_Mitte,_Z,x_Mitte,Y_Mitte,0)
+G02M (X_Mitte+Radius,Y_Mitte,_Z,x_Mitte,Y_Mitte,0)
+END
+EP (AB,ABF,0)
+IF (AB=2) & (Radius < (ABF*_WZR))
+Fehlermeldung (GetMessageText('13','Abfahrbewegung zu gross'))
+END
+ELSE
+IF (_WZR<>0)&(_WZR<Radius)
+;*** Wenn zu kein zum ausraeumen
+;SF 21.03.2006
+IF Interpol=0
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=X_Mitte,Y_MITTE:=Y_Mitte,TIEFE:=Tiefe,ZUTIEFE:=Zustellung,RADIUS:=Radius,RADIUSKORREKTUR:=1,AB:=AB,AUFMASS:=0,BEARB_UMKEHREN:=1-umkehren,WINKEL:=360,ANF:=ABF,ABF:=ABF,RAMPE:=0,INTERPOL:=0,ESXY:=0,ESMD:=0,LASER:=Laser)
+ELSE
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=X_Mitte,Y_MITTE:=Y_Mitte,TIEFE:=Tiefe,ZUTIEFE:=Zustellung,RADIUS:=Radius,RADIUSKORREKTUR:=1,AB:=AB,AUFMASS:=0,BEARB_UMKEHREN:=1-umkehren,WINKEL:=360,ANF:=ABF,ABF:=ABF,RAMPE:=1,INTERPOL:=0,ESXY:=0,ESMD:=0,LASER:=Laser)
+END
+;Schleife abbrechen
+TM := Tiefe-1
+;IF Interpol=0
+;SP (X_Mitte+Radius,Y_Mitte,Tiefe,2,0,0,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+;G02M (X_Mitte,Y_Mitte-Radius,_Z,X_Mitte,Y_Mitte,0)
+;G02M (X_Mitte-Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+;G02M (X_Mitte,Y_Mitte+Radius,_Z,X_Mitte,Y_Mitte,0)
+;G02M (X_Mitte+Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+;ELSE
+;SP (X_Mitte+Radius,Y_Mitte,0,2,0,0,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+;G02M (X_Mitte,Y_Mitte-Radius,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+;G02M (X_Mitte-Radius,Y_Mitte,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+;G02M (X_Mitte,Y_Mitte+Radius,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+;G02M (X_Mitte+Radius,Y_Mitte,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+;G02M (X_Mitte-Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+;G02M (X_Mitte+Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+;END
+;EP (0,_ANF,0)
+ELSE
+;*** Wenn kleiner oder gleich WZR
+IF _WZR=RADIUS
+;--Neu MW 24.05.2006
+;-- nur Bohren, wenn Durchmesser identisch
+Bohrung (x_Mitte,y_Mitte,_WZD,tiefe,0,0,0)
+ELSE
+;-- Werkzeugdurchmesser groesser als Tasche
+ZKBCW (X_MITTE,Y_MITTE,x_Mitte-_WZR,y_mitte,X_MITTE-_WZR,Y_MITTE,16711680,0,0,0)
+ZLinie (x_mitte-Radius,y_mitte-Radius,x_mitte+Radius,y_mitte+Radius,0,0,0)
+ZLinie (x_mitte-Radius,y_mitte+Radius,x_mitte+Radius,y_mitte-Radius,0,0,0)
+Fehlermeldung (''+_WZDIS)
+END
+END
+END
+END
+ELSE
+;********************************************
+;*****               C C W              ********
+;********************************************
+WHILE TM>Tiefe
+IF TM=1
+TM := 0
+END
+TM := TM+Zustellung
+IF TM<Tiefe
+TM := Tiefe
+END
+IF (_WZR<Radius)&(_WZR>0)&(_WZR*2<Radius)
+_GKZ := (Radius/(_WZR*((100-UW)/100)))/2
+CALL _ROUND ()
+ANZAHL := _GKZ*2+1
+FRN := Radius/ANZAHL
+FOR I := (ANZAHL DIV 2) TO 1 STEP -1
+IF I=(ANZAHL DIV 2)
+IF Interpol=0
+SP (X_Mitte-(Radius-(2*I-1)*FRN),Y_Mitte,TM,1,0,0,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+ELSE
+;SF 01.04.2009
+;Kreisbogen mit SP=EP werden nicht mehr unterstützt
+EPX := X_Mitte-(Radius-(2*I-1)*FRN)
+EPX2 := X_Mitte+(Radius-(2*I-1)*FRN)
+SP (EPX,Y_Mitte,0,1,0,0,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+G03M (EPX2,Y_Mitte,_Z+TM/4,X_Mitte,Y_Mitte,0,0,0,0)
+G03M (EPX,Y_Mitte,_Z+TM/4,X_Mitte,Y_Mitte,0,0,0,0)
+G03M (EPX2,Y_Mitte,_Z+TM/4,X_Mitte,Y_Mitte,0,0,0,0)
+G03M (EPX,Y_Mitte,_Z+TM/4,X_Mitte,Y_Mitte,0,0,0,0)
+END
+END
+IF I<>(ANZAHL DIV 2)
+APX := X_Mitte+(Radius-(2*I+1)*FRN)
+EPX := X_Mitte-(Radius-(2*I-1)*FRN)
+G03M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+END
+APX := X_Mitte-(Radius-(2*I-1)*FRN)
+EPX := X_Mitte+(Radius-(2*I-1)*FRN)
+G03M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+END
+;** Letzte XY-Zustellung auf den original Radius
+IF _X<X_Mitte+Radius
+APX := _X
+EPX := X_Mitte-Radius
+G03M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+APX := X_Mitte-Radius
+EPX := X_Mitte+Radius
+G03M (EPX,Y_Mitte,_Z,(EPX+APX)/2,Y_Mitte,0)
+G03M (X_Mitte-Radius,Y_Mitte,_Z,x_Mitte,Y_Mitte,0)
+G03M (X_Mitte+Radius,Y_Mitte,_Z,x_Mitte,Y_Mitte,0)
+END
+EP (AB,ABF,0)
+IF (AB=2) & (Radius < (ABF*_WZR))
+Fehlermeldung (GetMessageText('13','Abfahrbewegung zu gross'))
+END
+ELSE
+IF (_WZR<>0)&(_WZR<Radius)
+;*** Wenn zu kein zum ausraeumen
+;SF 21.03.2006
+IF Interpol=0
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=X_Mitte,Y_MITTE:=Y_Mitte,TIEFE:=Tiefe,ZUTIEFE:=Zustellung,RADIUS:=Radius,RADIUSKORREKTUR:=1,AB:=AB,AUFMASS:=0,BEARB_UMKEHREN:=1-umkehren,WINKEL:=360,ANF:=ABF,ABF:=ABF,RAMPE:=0,INTERPOL:=0,ESXY:=0,ESMD:=0,LASER:=Laser)
+ELSE
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=X_Mitte,Y_MITTE:=Y_Mitte,TIEFE:=Tiefe,ZUTIEFE:=Zustellung,RADIUS:=Radius,RADIUSKORREKTUR:=1,AB:=AB,AUFMASS:=0,BEARB_UMKEHREN:=1-umkehren,WINKEL:=360,ANF:=ABF,ABF:=ABF,RAMPE:=1,INTERPOL:=0,ESXY:=0,ESMD:=0,LASER:=Laser)
+END
+;Schleife abbrechen
+TM := Tiefe-1
+;IF Interpol=0
+;SP (X_Mitte+Radius,Y_Mitte,Tiefe,1,0,0,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+;G03M (X_Mitte,Y_Mitte-Radius,_Z,X_Mitte,Y_Mitte,0)
+;G03M (X_Mitte-Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+;G03M (X_Mitte,Y_Mitte+Radius,_Z,X_Mitte,Y_Mitte,0)
+;G03M (X_Mitte+Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+;ELSE
+;SP (X_Mitte+Radius,Y_Mitte,0,1,0,0,0,0,0,0,0,0,0,0,0,0,laser,0,0,0,0,0,0)
+;G03M (X_Mitte,Y_Mitte-Radius,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+;G03M (X_Mitte-Radius,Y_Mitte,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+;G03M (X_Mitte,Y_Mitte+Radius,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+;G03M (X_Mitte+Radius,Y_Mitte,_Z+Tiefe/4,X_Mitte,Y_Mitte,0)
+;G03M (X_Mitte-Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+;G03M (X_Mitte+Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+;END
+;EP (0,_ANF,0)
+ELSE
+;*** Wenn kleiner oder gleich WZR
+IF _WZR=RADIUS
+;--Neu MW 24.05.2006
+;-- nur Bohren, wenn Durchmesser identisch
+Bohrung (x_Mitte,y_Mitte,_WZD,tiefe,0,0,0)
+ELSE
+;-- Werkzeugdurchmesser groesser als Tasche
+ZKBCW (X_MITTE,Y_MITTE,x_Mitte-_WZR,y_mitte,X_MITTE-_WZR,Y_MITTE,16711680,0,0,0)
+ZLinie (x_mitte-Radius,y_mitte-Radius,x_mitte+Radius,y_mitte+Radius,0,0,0)
+ZLinie (x_mitte-Radius,y_mitte+Radius,x_mitte+Radius,y_mitte-Radius,0,0,0)
+Fehlermeldung (''+_WZDIS)
+END
+END
+END
+END
+END

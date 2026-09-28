@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowWORKCENTEROPTIONS_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   UseMasterZP := 0;*VAR*= 0 Masternullpunkt nicht zwingend verwenden; <> 0 Masternullpunkt verwenden
+START
+nciext (-200600,'NCISys',0,0,0,UseMasterZP)

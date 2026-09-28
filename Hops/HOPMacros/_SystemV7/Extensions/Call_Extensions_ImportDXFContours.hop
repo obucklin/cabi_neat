@@ -1,0 +1,13 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowIMPORTDXFCONTOURSPARSEREXTCONTOURSDialog
+VARS
+   DXFName := '';*VAR*DXF Name
+   DXFLayerNames := '';*VAR*DXF-Layername(n)
+   Tolerance := 0.01;*VAR*
+   KonturName := '';*VAR*Neuer Konturname
+   LayerName := '';*VAR*Layername der neuen Kontur(en)
+   CCount := ;*VAR**REF*
+START
+CALLDLL IMPORTDXFCONTOURSPARSEREXTCONTOURS(Extensions,DefaultStr,REF CCOUNT:=CCount VAL DXFNAME:=DXFName,DXFLAYERNAMES:=DXFLayerNames,TOLERANCE:=Tolerance,KONTURNAME:=KonturName,LAYERNAME:=LayerName)

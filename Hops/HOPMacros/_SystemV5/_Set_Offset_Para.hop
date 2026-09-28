@@ -1,0 +1,10 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowSetOffsetParameterDialog
+VARS
+   Enabled := 1;*VAR*1 -> Calculate Offset in Hops
+   RoundOutside := 1;*VAR*1 -> Add an arc at an outside corner
+   DependOnTRC := 1;*VAR*1 -> Offset calculation depends on tool radius correction
+   CutClosed := 0;*VAR*1 -> Cut Elements of closed contour
+START
+SetOffsetParameter (Enabled,DependOnTRC,CutClosed,RoundOutside)

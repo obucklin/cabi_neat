@@ -1,0 +1,62 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.948[Hops.exe]
+;BILD=AKKUSTIK.WMF
+;INFO=
+;WZGV=STANDARD
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Horizontale Dübel
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_1.Dll
+;DIALOGPROC=ShowAkkustikDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600mm;Dimension X
+   DY := 400mm;Dimension Y
+   DZ := 19mm;Dimension Z
+   SPX := 10.00;*VAR*1 Bohrung in X
+   SPY := 10.00;*VAR*1 Bohrung in Y
+   LX := 100;*VAR*Länge in X
+   LY := 100;*VAR*Länge in Y
+   RX := 32.00;*VAR*Raster in X
+   RY := 32.00;*VAR*Raster in Y
+   Tiefe := -10.00;*VAR*Bohrtiefe
+   DM := 8.00;*VAR*Bohrdurchmesser
+   Winkel := 0.00;*VAR*Drehwinkel
+   Tlf := 10;*VAR*Tiefloch Flag
+   SnapXY := 9;*VAR*Easy Snap XY
+   SnapZ := 0;*VAR*Easy Snap Z
+   Anz_X := 0;Anzahl Bohrungen in X
+   Anz_Y := 0;Anzahl Bohrungen in Y
+   X := 0;Zählvar
+   Y := 0;Zählvar
+   PosX := 0.00;X Wert
+   PosY := 0.00;Y Wert
+START
+;
+;Holz-Her Schweiz AG
+;(c) B. Achermann
+;
+Anz_X := LX div RX
+Anz_Y := LY div RY;BREAKPOINT
+PosY := SPY
+CALL _DrehenBBStart_V5 ( VAL DX:=SPX,DY:=SPY,DW:=Winkel,ESXY1:=SnapXY)
+FOR Y := 0 TO Anz_Y STEP 1
+PosX := SpX
+Bohrung (PosX,PosY,DM,Tiefe,TLF,0,0,SnapXY,SnapZ,0,0,0)
+CALL DHOptiStop_V7 ()
+FOR X := 1 TO Anz_X STEP 1
+PosX := RX + PosX
+Bohrung (PosX,PosY,DM,Tiefe,TLF,0,0,SnapXY,SnapZ,0,0,0)
+CALL DHOptiStop_V7 ()
+END
+PosY := RY + PosY
+END
+CALL _DrehenBBEnde ()

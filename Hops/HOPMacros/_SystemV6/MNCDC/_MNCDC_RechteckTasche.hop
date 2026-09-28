@@ -1,0 +1,93 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   KonturName := '';*VAR*
+   x_Mitte := 0;*VAR*Taschenmitte in X
+   Y_Mitte := 0;*VAR*Taschenmitte in Y
+   Taschenlaenge := 200;*VAR*Tasche in X
+   Taschenbreite := 50;*VAR*Tasche in Y
+   Radius := 0;*VAR*Eckenradius
+   InClampArea := 0;*VAR*
+   Winkel := 0;*VAR*Winkel gegen X-Achse
+   Tiefe := ;*VAR*Tiefe der Tasche
+   Zustellung := 0;*VAR*Tiefenzustellung pro Fraesgang
+   AB := 2;*VAR*Abfahrbewegung
+   ABF := _ANF;*VAR*Abfahrfaktor
+   Interpol := 1;*VAR*Interpolation auf 1. Kreis in der Mitte
+   umkehren := 0;*VAR*Bearbeitung umkehren   0=CW   1=CCW
+   laser := 0;*VAR*
+   versatz := 10;ueberlappung in %
+   Schleifenzahl := 0;anzahl der Durchlaeufe
+   GX := 0;uebergroeße in X Richtung
+   UW := 0;Zustellung Breite
+   RM := 0;momentaner Radius
+   Durchlauf := 1;Nummer des Durchlauf
+   UL := 0;Üeberlappung der Fraesbahn
+   TU := 0;Kleine Taschenlänge
+   I := 1;Zaehler
+   ANZAHL := 0;
+   TM := 0;Momentane Tiefe
+   FRN := 0;
+   _GKZ := 0;
+   EPX := 1;
+   APX := 2;
+   Korr := 2;Radiuskorrektur
+   CW := 1;Uhrzeigersinn tauschen
+   AktRad := 0;Eckenradius
+   xschw := 0;
+   UeberfahrOK := 0;Schalter ob am Ende eine Überfahrt stattfinden kann
+   LFirstEle := 0;Länge erstes Element
+   LastWi := 0;Letzter gefahrener Winkel
+   Verläng := 0.5mm;Verlängerung bei Überfahrt
+   Merker_V := 0;Vorschubmerker für Verbindungsfräsung
+   NewContourNames := '';
+   NewContoursCount := 0;
+   j := 0;
+   i := 0;
+   Contours := '';
+   SK := 0;
+   ContoursCount := 0;
+   Contour := '';
+   Ueberlappung := 67;
+   Minx := 0;
+   Miny := 0;
+   Maxx := 0;
+   Maxy := 0;
+START
+;------------------------------------------------------------------------
+;DIREKT CNC-SYSTEME
+Call MNCDCLOCKSPLIT_V7 ( VAL Mode:=0)
+CALL _MNCDC_SplitContours (REF NEWCONTOURNAMES:=NewContourNames,NEWCONTOURSCOUNT:=NewContoursCount VAL CONTOURNAME_CONTOURNAMES:=KonturName,CONTOURNAME:='ExecutePocket_Split',CONTOURINFO:='',CONTOURLAYER:='',TIEFE:=Tiefe,TOOLID:=_BOXID,INCLAMPAREA:=InClampArea,VIEW_OFFX:=_AV_OFFSETX,VIEW_OFFY:=_AV_OFFSETY,VIEW_OFFZ:=_AV_OFFSETZ,VIEW_ROTA:=_AV_ROTA,VIEW_TIPA:=_AV_TIPA,MAXARCTOL:=0.1mm)
+deletecontour (KonturName,0)
+;--
+SK := _MNCDC_SplitKind
+_MNCDC_SplitKind := -2
+IF NewContoursCount=1
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=x_mitte,Y_MITTE:=y_mitte,TASCHENLAENGE:=Taschenlaenge,TASCHENBREITE:=Taschenbreite,RADIUS:=Radius,WINKEL:=Winkel,TIEFE:=Tiefe,ZUSTELLUNG:=Zustellung,AB:=AB,ABF:=ABF,INTERPOL:=interpol,UMKEHREN:=umkehren,ESXY:=0,ESMD:=0,LASER:=laser)
+deletecontour (NewContourNames,0)
+ELSE
+IF ((Winkel=0)|(Winkel=90)|(Winkel=180)|(Winkel=270))&(Radius=0)
+FOR i := 1 TO NewContoursCount STEP 1
+CALL _MNCDC_GetParamNo (REF VALUE:=Contours VAL VALUES:=NewContourNames,NO:=i,SEPARATOR:='|')
+CALL _MNCDC_MinMaxContours (REF MINX:=Minx,MINY:=Miny,MAXX:=Maxx,MAXY:=Maxy VAL CONTOURNAME_CONTOURNAMES:=Contours)
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=(Maxx+Minx)/2,Y_MITTE:=(Maxy+Miny)/2,TASCHENLAENGE:=Maxx-Minx,TASCHENBREITE:=Maxy-Miny,RADIUS:=0,WINKEL:=0,TIEFE:=Tiefe,ZUSTELLUNG:=Zustellung,AB:=AB,ABF:=ABF,INTERPOL:=Interpol,UMKEHREN:=umkehren,ESXY:=0,ESMD:=0,LASER:=laser)
+CALL _MNCDC_GetParamCount (REF VALUE:=ContoursCount VAL VALUES:=Contours,SEPARATOR:=';')
+FOR j := 1 TO ContoursCount STEP 1
+CALL _MNCDC_GetParamNo (REF VALUE:=Contour VAL VALUES:=Contours,NO:=j,SEPARATOR:=';')
+deletecontour (Contour,0)
+END
+END
+ELSE
+FOR i := 1 TO NewContoursCount STEP 1
+CALL _MNCDC_GetParamNo (REF VALUE:=Contours VAL VALUES:=NewContourNames,NO:=i,SEPARATOR:='|')
+CALL _ExecutePocket_V5 ( VAL NAMEN:=Contours,AA:=0,UEBERLAPPUNG:=Ueberlappung,MODE:=0,ANGLE:=0,TIEFE:=Tiefe,ESMD:=0,ANZAHL:=0,MAXZ:=Zustellung,RD:=umkehren,FLIEGENDEINTAUCHEN:=Interpol,MAXEINTAUCHLAENGE:=10mm)
+CALL _MNCDC_GetParamCount (REF VALUE:=ContoursCount VAL VALUES:=Contours,SEPARATOR:=';')
+FOR j := 1 TO ContoursCount STEP 1
+CALL _MNCDC_GetParamNo (REF VALUE:=Contour VAL VALUES:=Contours,NO:=j,SEPARATOR:=';')
+deletecontour (Contour,0)
+END
+END
+END
+END
+_MNCDC_SplitKind := SK
+Call MNCDCUNLOCKSPLIT_V7 ( VAL Mode:=0,VerkleinerungAktivieren:=0)

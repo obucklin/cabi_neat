@@ -1,0 +1,541 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.1.867[Hops.exe]
+;BILD=
+;INFO=clamex_V7
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HH7
+;NCNAME=
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_7.Dll
+;DIALOGPROC=ShowTClamex_FDialog_V7
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   WKZ_NUT_nr :=1108;*VAR*FIX_WERKZEUGNUMMER DES NUTERS
+   WKZ_NUT_h := '1';
+   WKZ_NUT_v1 :=_VE;*VAR*
+   WKZ_NUT_v2 :=_V;*VAR*
+   WKZ_NUT_v3 :=_VA;*VAR*
+   WKZ_NUT_d :=_SD;*VAR*
+   WKZ_BOHR_nr :=501;*VAR*FIX_WERKZEUGNUMMER DES BOHRERS achsparallel
+   WKZ_BOHR_h := '1';
+   WKZ_BOHR_v1 :=_VE;*VAR*
+   WKZ_BOHR_v2 :=_V;*VAR*
+   WKZ_BOHR_v3 :=_VA;*VAR*
+   WKZ_BOHR_d :=_SD;*VAR*
+   WKZ_BOHR_S_nr :=112;*VAR*FIX_WERKZEUGNUMMER DES BOHRERS schräg
+   WKZ_BOHR_S_h := '1';
+   WKZ_BOHR_S_v1 :=_VE;*VAR*
+   WKZ_BOHR_S_v2 :=_V;*VAR*
+   WKZ_BOHR_S_v3 :=_VA;*VAR*
+   WKZ_BOHR_S_d :=_SD;*VAR*
+   WKZ_Finger_nr :=1106;*VAR*Werkzeugnummer Fingerfräser  bei 90 Grad auf Platte
+   WKZ_Finger_h := '1';
+   WKZ_Finger_v1 :=_VE;*VAR*
+   WKZ_Finger_v2 :=_V;*VAR*
+   WKZ_Finger_v3 :=_VA;*VAR*
+   WKZ_Finger_d :=_SD;*VAR*
+   WKZ_90_nr :=1108;*VAR*Werkzeug für 90° von Ebene 0
+   WKZ_90_h := '1';
+   WKZ_90_v1 :=_VE;*VAR*
+   WKZ_90_v2 :=_V;*VAR*
+   WKZ_90_v3 :=_VA;*VAR*
+   WKZ_90_d :=_SD;*VAR*
+   winkel :=45;*VAR*Winkel des vertikalen Verbinders
+   verbindung :=1;*VAR*
+   seite :=0;*VAR*
+   bohr :=0;*VAR*
+   DrillingD :=6.8;*VAR*
+   seiteteil :=1;*VAR*
+   verbinder :=1;*VAR*
+   abstand :=60;*VAR*
+   abstand2 := 10;*VAR*
+   abstand3 :=60;*VAR*
+   TSK :=1;*VAR*typ schräge kante Winkel/ SP /EP
+   FF :=0;*VAR*Fingerfräser
+   typ :=0;*VAR*
+   SK :=-1;*VAR*
+   SPSK :=0;*VAR*
+   EPSK :=35;*VAR*
+   AddEITI :=0.0;*VAR*
+   WUE :=10;*VAR*Sicherheit Werkstückkante
+   BOU :=1.4;*VAR*BEWEGUNG NACH OBEN UND UNTEN
+   OtherSide :=0;*VAR*
+   Res1 := 0;Makro Version
+   Res2 := -111111;*VAR*Korrekturwinkel für Flex-5 (Verbinder auf Ebene)
+   Res3 := _RZ/2;Abstand von Unterkante in Stirnseite
+   Res4 := 7;Abstand von Oberkante in Schräge
+   Res5 := -111111;
+   Res6 := -111111;
+   Res7 := -111111;
+   Res8 := -111111;
+   Res9 := -111111;
+   Res10 := -111111;
+   Res11 := -111111;
+   Res12 := -111111;
+   Res13 := -111111;
+   Res14 := -111111;
+   Res15 := -111111;
+   Res16 := '';
+   Res17 := '';
+   Res18 := '';
+   Res19 := '';
+   Res20 := '';
+   EITI := 10;FIX_Eintauchtiefe des Werkzeuges
+   MIX := 0;FIX_MASS IN X-RICHTUNG
+   MIY := 0;FIX_MASS IN Y-RICHTUNG
+   DDE := 0;FIX_DREHWINKEL DER EBENE
+   NDAW := 7;FIX_NUTZLÄNGE DES AKTUELLEN WERKZEUGES
+   FDFE := 0;FIX_FLÄCHENHÖHE DER FREIEN EBENE
+   SFDFE := 0;FIX_WURZEL AUS FDFE
+   RAFB := 7.5;FIX_REGULÄRER ABSTAND FÜR DIE BOHRUNG
+   BAFB := 0;FIX_BENUTZBARER ABSTAND FÜR DIE BOHRUNG
+   ZH := 0;FIX_Z-Höhe
+   anzahl := 0;
+   abstv := 0;
+   averbinder := 0;
+   wschraeg := 0;
+   yposb := 0;
+   EVK := 0;Ebene Verkürzen
+   typ_name := 'P14';
+   DVZ := 0;Divaro Merker Nut
+   ESD1 := 0;Easysnap1 Divaro
+   ESD2 := 0;Easysnap2 Divaro
+   LFF := 0;Länge Fingerfräsung
+   vx := 0;
+   ax := 0;
+   ay := 0;
+   az := 0;
+   STLOffset := 0;
+   OnSurface := 0;
+   DX2 := 0;
+   DY2 := 0;
+   DZ2 := 0;
+   DX := 0;
+   DY := 0;
+   DZ := 0;
+   Gruppe := 0;0 = Finger; 1 = Nut; 2 = 90
+START
+Fertigteil (100,200,50,0,0,0,0,0,'',0,0,0)
+;Zuweisung
+IF (verbindung=4)
+abstand2 := 0
+seite := 0
+END
+;.
+IF TYP=0;
+;Tenso
+bohr := 0
+typ_name := 'TN'
+eiti := 14
+IF (verbindung=2)
+IF ( seite=0)
+STLOffset := -4
+eiti := 18
+ELSE
+STLOffset := 4
+eiti := 10
+END
+END
+ELSE
+IF TYP=1
+;Divaro
+typ_name := 'DV'
+bohr := 0
+eiti := 18
+IF Seite=1
+Fehlermeldung (GetMessageText('6001','Clamex Divaro nur auf Stirnkante möglich'))
+END
+ELSE
+IF TYP=2
+;Medius 14/10
+typ_name := 'MD'
+IF ( seite=0)
+eiti := 14
+ELSE
+eiti := 10
+END
+ELSE
+IF TYP=3
+;P 10
+typ_name := 'P10'
+EITI := 10
+RAFB := 5.5
+ELSE
+IF TYP=4
+;P14
+typ_name := 'P14'
+EITI := 14
+RAFB := 7.5
+END
+END
+END
+END
+END
+IF Seite=1
+;Fläche anderes STL
+typ_name := typ_name+'_OF'
+END
+;Wenn keine schräge Kante SPSK/EPSK=0
+IF SK=0
+SPSK := 0
+EPSK := 0
+END
+;Wenn Schräge Kante mit Winkel
+IF (SK=-1)&(TSK=0)
+IF (EPSK>89.999)|(EPSK<0)
+Fehlermeldung (GetMessageText('6003','Winkel Schräge Ebene auserhalb des zulässigen Bereichs'))
+END
+IF (seiteteil=0)|(seiteteil=2)
+EPSK := TAN(EPSK)*(_RX-SPSK)
+ELSE
+IF (seiteteil=1)|(seiteteil=3)
+EPSK := TAN(EPSK)*(_RY-SPSK)
+END
+END
+IF ((seiteteil=0)|(seiteteil=2)&(EPSK>_RY))|((seiteteil=1)|(seiteteil=3)&(EPSK>_RX))
+Fehlermeldung (GetMessageText('6004','Winkel schräge Kante zu groß'))
+END
+END
+;//
+IF (verbindung=2)&(typ=1)
+Fehlermeldung (GetMessageText('6005','Clamex Divario auf Fläche nicht zulässig'))
+END
+;#
+IF ((verbindung=0)&(seite=0))|((verbindung=2)&(seite=0))
+winkel := 0
+abstand2 := 0
+END
+;
+IF ((verbindung=0)&(seite=1))|((verbindung=2)&(seite=1))
+winkel := 90
+bohr := 0
+END
+;
+IF verbindung=1
+winkel := 45
+abstand2 := 0
+END
+;
+IF (verbindung=3)&(seite=0)
+abstand2 := 0
+END
+;
+IF (verbindung=3)&(seite=1)
+bohr := 0
+END
+;
+;#
+;#
+IF (verbindung=3)
+IF winkel>90
+Fehlermeldung (GetMessageText('6005','ACHTUNG ! KOLLISIONSGEFAHR ! WINKEL NICHT GRÖSSER 90 !'))
+END
+winkel := 90-winkel
+END
+IF verbinder<2
+averbinder := 2
+ELSE
+averbinder := verbinder
+END
+OnSurface := (winkel=90) | ((verbindung=3)&(seite=1))
+;FEHLERMELDUNG FALLS DER KIPPWINKEL
+;( winkel ) GRÖSSER ALS 60 UND KLEINER
+;ALS 90 ODER GRÖSSER ALS 90 GRAD IST
+;( winkel = KIPPWINKEL DER EBENE )
+;#
+IF ((winkel>60)&(winkel<90))|(winkel>90)
+Fehlermeldung (GetMessageText('6006','ACHTUNG ! KOLLISIONSGEFAHR ! NICHT GRÖSSER 60 !'))
+END
+;#
+;////////
+HGNeu()
+HKreismpr (0,50.2,50.2,0)
+HLineY (EITI,3)
+CALL Dist2P_V4 (REF DIST:=LFF VAL P1X:=_SPX1,P1Y:=_SPY1,P2X:=_SPX2,P2Y:=_SPY2)
+HGNeuEnd()
+LFF := LFF/2
+EITI := EITI+AddEITI
+;////////
+;Wenn Schräge Ebene
+IF SK=-1
+IF seiteteil=0
+MIX := SPSK
+MIY := 0
+CALL GetWinkel2P_V4 (REF WINKEL2P:=wschraeg VAL P1X:=MIX,P1Y:=MIY,P2X:=_RX,P2Y:=EPSK)
+;Länge der verkürzten Ebene
+EVK := (_RX-SPSK)/(COS(wschraeg))
+;#
+END
+IF seiteteil=1
+MIX := 0
+MIY := _RY-SPSK
+CALL GetWinkel2P_V4 (REF WINKEL2P:=wschraeg VAL P1X:=MIX,P1Y:=MIY,P2X:=EPSK,P2Y:=0)
+;Länge der verkürzten Ebene
+EVK := abs((_RY-SPSK)/(COS(wschraeg-90)))
+;#
+END
+IF seiteteil=2;
+MIX := _RX-SPSK
+MIY := _RY
+CALL GetWinkel2P_V4 (REF WINKEL2P:=wschraeg VAL P1X:=MIX,P1Y:=MIY,P2X:=0,P2Y:=_RY-EPSK)
+;Länge der verkürzten Ebene
+EVK := abs((_RX-SPSK)/(COS(wschraeg)))
+;#
+END
+IF seiteteil=3
+MIX := _RX
+MIY := SPSK
+CALL GetWinkel2P_V4 (REF WINKEL2P:=wschraeg VAL P1X:=MIX,P1Y:=MIY,P2X:=_RX-EPSK,P2Y:=_RY)
+;Länge der verkürzten Ebene
+EVK := (_RY-SPSK)/(COS(wschraeg-90))
+;#
+END
+DDE := wschraeg+180
+ELSE
+IF seiteteil=0
+MIX := 0
+MIY := 0
+EVK := _RX
+DDE := 180
+END
+IF seiteteil=1
+MIX := 0
+MIY := _RY
+EVK := _RY
+DDE := 90
+END
+IF seiteteil=2;
+MIX := _RX
+MIY := _RY
+EVK := _RX
+DDE := 0
+END
+IF seiteteil=3
+MIX := _RX
+MIY := 0
+EVK := _RY
+DDE := 270
+END
+END
+wschraeg := DDE-90
+CALL CalcVektor_V7 (REF VX:=DX2,VY:=DY2,VZ:=DZ2 VAL P1X:=0,P1Y:=0,P1Z:=0,P2X:=abstand2*cos(wschraeg),P2Y:=abstand2*sin(wschraeg),P2Z:=0)
+IF (Res1=0)&(verbinder=1)&((seiteteil=1)|(seiteteil=2));
+IF (seiteteil=1)
+abstand3 := _RY-abstand
+END
+IF (seiteteil=2)
+abstand3 := _RX-abstand
+END
+END
+;#######################################
+;KONTROLLEBENE UM DIE BREITE DER EBENE ZU BEKOMMEN
+;NICHT LÖSCHEN ODER AUSKLAMMERN !
+EbeneF (0,_ry,0,90-winkel,180,0,0)
+FDFE := _EH_RZ
+Ebene0()
+IF winkel<=60
+IF Res4<>-111111
+ZH := FDFE-Res4
+ELSE
+ZH := (FDFE-3.5-(NDAW/2))
+END
+END
+IF winkel=0
+IF Res3<>-111111
+ZH := Res3
+ELSE
+ZH := _RZ/2
+END
+END
+;---------------------------------------------
+;Abstand für verbindung mit einer seite Winkel
+IF OnSurface
+winkel := 90
+ZH := 0
+END
+;---------------------------------------------
+OnSurface := winkel=90
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+;*****************Bohrungen************
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+Ebene0()
+IF bohr=-1
+IF OnSurface=0
+;#######################################
+;---------------------------------------------
+;---------------------------------------------
+;---------------------------------------------
+SFDFE := SQRT((FDFE*FDFE)-(_RZ*_RZ))
+;AUSWAHL DES WERKZEUIGES ZUM BOHREN
+;---------------------------------------------
+IF (Winkel=0)
+WZB (WKZ_BOHR_nr,WKZ_BOHR_V1,WKZ_BOHR_V2,WKZ_BOHR_V3,WKZ_BOHR_D,_ANF,WKZ_BOHR_H)
+CALL GROUPSTART_V7 ( VAL NAME:='OPTIGROUP_WKZ_BOHR')
+ELSE
+WZB (WKZ_BOHR_S_nr,WKZ_BOHR_S_V1,WKZ_BOHR_S_V2,WKZ_BOHR_S_V3,WKZ_BOHR_S_D,_ANF,WKZ_BOHR_S_H)
+CALL GROUPSTART_V7 ( VAL NAME:='OPTIGROUP_WKZ_BOHR_S')
+END
+BAFB := RAFB/(COS(winkel))*1
+abstv := (EVK-(abstand+abstand3))/(averbinder-1)
+DY := SFDFE+BAFB
+CALL RotPoint00 (REF PX:=DX,PY:=DY VAL W:=-(DDE+180))
+ax := MIX+DX2+DX
+ay := MIY+DY2+DY
+az := _RZ
+IF (Winkel=0)
+Ebene0()
+ELSE
+EbeneF (ax,ay,az,winkel,DDE,0,0)
+END
+FOR anzahl := 0 TO verbinder-1 STEP 1
+IF (seiteteil=0)|(seiteteil=3)
+vx := -abstand-(abstv*(anzahl))
+ELSE
+vx := -abstand3-(abstv*(anzahl))
+END
+DX := vx
+DY := 0
+IF (Winkel=0)
+CALL VxyzToAxyz_V7 (REF AX:=DX,AY:=DY,AZ:=DZ VAL OFFX:=ax,OFFY:=ay,OFFZ:=az,DW:=DDE,KW:=winkel,VX:=vx,VY:=0,VZ:=0)
+END
+Bohrung (DX,DY,DrillingD,-((FDFE-ZH)+tan(winkel)*RAFB),10,0,0,0,0,0,0,0)
+END
+IF (Winkel=0)
+CALL GROUPEND_V7 ( VAL NAME:='OPTIGROUP_WKZ_BOHR')
+ELSE
+CALL GROUPEND_V7 ( VAL NAME:='OPTIGROUP_WKZ_BOHR_S')
+END
+;#######################################
+ELSE
+Hinweismeldung (GetMessageText('6007','BOHREN BEI 90 GRAD NICHT MÖGLICH !'))
+END
+END
+Ebene0()
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+;VERBINDUNG
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+;#######################################
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+;Nut für Clamex Divaro
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+IF (Typ=1)&(OnSurface=0)
+CALL GROUPSTART_V7 ( VAL NAME:='OPTIGROUP_WKZ_NUT')
+WZF (WKZ_NUT_nr,WKZ_NUT_V1,WKZ_NUT_V2,WKZ_NUT_V3,WKZ_NUT_D,_ANF,WKZ_NUT_H)
+IF OnSurface
+EbeneF (MIX+DX2,MIY+DY2,0,winkel,DDE,0,2)
+ELSE
+EbeneF (MIX+DX2,MIY+DY2,0,winkel,DDE,0,0)
+END
+IF (Res1=0)&((seiteteil=1)|(seiteteil=2))
+OtherSide := 1- OtherSide
+;OtherSide :=-1
+END
+IF OtherSide
+SP (-EVK,-8mm,ZH,1,3,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-(-EVK+10+_WZR),0,0,0,10,2)
+EP (3,_ANF,0)
+ELSE
+SP (0,-8mm,ZH,2,3,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-EVK+10+_WZR,0,0,0,10,2)
+EP (3,_ANF,0)
+END
+CALL GROUPEND_V7 ( VAL NAME:='OPTIGROUP_WKZ_NUT')
+END
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+IF (Res2>0)&(FF=0)
+IF OnSurface
+winkel := winkel-Res2
+END
+END
+;_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O
+IF FF=-1
+WZF (WKZ_Finger_nr,WKZ_Finger_V1,WKZ_Finger_V2,WKZ_Finger_V3,WKZ_Finger_D,_ANF,WKZ_Finger_H)
+END
+IF OnSurface
+IF FF=0
+WZF (WKZ_90_nr,WKZ_90_V1,WKZ_90_V2,WKZ_90_V3,WKZ_90_D,_ANF,WKZ_90_H)
+IF WKZ_NUT_nr=WKZ_90_nr
+Gruppe := 1
+ELSE
+Gruppe := 2
+END
+END
+ELSE
+IF FF=0
+WZF (WKZ_NUT_nr,WKZ_NUT_V1,WKZ_NUT_V2,WKZ_NUT_V3,WKZ_NUT_D,_ANF,WKZ_NUT_H)
+Gruppe := 1
+END
+END
+IF Gruppe=0
+CALL GROUPSTART_V7 ( VAL NAME:='OPTIGROUP_WKZ_Finger')
+ELSE
+IF Gruppe=1
+CALL GROUPSTART_V7 ( VAL NAME:='OPTIGROUP_WKZ_NUT')
+ELSE
+CALL GROUPSTART_V7 ( VAL NAME:='OPTIGROUP_WKZ_90')
+END
+END
+abstv := (EVK-(abstand+abstand3))/(averbinder-1)
+FOR anzahl := 0 TO verbinder-1 STEP 1
+IF OnSurface
+EbeneF (MIX+DX2,MIY+DY2,0,winkel,DDE+180,0,2)
+ELSE
+EbeneF (MIX+DX2,MIY+DY2,0,winkel,DDE,0,0)
+END
+;---------------------------------------------
+;#######################################
+;PROGRAMMIERUNG DER FRÄSBAHN
+;---------------------------------------------
+;---------------------------------------------
+;---------------------------------------------
+IF (seiteteil=0)|(seiteteil=3)
+vx := -abstand-(abstv*(anzahl))
+ELSE
+vx := -abstand3-(abstv*(anzahl))
+END
+IF OnSurface
+vx := -vx
+END
+ZSTL (vx,STLOffset,ZH,12632256,1,typ_name+'.stl',0,0)
+;Fingerfräser
+IF FF=-1
+CALL VxyzToAxyz_V7 (REF AX:=ax,AY:=ay,AZ:=az VAL OFFX:=_AV_OFFSETX,OFFY:=_AV_OFFSETY,OFFZ:=_AV_OFFSETZ,DW:=_AV_ROTA,KW:=_AV_TIPA,VX:=vx,VY:=0,VZ:=ZH)
+WZF (WKZ_Finger_nr,WKZ_Finger_V1,WKZ_Finger_V2,WKZ_Finger_V3,WKZ_Finger_D,_ANF,WKZ_Finger_H)
+CALL Clamex_Finger_V7 ( VAL WIDTH:=LFF,HEIGHT:=-EITI,VIEWX:=ax,VIEWY:=ay,VIEWZ:=az,VIEWDW:=DDE,VIEWKW:=winkel-90,ONSURFACE:=OnSurface)
+ELSE
+SP (vx,_WZR+WUE,ZH,0,0,_ANF,0,0,90,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-(WUE+EITI),0,0,10,2)
+G01 (0,0,BOU,0,10,2)
+G01 (0,0,-(BOU*2),0,10,2)
+G01 (0,0,BOU,0,10,2)
+G01 (0,+(WUE+EITI),0,0,10,2)
+EP (0,_ANF,0)
+Ebene0()
+END
+END
+IF Gruppe=0
+CALL GROUPEND_V7 ( VAL NAME:='OPTIGROUP_WKZ_Finger')
+ELSE
+IF Gruppe=1
+CALL GROUPEND_V7 ( VAL NAME:='OPTIGROUP_WKZ_NUT')
+ELSE
+CALL GROUPEND_V7 ( VAL NAME:='OPTIGROUP_WKZ_90')
+END
+END
+/KB ('xx','',MIX,MIY,0,'',0,0)
+/CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=10,WINKEL:=DDE+90,Z:=0,INFO:='',ESD:=2)
+/CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=10,WINKEL:=DDE+90+180,Z:=0,INFO:='',ESD:=2)
+/CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=EVK,WINKEL:=DDE+180,Z:=0,INFO:='',ESD:=2)
+/CALL _KWGerade_V5 ( VAL NAME:='',LAENGE:=EVK*2,WINKEL:=DDE,Z:=0,INFO:='',ESD:=2)

@@ -1,0 +1,18 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowNEWPARTSTART_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   FX := 0;*VAR*
+   FY := 0;*VAR*
+   FZ := 0;*VAR*
+   LUX := 0;*VAR*
+   LUY := 0;*VAR*
+   LUZ := 0;*VAR*
+   Name := '';*VAR*
+   NC_Nr := 0;*VAR*
+   Rotation := 0;*VAR*
+   Machine := 0;*VAR*
+START
+nciext (-101001,'NCISys',3,0,0,FX,FY,FZ,LUX,LUY,LUZ,Name,NC_Nr,Rotation,Machine)

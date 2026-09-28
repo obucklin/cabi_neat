@@ -1,0 +1,68 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCNAME
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=
+VARS
+   X_Mitte := _RX/2;*VAR*Mittelpunkt in X
+   Y_Mitte := _RY/2;*VAR*Mittelpunkt in Y
+   Z := _Z;*VAR*Frästiefe
+   Radius := 20;*VAR*Radius der Kreisbahn
+   Radiuskorrektur := 2;*VAR*0=Mitte,1=Ausen,2=Innen
+   AB := 1;*VAR*0 -> keine An/Abfahrbewegung, <> 0 -> An/Abfahrbewegung
+   KreisEndpunktY := 0;
+   ÜberfahrKreisbogen := 2;
+START
+;direkt cnc systeme NCHOPS Version3.0
+;KreisbahnCW V 3.0/SF/30.09.98
+;Rohteil (100,100,19,0,0)
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+KreisEndpunktY := _WZD+ÜberfahrKreisbogen
+IF KreisEndpunktY>=2*Radius
+KreisEndpunktY := _WZD+((2*Radius-_WZD)/2)
+END
+IF Radiuskorrektur=0
+SP (X_Mitte+Radius,Y_Mitte,Z,0,0,_ANF,0,0,0)
+ELSE
+IF Radiuskorrektur=1
+IF AB=0
+SP (X_Mitte+Radius,Y_Mitte,Z,1,0,1.1,0,0,0)
+ELSE
+SP (X_Mitte+Radius,Y_Mitte,Z,1,2,1.1,0,0,0)
+END
+ELSE
+IF AB=0
+SP (X_Mitte+Radius,Y_Mitte,Z,2,0,_ANF,0,0,0)
+ELSE
+SP (X_Mitte+Radius-KreisEndpunktY,Y_Mitte,Z,2,0,_ANF,0,0,0)
+G02M (X_Mitte+Radius,Y_Mitte,_Z,(X_Mitte+Radius-KreisEndpunktY)+KreisEndpunktY/2,Y_Mitte,0)
+END
+END
+END
+;..
+G02M (X_Mitte-Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+G02M (X_Mitte+Radius,Y_Mitte,_Z,X_Mitte,Y_Mitte,0)
+G02M (X_Mitte,Y_Mitte-Radius,_Z,X_Mitte,Y_Mitte,0)
+;nur wenn Fahrweg in Mitte keine Konturverletzung verursacht
+IF Radiuskorrektur=0
+;Keine Abfahrbewegung
+EP (0,_ANF,0)
+ELSE
+IF Radiuskorrektur=1
+IF AB=0
+EP (0,1.1,0)
+ELSE
+EP (2,1.1,0)
+END
+ELSE
+IF AB<>0
+TANG (_x,_Y+KreisEndpunktY,_z,_WZR)
+END
+END
+EP (0,1.1,0)
+END
+

@@ -1,0 +1,41 @@
+;MAKROTYP=0
+;BILD=VX3D_Band.wmf
+;INFO=
+;WZGV=7123K_021
+;MASCHINE=HOLZHER
+;NCNAME=VTXBand
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 820;*VAR*Dimension X
+   DY := 510;*VAR*Dimension Y
+   DZ := 38;*VAR*Dimension Z
+   Band_O := 200;
+   Falz_T := 0;
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+CALL HH_Park ( VAL PARK:=2,X:=0,Y:=0)
+WZF (3,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Band_O- 46.5,-20,-3,0,0,_ANF,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Band_O- 46.5,Falz_T +22,0,0,1,2)
+G01 (Band_O + 46.5,Falz_T +22,0,0,1,2)
+G01 (Band_O + 46.5,-20,0,0,1,2)
+EP (0,_ANF,0)
+Ebene1()
+WZF (152,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Band_O- 41.3,-20,-(Falz_T+ 22.7),0,0,_ANF,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Band_O - 41.3,0,0,0,7,2)
+G01 (Band_O +41.3,0,0,0,7,2)
+G01 (Band_O + 41.3,10,0,0,7,2)
+G01 (Band_O - 41.3,10,0,0,7,2)
+G01 (Band_O -40,-20,0,0,7,2)
+EP (0,_ANF,0)
+CALL _RechteckTasche_V5 ( VAL X_MITTE:=Band_O,Y_MITTE:=18,TASCHENLAENGE:=180.4,TASCHENBREITE:=24.3,RADIUS:=12,WINKEL:=0,TIEFE:=-(Falz_T+24),ZUSTELLUNG:=10,AB:=2,ABF:=_ANF,INTERPOL:=1,UMKEHREN:=0,ESXY:=7,ESMD:=0,LASER:=0)
+Ebene0()

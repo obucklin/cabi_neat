@@ -1,0 +1,240 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.987[Hops.exe]
+;BILD=HH_SFORMAT.WMF
+;INFO=
+;WZGV=7535D_122
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=HH_SFormat
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=DialogBA_1.Dll
+;DIALOGPROC=ShowUmfahrenDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600mm;Dimension X
+   DY := 400mm;Dimension Y
+   DZ := 19mm;Dimension Z
+   K_Hinten := 0;*VAR*Kantenmass hinten
+   K_Links := 0;*VAR*Kantenmass links
+   K_Vorne := 0;*VAR*Kantenmass vorne
+   K_Rechts := 0;*VAR*Kantenmass rechts
+   RF1 := 0;*VAR*Radius/Fase links oben
+   RF2 := 0;*VAR*Radius/Fase links unten
+   RF3 := 0;*VAR*Radius/Fase rechts unten
+   RF4 := 0;*VAR*Radius/Fase rechts oben
+   Umf_Tiefe := -(DZ/2);*VAR*Tiefe in Z
+   Check_RF1 := 1;*VAR*CheckBox Radius(1)/Fase (0)
+   Check_RF2 := 1;*VAR*CheckBox Radius(1)/Fase (0)
+   Check_RF3 := 1;*VAR*CheckBox Radius(1)/Fase (0)
+   Check_RF4 := 1;*VAR*CheckBox Radius(1)/Fase (0)
+   SnapZ := 0;*VAR*Easy Snap in Z
+   B_Richt := 2;*VAR*Bearbeitungsrichtung
+   Typ := 0;*VAR*Begin Links = 0 / Vorne=1 / Rechts = 2 / Hinten = 3
+START
+Fertigteil (1000,2000,19,0,0,0,0,0,'',0,0,0)
+IF Typ =0
+SP (K_Links,0,Umf_Tiefe,2,2,_ANF,0,0,0,8,SnapZ,B_Richt,0,0,0,0,0,0,0,0,0,0,0)
+IF RF2>0
+;Fase
+IF Check_RF2 = 0
+G01 (K_Links,K_Vorne + RF2,0,0,1,2)
+G01 (K_Links + RF2,K_Vorne,0,0,1,2)
+ELSE
+G01 (K_Links,K_Vorne,0,RF2,1,2)
+END
+ELSE
+G01 (K_Links,K_Vorne,0,0,1,2)
+END
+IF RF3>0
+;Fase
+IF Check_RF3 = 0
+G01 (K_Rechts +RF3,K_Vorne,0,0,3,2)
+G01 (K_Rechts,K_Vorne + RF3,0,0,3,2)
+ELSE
+G01 (K_Rechts,K_Vorne,0,RF3,3,2)
+END
+ELSE
+G01 (K_Rechts,K_Vorne,0,0,3,2)
+END
+IF RF4>0
+;Fase
+IF Check_RF4 = 0
+G01 (K_Rechts,K_Hinten + RF4,0,0,5,2)
+G01 (K_Rechts + RF4,K_Hinten,0,0,5,2)
+ELSE
+G01 (K_Rechts,K_Hinten,0,RF4,5,2)
+END
+ELSE
+G01 (K_Rechts,K_Hinten,0,0,5,2)
+END
+IF RF1>0
+;Fase
+IF Check_RF1 = 0
+G01 (K_Links + RF1,K_Hinten,0,0,7,2)
+G01 (K_Links,K_Hinten+RF1,0,0,7,2)
+ELSE
+G01 (K_Links,K_Hinten,0,RF1,7,2)
+END
+ELSE
+G01 (K_Links,K_Hinten,0,0,7,2)
+END
+G01 (K_Links,0,0,0,8,2)
+EP (2,_ANF,0)
+END
+;Begin von Vorne
+IF Typ =1
+SP (0,K_Vorne,Umf_Tiefe,2,2,_ANF,0,0,0,2,SnapZ,B_Richt,0,0,0,0,0,0,0,0,0,0,0)
+IF RF3>0
+;Fase
+IF Check_RF3 = 0
+G01 (K_Rechts + RF3,K_Vorne,0,0,3,2)
+G01 (K_Rechts,K_Vorne + RF3,0,0,3,2)
+ELSE
+G01 (K_Rechts,K_Vorne,0,RF3,3,2)
+END
+ELSE
+G01 (K_Rechts,K_Vorne,0,0,3,2)
+END
+IF RF4>0
+;Fase
+IF Check_RF4 = 0
+G01 (K_Rechts,K_Hinten  + RF4,0,0,5,2)
+G01 (K_Rechts  +RF4,K_Hinten,0,0,5,2)
+ELSE
+G01 (K_Rechts,K_Hinten,0,RF4,5,2)
+END
+ELSE
+G01 (K_Rechts,K_Hinten,0,0,5,2)
+END
+IF RF1>0
+;Fase
+IF Check_RF1 = 0
+G01 (K_Links+ RF1,K_Hinten,0,0,7,2)
+G01 (K_Links,K_Hinten + RF1,0,0,7,2)
+ELSE
+G01 (K_Links,K_Hinten,0,RF1,7,2)
+END
+ELSE
+G01 (K_Links,K_Hinten,0,0,7,2)
+END
+IF RF2>0
+;Fase
+IF Check_RF2 = 0
+G01 (K_Links,K_Vorne + RF2,0,0,1,2)
+G01 (K_Links + RF2,K_Vorne,0,0,1,2)
+ELSE
+G01 (K_Links,K_Vorne,0,RF2,1,2)
+END
+ELSE
+G01 (K_Links,K_Vorne,0,0,1,2)
+END
+G01 (10,K_Vorne,0,0,2,2)
+EP (2,_ANF,0)
+END
+;Begin von Rechts
+IF Typ =2
+SP (K_Rechts,0,Umf_Tiefe,2,2,_ANF,0,0,0,4,SnapZ,B_Richt,0,0,0,0,0,0,0,0,0,0,0)
+IF RF4>0
+;Fase
+IF Check_RF4 = 0
+G01 (K_Rechts,K_Hinten + RF4,0,0,5,2)
+G01 (K_Rechts + RF4,K_Hinten,0,0,5,2)
+ELSE
+G01 (K_Rechts,K_Hinten,0,RF4,5,2)
+END
+ELSE
+G01 (K_Rechts,K_Hinten,0,0,5,2)
+END
+IF RF1>0
+;Fase
+IF Check_RF1 = 0
+G01 (K_Links + RF1,K_Hinten,0,0,7,2)
+G01 (K_Links,K_Hinten  +RF1,0,0,7,2)
+ELSE
+G01 (K_Links,K_Hinten,0,RF1,7,2)
+END
+ELSE
+G01 (K_Links,K_Hinten,0,0,7,2)
+END
+IF RF2>0
+;Fase
+IF Check_RF2 = 0
+G01 (K_Links,K_Vorne+ RF2,0,0,1,2)
+G01 (K_Links + RF2,K_Vorne,0,0,1,2)
+ELSE
+G01 (K_Links,K_Vorne,0,RF2,1,2)
+END
+ELSE
+G01 (K_Links,K_Vorne,0,0,1,2)
+END
+IF RF3>0
+;Fase
+IF Check_RF3 = 0
+G01 (K_Rechts + RF3,K_Vorne,0,0,3,2)
+G01 (K_Rechts,K_Vorne + RF3,0,0,3,2)
+ELSE
+G01 (K_Rechts,K_Vorne,0,RF3,3,2)
+END
+ELSE
+G01 (K_Rechts,K_Vorne,0,0,3,2)
+END
+G01 (K_Rechts,10,0,0,4,2)
+EP (2,_ANF,0)
+END
+;Begin von Hinten
+IF Typ =3
+SP (0,K_Hinten,Umf_Tiefe,2,2,_ANF,0,0,0,6,SnapZ,B_Richt,0,0,0,0,0,0,0,0,0,0,0)
+IF RF1>0
+;Fase
+IF Check_RF1 = 0
+G01 (K_Links  + RF1,K_Hinten,0,0,7,2)
+G01 (K_Links,K_Hinten + RF1,0,0,7,2)
+ELSE
+G01 (K_Links,K_Hinten,0,RF1,7,2)
+END
+ELSE
+G01 (K_Links,K_Hinten,0,0,7,2)
+END
+IF RF2>0
+;Fase
+IF Check_RF2 = 0
+G01 (K_Links,K_Vorne + RF2,0,0,1,2)
+G01 (K_Links + RF2,K_Vorne,0,0,1,2)
+ELSE
+G01 (K_Links,K_Vorne,0,RF2,1,2)
+END
+ELSE
+G01 (K_Links,K_Vorne,0,0,1,2)
+END
+IF RF3>0
+;Fase
+IF Check_RF3 = 0
+G01 (K_Rechts + RF3,K_Vorne,0,0,3,2)
+G01 (K_Rechts,K_Vorne + RF3,0,0,3,2)
+ELSE
+G01 (K_Rechts,K_Vorne,0,RF3,3,2)
+END
+ELSE
+G01 (K_Rechts,K_Vorne,0,0,3,2)
+END
+IF RF4>0
+;Fase
+IF Check_RF4 = 0
+G01 (K_Rechts,K_Hinten  + RF4,0,0,5,2)
+G01 (K_Rechts + RF4,K_Hinten,0,0,5,2)
+ELSE
+G01 (K_Rechts,K_Hinten,0,RF4,5,2)
+END
+ELSE
+G01 (K_Rechts,K_Hinten,0,0,5,2)
+END
+G01 (-10,K_Hinten,0,0,6,2)
+EP (2,_ANF,0)
+END

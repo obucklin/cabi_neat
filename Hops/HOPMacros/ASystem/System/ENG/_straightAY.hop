@@ -1,0 +1,37 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=simu
+;MASCHINE=demo
+;WZGV=demo
+;BILD=Geradewy.wmf
+VARS
+   Y := 50;*VAR*distance in y-direction
+   angle := 0;*VAR*angle relative to x axis
+   Z := _Z;*VAR*depth in z
+   R := 0;*VAR*radius to get round curves
+   dx := 0;
+START
+;DIREKT CNC SYSTEME NCHOPS VERSION 3.0
+;line with y-value and angle
+;finished part (1000,2000,19,0,0)
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+WHILE angle>360
+angle := angle-360
+END
+WHILE angle<0
+angle := angle+360
+END
+IF (angle=0) | (angle=180) | (angle=360)
+GIVEOUTHINT (straight_in_y_can_not_created_because_length_is_0)
+ELSE
+dx := Y/Tan(angle)
+IF (angle>0)&(angle<180)
+G01(_X+DX,_Y+Y,Z,R)
+ELSE
+G01(_X-DX,_Y-Y,Z,R)
+END
+END
+

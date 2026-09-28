@@ -1,0 +1,22 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=DrehenBBEnde
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=
+VARS
+   DX := 0;*VAR*Drehpunkt in X
+   DY := 0;*VAR*Drehpunkt in Y
+   Dw := 0;*VAR*Drehwinkel
+   _dx := 0;
+   _dy := 0;
+   _drw := 0;
+START
+ROTATEBB()
+_dx := dx
+_dy := dy
+_drw := dw
+

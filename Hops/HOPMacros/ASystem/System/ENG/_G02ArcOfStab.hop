@@ -1,0 +1,20 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCNAME
+;MASCHINE=demo
+;WZGV=demo
+;BILD=_G02Stichbogen.wmf
+VARS
+   width := 300;*VAR*width of arc of stab
+   height := 20;*VAR*height of arc of stab
+   Z := _Z;*VAR*depth  in z
+   R := 0;*VAR*radius to get round curves
+   Radius := 0;radius
+START
+;finished part(1000,200,40,0,0)
+Radius := (sqr(Height)+sqr(width)/4)/(2*Height)
+G02R(_X+WIDTH,_Y,Z,RADIUS,R)
+

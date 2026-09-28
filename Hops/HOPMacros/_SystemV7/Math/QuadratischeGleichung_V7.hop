@@ -1,0 +1,31 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowQuadratischeGleichung_V7Dialog
+VARS
+   a := 0;*VAR*
+   b := 0;*VAR*
+   c := 0;*VAR*
+   x1 := ;*VAR**REF*
+   x2 := ;*VAR**REF*
+   Anzahl := ;*VAR**REF*
+   UnterWurzel := 0;
+   Wurzel := 0;
+START
+;ax^2+bx+c=0
+Anzahl := 0
+IF a<>0
+UnterWurzel := sqr(b)/(4*sqr(a))-c/a
+IF UnterWurzel<0
+ELSE
+Wurzel := sqrt(UnterWurzel)
+IF UnterWurzel=0
+Anzahl := 1
+x1 := -b/(2*a)
+x2 := -b/(2*a)
+ELSE
+Anzahl := 2
+x1 := -b/(2*a)+Wurzel
+x2 := -b/(2*a)-Wurzel
+END
+END
+END

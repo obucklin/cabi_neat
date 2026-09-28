@@ -1,0 +1,44 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.6.8.49[Hops.exe]
+;BILD=DRILL_V_HH.WMF
+;INFO=
+;WZGV=7225K_565
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=DRILL_V_HH
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   X := 0;*VAR*X-POSITION
+   Y := 0;*VAR*Y-Position
+   D := 5mm;*VAR*Bohrdurchmesser
+   T := -13;*VAR*Bohrtiefe
+   TLF := 0;*VAR*Bohrertyp / 10=Sackloch / 20= Durchgangsloch / 30= Topfband
+   KW := 0;Kippwinkel
+   DW := 0;Drehwinkel
+   esxy := 0;Easysnap in xy
+   esd := 0;Easysnap depth
+   AxisDW := 0;*VAR*Achsstellung Default = 0
+   res1 := 0;reserve1
+   res2 := 0;reserve2
+START
+;HOLZHER GmbH
+;Copyright 15.02.2021
+;Version 15.02.2021 (Freigabe HH)
+;---------Änderungen hier reinschreiben: ----------***
+;Version 15.02.2021
+IF _pVar_NoDrillingV=1
+;Prozessvariable - Keine vertikale Bohrungen aktiv
+ELSE
+WZF (_Drill_Standard_ID,_VE,_V,_VA,_SD,_ANF,'1')
+Bohrung (X,Y,D,T,TLF,0,0,0,0,AxisDW,0,0)
+END

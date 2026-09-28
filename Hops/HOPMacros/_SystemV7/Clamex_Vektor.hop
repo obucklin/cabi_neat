@@ -1,0 +1,69 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.1
+VARS
+   Width := 50;*VAR*
+   Height := -20;*VAR*
+   DX := 0;*VAR*
+   DY := 0;*VAR*
+   DZ := 0;*VAR*
+   MaxArcDistArc := 0.1;
+   Radius := 0;
+   GTyp := 0;
+   Mx := 0;
+   My := 0;
+   x := 0;
+   y := 0;
+   z := 0;
+   WZ := 0;*VAR*Winkel Clamex
+   WB := 0;
+   DeltaW := 180;
+   StepCircle := 0;
+   AnzahlArc := 50;
+   StepArc := 0;
+   i := 0;
+   j := 0;
+   KW := 0;
+   DW := 0;
+   Nx := 0;
+   Ny := 0;
+   Nz := 0;
+   DeltaN := 0;
+   NF := 1;
+   esxy := 0;*VAR*
+START
+Fertigteil (2*Width,2*Width,Height,0,0,0,0,0,'',0,0,0)
+transesxy (DX,DY,esxy,0)
+Width := abs(Width)
+NF := Height/abs(Height)
+KB ('KB','',-Width,0,0,'',0,0);
+CALL _KB_3P (REF GTYP:=GTyp,MX:=Mx,MY:=My VAL SX:=_X,SY:=_Y,P1X:=0,P1Y:=Height,P2X:=Width,P2Y:=0)
+IF GTyp=3
+KG03M ('',Width,0,0,mx,my,'',0,2,0)
+ELSE
+Fehlermeldung ('Error-G3P')
+END
+CALL Dist2P_V4 (REF DIST:=Radius VAL P1X:=MX,P1Y:=MY,P2X:=Width,P2Y:=0)
+CALL GetWinkelDiff3P_V4 (REF WINKELDIFF3P:=DW VAL P1X:=GETCP_X('KB',0),P1Y:=GETCP_Y('KB',0),MX:=MX,MY:=MY,P3X:=GETCP_X('KB',1),P3Y:=GETCP_Y('KB',1))
+CALL GetSegmentCount (REF COUNT:=AnzahlArc,SINGLESTEP:=StepArc VAL DW:=DeltaW,RADIUS:=Width,MAXARCDIST:=MaxArcDistArc)
+WB := 0
+FOR j := 0 TO AnzahlArc STEP 1
+CALL GetArcPointAt (REF PX:=x,PY:=z VAL SX:=GETCP_X('KB',0),SY:=GETCP_Y('KB',0),EX:=GETCP_X('KB',1),EY:=GETCP_Y('KB',1),MX:=MX,MY:=MY,GTYP:=GTyp,T:=WB)
+y := 0
+CALL RotPoint00 (REF PX:=x,PY:=y VAL W:=WZ)
+Nx := NF*x
+Ny := NF*y
+Nz := NF*(z-My)
+DeltaN := sqrt(sqr(Nx)+sqr(Ny)+sqr(Nz))
+CALL Calc_DW_KW_NV (REF KW:=KW,DW:=DW VAL NX:=Nx/DeltaN,NY:=Ny/DeltaN,NZ:=Nz/DeltaN)
+IF (j=0)
+vsp (x+DX,y+DY,z+DZ,DW,KW,0,0,0,0,3,1,0,0)
+vg01 (x+DX,y+DY,z+DZ,DW,KW,_VAKT)
+END
+vg01 (x+DX,y+DY,z+DZ,DW,KW,_VAKT)
+WB := WB+StepArc/DeltaW
+END
+vep (0)
+deletecontour ('',1)

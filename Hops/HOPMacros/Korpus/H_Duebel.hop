@@ -1,0 +1,250 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=H_DUEBEL.WMF
+;INFO=
+;WZGV=7405_793
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Horizontale Dübel
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_1.Dll
+;DIALOGPROC=ShowH_DuebelDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600mm;Dimension X
+   DY := 400mm;Dimension Y
+   DZ := 19mm;Dimension Z
+   H_RM_H := 30;*VAR*Randmass Y hinten
+   H_RM_V := 30;*VAR*Randmass Y vorne
+   H_Hoehe_Z := DZ/2;*VAR*Höhe in Z
+   H_Anz := 5;*VAR*Anzahl Dübel
+   H_D_Tiefe := -25.00;*VAR*Tiefe Dübel
+   H_D_Dm := 8.00;*VAR*Durchmesser Dübel
+   H_CheckBox_L := -1;*VAR*Dübel links Ja/Nein
+   H_CheckBox_R := -1;*VAR*Dübel rechts Ja/Nein
+   H_CheckBox_Ver := -1;*VAR*Verbinder Ja/Nein
+   H_CheckBox_MS := 0;*VAR*Mittelseite  Ja/Nein
+   H_Wahl := 0;*VAR*Nach Anzahl 0 oder nach Mass 1
+   H_2_D_Mass := 250.00;*VAR*Bis Mass 2 Dübel
+   H_3_D_Mass := 350.00;*VAR*Bis Mass 3 Dübel
+   H_4_D_Mass := 450.00;*VAR*Bis Mass 4 Dübel
+   H_5_D_Mass := 550.00;*VAR*Bis Mass 5 Dübel
+   Ex_Lo_Dm_V := 15.00;*VAR*Durchmesser Excenter
+   Ex_Lo_Ti_V := 14.20;*VAR*Tiefe Excenter
+   Ex_Lo_Dm_H := 8.00;*VAR*Durchmesser Bohrung horizontal Excenter
+   Ex_Lo_Ti_H := -24.00;*VAR*Tiefe Bohrung horizontal Excenter
+   Ex_Mass_X := 24;*VAR*X Wert Excenterbohrung
+   Ex_Anz := 3;*VAR*Anzahl der Verbinder
+   Ex_Dist := 20.00;*VAR*Abstand Excenter zum Dübel
+   Ms_Mass_X := DX/2;*VAR*X-Mass Mittelseite
+   Ms_Abst_H := 10.00;*VAR*Abstand hinten
+   Ms_Abst_V := 10.00;*VAR*Abstand vorne
+   Ms_Tiefe := 14.00;*VAR*Lochtiefe Mittelseite
+   Ms_Dm := 8.00;*VAR*Lochdurchmesser Mittelseite
+   Abstand := 0.00;Distanz zw. Bohrungen
+   Anzahl := 2;Anzahl Bohrungen
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+; Holzher Schweiz AG (c) B. Achermann
+IF H_Wahl=1
+IF _RY <=H_2_D_Mass
+H_Anz := 2
+END
+IF (_RY >H_2_D_Mass) &(_RY<= H_3_D_Mass)
+H_Anz := 3
+END
+IF (_RY >H_3_D_Mass) &(_RY<= H_4_D_Mass)
+H_Anz := 4
+END
+IF (_RY >H_4_D_Mass) &(_RY<= H_5_D_Mass)
+H_Anz := 5
+END
+IF _RY >H_5_D_Mass
+H_Anz := 6
+END
+ELSE
+H_Anz := H_Anz
+END
+;Linke Seite
+;Dübel
+IF H_CheckBox_L = -1
+HorzB (0,H_RM_H,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,0,7,0,0,0)
+HorzB (0,H_RM_V,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,0,1,0,0,0)
+;Excenter
+IF H_CheckBox_Ver = -1
+Bohrung (Ex_Mass_X,H_RM_H + Ex_Dist,Ex_Lo_Dm_V,Ex_Lo_Ti_V,30,0,0,7,0,0,0,0)
+Bohrung (Ex_Mass_X,H_RM_V+ Ex_Dist,Ex_Lo_Dm_V,Ex_Lo_Ti_V,30,0,0,1,0,0,0,0)
+HorzB (0,H_RM_H + Ex_Dist,H_Hoehe_Z,Ex_Lo_Dm_H,Ex_Lo_Ti_H,0,0,0,7,0,0,0)
+HorzB (0,H_RM_V + Ex_Dist,H_Hoehe_Z,Ex_Lo_Dm_H,Ex_Lo_Ti_H,0,0,0,1,0,0,0)
+IF (Ex_Anz =3) & (H_Anz=2)
+Bohrung (Ex_Mass_X,0,Ex_Lo_Dm_V,Ex_Lo_Ti_V,30,0,0,8,0,0,0,0)
+HorzB (0,0,H_Hoehe_Z,Ex_Lo_Dm_H,Ex_Lo_Ti_H,0,0,0,8,0,0,0)
+END
+END
+IF H_Anz = 3
+Abstand := ((_RY-(H_RM_H+H_RM_V)) / 2) + H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,0,7,0,0,0)
+IF (Ex_Anz =3) & (H_CheckBox_Ver = -1)
+Bohrung (Ex_Mass_X,Abstand,Ex_Lo_Dm_V,Ex_Lo_Ti_V,30,0,0,7,0,0,0,0)
+HorzB (0,Abstand + Ex_Dist,H_Hoehe_Z,Ex_Lo_Dm_H,Ex_Lo_Ti_H,0,0,0,1,0,0,0)
+END
+END
+IF H_Anz = 4
+Abstand := ((_RY-(H_RM_H+H_RM_V)) / 3) + H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,0,7,0,0,0)
+Abstand := (((_RY-(H_RM_H+H_RM_V)) / 3) *2)+ H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,0,7,0,0,0)
+IF (Ex_Anz =3) & (H_CheckBox_Ver = -1)
+Bohrung (Ex_Mass_X,0,Ex_Lo_Dm_V,Ex_Lo_Ti_V,30,0,0,8,0,0,0,0)
+HorzB (0,0,H_Hoehe_Z,Ex_Lo_Dm_H,Ex_Lo_Ti_H,0,0,0,8,0,0,0)
+END
+END
+IF H_Anz=5
+Abstand := ((_RY-(H_RM_H+H_RM_V)) / 4) + H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,0,7,0,0,0)
+Abstand := (((_RY-(H_RM_H+H_RM_V)) / 4) *2)+ H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,0,7,0,0,0)
+Abstand := (((_RY-(H_RM_H+H_RM_V)) / 4) *3)+ H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,0,7,0,0,0)
+IF (Ex_Anz =3) & (H_CheckBox_Ver = -1)
+Abstand := (((_RY-(H_RM_H+H_RM_V)) / 4) *2)+ H_RM_H
+Bohrung (Ex_Mass_X,Abstand,Ex_Lo_Dm_V,Ex_Lo_Ti_V,30,0,0,7,0,0,0,0)
+HorzB (0,Abstand -Ex_Dist,H_Hoehe_Z,Ex_Lo_Dm_H,Ex_Lo_Ti_H,0,0,0,7,0,0,0)
+END
+END
+IF H_Anz=6
+Abstand := ((_RY-(H_RM_H+H_RM_V)) / 5) + H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,0,7,0,0,0)
+Abstand := (((_RY-(H_RM_H+H_RM_V)) / 5) *2)+ H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,0,7,0,0,0)
+Abstand := (((_RY-(H_RM_H+H_RM_V)) / 5) *3)+ H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,0,7,0,0,0)
+Abstand := (((_RY-(H_RM_H+H_RM_V)) / 5) *4)+ H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,0,7,0,0,0)
+IF (Ex_Anz =3) & (H_CheckBox_Ver = -1)
+Bohrung (Ex_Mass_X,0,Ex_Lo_Dm_V,Ex_Lo_Ti_V,30,0,0,8,0,0,0,0)
+HorzB (0,0,H_Hoehe_Z,Ex_Lo_Dm_H,Ex_Lo_Ti_H,0,0,0,8,0,0,0)
+END
+END
+END
+;Mittelseite
+IF H_CheckBox_MS = -1
+IF H_Wahl=1
+IF (_RY - MS_Abst_H - MS_Abst_V) <=H_2_D_Mass
+Anzahl := 2
+END
+IF ((_RY -MS_Abst_H - MS_Abst_V) > H_2_D_Mass)  & ((_RY - MS_Abst_H - MS_Abst_V) <=  H_3_D_Mass)
+Anzahl := 3
+END
+IF ((_RY -MS_Abst_H - MS_Abst_V) > H_3_D_Mass)  & ((_RY - MS_Abst_H - MS_Abst_V) <=  H_4_D_Mass)
+Anzahl := 4
+END
+IF ((_RY -MS_Abst_H - MS_Abst_V) > H_4_D_Mass)  & ((_RY - MS_Abst_H - MS_Abst_V) <=  H_5_D_Mass)
+Anzahl := 5
+END
+IF (_RY-MS_Abst_H - MS_Abst_V) > H_5_D_Mass
+Anzahl := 6
+END
+ELSE
+Anzahl := H_Anz
+END
+Bohrung (Ms_Mass_X,H_RM_H+Ms_Abst_H,Ms_Dm,Ms_Tiefe,10,0,0,7,0,0,0,0)
+Bohrung (Ms_Mass_X,H_RM_V+Ms_Abst_V,Ms_Dm,Ms_Tiefe,10,0,0,1,0,0,0,0)
+IF Anzahl=3
+Abstand := ((_RY-(H_RM_H + Ms_Abst_H + H_RM_V+Ms_Abst_V)) / 2) + Ms_Abst_H + H_RM_H
+Bohrung (Ms_Mass_X,Abstand,Ms_Dm,Ms_Tiefe,10,0,0,7,0,0,0,0)
+END
+IF Anzahl=4
+Abstand := ((_RY-(H_RM_H + Ms_Abst_H + H_RM_V+Ms_Abst_V)) / 3) + Ms_Abst_H + H_RM_H
+Bohrung (Ms_Mass_X,Abstand,Ms_Dm,Ms_Tiefe,10,0,0,7,0,0,0,0)
+Abstand := (((_RY-(H_RM_H + Ms_Abst_H + H_RM_V+Ms_Abst_V)) / 3) * 2) + Ms_Abst_H + H_RM_H
+Bohrung (Ms_Mass_X,Abstand,Ms_Dm,Ms_Tiefe,10,0,0,7,0,0,0,0)
+END
+IF Anzahl=5
+Abstand := ((_RY-(H_RM_H + Ms_Abst_H + H_RM_V+Ms_Abst_V)) / 4) + Ms_Abst_H + H_RM_H
+Bohrung (Ms_Mass_X,Abstand,Ms_Dm,Ms_Tiefe,10,0,0,7,0,0,0,0)
+Abstand := (((_RY-(H_RM_H + Ms_Abst_H + H_RM_V+Ms_Abst_V)) / 4) * 2) + Ms_Abst_H + H_RM_H
+Bohrung (Ms_Mass_X,Abstand,Ms_Dm,Ms_Tiefe,10,0,0,7,0,0,0,0)
+Abstand := (((_RY-(H_RM_H + Ms_Abst_H + H_RM_V+Ms_Abst_V)) / 4) * 3) + Ms_Abst_H + H_RM_H
+Bohrung (Ms_Mass_X,Abstand,Ms_Dm,Ms_Tiefe,10,0,0,7,0,0,0,0)
+END
+IF Anzahl=6
+Abstand := ((_RY-(H_RM_H + Ms_Abst_H + H_RM_V+Ms_Abst_V)) / 5) + Ms_Abst_H + H_RM_H
+Bohrung (Ms_Mass_X,Abstand,Ms_Dm,Ms_Tiefe,10,0,0,7,0,0,0,0)
+Abstand := (((_RY-(H_RM_H + Ms_Abst_H + H_RM_V+Ms_Abst_V)) / 5) * 2) + Ms_Abst_H + H_RM_H
+Bohrung (Ms_Mass_X,Abstand,Ms_Dm,Ms_Tiefe,10,0,0,7,0,0,0,0)
+Abstand := (((_RY-(H_RM_H + Ms_Abst_H + H_RM_V+Ms_Abst_V)) / 5) * 3) + Ms_Abst_H + H_RM_H
+Bohrung (Ms_Mass_X,Abstand,Ms_Dm,Ms_Tiefe,10,0,0,7,0,0,0,0)
+Abstand := (((_RY-(H_RM_H + Ms_Abst_H + H_RM_V+Ms_Abst_V)) / 5) * 4) + Ms_Abst_H + H_RM_H
+Bohrung (Ms_Mass_X,Abstand,Ms_Dm,Ms_Tiefe,10,0,0,7,0,0,0,0)
+END
+END
+;Rechte Seite
+;Duebel
+IF H_CheckBox_R = -1
+HorzB (0,H_RM_H,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,180,5,0,0,0)
+HorzB (0,H_RM_V,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,180,3,0,0,0)
+;Exzenter
+IF H_CheckBox_Ver = -1
+Bohrung (Ex_Mass_X,H_RM_H + Ex_Dist,Ex_Lo_Dm_V,Ex_Lo_Ti_V,30,0,0,5,0,0,0,0)
+Bohrung (Ex_Mass_X,H_RM_V+ Ex_Dist,Ex_Lo_Dm_V,Ex_Lo_Ti_V,30,0,0,3,0,0,0,0)
+HorzB (0,H_RM_H + Ex_Dist,H_Hoehe_Z,Ex_Lo_Dm_H,Ex_Lo_Ti_H,0,0,180,5,0,0,0)
+HorzB (0,H_RM_V + Ex_Dist,H_Hoehe_Z,Ex_Lo_Dm_H,Ex_Lo_Ti_H,0,0,180,3,0,0,0)
+IF (Ex_Anz =3) & (H_Anz=2)
+Bohrung (Ex_Mass_X,0,Ex_Lo_Dm_V,Ex_Lo_Ti_V,30,0,0,4,0,0,0,0)
+HorzB (0,0,H_Hoehe_Z,Ex_Lo_Dm_H,Ex_Lo_Ti_H,0,0,180,4,0,0,0)
+END
+END
+IF H_Anz = 3
+Abstand := ((_RY-(H_RM_H+H_RM_V)) / 2) + H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,180,5,0,0,0)
+IF (Ex_Anz =3) & (H_CheckBox_Ver = -1)
+Bohrung (Ex_Mass_X,Abstand,Ex_Lo_Dm_V,Ex_Lo_Ti_V,30,0,0,5,0,0,0,0)
+HorzB (0,Abstand + Ex_Dist,H_Hoehe_Z,Ex_Lo_Dm_H,Ex_Lo_Ti_H,0,0,180,3,0,0,0)
+END
+END
+IF H_Anz = 4
+Abstand := ((_RY-(H_RM_H+H_RM_V)) / 3) + H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,180,5,0,0,0)
+Abstand := (((_RY-(H_RM_H+H_RM_V)) / 3) *2)+ H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,180,5,0,0,0)
+IF (Ex_Anz =3) & (H_CheckBox_Ver = -1)
+Bohrung (Ex_Mass_X,0,Ex_Lo_Dm_V,Ex_Lo_Ti_V,30,0,0,4,0,0,0,0)
+HorzB (0,0,H_Hoehe_Z,Ex_Lo_Dm_H,Ex_Lo_Ti_H,0,0,180,4,0,0,0)
+END
+END
+IF H_Anz=5
+Abstand := ((_RY-(H_RM_H+H_RM_V)) / 4) + H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,180,5,0,0,0)
+Abstand := (((_RY-(H_RM_H+H_RM_V)) / 4) *2)+ H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,180,5,0,0,0)
+Abstand := (((_RY-(H_RM_H+H_RM_V)) / 4) *3)+ H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,180,5,0,0,0)
+IF (Ex_Anz =3) & (H_CheckBox_Ver = -1)
+Abstand := (((_RY-(H_RM_H+H_RM_V)) / 4) *2)+ H_RM_H
+Bohrung (Ex_Mass_X,Abstand,Ex_Lo_Dm_V,Ex_Lo_Ti_V,30,0,0,5,0,0,0,0)
+HorzB (0,Abstand -Ex_Dist,H_Hoehe_Z,Ex_Lo_Dm_H,Ex_Lo_Ti_H,0,0,180,5,0,0,0)
+END
+END
+IF H_Anz=6
+Abstand := ((_RY-(H_RM_H+H_RM_V)) / 5) + H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,180,5,0,0,0)
+Abstand := (((_RY-(H_RM_H+H_RM_V)) / 5) *2)+ H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,180,5,0,0,0)
+Abstand := (((_RY-(H_RM_H+H_RM_V)) / 5) *3)+ H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,180,5,0,0,0)
+Abstand := (((_RY-(H_RM_H+H_RM_V)) / 5) *4)+ H_RM_H
+HorzB (0,Abstand,H_Hoehe_Z,H_D_DM,H_D_Tiefe,0,0,180,5,0,0,0)
+IF (Ex_Anz =3) & (H_CheckBox_Ver = -1)
+Bohrung (Ex_Mass_X,0,Ex_Lo_Dm_V,Ex_Lo_Ti_V,30,0,0,4,0,0,0,0)
+HorzB (0,0,H_Hoehe_Z,Ex_Lo_Dm_H,Ex_Lo_Ti_H,0,0,180,4,0,0,0)
+END
+END
+END

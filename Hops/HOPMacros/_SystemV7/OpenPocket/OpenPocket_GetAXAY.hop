@@ -1,0 +1,144 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.5.4.618[Hops.exe]
+;BILD=OPENPOCKET_GETAXAY.WMF
+;INFO=18138609
+;WZGV=THEUNS_HUELLHORST
+;WZGVCONFIG=
+;MASCHINE=THEUNS_HUELLHORST
+;NCNAME=OpenPocket_GetAXAY
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   AX := 0;*VAR**REF*More in X
+   AY := 0;*VAR**REF*More in Y
+   Ecke := 0;*VAR*0=LU / 1=U / 2=RU.......
+   Dim_X := 200;*VAR*Länge in X
+   Dim_Y := 300;*VAR*Länge in Y
+   Angle_Switch := 0;*VAR*0=0 / 1=90
+START
+;--------------------------------------------------------------------------------------------
+;- direkt cnc systeme NC-HOPS (Version 7.5.5.x)
+;--------------------------------------------------------------------------------------------
+;- Rectangel pocket open
+;- 0 = LU
+;- 1 = U
+;- 2 = RU
+;- 3 = R
+;- 4 = RO
+;- 5 = O
+;- 6 = LO
+;- 7 = L
+;--------------------------------------------------------------------------------------------
+;-
+IF Ecke = 0
+;- Edge LU
+IF Angle_Switch=0
+;- 0 Degrees
+AX := -_AT_COLLRADIUS
+AY := -_AT_COLLRADIUS
+ELSE
+;- 90 Degrees
+AX := -_AT_COLLRADIUS
+AY := -_AT_COLLRADIUS
+END
+END
+;-
+IF Ecke = 1
+;- U
+IF Angle_Switch=0
+;- 0 Degrees
+AX := 0
+AY := -_AT_COLLRADIUS
+ELSE
+;- 90 Degrees
+AX := 0
+AY := -_AT_COLLRADIUS
+END
+END
+;-
+IF Ecke = 2
+;- Edge RU
+IF Angle_Switch=0
+;- 0 Degrees
+AX := -_AT_COLLRADIUS
+AY := -_AT_COLLRADIUS
+ELSE
+;- 90 Degrees
+AX := -_AT_COLLRADIUS
+AY := -_AT_COLLRADIUS
+END
+END
+;-
+IF Ecke = 3
+;- R
+IF Angle_Switch=0
+;- 0 Degrees
+AX := -_AT_COLLRADIUS
+AY := 0
+ELSE
+;- 90 Degrees
+AX := -_AT_COLLRADIUS
+AY := 0
+END
+END
+;-
+IF Ecke = 4
+;- Edge RO
+IF Angle_Switch=0
+;- 0 Degrees
+AX := -_AT_COLLRADIUS
+AY := -_AT_COLLRADIUS
+ELSE
+;- 90 Degrees
+AX := -_AT_COLLRADIUS
+AY := -_AT_COLLRADIUS
+END
+END
+;-
+IF Ecke = 5
+;- U
+IF Angle_Switch=0
+;- 0 Degrees
+AX := 0
+AY := -_AT_COLLRADIUS
+ELSE
+;- 90 Degrees
+AX := 0
+AY := -_AT_COLLRADIUS
+END
+END
+;-
+IF Ecke = 6
+;- Edge LO
+IF Angle_Switch=0
+;- 0 Degrees
+AX := -_AT_COLLRADIUS
+AY := -_AT_COLLRADIUS
+ELSE
+;- 90 Degrees
+AX := -_AT_COLLRADIUS
+AY := -_AT_COLLRADIUS
+END
+END
+;-
+IF Ecke = 7
+;- L
+IF Angle_Switch=0
+;- 0 Degrees
+AX := -_AT_COLLRADIUS
+AY := 0
+ELSE
+;- 90 Degrees
+AX := -_AT_COLLRADIUS
+AY := 0
+END
+END

@@ -1,0 +1,43 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   CADKN := '';*VAR*Konturname Bogen
+   Schrittweite := 5;*VAR*Schrittweite entlang des Bogens
+   UeberstandV := 0;*VAR*Überstand vorne
+   UeberstandH := 0;*VAR*Überstand hinten
+   CADKN2 := '';Konturname Vektor
+   KN_Neu := 'BogenKontur3P';
+   View_X := 0;
+   View_Y := 0;
+   View_Z := 0;
+   View_DW := 0;
+   View_KW := 0;
+   Laenge := 0;
+   OK := 1;*REF*=1 Funktion wurde korrekt ausgeführt
+   BH := 0;*REF*Bogenhöhe
+   MPx := 0;*REF*Mittelpunkt in X
+   MPy := 0;*REF*Mittelpunkt in Y
+   Radius := 0;
+   Konkav := 1;*REF*1=konkav (Wölbung nach oben); 0=konvex (Wölbung nach unten)
+   SPx := 0;*REF*
+   SPy := 0;*REF*
+   EPx := 0;*REF*
+   EPy := 0;*REF*
+   KDW := 0;
+START
+CALL Solid_ErmittleKonturNamen (REF CADKN:=CADKN,CADKN2:=CADKN2)
+;Ebene aus den beiden Konturen ermitteln
+CALL Solid_ErmittleEbenendaten (REF VIEW_X:=View_X,VIEW_Y:=View_Y,VIEW_Z:=View_Z,VIEW_DW:=View_DW,VIEW_KW:=View_KW VAL KN_BOGEN:=CADKN,KN_VEKTOR:=CADKN2)
+;Länge der Fläche aus der 2. Kontur ermitteln
+CALL Solid_LaengeErmitteln (REF LAENGE:=Laenge VAL KN_VEKTOR:=CADKN2)
+;Absoluten Bogen aus Linienelementen
+;In Bogen auf Ebene wandeln
+CALL Solid_Bogen3DTo2D ( VAL KN_BOGEN:=CADKN,KN_NEU:=KN_Neu,VIEW_X:=View_X,VIEW_Y:=View_Y,VIEW_Z:=View_Z,VIEW_DW:=View_DW,VIEW_KW:=View_KW)
+;Bogen schruppen
+CALL Solid_GETKONTURBOGENPARA (REF OK:=OK,BH:=BH,MPX:=MPx,MPY:=MPy,RADIUS:=Radius,KONKAV:=Konkav,SPX:=SPx,SPY:=SPy,EPX:=EPx,EPY:=EPy,WINKEL:=KDW VAL KN:=KN_Neu)
+IF Konkav=1
+CALL Solid_BogenAussenSchruppen ( VAL KN:=KN_Neu,EX:=View_X,EY:=View_Y,EZ:=View_Z,DW:=View_DW,KW:=View_KW,TIEFE:=-Laenge,SCHRUSTEP:=Schrittweite,UEBERSTANDV:=UeberstandV,UEBERSTANDH:=UeberstandH)
+ELSE
+CALL Solid_BogenInnenSchruppen ( VAL KN:=KN_Neu,VIEWOFFX:=View_x,VIEWOFFY:=View_y,VIEWOFFZ:=View_z,VIEWDW:=View_DW,VIEWKW:=View_KW,TIEFE:=-Laenge,SCHRITTWEITE:=Schrittweite,UEBERSTANDV:=UeberstandV,UEBERSTANDH:=UeberstandH)
+END
+deletecontour (KN_Neu,0)

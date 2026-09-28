@@ -1,0 +1,29 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   CADKN := '';*VAR*Konturname Bogen
+   SchruStep := 10;*VAR*Maxiamle Zustellung in Z
+   UeberstandV := 0;*VAR*Überstand vorne
+   UeberstandH := 0;*VAR*Überstand hinten
+   UeberstandRand := 0;*VAR*Überstand Rand
+   AbstandKontur := 2;*VAR*Abstand zum Bogen
+   KN_Neu := 'BogenKontur3P';
+   View_X := 0;
+   View_Y := 0;
+   View_Z := 0;
+   View_DW := 0;
+   View_KW := 0;
+   Laenge := 0;
+   CADKN2 := '';Konturname Vektor
+START
+CALL Solid_ErmittleKonturNamen (REF CADKN:=CADKN,CADKN2:=CADKN2)
+;Ebene aus den beiden Konturen ermitteln
+CALL Solid_ErmittleEbenendaten (REF VIEW_X:=View_X,VIEW_Y:=View_Y,VIEW_Z:=View_Z,VIEW_DW:=View_DW,VIEW_KW:=View_KW VAL KN_BOGEN:=CADKN,KN_VEKTOR:=CADKN2)
+;Länge der Fläche aus der 2. Kontur ermitteln
+CALL Solid_LaengeErmitteln (REF LAENGE:=Laenge VAL KN_VEKTOR:=CADKN2)
+;Absoluten Bogen aus Linienelementen
+;In Bogen auf Ebene wandeln
+CALL Solid_Bogen3DTo2D ( VAL KN_BOGEN:=CADKN,KN_NEU:=KN_Neu,VIEW_X:=View_X,VIEW_Y:=View_Y,VIEW_Z:=View_Z,VIEW_DW:=View_DW,VIEW_KW:=View_KW)
+;Bogen zerspanen
+CALL Solid_ZerspaneStufenEbene ( VAL KN:=KN_Neu,EX:=View_X,EY:=View_Y,EZ:=View_Z,DW:=View_DW,KW:=View_KW,TIEFE:=-Laenge,SCHRUSTEP:=SchruStep,UEBERSTANDV:=UeberstandV,UEBERSTANDH:=UeberstandH,UEBERSTANDRAND:=UeberstandRand,ABSTANDKONTUR:=AbstandKontur)
+deletecontour (KN_Neu,0)

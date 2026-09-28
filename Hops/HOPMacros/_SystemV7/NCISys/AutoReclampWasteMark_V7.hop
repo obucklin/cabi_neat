@@ -1,0 +1,12 @@
+;MAKROTYP=1
+;KOMMENTAR=
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   StartStop := 1;*VAR*Waste Area Marking (1=Start   0=End)
+START
+NCIExt (-11204522,'',3,0,0,StartStop,0)

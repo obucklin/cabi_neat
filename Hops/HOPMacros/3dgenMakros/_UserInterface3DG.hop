@@ -1,0 +1,169 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.7.12.80[Hops.exe]
+;BILD=_USERINTERFACE3DG.WMF
+;INFO=
+;WZGV=7405_1156
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=UserInterface3DG
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_4.Dll
+;DIALOGPROC=ShowForm_CC_Wkz_1
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   Inputtext := '';*VAR*Textvariable für Funktionsauswertung
+   result := 0;*VAR**REF*Rückgabewert
+   WithLaser :=0;
+   _Drill_Standard_ID :=501;Hier ID für Standardbohrkopf eintragen
+   _Drill_Special_ID :=501;Hier ID für SonderBohrer eintragen
+   _Drill_Vario_ID :=9999;Hier ID für VarioNCBohrer eintragen
+   _Router_Standard_ID :=20;Hier ID für StandardFräser eintragen
+   _Router_Special_ID :=9999;Hier ID für SonderFräser eintragen
+   _Router_Vario_ID :=9999;Hier ID für VarioNCFräser eintragen
+   _Router_Groove_ID :=9999;Hier ID für NutenFräser eintragen
+   _Saw_Standard_ID :=120;Hier ID für StandardSäge eintragen
+   _Saw_Special_ID :=9999;Hier ID für SonderSäge eintragen
+   _Saw_Vario_ID :=9999;Hier ID für VarioNCSäge eintragen
+   _Clamex_Nuter_ID :=136;ID Clamex Nuter
+   _Clamex_Saege_ID :=9999;ID Clamex Saege
+   _Clamex_Bohrer_ID :=306;ID Clamex Bohrer
+   _Clamex_Nuter_WKG_ID :=9999;ID Clamex Nuter in Winkelgetriebe
+   _Clamex_Stiftfraeser_ID :=139;ID Clamex Stiftfraeser
+   _Clamex_Nutfraeser_D7_ID :=9999;ID Clamex Nutfraeser DM 7mm
+   _Clamex_Nuter_X_WKG_ID :=1360;ID Clamex Nuter EVO Winkelgetriebe in X
+   _Clamex_Nuter_Y_WKG_ID :=1361;ID Clamex Nuter EVO Winkelgetriebe in Y
+   _FIX_CHIP_Nuter_Kante_ID :=235;ID FixChip Nuter (Kante)
+   _FIX_CHIP_Bohrer_Kante_ID :=9999;ID FixChip Vorbohrer
+   _FIX_CHIP_NUTFRAESER_ID :=236;ID FixChip Stiftfraeser
+   _MaschinenTyp :=1;0=leer/1=Standart(C+5Axis)/2=Evo/3=Nesting(7x05+7x07)/4=Nesting(7532)
+   _PSystemStift :=0;0= Winkelgetriebe / 1= Stiftfraeser
+   _5AXIS_HEAD :=1;5 Achskopf vorhanden 0=nein 1=ja
+   ParkMode :=3;Parkmode 0=- 1=lh 2=rh 3=mh 4=lv 5=rv 6=mv 7=lm 8=rm 9=mm 10 =(X,Y)
+   ParkPosX :=100;Parken in X
+   ParkPosY :=100;Parken in Y START
+   _intern4wr := 0;Winkelschnitt Rechts 1=erledigt
+   _intern3wl := 0;Winkelschnitt Links 1=erledigt
+   _Standard_PID := '';
+   _PID_ZeroPointName1 := 'AV1';ProzessID - Nullpunkt Name 1 z.B. AV
+   _PID_ZeroPointName2 := 'DV1';ProzessID - Nullpunkt Name 2
+   _PID_ZeroPointName3 := '';ProzessID - Nullpunkt Name 3
+   _PID_ZeroPointName4 := '';ProzessID - Nullpunkt Name 4
+   _PID_ZeroPointName5 := '';ProzessID - Nullpunkt Name 5
+   _PID_ZeroPointName6 := '';ProzessID - Nullpunkt Name 6
+   _PID_ZeroPointName7 := '';ProzessID - Nullpunkt Name 7
+   _PID_ZeroPointName8 := '';ProzessID - Nullpunkt Name 8
+   _PID_ZeroPointPID1 := 'PID#101';ProzessID - Nullpunkt PID# 1 z.B. PID#200
+   _PID_ZeroPointPID2 := 'PID#201';ProzessID - Nullpunkt PID# 2
+   _PID_ZeroPointPID3 := '';ProzessID - Nullpunkt PID# 3
+   _PID_ZeroPointPID4 := '';ProzessID - Nullpunkt PID# 4
+   _PID_ZeroPointPID5 := '';ProzessID - Nullpunkt PID# 5
+   _PID_ZeroPointPID6 := '';ProzessID - Nullpunkt PID# 6
+   _PID_ZeroPointPID7 := '';ProzessID - Nullpunkt PID# 7
+   _PID_ZeroPointPID8 := '';ProzessID - Nullpunkt PID# 8
+   _PID_ActiveZeroPointPID := '';Aktiver Nullpunkt anhand Joblistbelegung
+   _CommonLine :=0;Commomline = on/off
+START
+;HOLZHER GmbH
+;Copyright 20.09.2021
+;Version ExtSetup_SW21V5 (V7.21.501)
+;---------Änderungen hier reinschreiben: ----------***
+;Version 7.21.501
+IF textsame(Inputtext,'GetLaserActive')
+result := _WithLaser
+End
+;Drill_ID
+IF textsame(Inputtext,'GetStandardDrillID')
+result := _Drill_Standard_ID
+End
+IF textsame(Inputtext,'GetSpecialDrillID')
+IF (_Drill_Vario_ID>0)
+result := _Drill_Vario_ID
+Else
+IF (_Drill_Special_ID>0)
+result := _Drill_Special_ID
+Else
+result := _Drill_Standard_ID
+End
+End
+End
+;Fraeser_ID
+IF textsame(Inputtext,'GetStandardRouterID')
+result := _Router_Standard_ID
+End
+IF textsame(Inputtext,'GetSpecialRouterID')
+IF (_Router_Vario_ID>0)
+result := _Router_Vario_ID
+Else
+IF (_Router_Special_ID>0)
+result := _Router_Special_ID
+Else
+result := _Router_Standard_ID
+End
+End
+End
+IF textsame(Inputtext,'GetGrooveRouterID')
+IF (_Router_Groove_ID>0)
+result := _Router_Groove_ID
+Else
+result := _Router_Standard_ID
+End
+End
+;Saege_ID
+IF textsame(Inputtext,'GetStandardSawID')
+result := _Saw_Standard_ID
+End
+IF textsame(Inputtext,'GetSpecialSawID')
+IF (_Saw_Vario_ID>0)
+result := _Saw_Vario_ID
+Else
+IF (_Saw_Special_ID>0)
+result := _Saw_Special_ID
+Else
+result := _Saw_Standard_ID
+End
+End
+End
+IF textsame(Inputtext,'GetParkMode')
+result := ParkMode
+End
+IF textsame(Inputtext,'GetParkPosX')
+result := ParkPosX
+End
+IF textsame(Inputtext,'GetParkPosY')
+result := ParkPosY
+End
+IF textsame(Inputtext,'GetStandardProcessID')
+result := _Standard_PID
+End
+_PID_ActiveZeroPointPID := ''
+IF TEXTSAME(_JOB_ZPNAME, _PID_ZeroPointName1)
+_PID_ActiveZeroPointPID := _PID_ZeroPointPID1
+END
+IF TEXTSAME(_JOB_ZPNAME, _PID_ZeroPointName2)
+_PID_ActiveZeroPointPID := _PID_ZeroPointPID2
+END
+IF TEXTSAME(_JOB_ZPNAME, _PID_ZeroPointName3)
+_PID_ActiveZeroPointPID := _PID_ZeroPointPID3
+END
+IF TEXTSAME(_JOB_ZPNAME, _PID_ZeroPointName4)
+_PID_ActiveZeroPointPID := _PID_ZeroPointPID4
+END
+IF TEXTSAME(_JOB_ZPNAME, _PID_ZeroPointName5)
+_PID_ActiveZeroPointPID := _PID_ZeroPointPID5
+END
+IF TEXTSAME(_JOB_ZPNAME, _PID_ZeroPointName6)
+_PID_ActiveZeroPointPID := _PID_ZeroPointPID6
+END
+IF TEXTSAME(_JOB_ZPNAME, _PID_ZeroPointName7)
+_PID_ActiveZeroPointPID := _PID_ZeroPointPID7
+END
+IF TEXTSAME(_JOB_ZPNAME, _PID_ZeroPointName8)
+_PID_ActiveZeroPointPID := _PID_ZeroPointPID8
+END

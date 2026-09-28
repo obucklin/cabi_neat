@@ -1,0 +1,35 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowRotPart_V7Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   MoveX := 0;*VAR*
+   MoveY := 0;*VAR*
+   MoveZ := 0;*VAR*
+   str := '';*VAR*Zeichenkette
+   Umheben := 0;*VAR*<> 0 Umheben
+   AufmassLinks := 0;*VAR*
+   AufmassRechts := 0;*VAR*
+   RotVX1 := 1;*VAR*
+   RotVY1 := 0;*VAR*
+   RotVZ1 := 0;*VAR*
+   RotA1 := 0;*VAR*
+   RotVX2 := 0;*VAR*
+   RotVY2 := 1;*VAR*
+   RotVZ2 := 0;*VAR*
+   RotA2 := 0;*VAR*
+   AufmassVorne := 0;*VAR*
+   AufmassHinten := 0;*VAR*
+   AufmassUnten := 0;*VAR*
+   AufmassOben := 0;*VAR*
+   TeilLoesen := 1;*VAR*
+   NCPara1 := 0;*VAR*
+   NCPara2 := 0;*VAR*
+   NCPara3 := 0;*VAR*
+   NCPara4 := 0;*VAR*
+   NCPara5 := 0;*VAR*
+   NCPara6 := 0;*VAR*
+   NCPara7 := 0;*VAR*
+   NCPara8 := 0;*VAR*
+START
+nciext (-100260,'NCISys',3,0,0,MoveX,MoveY,MoveZ,0,123454321,1,str,Umheben,AufmassLinks,AufmassRechts,123454321,RotVX1,RotVY1,RotVZ1,RotA1,RotVX2,RotVY2,RotVZ2,RotA2,AufmassVorne,AufmassHinten,AufmassUnten,AufmassOben,TeilLoesen,NCPara1,NCPara2,NCPara3,NCPara4,NCPara5,NCPara6,NCPara7,NCPara8)

@@ -146,7 +146,9 @@ Empty fields use the cabinet's defaults, shown as placeholders.
 - Dividers run full height, and the shelf count applies to every column.
 - Drag the current section's panels in the plan, or type their positions.
 - A section with a door covers everything inside it.
-- Drawers can't be behind a door. For drawers below shelves, divide the section first, then set each part's type.
+- Drawers can't be behind a door.
+- **Highlighting:** clicking a shelf or divider (or its row in the sidebar) highlights it in the plan, the sidebar and the 3D view. Clicking a part in the 3D view goes to its section and highlights it there.
+- **Hinges:** doors show their hinges' pots in the plan, where the hinge joint drills them. For drawers below shelves, divide the section first, then set each part's type.
 
 **Generate 3D.** Edits only update the plan. **Generate 3D** (top right) builds the timber model and updates the 3D view. It's highlighted while the 3D view is out of date. The cut list generates first if needed.
 
@@ -163,12 +165,16 @@ python -m cabi_neat.export cabinet.json --btlx cabinet.btlx --hops hops/
 The planner's toolbar has **Export BTLx** and **Export HOPS** (a zip with one program per part and a `report.txt`). From Python, `cabi_neat.export.btlx(cabinet, path)` and `cabi_neat.export.hops(cabinet, directory)` do the same. Each export returns a report of what it couldn't export.
 
 - **BTLx** is written by compas_timber's `BTLxWriter` from the cabinet's `TimberModel`. The model is in millimetres (`Tolerance(unit="MM")`). Features that aren't BTLx processings, the Clamex P-14 grooves, are left out while writing and stay on the plates.
-- **HOPS** is written with [easyhops](../easyhops), one job per plate:
-  - The face with the most machining is on top. The other face's machining comes first, followed by a machine stop to turn the panel over.
-  - Pockets (rabbets, grooves, mortises, tenon gaps, hinge pots) become a contour plus the `_ExecutePocket_V5` macro at the pocket's depth.
-  - Drillings (hinge screws, dowels, mounting plates) keep their real depth.
-  - Tool positions are machine-specific. Set them with `cabi_neat.export.HopsTools`: a router (default easyhops' SRSLD12, Ø11.8, position 404), a smaller router for narrower pockets such as 8 mm grooves (a Ø6 placeholder at position 405), and a drill (position 607).
-  - Not exported yet: Clamex P-14 grooves, drillings into a panel's end (the drawer dowels), and non-rectangular outlines. The rectangular panels are expected to be cut to size.
+- **HOPS** programs are written like the workshop's own (`Hops/Hop/OB/flur`) and use its macros (`cabi_neat.hops`), one per plate:
+  - The part is cut to size first: saw 201 and `_Sformat_V5`.
+  - Rabbets are a single line along their inner edge (`SP`/`G01`/`EP`, radius correction 1), as in `sides_schrank`.
+  - Other pockets (grooves, mortises, tenon gaps) use `_RechteckTasche_V5` with the largest router that fits. Pockets open to an edge are widened past it for a bigger router. Other shapes use a contour and `_ExecutePocket_V5`.
+  - Hinge pots use `_Kreisbahn_V5` with the Ø20 router (403).
+  - Drillings into faces use `Bohrung`, drillings into edges `HorzB`, always with a spindle drill (`WZB`) of the hole's diameter: the shortest one that's deep enough. The drill head isn't used. The defaults include a Ø8 (603) and a Ø3 (602, placeholder number) to be loaded.
+  - Clamex P-14 in faces uses `Clamex_MS_FI` with the finger mill (136). In edges it uses `Clamex1_Stumpf` (ends) and `Clamex1_Stumpf_X` (long edges) with the disc (108), plus the access holes (drill 135).
+  - With machining on both faces, the other face comes first, then `MachineStop_V7` to turn the panel over about its long edge. A plate with Clamex access holes has their face on top: the underside of shelves and of the top, and the inside of everything else.
+  - The tools default to the ETH machine's tool table (260611_ETH). `HopsTools.from_too(path)` reads another table.
+  - Files are written with Windows line endings.
 
 ## Setup
 
@@ -177,7 +183,7 @@ Plate geometry needs the OCC backend of compas_brep.
 ```bash
 conda create -n cabi-dev python=3.12
 conda activate cabi-dev
-pip install -e ../compas_timber -e ../compas_threejs -e ../easyhops -e ".[dev,viewer]"
+pip install -e ../compas_timber -e ../compas_threejs -e ".[dev,viewer]"
 pytest
 node --test tests/js/*.test.mjs   # planner tree operations
 ```

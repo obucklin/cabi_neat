@@ -1,0 +1,62 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=TüREN
+;NCNAME=1
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=TaschenFraesen1.WMF
+VARS
+   X := 0;*VAR*Startpostion in X Taschenmitte (auf die Ebene bezogen)
+   Y := 0;*VAR*Startposition in Y-TaschenMitte (auf die Ebene bezogen)
+   Z := 0;*VAR*StartTiefe in Z (auf die Ebene bezogen)
+   Hoehe := 16;*VAR*Hoehe der Tasche
+   Laenge := 100;*VAR*Länge der Tasche
+   Tiefe := 50;*VAR*GesamtTiefe der Tasche
+   Anzahl := 3;*VAR*Anzahl der Zustellungen
+   Radius := 0;*VAR*Rundungsradius
+   i := 0;Laufvariable
+   Z_Zu := 0;Z-Zustellung pro Umlauf
+START
+;Rohteil (300,300,100,0,0)
+;WZF (21,_VE,_V,_VA,_SD,_ANF)
+;TASCHENFRAESEN1 aufgerufen von HorTasch
+;(c) DiREKT CNC-SYSTEME GmbH [MW] 12.11.97
+IF Radius>Hoehe/2
+Radius := 0
+END
+Z_Zu := Tiefe/Anzahl
+;Nur wenn Anzahl >0 und Werkzeugdurchmesser < Hoehe
+IF (Anzahl>0)&(_WZD<HOEHE)
+;************************************************************************************
+SP (X,Y-Hoehe/2,-Z_Zu,1,0,_ANF,0,0,0)
+FOR i := 1 TO anzahl STEP 1
+G01 (_X+Laenge/2,_Y,_Z,Radius)
+G01 (_X,_Y+Hoehe,_Z,Radius)
+G01 (_X-Laenge,_Y,_Z,Radius)
+G01 (_X,_Y-Hoehe,_Z,Radius)
+G01 (_X+Laenge/2,_Y,_Z,Radius)
+IF i<Anzahl
+G01 (_X,_Y,_Z-Z_Zu,0)
+END
+END
+EP (0,2,0)
+END
+;************************************************************************************
+;Nur wenn Anzahl >0 und Werkzeugdurchmesser = Hoehe
+IF (Anzahl>0)&(_WZD=HOEHE)
+;************************************************************************************
+SP (X,Y,-Z_Zu,0,0,_ANF,0,0,0)
+FOR i := 1 TO anzahl STEP 1
+G01 (_X+Laenge/2,_Y,_Z,Radius)
+G01 (_X-Laenge,_Y,_Z,Radius)
+G01 (_X+Laenge/2,_Y,_Z,Radius)
+IF i<Anzahl
+G01 (_X,_Y,_Z-Z_Zu,0)
+END
+END
+EP (0,2,0)
+;************************************************************************************
+END
+

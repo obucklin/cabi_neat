@@ -1,0 +1,21 @@
+;MAKROTYP=1
+;BILD=H_Duebel.wmf
+;INFO=
+;WZGV=STANDARD
+;MASCHINE=HOLZHER
+;NCNAME=Variablen einlesen
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_3.Dll
+;DIALOGPROC=ShowVar_EinDialog
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600mm;Dimension X
+   DY := 400mm;Dimension Y
+   DZ := 19mm;Dimension Z
+START
+

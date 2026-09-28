@@ -1,0 +1,35 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowGetSegmentCountDialog
+;AUTOSCRIPTSTART=0
+VARS
+   DW := 180;*VAR*
+   Radius := 300;*VAR*
+   MaxArcDist := 0.1mm;*VAR*
+   Count := ;*VAR**REF*
+   SingleStep := ;*VAR**REF*
+   Alfa := 0;
+   AnzahlD := 0;
+   AnzahlMin := 0;
+START
+Fertigteil (500,250,25,0,0,0,0,0,'',0,0,0)
+IF (MaxArcDist=2*Radius) | (MaxArcDist>2*Radius)
+Count := 1
+ELSE
+Alfa := 2 * arccos(1 - (MaxArcDist) / Radius)
+END
+Alfa := abs(Alfa)
+DW := abs(DW)
+IF Alfa < 0.000000000001
+Count := 1
+SingleStep := DW
+ELSE
+AnzahlD := DW / Alfa
+AnzahlMin := Trunc(DW / Alfa)
+IF AnzahlMin < AnzahlD
+Count := AnzahlMin + 1
+ELSE
+Count := Trunc(AnzahlD)
+END
+SingleStep := DW / Count
+END

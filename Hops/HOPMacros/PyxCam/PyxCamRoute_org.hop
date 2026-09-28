@@ -1,0 +1,75 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.7.12.80[Hops.exe]
+;BILD=PYXCAMROUTE.WMF
+;INFO=PYXCAMROUTE
+;WZGV=7735D_129
+;WZGVCONFIG=
+;MASCHINE=HH7
+;NCNAME=
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   ToolNo := 0;*VAR*The tool number which is used
+   ContourName := '';*VAR*Name of the routing contour
+   ContourType := '';*VAR*Contour type
+   Depth := 0;*VAR*Depth of the routing
+   Align := 0;*VAR*Alignment of the route (0 - center; 1 - left; 2 - right)
+   Minx := 0;
+   MaxX := 0;
+   MinY := 0;
+   MaxY := 0;
+   P1area := 0;
+   K1 := 0;
+   ConRoundAreaWZ := 0;
+   ConRoundArea := 0;
+   ConRoundDia := 0;
+   Pie := 3.14;
+START
+IF TEXTCOMPARE(ContourType, 'outline')=0
+;Route is the outline
+CALL Call_Extensions_AreaContour (REF AREA:=ConRoundArea VAL CONTOURNAME_CONTOURNAME:=ContourName)
+ConRoundAreaWZ := pie*(_wzr*_Wzr)
+Hinweismeldung (inttostr(ConRoundArea))
+Hinweismeldung (inttostr(ConRoundAreaWZ))
+CALL Call_Extensions_LengthContour (REF CONTOURLENGTH:=K1 VAL CONTOURNAME_CONTOURNAME:=contourname,INDEXSTART:=0,INDEXEND:=1)
+CALL Call_Extensions_AreaContour (REF AREA:=p1area VAL CONTOURNAME_CONTOURNAME:=contourname)
+IF p1area<90000
+CALL BN_TRENNERINNENAUSSEN ()
+WZF (ToolNo,_VE,_V,_VA,_SD,_ANF,'51')
+/WZF (121,_VE,_V,_VA,_SD,_ANF,'1')
+IF (Align<0) | (Align>2)
+Align := 0
+END
+KSP ('???','???',-Depth+4,Align,0,_ANF,0.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen (ContourName,'KSP','KEP',0,0,0,0,0,0,0,0,0,45,0)
+EP (0,_ANF,0)
+END
+CALL BN_NESTKONTUR ()
+WZF (ToolNo,_VE,_V,_VA,_SD,_ANF,'51')
+/WZF (12,_VE,_V,_VA,_SD,_ANF,'1')
+IF (Align<0) | (Align>2)
+Align := 0
+END
+KSP ('???','???',-Depth,Align,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen (ContourName,'KSP','KEP',0,0,0,0,0,0,0,0,0,30,0)
+EP (0,_ANF,0)
+END
+IF TEXTCOMPARE(ContourType, '')=0
+WZF (ToolNo,_VE,_V,_VA,_SD,_ANF,'51')
+/WZF (121,_VE,_V,_VA,_SD,_ANF,'1')
+IF (Align<0) | (Align>2)
+Align := 0
+END
+KSP ('???','???',-Depth,Align,2,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+KonturFraesen (ContourName,'KSP','KEP',0,0,0,0,0,0,0,1,0,90,0)
+EP (0,_ANF,0)
+END

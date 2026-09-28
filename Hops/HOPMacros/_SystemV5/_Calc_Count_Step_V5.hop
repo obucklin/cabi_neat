@@ -1,0 +1,39 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   Tiefe := -10;*VAR*Tiefe
+   Anzahl := 0;*VAR*Anzahl Zustellungen
+   MaxZ := 0;*VAR*Maximale Zustelltiefe
+   Z_Anzahl := 0;*VAR**REF*
+   Z_Step := 0;*VAR**REF*
+   Vorzeichen := 0;
+   AnzahlMin := 0;
+START
+;Berechnen der Zustellparameter
+IF Tiefe<>0
+Vorzeichen := Tiefe/abs(Tiefe)
+MaxZ := abs(MaxZ)
+Tiefe := abs(Tiefe)
+IF (MaxZ=0) & (Anzahl=0)
+Z_Step := Tiefe
+Z_Anzahl := 1
+ELSE
+IF Anzahl<>0
+Z_Step := Tiefe/Anzahl
+Z_Anzahl := Anzahl
+ELSE
+Z_Anzahl := Tiefe/MaxZ
+AnzahlMin := Trunc(Tiefe/MaxZ)
+IF AnzahlMin<Z_Anzahl
+Z_Anzahl := AnzahlMin+1
+END
+Z_Step := Tiefe/Z_Anzahl
+END
+END
+Z_Step := Vorzeichen*Z_Step
+ELSE
+Z_Step := 0
+Z_Anzahl := 1
+END

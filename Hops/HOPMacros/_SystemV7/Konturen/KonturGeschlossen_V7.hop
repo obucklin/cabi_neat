@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowKonturGeschlossen_V7Dialog
+VARS
+   KN := '';*VAR*
+   Tol := 0.0000001;*VAR*
+   Closed := ;*VAR**REF*
+START
+Closed := (abs(GetKP_X(KN,0)-GetKP_X(KN,GetKE_Anzahl(KN)))<=Tol)&(abs(GetKP_Y(KN,0)-GetKP_Y(KN,GetKE_Anzahl(KN)))<=Tol)

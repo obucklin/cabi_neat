@@ -1,0 +1,12 @@
+;MAKROTYP=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   P1 := '';*VAR*Konturname
+   P2 := '';*VAR*Layer
+START
+WZF (1,_VE,_V,_VA,_SD,_ANF)
+KSP ('???','???','???',0,0,_ANF,0,0,0)
+KonturFraesen (P1,'KSP','KEP',0,0,0,1,0,0,0,0)
+EP (0,_ANF,0)

@@ -1,0 +1,10 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowTOOLOPTIPREFERTOOLS_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   IDs := '';*VAR*
+   Sortieren := 0;*VAR*= 1 Ja; <> 1 Nein
+START
+nciext (-100700,'NCISys',0,0,0,IDs,Sortieren)

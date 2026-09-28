@@ -1,0 +1,249 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=HORZB3DG.WMF
+;INFO=
+;WZGV=7225K_V7_DEMO
+;WZGVCONFIG=
+;MASCHINE=HolzHer
+;NCNAME=HorzB3dg
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   x := 0;*VAR*
+   y := 0;*VAR*
+   z := 0;*VAR*
+   d := 0;*VAR*
+   Tiefe := 0;*VAR*
+   Seite := 0;*VAR*
+   _BohrZaehl := 0;
+   _nest := 0;
+   toolID := 0;
+   _intern1 := 0;Interne Variable Nut links
+   _intern2 := 0;Intern Variable Nut Rechts
+   DRILL := 1;Clamex Bohren 0=aus 1=ein
+START
+;CAMPUS V7
+;HOLZHER - Reich Spezialmaschinen GmbH
+;Copyright 2006
+;2006-08-22 - CC-Makros V1.0 KRI
+;3DG-Horizontale Bohrung
+;HB wenn Nesting auf 1 in CabinetControl
+;Abschalten der Horizontalbohrungen
+;//
+;Tenso Bohren abschalten wenn D=6.4
+IF d=6.4
+DRILL := 0
+d := 6.1
+ELSE
+DRILL := 1
+END
+;///
+IF _pVar_NoDrillingH=1
+;Prozessvariable - Keine horizontale Bohrungen aktiv
+ELSE
+_pVar_PCount := _pVar_PCount+1
+;Wenn Eckverbinder mit D=7 dann wandeln auf 8mm
+CALL _UserInterface3DG (REF RESULT:=ToolID VAL INPUTTEXT:='GetStandardRouterID')
+IF d=7
+d := 8
+ELSE
+END
+IF _nest=1
+ELSE
+;ST Lamello Typ 10 oder Typ 20
+;Lamello Links
+IF ((_MaschinenTyp=1) | (_MaschinenTyp=2)| (_MaschinenTyp=5))
+IF (d=5.4) & (x<1)
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetSpecialSawID')
+WZS (toolID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-_WZR-10,y,z,0,1,_ANF,0,0,0,1,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (-Tiefe-_WZR+10,y,0,0,1,2)
+G01 (-_WZR-10,y,0,0,1,2)
+EP (1,_ANF,0)
+END
+END
+;//////////////////////////////
+;HB Lamello Divario P-18
+;Sägeschnitt Links
+/IF (d=5.4) & (x<1) & (_intern1=0)
+/CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetSpecialSawID')
+/WZS (toolID,_VE,_V,_VA,_SD,_ANF,'1')
+/SP (-Tiefe,0,z,2,1,_ANF,0,0,0,7,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+/G01 (-Tiefe,5,0,0,1,2)
+/G01 (-20+Tiefe,5,0,0,1,2)
+/EP (3,_ANF,0)
+/_intern1 := 1
+/ELSE
+/END
+;ST Lamello Typ 10 oder Typ 20
+;Lamello Rechts
+IF ((_MaschinenTyp=1) | (_MaschinenTyp=2)| (_MaschinenTyp=5))
+IF (d=5.4) & (x>50)
+CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetSpecialSawID')
+WZS (toolID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-_WZR-10,y,z,0,1,_ANF,0,0,0,3,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (-Tiefe-_WZR+10,y,0,0,3,2)
+G01 (-_WZR-10,y,0,0,3,2)
+EP (1,_ANF,0)
+ELSE
+END
+END
+;//////////////////////////////
+;HB Lamello Divario P-18
+;Sägeschnitt Rechts
+/IF (d=5.4) & (x>50) & (_intern2=0)
+/CALL _UserInterface3DG (REF RESULT:=toolID VAL INPUTTEXT:='GetSpecialSawID')
+/WZS (toolID,_VE,_V,_VA,_SD,_ANF,'1')
+/SP (-Tiefe,0,z,1,1,_ANF,0,0,0,5,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+/G01 (-Tiefe,5,0,0,3,2)
+/G01 (-20+Tiefe,5,0,0,3,2)
+/EP (3,_ANF,0)
+/_intern2 := 1
+/ELSE
+/END
+;HB Lamello Divario P-18
+;Verbinder Links
+IF (d=5.4) & (x<1)
+CALL _DrehenBBEnde ()
+;Standard =TYP1
+IF _MaschinenTYP=1
+/CALL P_System_X ( VAL WKZ_NUT:=_Clamex_Nuter_ID,WKZ_SAEG:=_Clamex_Saege_ID,WKZ_BOHR:=_Clamex_Bohrer_ID,EITI:=18.0,APV_1:=0,APV_2:=0,APV_3:=1,APV_4:=0,APV_5:=0,APV_6:=0,STUMPF_LI:=1,STUMPF_RE:=1,GEHRUNG_RE:=0,GEHRUNG_LI:=0,NUTEN_OBEN_LINKS:=0,NUTEN_OBEN_RECHTS:=0,LI_NUTENWI:=0,RE_NUTENWI:=0,KDE_R:=0,KDE_L:=0,RAFB:=0,VVVO_L:=4,VVVO_R:=20,PDV_X_1:=z/2,PDV_X_2:=z/2,PDV_X_3:=z/2,PDV_X_5:=z/2,PDV_X_4:=z/2,PDV_X_6:=z/2,PDV_Y_1:=60,PDV_Y_2:=0,PDV_Y_3:=y,PDV_Y_4:=60,PDV_Y_5:=0,PDV_Y_6:=60,BOU:=1.4,SAEG_L_EIN:=0,SAEG_R_EIN:=0,SAEG_R_MODUS:=2,SAEG_L_MODUS:=2,SAEG_EAL_R:=80,SAEG_EAL_L:=80,SAEG_TIF_R:=-5,SAEG_TIF_L:=-5,RITZT_LI:=-3,RITZVERS_LI:=0.05,RITZT_RE:=-3,RITZVERS_RE:=0.05,BOHR_L:=0,BOHR_R:=0,EASYZ_LI:=1,EASYZ_RE:=1,Z_STUM_LI:=z,Z_STUM_RE:=z,AUSW_CLAMEXBISCO:=7)
+ELSE
+END
+IF _MaschinenTYP=2
+/CALL P_System_X_EVO_V6 ( VAL WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID,EITI:=18.0,APV_1:=0,APV_2:=0,APV_3:=1,APV_4:=0,APV_5:=0,APV_6:=0,RAFB:=-9999,PDV_Y_1:=60,PDV_Y_2:=0,PDV_Y_3:=y,PDV_Y_4:=60,PDV_Y_5:=0,PDV_Y_6:=60,BOU:=1.4,BOHR_L:=0,BOHR_R:=0,EASYZ_LI:=1,EASYZ_RE:=1,Z_STUM_LI:=z,Z_STUM_RE:=0,AUSW_CLAMEXBISCO:=7)
+ELSE
+END
+IF _MaschinenTYP=3
+/CALL P_System_X_EVO_V6 ( VAL WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID,EITI:=18.0,APV_1:=0,APV_2:=0,APV_3:=1,APV_4:=0,APV_5:=0,APV_6:=0,RAFB:=-9999,PDV_Y_1:=60,PDV_Y_2:=0,PDV_Y_3:=y,PDV_Y_4:=60,PDV_Y_5:=0,PDV_Y_6:=60,BOU:=1.4,BOHR_L:=0,BOHR_R:=0,EASYZ_LI:=1,EASYZ_RE:=1,Z_STUM_LI:=z,Z_STUM_RE:=0,AUSW_CLAMEXBISCO:=7)
+/ZText ('Nesting     Divario P-18',x,y,15,0,2,0,'Times New Roman',0,1,0,0,1)
+ELSE
+END
+/ZText ('Divario P-18',x,y,15,0,2,0,'Times New Roman',0,1,0,0,1)
+ELSE
+/END;BREAKPOINT
+;HB Lamello Divario P-18
+;Verbinder Rechts
+IF (d=5.4) & (x>50)
+CALL _DrehenBBEnde ()
+;Standard =TYP1
+IF _MaschinenTYP=1
+/CALL P_System_X ( VAL WKZ_NUT:=_Clamex_Nuter_ID,WKZ_SAEG:=_Clamex_Saege_ID,WKZ_BOHR:=_Clamex_Bohrer_ID,EITI:=18.0,APV_1:=0,APV_2:=0,APV_3:=0,APV_4:=0,APV_5:=0,APV_6:=1,STUMPF_LI:=1,STUMPF_RE:=1,GEHRUNG_RE:=0,GEHRUNG_LI:=0,NUTEN_OBEN_LINKS:=0,NUTEN_OBEN_RECHTS:=0,LI_NUTENWI:=0,RE_NUTENWI:=0,KDE_R:=0,KDE_L:=0,RAFB:=0,VVVO_L:=4,VVVO_R:=20,PDV_X_1:=z/2,PDV_X_2:=z/2,PDV_X_3:=z/2,PDV_X_5:=z/2,PDV_X_4:=z/2,PDV_X_6:=z/2,PDV_Y_1:=60,PDV_Y_2:=0,PDV_Y_3:=y,PDV_Y_4:=60,PDV_Y_5:=0,PDV_Y_6:=y,BOU:=1.4,SAEG_L_EIN:=0,SAEG_R_EIN:=0,SAEG_R_MODUS:=2,SAEG_L_MODUS:=2,SAEG_EAL_R:=80,SAEG_EAL_L:=80,SAEG_TIF_R:=-5,SAEG_TIF_L:=-5,RITZT_LI:=-3,RITZVERS_LI:=0.05,RITZT_RE:=-3,RITZVERS_RE:=0.05,BOHR_L:=0,BOHR_R:=0,EASYZ_LI:=1,EASYZ_RE:=1,Z_STUM_LI:=z,Z_STUM_RE:=z,AUSW_CLAMEXBISCO:=7)
+/CALL P_S_BASE_HORI ( VAL POS_X:=x,POS_Y:=y,POS_Z:=z,DRILL_DISTANCE:=7.2,VIEW:=Seite,DRILL:=Drill,Z_BEWEG:=1,NUT_TIEFE:=Tiefe,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+ELSE
+END
+IF _MaschinenTYP=2
+/CALL P_System_X_EVO_V6 ( VAL WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID,EITI:=18.0,APV_1:=0,APV_2:=0,APV_3:=0,APV_4:=0,APV_5:=0,APV_6:=1,RAFB:=-9999,PDV_Y_1:=60,PDV_Y_2:=0,PDV_Y_3:=y,PDV_Y_4:=60,PDV_Y_5:=0,PDV_Y_6:=y,BOU:=1.4,BOHR_L:=0,BOHR_R:=0,EASYZ_LI:=1,EASYZ_RE:=1,Z_STUM_LI:=z,Z_STUM_RE:=z,AUSW_CLAMEXBISCO:=7)
+/CALL P_S_BASE_HORI ( VAL POS_X:=x,POS_Y:=y,POS_Z:=z,DRILL_DISTANCE:=7.2,VIEW:=Seite,DRILL:=DRILL,Z_BEWEG:=1,NUT_TIEFE:=Tiefe,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+ELSE
+END
+IF _MaschinenTYP=3
+/CALL P_System_X_EVO_V6 ( VAL WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID,EITI:=18.0,APV_1:=0,APV_2:=0,APV_3:=0,APV_4:=0,APV_5:=0,APV_6:=1,RAFB:=-9999,PDV_Y_1:=60,PDV_Y_2:=0,PDV_Y_3:=y,PDV_Y_4:=60,PDV_Y_5:=0,PDV_Y_6:=y,BOU:=1.4,BOHR_L:=0,BOHR_R:=0,EASYZ_LI:=1,EASYZ_RE:=1,Z_STUM_LI:=z,Z_STUM_RE:=z,AUSW_CLAMEXBISCO:=7)
+/CALL P_S_BASE_HORI ( VAL POS_X:=x,POS_Y:=y,POS_Z:=z,DRILL_DISTANCE:=7.2,VIEW:=Seite,DRILL:=Drill,Z_BEWEG:=1,NUT_TIEFE:=Tiefe,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+/ZText ('Nesting     Divario P-18',x,y,15,0,6,0,'Times New Roman',0,1,0,0,1)
+ELSE
+END
+/ZText ('Divario P-18',x,y,15,0,6,0,'Times New Roman',0,1,0,0,1)
+ELSE
+/END;BREAKPOINT
+;HB Lamello  P-14 mit Bohrung
+;Verbinder Links
+IF (D=6.1) | (D=6.2) & (x<1)
+CALL _DrehenBBEnde ()
+;Standard =TYP1
+IF _MaschinenTYP=1;BREAKPOINT
+;Winkel     _wl>0
+IF _wl>0
+IF _intern3wl=0
+CALL P_System_X ( VAL WKZ_NUT:=_Clamex_Nuter_ID,WKZ_SAEG:=_Clamex_Saege_ID,WKZ_BOHR:=_Clamex_Bohrer_ID,EITI:=14.0,APV_1:=0,APV_2:=0,APV_3:=1,APV_4:=0,APV_5:=0,APV_6:=0,STUMPF_LI:=0,STUMPF_RE:=1,GEHRUNG_RE:=0,GEHRUNG_LI:=1,NUTEN_OBEN_LINKS:=0,NUTEN_OBEN_RECHTS:=0,LI_NUTENWI:=0,RE_NUTENWI:=0,KDE_R:=0,KDE_L:=_wl,RAFB:=7.5,VVVO_L:=4,VVVO_R:=20,PDV_X_1:=z/2,PDV_X_2:=z/2,PDV_X_3:=z/2,PDV_X_5:=z/2,PDV_X_4:=z/2,PDV_X_6:=z/2,PDV_Y_1:=60,PDV_Y_2:=0,PDV_Y_3:=y,PDV_Y_4:=60,PDV_Y_5:=0,PDV_Y_6:=60,BOU:=1.4,SAEG_L_EIN:=1,SAEG_R_EIN:=0,SAEG_R_MODUS:=2,SAEG_L_MODUS:=2,SAEG_EAL_R:=80,SAEG_EAL_L:=80,SAEG_TIF_R:=-5,SAEG_TIF_L:=-5,RITZT_LI:=-3,RITZVERS_LI:=0.05,RITZT_RE:=-3,RITZVERS_RE:=0.05,BOHR_L:=1,BOHR_R:=0,EASYZ_LI:=1,EASYZ_RE:=1,Z_STUM_LI:=z,Z_STUM_RE:=z,AUSW_CLAMEXBISCO:=1)
+_intern3wl := 1
+ZText ('P-14 a',x,y,15,0,2,0,'Times New Roman',0,1,0,0,1)
+ELSE
+CALL P_System_X ( VAL WKZ_NUT:=_Clamex_Nuter_ID,WKZ_SAEG:=_Clamex_Saege_ID,WKZ_BOHR:=_Clamex_Bohrer_ID,EITI:=14.0,APV_1:=0,APV_2:=0,APV_3:=1,APV_4:=0,APV_5:=0,APV_6:=0,STUMPF_LI:=0,STUMPF_RE:=1,GEHRUNG_RE:=0,GEHRUNG_LI:=1,NUTEN_OBEN_LINKS:=0,NUTEN_OBEN_RECHTS:=0,LI_NUTENWI:=0,RE_NUTENWI:=0,KDE_R:=0,KDE_L:=_wl,RAFB:=7.5,VVVO_L:=4,VVVO_R:=20,PDV_X_1:=z/2,PDV_X_2:=z/2,PDV_X_3:=z/2,PDV_X_5:=z/2,PDV_X_4:=z/2,PDV_X_6:=z/2,PDV_Y_1:=60,PDV_Y_2:=0,PDV_Y_3:=y,PDV_Y_4:=60,PDV_Y_5:=0,PDV_Y_6:=60,BOU:=1.4,SAEG_L_EIN:=0,SAEG_R_EIN:=0,SAEG_R_MODUS:=2,SAEG_L_MODUS:=2,SAEG_EAL_R:=80,SAEG_EAL_L:=80,SAEG_TIF_R:=-5,SAEG_TIF_L:=-5,RITZT_LI:=-3,RITZVERS_LI:=0.05,RITZT_RE:=-3,RITZVERS_RE:=0.05,BOHR_L:=1,BOHR_R:=0,EASYZ_LI:=1,EASYZ_RE:=1,Z_STUM_LI:=z,Z_STUM_RE:=z,AUSW_CLAMEXBISCO:=1)
+ZText ('P-14 b',x,y,15,0,2,0,'Times New Roman',0,1,0,0,1)
+END
+ELSE
+/CALL P_System_X ( VAL WKZ_NUT:=_Clamex_Nuter_ID,WKZ_SAEG:=_Clamex_Saege_ID,WKZ_BOHR:=_Clamex_Bohrer_ID,EITI:=14.0,APV_1:=0,APV_2:=0,APV_3:=1,APV_4:=0,APV_5:=0,APV_6:=0,STUMPF_LI:=1,STUMPF_RE:=1,GEHRUNG_RE:=0,GEHRUNG_LI:=0,NUTEN_OBEN_LINKS:=0,NUTEN_OBEN_RECHTS:=0,LI_NUTENWI:=0,RE_NUTENWI:=0,KDE_R:=0,KDE_L:=0,RAFB:=7.5,VVVO_L:=4,VVVO_R:=20,PDV_X_1:=z/2,PDV_X_2:=z/2,PDV_X_3:=z/2,PDV_X_5:=z/2,PDV_X_4:=z/2,PDV_X_6:=z/2,PDV_Y_1:=60,PDV_Y_2:=0,PDV_Y_3:=y,PDV_Y_4:=60,PDV_Y_5:=0,PDV_Y_6:=60,BOU:=1.4,SAEG_L_EIN:=0,SAEG_R_EIN:=0,SAEG_R_MODUS:=2,SAEG_L_MODUS:=2,SAEG_EAL_R:=80,SAEG_EAL_L:=80,SAEG_TIF_R:=-5,SAEG_TIF_L:=-5,RITZT_LI:=-3,RITZVERS_LI:=0.05,RITZT_RE:=-3,RITZVERS_RE:=0.05,BOHR_L:=1,BOHR_R:=0,EASYZ_LI:=1,EASYZ_RE:=1,Z_STUM_LI:=z,Z_STUM_RE:=z,AUSW_CLAMEXBISCO:=1)
+CALL P_S_BASE_HORI ( VAL POS_X:=x,POS_Y:=y,POS_Z:=z,DRILL_DISTANCE:=7.2,VIEW:=Seite,DRILL:=1,Z_BEWEG:=1,NUT_TIEFE:=Tiefe,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+ZText ('P-14 c',x,y,15,0,2,0,'Times New Roman',0,1,0,0,1)
+END
+ELSE
+END
+;EVO =TYP2
+IF _MaschinenTYP=2
+CALL P_S_BASE_HORI ( VAL POS_X:=x,POS_Y:=y,POS_Z:=z,DRILL_DISTANCE:=7.2,VIEW:=Seite,DRILL:=Drill,Z_BEWEG:=1,NUT_TIEFE:=Tiefe,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+ZText ('P-14 d',x,y,15,0,2,0,'Times New Roman',0,1,0,0,1)
+ELSE
+END
+;Nesting =TYP3
+IF _MaschinenTYP=3
+/CALL P_S_BASE_FLAT ( VAL POSX:=x,POSY:=y,POSZ_WI:=0,EITI:=tiefe,KIPPWINKEL:=-_WL,DREHWINKEL:=90,WZ_ID_V1:=_Clamex_Nuter_X_WKG_ID,WZ_ID_V2:=_Clamex_Nuter_Y_WKG_ID,WZ_ID_V3:=_Clamex_Nuter_X_WKG_ID,WZ_ID_V4:=_Clamex_Nuter_Y_WKG_ID,WZ_ID_STIFT:=_Clamex_Stiftfraeser_ID,WZ_STIFT_ON_OFF:=_PSystemStift,Z_BEWEG:=1,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0)
+CALL P_S_BASE_HORI ( VAL POS_X:=x,POS_Y:=y,POS_Z:=z,DRILL_DISTANCE:=7.2,VIEW:=Seite,DRILL:=Drill,Z_BEWEG:=1,NUT_TIEFE:=Tiefe,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+ZText ('P-14 e',x,y,15,0,2,0,'Times New Roman',0,1,0,0,1,0)
+ELSE
+END
+ELSE
+;HB Lamello P-14 mit Bohrung
+;Verbinder Rechts
+IF (D=6.1)  | (D=6.2) & (x>50)
+CALL _DrehenBBEnde ()
+;Standard =TYP1
+IF _MaschinenTYP=1
+;Winkel     _wr>0
+IF _wr>0
+IF _intern4wr=0
+CALL P_System_X ( VAL WKZ_NUT:=_Clamex_Nuter_ID,WKZ_SAEG:=_Clamex_Saege_ID,WKZ_BOHR:=_Clamex_Bohrer_ID,EITI:=14.0,APV_1:=0,APV_2:=0,APV_3:=0,APV_4:=0,APV_5:=0,APV_6:=1,STUMPF_LI:=1,STUMPF_RE:=0,GEHRUNG_RE:=1,GEHRUNG_LI:=0,NUTEN_OBEN_LINKS:=0,NUTEN_OBEN_RECHTS:=0,LI_NUTENWI:=0,RE_NUTENWI:=0,KDE_R:=_wr,KDE_L:=0,RAFB:=7.5,VVVO_L:=4,VVVO_R:=20,PDV_X_1:=z/2,PDV_X_2:=z/2,PDV_X_3:=z/2,PDV_X_5:=z/2,PDV_X_4:=z/2,PDV_X_6:=z/2,PDV_Y_1:=60,PDV_Y_2:=0,PDV_Y_3:=y,PDV_Y_4:=60,PDV_Y_5:=0,PDV_Y_6:=y,BOU:=1.4,SAEG_L_EIN:=0,SAEG_R_EIN:=1,SAEG_R_MODUS:=2,SAEG_L_MODUS:=2,SAEG_EAL_R:=80,SAEG_EAL_L:=80,SAEG_TIF_R:=-5,SAEG_TIF_L:=-5,RITZT_LI:=-3,RITZVERS_LI:=0.05,RITZT_RE:=-3,RITZVERS_RE:=0.05,BOHR_L:=0,BOHR_R:=1,EASYZ_LI:=1,EASYZ_RE:=1,Z_STUM_LI:=z,Z_STUM_RE:=z,AUSW_CLAMEXBISCO:=1)
+_intern4wr := 1
+ZText ('P-14 f',x,y,15,0,6,0,'Times New Roman',0,1,0,0,1)
+ELSE
+CALL P_S_BASE_HORI ( VAL POS_X:=x,POS_Y:=y,POS_Z:=z,DRILL_DISTANCE:=7.2,VIEW:=Seite,DRILL:=Drill,Z_BEWEG:=1,NUT_TIEFE:=Tiefe,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+ZText ('P-14 g',x,y,15,0,6,0,'Times New Roman',0,1,0,0,1)
+END
+ELSE
+CALL P_S_BASE_HORI ( VAL POS_X:=x,POS_Y:=y,POS_Z:=z,DRILL_DISTANCE:=7.2,VIEW:=Seite,DRILL:=Drill,Z_BEWEG:=1,NUT_TIEFE:=Tiefe,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+ZText ('P-14 h',x,y,15,0,6,0,'Times New Roman',0,1,0,0,1)
+END
+ELSE
+END
+;EVO =TYP2
+IF _MaschinenTYP=2;BREAKPOINT
+CALL P_S_BASE_HORI ( VAL POS_X:=x,POS_Y:=y,POS_Z:=z,DRILL_DISTANCE:=7.2,VIEW:=Seite,DRILL:=Drill,Z_BEWEG:=1,NUT_TIEFE:=Tiefe,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+ZText ('P-14 i',x,y,15,0,6,0,'Times New Roman',0,1,0,0,1)
+ELSE
+END
+;Nesting =TYP3
+IF _MaschinenTYP=3
+/CALL P_S_BASE_FLAT ( VAL POSX:=x,POSY:=y,POSZ_WI:=0,EITI:=tiefe,KIPPWINKEL:=-_Wr,DREHWINKEL:=90,WZ_ID_V1:=_Clamex_Nuter_X_WKG_ID,WZ_ID_V2:=_Clamex_Nuter_Y_WKG_ID,WZ_ID_V3:=_Clamex_Nuter_X_WKG_ID,WZ_ID_V4:=_Clamex_Nuter_Y_WKG_ID,WZ_ID_STIFT:=_Clamex_Stiftfraeser_ID,WZ_STIFT_ON_OFF:=_PSystemStift,Z_BEWEG:=1,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0)
+CALL P_S_BASE_HORI ( VAL POS_X:=x,POS_Y:=y,POS_Z:=z,DRILL_DISTANCE:=7.2,VIEW:=Seite,DRILL:=Drill,Z_BEWEG:=1,NUT_TIEFE:=Tiefe,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+ZText ('P-14 g',x,y,15,0,6,0,'Times New Roman',0,1,0,0,1)
+ELSE
+END
+ELSE
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+IF Seite=1
+HorzB (x,y,z,d,Tiefe,0,0,90)
+END
+IF Seite=2
+HorzB (x,y,z,d,Tiefe,0,0,0)
+END
+IF Seite=3
+HorzB (x,y,z,d,Tiefe,0,0,270)
+END
+IF Seite=4
+HorzB (x,y,z,d,Tiefe,0,0,180)
+END
+END
+END
+END
+END
+END
+END

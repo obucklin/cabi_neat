@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+VARS
+   Side := 0;*VAR*0=Top; 1=Bottom
+   DX := 0;*VAR*Move in X
+   DY := 0;*VAR*Move in Y
+   DZ := 0;*VAR*Move in Z
+START
+nciext (-101002,'TopBottomOpti',3,0,0,2,Side,DX,DY,DZ)

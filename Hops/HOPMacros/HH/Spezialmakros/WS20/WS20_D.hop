@@ -1,0 +1,29 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.7.12.80[Hops.exe]
+;BILD=WS20_D.WMF
+;INFO=
+;WZGV=7235K_114
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=WS20_D
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   X_POS_Clamp := 400;*VAR*
+   Einspann_Y_1 := 20;*VAR*
+   X_Versatz := 26.5;
+START
+ZText ('D',X_POS_Clamp,-150,50,0,9,0,'Times New Roman',0,1,0,0,7,1)
+AddMachineComponent ('',_Global_Count,1,0,2,0,0,1,X_POS_Clamp-(X_Versatz),1,5,0,0,'','',0,0,0,0,0,0,0,0,0,0,0)
+AddMachineComponent ('SD_D_WS20',-1,3,1,0,0,0,0,0,1,-Einspann_Y_1+67+_RY,0,0,'','',0,0,0,0,0,0,0,0,0,0,1)
+AddMachineComponent ('SD_D_WS20_EMPTY',-1,3,1,0,0,0,2,0,1,-Einspann_Y_1+67+_RY+112,0,0,'','',1,0,0,0,0,0,0,0,0,0,1)
+END

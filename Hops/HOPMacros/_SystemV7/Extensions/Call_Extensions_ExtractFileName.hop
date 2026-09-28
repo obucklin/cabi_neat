@@ -1,0 +1,10 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowEXTRACTFILENAMEDialog
+VARS
+   Filename := '';*VAR*
+   Result := '';*VAR**REF*
+START
+;.
+CALLDLL EXTRACTFILENAME(Extensions,DefaultStr,REF RESULT:=Result VAL FILENAME:=Filename)

@@ -1,0 +1,19 @@
+;MAKROTYP=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.1
+VARS
+   KN := '';*VAR*Konturnamen
+   Mode := 0;*VAR*
+   LastTiefe := 0;*VAR*
+   Tiefe := -10;*VAR*Tiefe
+   AnzahlP := 0;*VAR*
+   FliegendEintauchen := 0;*VAR*
+   MaxEintauchLaenge := 20;*VAR*
+   LastCall := 0;*VAR*
+   i := 0;
+START
+FOR i := 1 TO AnzahlP STEP 1
+CALL _ExecutePocketContour_V5 ( VAL KN:=KN+'_'+IntToStr(i),LASTTIEFE:=LastTiefe,TIEFE:=Tiefe,FLIEGENDEINTAUCHEN:=FliegendEintauchen,MAXEINTAUCHLAENGE:=MaxEintauchLaenge,LASTCALL:=LastCall & (i=AnzahlP))
+END

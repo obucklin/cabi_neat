@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowMirrorAtXAxis2D_V7Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   P1X := ;*VAR**REF*
+   P1Y := ;*VAR**REF*
+START
+P1Y := -P1Y

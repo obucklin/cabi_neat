@@ -1,0 +1,10 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowMNCDCUNLOCKSPLIT_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   Mode := 0;*VAR*0 - aufteilen aktivieren; 111111 -  Bearbeitungsbereich verkleinern
+   VerkleinerungAktivieren := 0;*VAR*<> 0 Schmalen Bearbeitungsbereich aktivieren
+START
+nciext (-300000,'NCISys',3,0,0,Mode,VerkleinerungAktivieren)

@@ -1,0 +1,28 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowCalcViewVectorsDWKW_V7Dialog
+VARS
+   DW := 0;*VAR*
+   KW := 0;*VAR*
+   Vxx := ;*VAR**REF*
+   Vxy := ;*VAR**REF*
+   Vxz := ;*VAR**REF*
+   Vyx := ;*VAR**REF*
+   Vyy := ;*VAR**REF*
+   Vyz := ;*VAR**REF*
+   Vzx := ;*VAR**REF*
+   Vzy := ;*VAR**REF*
+   Vzz := ;*VAR**REF*
+START
+vxx := 1
+vxy := 0
+vxz := 0
+CALL Rot3D_V7 (REF X:=Vxx,Y:=Vxy,Z:=Vxz VAL KWGRAD:=KW,DWGRAD:=DW)
+vyx := 0
+vyy := 1
+vyz := 0
+CALL Rot3D_V7 (REF X:=Vyx,Y:=Vyy,Z:=Vyz VAL KWGRAD:=KW,DWGRAD:=DW)
+vzx := 0
+vzy := 0
+vzz := 1
+CALL Rot3D_V7 (REF X:=Vzx,Y:=Vzy,Z:=Vzz VAL KWGRAD:=KW,DWGRAD:=DW)

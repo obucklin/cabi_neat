@@ -1,0 +1,70 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_nuten_y_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   NB := 5;*VAR*Nutbreite
+   NT := -5;*VAR*NutTiefe
+   Ebene := 0;*VAR*Seite: 0->Links, <>0->Rechts
+   ARand := 5;*VAR*Kleinere Abstand von Nut zum Rand
+   AUnten := 0;*VAR*0 -> Rohteilunterkante, <>0 -> Abstand zu Rohteilunterkante mit Einpassen
+   AOben := 0;*VAR*0 -> Rohteiloberkante, <>0 -> Abstand zu Rohteiloberkante mit Einpassen
+   RK := 0;*VAR*Richtungs Kenner für Gleichlauf / Gegenlauf
+   X := 0;
+   Y1 := 0;
+   Y2 := 0;
+   EP1 := 0;Einpassen
+   EP2 := 0;Einpassen
+   Korr := 0;
+   Saege_Art := 1;Säge fix = 0     Sägeaggregat = 1
+   k := 1;Rechteck zeichnen
+   esmd := 0;*VAR*
+START
+;------------------------------------------------------------------------
+;DIREKT CNC-SYSTEME : NC-HOPS Version 5.x
+;- Nuten in Y
+;------------------------------------------------------------------------
+;--
+Transesd (nt,esmd)
+Y1 := AUnten
+Y2 := _RY-AOben
+IF Ebene=0
+;Linke Rohteilseite
+X := ARand
+IF Y2<Y1
+Korr := 1
+ELSE
+Korr := 2
+END
+k := 1
+ELSE
+;Rechte Rohteilseite
+X := _RX-ARand
+IF Y2<Y1
+Korr := 2
+ELSE
+Korr := 1
+END
+k := -1
+END
+;Einpassen bestimmen
+IF AUnten=0
+EP1 := 0
+ELSE
+EP1 := -1
+END
+IF AOben=0
+EP2 := 0
+ELSE
+EP2 := -1
+END
+CALL _nuten_frei_V5 ( VAL X1:=X,Y1:=Y1,X2:=X,Y2:=Y2,NB:=NB,TIEFE:=NT,LAGE:=Korr,RK:=RK,SPEGA:=EP1,EPEGA:=EP2,ESMD:=0,ESXY1:=0,ESXY2:=0)
+IF (_SBB>0) & (_SBB<=NB)
+ZRechteck (x,aunten,nb*k,_ry-aoben-aunten,0,0)
+ELSE
+IF (_SBB<=0)
+ZText (GetMessageText('33','Sägeblattbreite oder Werkzeug nicht definiert'),X,(Y1+Y2)/2,20,90,9,0,'Arial Narrow',0,0,0,0,0)
+ELSE
+ZText (GetMessageText('34','Nutbreite zu klein'),X,(Y1+Y2)/2,20,90,9,0,'Arial Narrow',0,0,0,0,0)
+END
+END

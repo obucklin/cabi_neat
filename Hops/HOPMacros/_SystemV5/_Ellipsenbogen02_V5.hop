@@ -1,0 +1,18 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_Ellipsenbogen02_V5Dialog
+VARS
+   mx := 0;*VAR*Mitte in X
+   my := 0;*VAR*Mitte in Y
+   a := _RX/2;*VAR*Laenge der waagrechten Halbachse
+   b := _RY/2;*VAR*Laenge der senkrechten Halbachse
+   ew := 0;*VAR*Endwinkel Ellipse X+ = 0°
+   Z := 0;*VAR*Zustellung
+   dw := 0;*VAR*Drehwinkel
+   r := 0;*VAR*Verrundungsradius mit naechstem Element
+   esxy1 := 9;*VAR*
+   esd := 2;*VAR*
+START
+Transesd (z,esd)
+transesxy (mx,my,esxy1,0)
+CALLDLL ELLIPSENBOGEN02(Fraesen,Dummy, VAL MX:=MX,MY:=MY,a:=a,b:=b,ew:=ew,Z:=Z,dw:=dw,R:=R)

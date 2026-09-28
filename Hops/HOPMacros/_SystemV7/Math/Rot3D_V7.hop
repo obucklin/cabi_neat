@@ -1,0 +1,36 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowRot3D_V7Dialog
+VARS
+   x := ;*VAR**REF*
+   y := ;*VAR**REF*
+   z := ;*VAR**REF*
+   KWgrad := 0;*VAR*
+   DWgrad := 0;*VAR*
+   sinKW := 0;
+   sinDW := 0;
+   cosKW := 0;
+   cosDW := 0;
+   x1 := 0;
+   y1 := 0;
+   z1 := 0;
+START
+sinKW := sin(KWgrad)
+sinDW := sin(DWgrad)
+cosKW := cos(KWgrad)
+cosDW := cos(DWgrad)
+x1 := x*cosDW-y*cosKW*sinDW+z*sinDW*sinKW
+y1 := x*sinDW+y*cosDW*cosKW-z*cosDW*sinKW
+z1 := y*sinKW+z*cosKW
+IF abs(x1)<0.00000000001
+x1 := 0
+END
+IF abs(y1)<0.00000000001
+y1 := 0
+END
+IF abs(z1)<0.00000000001
+z1 := 0
+END
+x := x1
+y := y1
+z := z1

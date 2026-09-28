@@ -1,0 +1,103 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_saege_frei_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   SX := 0;*VAR*Startpunkt in X
+   SY := 0;*VAR*Startpunkt in Y
+   SZ := -3;*VAR*Tiefe in Z
+   EX := 0;*VAR*Endpunkt in X
+   EY := 0;*VAR*Endpunkt in Y
+   EZ := -2;*VAR*Tiefe in Z
+   BL := 0;*VAR*Lage   0=mittig    1=links   2=rechts
+   Einpassen := 0;*VAR*Einpassen  0/1
+   EL := 0;*VAR*Einlauf in mm
+   AL := 0;*VAR*Auslauf in mm
+   Parallel := 0;*VAR*Schnitt parallel versetzen
+   K := 0;*VAR*Kenner
+   KW := 0;*VAR*Kippwinkel
+   BH := 0;*VAR*Bezugshoehe
+   ritzversatz := 0.05;*VAR*Versatz beim Ritzen
+   esz := 0;*VAR*
+   esxy1 := 1;*VAR*
+   esxy2 := 3;*VAR*
+   abst_x := 0;
+   abst_y := 0;
+   saegelaenge := 0;
+   KWVer := 10;
+   dx := 0;
+   dy := 0;
+   nx := 0;
+   ny := 0;
+   dx_ritz := 0;
+   dy_ritz := 0;
+START
+;- Wenn eingepasst saegen, dann kein Einlauf/Auslauf
+IF Einpassen=1
+el := 0
+al := 0
+END
+Transesz (bh,esz)
+transesxy (sx,sy,esxy1,1)
+transesxy (ex,ey,esxy2,1)
+;-
+abst_x := ex-sx
+abst_y := ey-sy
+IF (abst_x=0)&(abst_y=0)
+Fehlermeldung (GetMessageText('28','Start- und Endpunkt gleich'))
+EXITMACRO
+END
+;---- Versatz Ritzen nur wenn ritzen angewaehlt wurde
+;Neu MW 22.08.2001  Kenner=3
+IF (k<2)
+ritzversatz := 0
+SZ := EZ
+END
+saegelaenge := sqrt(sqr(abst_x)+sqr(abst_y))
+dx := abst_x/ saegelaenge
+dy := abst_y/ saegelaenge
+nx := dy
+ny := -dx
+;----- Versaetze fuer Ein-Auslauf
+sx := sx-dx*EL
+sy := sy-dy*EL
+ex := ex+dx*AL
+ey := ey+dy*AL
+;----- Versaetze fuer Parallele
+sx := sx+nx*Parallel
+sy := sy+ny*Parallel
+ex := ex+nx*Parallel
+ey := ey+ny*Parallel
+;----- Versaetze fuer Ritzversatz
+IF abs(KW)=90
+dx_ritz := 0
+dy_ritz := 0
+ELSE
+ritzversatz := ritzversatz*cos(KW)+ritzversatz*sin(KW)*tan(KW)
+dx_ritz := -nx*ritzversatz
+dy_ritz := -ny*ritzversatz
+;Versatz bei Kippwinkel <> 0 und
+;Bezugshöhe nicht Fertigteil Oberkante
+;berücksichtigen
+IF (BH<>_RZ) & (KW<>0)
+KWVer := tan(KW)*(_RZ-BH)
+dx_ritz := dx_ritz+nx*KWVer
+dy_ritz := dy_ritz+ny*KWVer
+END
+END
+;*********************************
+;*********************************
+;*********************************
+IF (k=0) | (k=1)
+Saegen (sx,sy,EZ,ex,ey,EZ,BL,Einpassen,0,k,KW,BH,0,0,0,0,0)
+ELSE
+IF k=2
+Saegen (sx+dx_ritz,sy+dy_ritz,SZ,ex+dx_ritz,ey+dy_ritz,SZ,BL,Einpassen,0,0,KW,0,0,0,2,0,0)
+nciext (-100230,'NCISys',1,0,0,-122223)
+Saegen (sx,sy,EZ,ex,ey,EZ,BL,Einpassen,0,1,KW,BH,0,0,0,0,0)
+ELSE
+Saegen (sx+dx_ritz,sy+dy_ritz,SZ,ex+dx_ritz,ey+dy_ritz,SZ,BL,Einpassen,0,1,KW,0,0,0,2,0,0)
+nciext (-100230,'NCISys',1,0,0,-122223)
+Saegen (sx,sy,EZ,ex,ey,EZ,BL,Einpassen,0,0,KW,BH,0,0,0,0,0)
+END
+END

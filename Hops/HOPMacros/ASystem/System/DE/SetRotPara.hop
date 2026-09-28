@@ -1,0 +1,21 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCName
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=WGerade.WMF
+VARS
+   MX := 0;*VAR*
+   MY := 0;*VAR*
+   RotW := 0;*VAR*
+   _RotMX := _RX/2;
+   _RotMY := _RY/2;
+   _RotW := 45;
+START
+_RotMX := MX
+_RotMY := MY
+_RotW := -RotW
+

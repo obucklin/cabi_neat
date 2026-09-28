@@ -1,0 +1,130 @@
+;MAKROTYP=1
+;BILD=KT_B.Wmf
+;INFO=
+;WZGV=7123K_021
+;MASCHINE=HOLZHER
+;NCNAME=KT_B
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_5.Dll
+;DIALOGPROC=Show_KTDialog
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 40;Dimension Z
+   Spx :=0;*VAR*Zentrum in X
+   Spy :=0;*VAR*Zentrum in Y
+   Tiefe :=-100;*VAR*Tiefe der Tasche
+   TRA :=40;*VAR*Taschen Radius
+   Zustellung :=0;*VAR*Zustellung der Tasche
+   Fakt_Anf :=_ANF;*VAR*Abfahrfaktor
+   Drehricht :=0;*VAR*Drehrichtung (-1= CCW / 0= CW)
+   Laser :=0;*VAR*Laserbahn (-1= Ja / 0= nein)
+   Z_Int :=-1;*VAR*Z_Interpolation in der Mitte (1= Ja / 0= nein)
+   Anf_Typ :=2;*VAR*Anfahrbew. 0=ohne, 1=linear, 2= radial
+   Snapxy :=0;*VAR*Easy Snap in XY
+   SnapZ :=1;*VAR*Easy Snap in Z
+   Vers := _WZD * 1.55;Versatz
+   EX := 0;End X-Wert
+   MX := 0;Mittelpunkt in X
+   Tour := 10;Schleife
+   I := 2;Z‰hlvariable
+   Z := 0;Z‰hlVar
+   AnzZ := 0;Z‰hlvariable
+   VersZ := 0;Zustellung in Z
+   Z_Wert := 0;Z_Wert
+   T_Korr := 0;TiefenKorr bei Snap1
+START
+;*******************************************
+;**** B.Achermann
+;**** Holzher Schweiz AG  ***********************
+IF SnapZ=1
+T_Korr := DZ + Abs(Tiefe)
+ELSE
+T_Korr := Abs(Tiefe)
+END
+IF (abs(Zustellung)) > (abs(T_Korr))
+Fehlermeldung (GetMessageText('16','Zustelltiefe ist groeﬂer als Tiefe'))
+END
+IF _WZD=0
+Fehlermeldung (GetMessageText('17','Bitte Werkzeug definieren'))
+END
+IF (TRA*2) < _WZD
+Fehlermeldung (GetMessageText('14','Kreisradius zu klein fuer dieses Werkzeug'))
+END
+transesxy (SpX,SpY,SnapXY,0)
+Transesd (Tiefe,SnapZ)
+Vers := _WZD /1.55
+Tour := Round((TRA / Vers))
+Vers := (TRA / Tour)
+IF Zustellung = 0
+AnzZ := 1
+VersZ := Abs(Tiefe)
+ELSE
+AnzZ := Round((abs(Tiefe)) / Zustellung)
+VersZ := (Abs(Tiefe)) / AnzZ
+END
+Z_Wert := VersZ * (-1)
+;Fr‰serDm = LochDM
+IF _WZD = (TRA*2)
+FOR Z := 1 TO AnzZ STEP 1
+Bohrung (Spx,Spy,_WZD,Z_Wert,10,0,0,0,0,0,0,0)
+Z_Wert := Z_Wert - VersZ
+END
+ELSE
+IF ((TRA*2) > (_WZD )) & ((TRA*2) < (_WZD *2))
+CALL _Kreisbahn_V5 ( VAL X_MITTE:=Spx,Y_MITTE:=SpY,TIEFE:=Tiefe,ZUTIEFE:=Zustellung,RADIUS:=TRA,RADIUSKORREKTUR:=1,AB:=0,AUFMASS:=0,BEARB_UMKEHREN:=Drehricht,WINKEL:=180,ANF:=_ANF,ABF:=Fakt_Anf,RAMPE:=1,INTERPOL:=Z_Int,ESXY:=0,ESMD:=0,LASER:=Laser)
+ELSE
+;Im Uhrzeiger
+IF Drehricht = 0
+IF Z_Int = -1
+SP (SpX +Vers,Spy,0,2,Anf_Typ,Fakt_Anf,0,0,0,0,0,0,0,0,0,0,Laser,0,0,0,0,0,0)
+ELSE
+SP (SpX +Vers,Spy,Z_Wert,2,Anf_Typ,Fakt_Anf,0,0,0,0,0,0,0,0,0,0,Laser,0,0,0,0,0,0)
+END
+g02m (Spx -Vers,Spy,Z_Wert,SPX,Spy,0,0,0,0)
+FOR Z := 1 TO AnzZ STEP 1
+FOR I := 2 TO Tour STEP 1
+EX := SpX + (Vers * I)
+g02m (EX,Spy,Z_Wert,Spx+(Vers/2),Spy,0,0,0,0)
+EX := SpX - (Vers * I)
+g02m (EX,Spy,Z_Wert,Spx,Spy,0,0,0,0)
+END
+;Letzte Runde auf Kreis
+g02m (EX,Spy,Z_Wert,Spx,Spy,0,0,0,0)
+G02R (SpX + Vers,SpY,0,(TRA + Vers) / 2,0,0,2)
+g02m (Spx -Vers,Spy,Z_Wert,SPX,Spy,0,0,0,0)
+Z_Wert := (Z_Wert - VersZ)
+END
+EP (0,_ANF,0)
+;Im Gegenuhrzeiger
+ELSE
+IF Z_Int = -1
+SP (SpX -Vers,Spy,0,1,Anf_Typ,Fakt_Anf,0,0,0,0,0,0,0,0,0,0,Laser,0,0,0,0,0,0)
+ELSE
+SP (SpX -Vers,Spy,Z_Wert,1,Anf_Typ,Fakt_Anf,0,0,0,0,0,0,0,0,0,0,Laser,0,0,0,0,0,0)
+END
+G03M (Spx + Vers,SpY,Z_Wert,SpX,SpY,0,0,0,0)
+FOR Z := 1 TO AnzZ STEP 1
+FOR I := 2 TO Tour STEP 1
+EX := SpX - (Vers * I)
+G03M (Ex,SpY,Z_Wert,Spx - (Vers / 2),SpY,0,0,0,0)
+EX := SpX + (Vers * I)
+G03M (Ex,SpY,Z_Wert,Spx,SpY,0,0,0,0)
+END
+;Letzte Runde auf Kreis
+G03M (Ex,SpY,Z_Wert,Spx,SpY,0,0,0,0)
+G03R (SpX-Vers,SpY,0,(TRA +Vers) / 2,0,0,2)
+G03M (SpX + Vers,SpY,Z_Wert,Spx,SpY,0,0,0,0)
+Z_Wert := (Z_Wert - VersZ)
+END
+EP (0,_ANF,0)
+END
+;End von Bohrung
+END
+END

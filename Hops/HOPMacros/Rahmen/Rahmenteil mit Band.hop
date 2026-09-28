@@ -1,0 +1,110 @@
+;MAKROTYP=0
+;BILD=Rahmenteil mit Band.wmf
+;INFO=
+;WZGV=7223K_023
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Rahmenteil mit Band
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 1370;*VAR*Dimension X
+   DY := 100;*VAR*Dimension Y
+   DZ := 46;*VAR*Dimension Z
+   Falz_T := 15;*VAR*Falztiefe
+   Falz_H := 29;*VAR*Falz hoehe
+   Roku_Strip := 0;*VAR*Roku Strip Band fraesen
+   Schwellenwinkel := 0;*VAR*Schwellenwinkel-Nut
+   Fase_Q := 1;*VAR*Fase oben Quer
+   Formatieren := 1;*VAR*Formatieren 1= Ja / 0 = Nein
+   Fase_L := 1;*VAR*Fase  in Laengsrichtung
+   Z_Wert := Falz_H -4;Hoehe Borloch von Oben
+   Trav_Breite := DY -Falz_T;Breite des Traverses
+START
+Fertigteil (DX,DY,DZ,0,0,5,2.5,0,'',0,0,0)
+CALL HH_Park ( VAL PARK:=2,X:=0,Y:=0)
+;Ablaengen
+WZS (200,_VE,_V,_VA,_SD,_ANF,'1');BREAKPOINT
+CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-10,EY:=0,EZ:=-3,BL:=1,EINPASSEN:=0,EL:=-200,AL:=-200,PARALLEL:=0,K:=0,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=3,ESY:=5)
+CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-10,EY:=0,EZ:=-3,BL:=2,EINPASSEN:=0,EL:=-200,AL:=-200,PARALLEL:=0,K:=0,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=1,ESY:=5)
+IF Schwellenwinkel=1
+;Schwellenwinkel
+WZF (137,_VE,_V,_VA,_SD,_ANF,'1')
+SP (30,-150,-Falz_H,2,0,_ANF,0,0,0,3,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (30,-150,0,0,5,2)
+EP (0,_ANF,0)
+SP (30,-150,-(Falz_H+3),2,0,_ANF,0,0,0,3,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (30,-150,0,0,5,2)
+EP (0,_ANF,0)
+;Falz abfraesen
+SP (6.5,-150,3.5,2,0,_ANF,0,0,0,3,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (6.5,-150,0,0,5,2)
+EP (0,_ANF,0)
+SP (6.5,-150,7.5,2,0,_ANF,0,0,0,3,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (6.5,-150,0,0,5,2)
+EP (0,_ANF,0)
+SP (6.5,-150,10.00,2,0,_ANF,0,0,0,3,1,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (6.5,-150,0,0,5,2)
+EP (0,_ANF,0)
+END
+;Falz
+WZF (187,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-150,Falz_T,-Falz_H,2,0,_ANF,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-150,Falz_T,0,0,3,2)
+EP (0,_ANF,0)
+;Formatieren hinten
+IF Formatieren = 1
+WZF (130,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-100,0,Fase_L,1,0,_ANF,0,0,0,7,1,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,5,2)
+G01 (-50,0,0,0,3,2)
+G01 (-100,0,0,0,1,2)
+EP (0,_ANF,0)
+END
+;Fasen Vorne im Falz
+WZF (150,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-100,Falz_T,-Fase_L,2,0,_ANF,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-100,Falz_T,0,0,3,2)
+EP (0,_ANF,0)
+;Fasen hinten
+WZF (150,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-50,0,-Fase_L,1,0,_ANF,0,0,0,7,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,5,2)
+EP (0,_ANF,0)
+;Fase oben Quer
+IF Fase_Q >0
+SP (0,-100,-Fase_Q,2,0,_ANF,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-100,0,0,1,2)
+EP (0,_ANF,0)
+END
+;Fasen im Falz
+WZF (150,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-50,0,-(Falz_H + Fase_L),2,0,_ANF,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-50,0,0,0,3,2)
+EP (0,_ANF,0)
+;Fase oben und unten Quer
+IF Fase_Q >0
+SP (0,-50,- Fase_Q,2,0,_ANF,0,0,0,3,0,2,0,0,0,0,0,0,0,0,0,0,0)
+G01 (0,-100,0,0,5,2)
+EP (0,_ANF,0)
+END
+;Roku_Strip
+IF Roku_Strip=1
+WZF (8,_VE,_V,_VA,_SD,_ANF,'1')
+SP (-150,Falz_T+1.5,-5,2,0,_ANF,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-150,Falz_T+1.5,0,0,3,2)
+EP (0,_ANF,0)
+SP (-150,Falz_T+1.5,-10,2,0,_ANF,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-150,Falz_T+1.5,0,0,3,2)
+EP (0,_ANF,0)
+END
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+HorzB (20,Falz_T,Z_Wert /2,8,-25,0,0,90,1,2,0,0)
+HorzB (Trav_Breite - 20,Falz_T,Z_Wert /2,8,-25,0,0,90,1,2,0,0)

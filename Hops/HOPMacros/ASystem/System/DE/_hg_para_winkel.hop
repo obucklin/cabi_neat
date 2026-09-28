@@ -1,0 +1,49 @@
+;MAKROTYP=1
+;BILD=_hg_para_winkel.bmp
+;INFO=_hg_para_winkel
+;WZGV=NC1000_mm
+;MASCHINE=NC1000
+;NCNAME=Makro1
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   para := 50;*VAR*Parallele
+   x1 := ;*VAR*1. Schnittpunkt in X
+   y1 := ;*VAR*1. Schnittpunkt in Y
+   winkel := 45;*VAR*Winkel der Eingangspunkte
+   RotMX := 0;
+   RotMY := 0;
+   RotW := 45;
+   AktPosY := 0;
+   AktPosX := 0;
+   y := 0;
+   x := 0;
+   wert := 0;
+START
+;Rohteil (1000,1000,19,0,0)
+;direkt cnc systeme NCHOPS Version 3.4
+;Hilfgeometrie über Winkel  incl. Parallele
+RotMX := x1
+RotMY := y1
+RotW := -winkel
+;CALL SetRotPara (VAL MX:=X1,MY:=Y1,RotW:=winkel)
+AktPosX := x1
+AktPosY := y1-para
+;CALL SetPunkt (VAL X:=x1,Y:=Y1-para)
+X := AktPosX
+Y := AktPosY
+X := (X-RotMX)
+Y := (Y-RotMY)
+Wert := X
+X := x*cos(RotW) + y*sin(RotW)
+Y := - Wert*sin(RotW) + y*cos(RotW)
+X := (X+RotMX)
+Y := (Y+RotMY)
+AktPosX := X
+AktPosY := Y
+;CALL RotUmPunkt ()
+HLineW (aktposx,aktposy,winkel)

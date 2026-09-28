@@ -1,0 +1,93 @@
+;MAKROTYP=1
+
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_HorTasche_V5Dialog
+
+VARS
+   EBENE := 2;*VAR*BearbeitungsEbene
+   XPOS := 0;*VAR*(Mittelpunkt)
+   YPOS := 0;*VAR*(Mittelpunkt)
+   ZPOS := 0;*VAR*(TaschenMitte) von Werkstueckunterkante
+   Breite := 100;*VAR*Taschenlaenge
+   HOEHE := 20;*VAR*TaschenHoehe
+   TIEFE := -30;*VAR*Tiefe der Tasche
+   Zutiefe := _AT_MAXDEPTH;*VAR*Zustellung pro Fraesung
+   ABF := _ANF;Abfahrfaktor
+   Radius := 0;*VAR*Verrundungsradius an den Ecken der Tasche
+   umkehren := 0;*VAR*Bearbeitung umkehren
+   Interpol := 0;*VAR*Interpolation auf Anfahrbewegung
+   Pendeln := 0;*VAR*Pendeln = in Linien abzeilen
+   Farbe := 0;Mit Farbe Fuellen JA/NEIN 0/1
+   esXY := 6;*VAR*
+   esz := 1;*VAR*
+START
+;-- HH_EXTS
+;DIREKT CNC SYSTEME NCHOPS
+Rohteil (300,300,100,0,0)
+Ebene0()
+;WZF (21,_VE,_V,_VA,_SD,_ANF)
+transesxy (xpos,ypos,esxy,1)
+Transesz (ZPos,esz)
+;****************************
+ebene := ebene+1
+IF (Tiefe=0) & (ZuTiefe=0)
+Fehlermeldung (GetMessageText('6','Bitte Tiefe eingeben'))
+END
+;***** ueberpruefung Tiefe negativ *****
+IF Tiefe<0
+tiefe := tiefe*(-1)
+END
+;***** ueberpruefung ZuTiefe negativ *****
+IF zuTiefe<0
+zutiefe := zutiefe*(-1)
+END
+;***** ueberpruefung ZuTiefe NULL *****
+IF ZuTiefe=0
+ZuTiefe := tiefe
+END
+;***** ueberpruefung ZuTiefe groesser Tiefe *****
+IF ZuTiefe>Tiefe
+ZuTiefe := tiefe
+END
+;***** ueberpruefung des WZD bei umfahren *****
+IF (pendeln=0) & (_WZD>hoehe)
+Fehlermeldung (GetMessageText('7','Fraeserdurchmesser ist groesser als die Taschenhoehe!'))
+END
+;****************************
+IF Radius>Hoehe/2
+Radius := Hoehe/2
+Hinweismeldung (GetMessageText('8','Radius wurde auf die Haelfte der Hoehe geaendert'))
+END
+;****************************
+;**************************************************************************************
+;Horizontales Taschenfraesen auf EB1-EB4
+;**************************************************************************************
+IF (Ebene=1)
+;Von VORNE
+ZRechteck (XPOS-Breite/2,YPOS,Breite,Tiefe,Farbe,1)
+EbeneF (XPOS,YPOS,0,90,0)
+END
+;**************************************************************************************
+IF (Ebene=2)
+;Von LINKS
+ZRechteck (XPOS,YPOS-Breite/2,Tiefe,Breite,Farbe,1)
+EbeneF (XPOS,YPOS,0,90,270)
+END
+;**************************************************************************************
+IF (Ebene=3)
+;Von Hinten
+ZRechteck (XPOS-Breite/2,YPOS,Breite,-Tiefe,Farbe,1)
+EbeneF (XPOS,YPOS,0,90,180)
+END
+;**************************************************************************************
+IF (Ebene=4)
+;Von Rechts
+ZRechteck (XPOS,YPOS-Breite/2,-Tiefe,Breite,Farbe,1)
+EbeneF (XPOS,YPOS,0,90,90)
+END
+;**************************************************************************************
+IF pendeln=1
+Breite := Breite-2*_wzr
+END
+CALL _HorTascheFraesen_V4 ( VAL X:=0,Y:=ZPOS,Z:=0,Hoehe:=Hoehe,Laenge:=Breite,Tiefe:=Tiefe,Radius:=Radius,Zutiefe:=ZuTiefe,ABF:=ABF,umkehren:=umkehren,Interpol:=Interpol,Pendeln:=pendeln)
+Ebene0()

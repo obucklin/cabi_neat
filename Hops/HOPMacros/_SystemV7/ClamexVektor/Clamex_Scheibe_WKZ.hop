@@ -1,0 +1,43 @@
+;MAKROTYP=0
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.1
+VARS
+   DX := 800;Länge in x
+   DY := 400;Länge in y
+   DZ := 19;Stärke in Z
+   PX := 100;*VAR*Position X
+   PY := 10;*VAR*Position Y
+   PZ := 19;*VAR*Position Z
+   DW := 180;*VAR*Drehwinkel
+   KW := 0;*VAR*Kippwinkel
+   Fraesen := 1;*VAR*1=Fräsung absetzen
+   Depth := -14;*VAR*Tiefe
+   Seitl_Zust := 1.4;*VAR*Seitliche Zustellung
+   Nx := 0;X-Wert des Normalenvektors
+   Ny := -1;Y-Wert des Normalenvektors
+   Nz := 0;Z-Wert des Normalenvektors
+   SIC := 20;Sicherheit
+   Bohren := 1;*VAR*1=Bohrung absetzen
+   B_Abst := 7.5;*VAR*Abstand der Bohrung vom Referenzpunkt
+   B_Abst_Kante := 9.5;*VAR*Abstand zur Kante / Oberfläche (für Bohrung)
+   B_D := 6;*VAR*Bohrdurchmesser
+   B_Tiefe := 0;wird ermittelt
+   BX := 0;X-Abst Bohrung
+   BZ := 0;Z-Abst Bohrung
+   WKZ_B := 53300;Bohrer für senkrecht (Fläche)
+   WKZ_B_H := 53300;Bohrer für waagrecht (Seite)
+   WKZ_B_S := 53300;Bohrer für Schräge
+   WKZ_F := 43300;Nutrad für senkrecht (Fläche)
+   WKZ_F_H := 43100;Nutrad für waagrecht (Seiten)
+   WKZ_F_S := 43100;Nutrad für Schräge
+START
+;---------------------------------------------------------------------------------
+;- Clamex mit Nutscheibe
+;- Ueber Eingabe der Winkel
+;---------------------------------------------------------------------------------
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;---------------------------------------------------------------------------------
+;---------------------------------------------------------------------------------
+;- Bearbeitung...
+CALL Clamex_Scheibe ( VAL PX:=PX,PY:=PY,PZ:=PZ,DW:=DW,KW:=KW,FRAESEN:=Fraesen,DEPTH:=Depth,SEITL_ZUST:=Seitl_Zust,BOHREN:=Bohren,B_ABST:=B_Abst,B_ABST_KANTE:=B_Abst_Kante,B_D:=B_D,WKZ_B:=WKZ_B,WKZ_B_H:=WKZ_B_H,WKZ_B_S:=WKZ_B_S,WKZ_F:=WKZ_F,WKZ_F_H:=WKZ_F_H,WKZ_F_S:=WKZ_F_S)
+;---------------------------------------------------------------------------------

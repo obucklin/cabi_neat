@@ -1,0 +1,199 @@
+;MAKROTYP=0
+;BILD=Ge_Nut.bmp
+;INFO=_nuten_frei
+;WZGV=7223K_023
+;WZGVCONFIG=
+;MASCHINE=SIMU
+;NCNAME=Ge_Nut
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_2.Dll
+;DIALOGPROC=ShowGE_NutDialog
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   SX :=0;*VAR*X_Start
+   SY :=0;*VAR*Y_Start
+   EX :=0;*VAR*X_Ende
+   EY :=0;*VAR*Y_Ende
+   BZ_H :=0;*VAR*Bezugshöhe
+   KWIN :=-45;*VAR*Kipp_Winkel
+   N_BR :=5;*VAR*NUTBREITE
+   Tiefe :=0;*VAR*Nuttiefe
+   N_Lage :=2;*VAR*0->MITTE.1->LINKS.2->RECHTS
+   RK :=0;*VAR*Richtungs Kenner für Gleichlauf / Gegenlauf
+   SPEGA := 0;*VAR*Startpunkt: < 0 -> Einpassen. 0 -> genau. > 0 Auslaus
+   EPEGA := 0;*VAR*Endpunkt: < 0 -> Einpassen. 0 -> genau. > 0 Auslaus
+   B := 0;BREITE
+   DX := 10;VEKTORKOMX
+   DY := 10;VEKTORKOMY
+   LAENGE := 10;VEKTORLäNGE
+   DXN := 10;NORMALENVEKTORX
+   DYN := 10;NORMALENVEKTORY
+   ANZAHL := 1;SCHNITTANZAHL
+   UEL := 1mm;ÜBERLAPPUNG
+   SBB := 3;TAT.SäGEBLATTBREITE
+   X1N := 0;NEUER
+   Y1N := 0;NEUER
+   X2N := 100;NEUER
+   Y2N := 100;NEUER
+   I := 0;ZäHLER
+   J := 0;Zähler2
+   T := 0;Abs von Tiefe
+   ELx := 0;Einpasslänge
+   ELy := 0;Enpasslänge
+   Saege_Art := 1;Säge fix = 0     Sägeaggregat = 1
+   ES_BH :=2;*VAR*
+   ES_SXSY :=1;*VAR*
+   ES_EXEY :=5;*VAR*
+   Temp := 0;
+   StTiefe := Tiefe;Starttiefe
+START
+Fertigteil (500,500,19,0,0,0,0,0,'',0,0,0)
+;Holz-Her Schweiz AG B. Ach
+;Sägenut V 3.4/
+;Korrektur letzter Schnitt wird jetzt links von der Bahn definiert!
+;############################################
+;Vektor-Sägeschnittberechnung
+StTiefe := Tiefe
+;TransESZ(BZ_H,ES_BH)
+;Transesd (Tiefe,BZ_H)
+transesxy (SX,SY,ES_SXSY,1)
+transesxy (EX,EY,ES_EXEY,1)
+SPEGA := -abs(SPEGA)
+EPEGA := -abs(EPEGA)
+IF (Kwin > 0)
+Hinweismeldung (GetMessageTextOem('35','Winkel muss negativ sein!'))
+ELSE
+IF (_SBB>0) & (_SBB<=N_BR)
+IF N_Lage=1
+N_Lage := -1
+END
+IF N_Lage=2
+N_Lage := 1
+END
+DX:=EX-SX
+DY:=EY-SY
+;Länge Sägeschnitt berechnen
+LAENGE:=SQRT(SQR(DX)+SQR(DY))
+IF LAENGE>0
+;Normierter  Richtungsvector zum Sägeschnitt berechnen
+DXN := DX/LAENGE
+DYN := DY/LAENGE
+ELx := DXN*(SQRT(SQR(_WZR)-SQR(_WZR-T)))
+ELy := DYN*(SQRT(SQR(_WZR)-SQR(_WZR-T)))
+IF SPEGA<0
+;Einpassen
+SX := SX+ELx
+SY := SY+ELy
+ELSE
+IF SPEGA=0
+;Genau
+ELSE
+SX := SX-DXN*SPEGA
+SY := SY-DYN*SPEGA
+END
+END
+IF EPEGA<0
+;Einpassen
+EX := EX-ELx
+EY := EY-ELy
+ELSE
+IF EPEGA=0
+;Genau
+ELSE
+EX := EX+DXN*EPEGA
+EY := EY+DYN*EPEGA
+END
+END
+END
+DX:=EX-SX
+DY:=EY-SY
+;Sägeschnittlänge berechnen
+LAENGE:=SQRT(SQR(DX)+SQR(DY))
+IF LAENGE>0
+;Überlappung berücksichtigen
+SBB := _SBB-UEL
+;Anzahl Sägeschnitte berechnen
+ANZAHL := (N_BR-2*UEL)/SBB
+IF N_Lage=0
+DXN:=DY/LAENGE
+DYN:=-DX/LAENGE
+SX:=SX+N_BR/2*DXN
+SY:=SY+N_BR/2*DYN
+EX:=EX+N_BR/2*DXN
+EY:=EY+N_BR/2*DYN
+N_Lage:=-1
+END
+;Normierter normalen Vector  zumSägeschnitt berechnen
+DXN:=N_Lage*DY/LAENGE
+DYN:=-N_Lage*DX/LAENGE
+;Beginn Sägeschnitt berechnen
+X1N := _SBB*DXN/2+SX
+Y1N:=_SBB*DYN/2+SY
+X2N:=_SBB*DXN/2+EX
+Y2N:=_SBB*DYN/2+EY
+IF Anzahl<1
+IF N_Lage=-1
+SAEGEN (SX,SY,Tiefe,EX,EY,Tiefe,1,0,0,RK,KWin,BZ_H,0,0,ES_BH,0,0)
+ELSE
+SAEGEN (SX,SY,Tiefe,EX,EY,Tiefe,2,0,0,RK,KWin,BZ_H,0,0,ES_BH,0,0)
+END
+END
+FOR I := 1 TO ANZAHL STEP 1
+IF I=1
+IF N_Lage=-1
+SAEGEN (SX,SY,Tiefe,EX,EY,Tiefe,1,0,0,RK,KWin,BZ_H,0,0,ES_BH,0,0)
+ELSE
+Tiefe := sin(Kwin) * N_BR +StTiefe
+SAEGEN (SX,SY,Tiefe,EX,EY,Tiefe,2,0,0,RK,KWin,BZ_H,0,0,ES_BH,0,0)
+END
+IF N_Lage = 1
+Temp := (Sin(Kwin)*(((_Sbb/2)-Uel) - SBB))
+Tiefe := (Tiefe + Temp )
+ELSE
+Temp := Sin(Kwin)*(SBB-((_SBB/2)-Uel))
+Tiefe := Temp+ tiefe
+END
+ELSE
+IF N_Lage = 1
+Temp := ABS(Sin(Kwin)*(SBB))
+Tiefe := Tiefe + Temp
+ELSE
+Temp := Sin(Kwin)*(SBB)
+Tiefe := Temp+tiefe
+END
+X1N:=SBB*DXN+X1N
+Y1N:=SBB*DYN+Y1N
+X2N:=SBB*DXN+X2N
+Y2N:=SBB*DYN+Y2N
+SAEGEN (X1N,Y1N,Tiefe,X2N,Y2N,Tiefe,0,0,0,RK,KWin,BZ_H,0,0,ES_BH,0,0)
+END
+END
+B:=(SQRT(SQR(X1N-SX)+SQR(Y1N-SY))+_SBB/2)
+IF (B<N_BR) & (abs(B-N_BR)>0.001)
+X1N:=N_BR*DXN+SX
+Y1N:=N_BR*DYN+SY
+X2N:=N_BR*DXN+EX
+Y2N:=N_BR*DYN+EY
+IF N_Lage=1
+Temp := (Sin(Kwin)*((_Sbb-Uel) - SBB))+StTiefe;BREAKPOINT
+Tiefe := temp
+SAEGEN (X1N,Y1N,Tiefe,X2N,Y2N,Tiefe,1,0,0,RK,KWin,BZ_H,0,0,ES_BH,0,0)
+ELSE
+Tiefe := (sin(Kwin) * N_BR)+StTiefe
+SAEGEN (X1N,Y1N,Tiefe,X2N,Y2N,Tiefe,2,0,0,RK,KWin,BZ_H,0,0,ES_BH,0,0)
+END
+END
+END
+ELSE
+IF (_SBB<=0)
+Hinweismeldung (GetMessageText('33','Sägeblattbreite oder Werkzeug nicht definiert'))
+ELSE
+Hinweismeldung (GetMessageText('34','Nutbreite zu klein'))
+END
+END
+END

@@ -1,0 +1,76 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=ShowFixture_V7Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   Kind := 3;*VAR*0 - dxf | 1 - Kontur | 2 - STL | 3 - Rechteck
+   RechteckX := _RX;*VAR*
+   RechteckY := _RY;*VAR*
+   x := 0;*VAR*Ebene Offset x
+   y := 0;*VAR*Ebene Offset y
+   z := 0;*VAR*Ebene Offset z
+   dw := 0;*VAR*Ebene Drehwinkel
+   kw := 0;*VAR*Ebene Kippwinkel
+   esxy := 0;*VAR*
+   esz := 0;*VAR*
+   DXFName := '';*VAR*DXF-Name
+   DXFUnit := 0;*VAR*Einheit der DXF-Zeichnung
+   Holes := '';*VAR*Löcher
+   Outsides := '';*VAR*Außenkontur
+   MaxAbw := 0.1;*VAR*Maximale Abweichung vom Bogen
+   ProfilLength := 10;*VAR*Länge des Profiles
+   STLName := '';*VAR*STL-Name
+   EleKind := 2;*VAR*
+   CollCheck := 1;*VAR*
+   MoveFirstQuadrant := 0;*VAR*
+   DeleteContours := 1;*VAR*
+   Farbe := 0;*VAR*
+   Count := 0;
+   C := '';
+   i := 0;
+START
+Fertigteil (567.0000,305.5500,20,0,0,5,0,0,'',0,0,0,0)
+IF Kind=0
+STLName := ''
+Holes := ''
+Outsides := ''
+ELSE
+IF Kind=1
+STLName := ''
+DXFName := ''
+ELSE
+IF Kind=2
+DXFName := ''
+Holes := ''
+Outsides := ''
+ELSE
+STLName := ''
+DXFName := ''
+Holes := ''
+Outsides := 'Fixture'
+KB ('Fixture','',0,0,0,'',0,0)
+KG01 ('',RechteckX,0,0,'',0,2)
+KG01 ('',RechteckX,RechteckY,0,'',0,2)
+KG01 ('',0,RechteckY,0,'',0,2)
+KG01 ('',0,0,0,'',0,2)
+END
+END
+END
+defineFixture (x,y,z,dw,kw,esxy,esz,DXFName,DXFUnit,Holes,Outsides,MaxAbw,ProfilLength,STLName,EleKind,CollCheck,MoveFirstQuadrant,Farbe)
+IF Kind>2
+deletecontour ('Fixture',0)
+END
+IF DeleteContours=1
+CALL Call_Extensions_GetParamCount (REF VALUE:=Count VAL VALUES:=Outsides,SEPARATOR:=';')
+FOR i := 1 TO Count STEP 1
+;alle Konturen löschen
+CALL Call_Extensions_GetParamNo (REF VALUE:=C VAL VALUES:=Outsides,NO:=i,SEPARATOR:=';')
+deletecontour (C,0)
+END
+CALL Call_Extensions_GetParamCount (REF VALUE:=Count VAL VALUES:=Holes,SEPARATOR:=';')
+FOR i := 1 TO Count STEP 1
+;alle Konturen löschen
+CALL Call_Extensions_GetParamNo (REF VALUE:=C VAL VALUES:=Holes,NO:=i,SEPARATOR:=';')
+deletecontour (C,0)
+END
+END

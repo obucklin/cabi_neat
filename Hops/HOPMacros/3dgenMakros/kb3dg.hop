@@ -1,0 +1,26 @@
+;MAKROTYP=0
+;BILD=kb3dg.wmf
+;INFO=
+;WZGV=activemachine
+;MASCHINE=HOLZHER
+;NCNAME=kb3dg
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   X := 0;*VAR*
+   Y := 0;*VAR*
+   Z := 0;*VAR*
+START
+;HOLZHER - Reich Spezialmaschinen GmbH
+;Copyright 2006
+;2006-08-22 - CC-Makros V1.0 KRI
+;3DG-Konturbeginn
+deletecontour ('a')
+KB ('a','',X,Y,Z,'',0,0)

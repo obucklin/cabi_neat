@@ -1,0 +1,763 @@
+;MAKROTYP=0
+;INSTVERSION=6.4.0.4
+;EXEVERSION=6.6.2.165[Hops.exe]
+;BILD=Dachfensterfutter_Profi.wmf
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Dachfensterfutter_Profi
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_8.Dll
+;DIALOGPROC=ShowDach_FenDialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 9999;Dimension X
+   DY := 9999;Dimension Y
+   S_Tool :=102;*VAR*Sägewerkzeug
+   Schrupp_Tool :=118;*VAR*Schruppwerkzeug
+   Fuege_Tool:=1105;*VAR*Fügewerkzeug
+   Falz_O_Tool :=1123;*VAR*Fazlwerkzeug ref. oben
+   Falz_U_Tool :=1223;*VAR*Fazlwerkzeug ref. unten
+   Clamex_Tool :=1108;*VAR*Clamexwerkzeug 
+   Werkteil :=1;*VAR*1=Links / 2=Rechts/ 3=unten-Fenster / 4=oben-Fenster / 5=unten-Raum / 6=oben-Raum
+   DZ := 24;Dimension Z
+   DickeZ :=24;*VAR*Dimension Z
+   VorT :=-6;*VAR*Vorritztiefe
+   LM_aufrecht :=1050;*VAR*Lichtmass in der Höhe
+   LM_liegend :=700;*VAR*Lichtmass in der Breite
+   Tiefe_Raum :=200;*VAR*Tiefe des Futters auf Raumseite
+   Tiefe_Fenster :=200;*VAR*Tiefe des Futters auf Fensterseite
+   Ausladung_Oben :=200;*VAR*Ausladung oben ab Lichtmass (Glassseite)
+   Ausladung_Unten :=200;*VAR*Ausladung unten ab Lichtmass (Glasseite)
+   winkel_oben := 99999;errechnet im Makro Winkel oben
+   winkel_unten := 99999;errechnet im Makro Winkel unten
+   Winkel_Temp := 9999;zum temporären Winkelberechnen
+   Tiefe_Clamex := 9999;
+   test := 999;
+START
+;**************************************************
+;**************************************************
+;Autor: B. Achermann
+;Datum: 27.09.2015 BA
+;**************************************************
+;**************************************************
+;Brechnung der Winkel+Rohteilbreiten
+;**************************************************
+IF Ausladung_Unten=0
+winkel_unten := 0
+ELSE
+winkel_unten := ARCTAN(Tiefe_Raum/Ausladung_Unten)
+END
+;**************************************************
+IF Ausladung_Oben=0
+winkel_oben := 0
+ELSE
+winkel_oben := ARCTAN(Tiefe_Raum/Ausladung_Oben)
+END
+;**************************************************
+IF (Werkteil=1) | (Werkteil=2)
+dx := dz+Ausladung_Unten+LM_aufrecht+Ausladung_Oben+dz
+dy := Tiefe_Fenster+Tiefe_Raum
+END
+;**************************************************
+IF Werkteil=3
+IF Ausladung_Unten>0
+dx := LM_liegend
+dy := Tiefe_Fenster
+ELSE
+dx := LM_liegend
+dy := Tiefe_Fenster+Tiefe_Raum
+END
+END
+;**************************************************
+IF Werkteil=4
+IF Ausladung_Oben>0
+dx := LM_liegend
+dy := Tiefe_Fenster
+ELSE
+dx := LM_liegend
+dy := Tiefe_Fenster+Tiefe_Raum
+END
+END
+;**************************************************
+IF Werkteil=5
+dx := LM_liegend
+dy := (dz*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))
+END
+;**************************************************
+IF Werkteil=6
+dx := LM_liegend
+dy := (dz*COS(winkel_oben))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Oben)))
+END
+;**************************************************
+;**************************************************
+Fertigteil (DX,DY,DickeZ,0,0,2,2,0,'',0,0,0)
+;**************************************************
+;**************************************************
+;START  Parken
+IF _Job_FieldID = 1
+CALL HH_Park ( VAL PARK:=10,X:=3500-_RX,Y:=1500)
+ELSE
+CALL HH_Park ( VAL PARK:=10,X:=_RX+1300,Y:=1500)
+END
+;ENDE  Parken
+;**************************************************
+;START Bemassung Werkstück
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=0,P2Y:=0,ABSTAND:=50,FARBE:=0,TEXT:='',TEXTHOEHE:=30,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=7,ESXY2:=1)
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=0,P2Y:=0,ABSTAND:=-50,FARBE:=0,TEXT:='',TEXTHOEHE:=30,PFEILLAENGE:=20mm,PFEILEINNERHALB:=1,ESXY1:=7,ESXY2:=5)
+;ENDE Bemassung Werkstück
+;**************************************************
+;**************************************************
+;START Sägen
+WZS (S_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-6,EY:=0,EZ:=-15,BL:=2,EINPASSEN:=0,EL:=100,AL:=100,PARALLEL:=0,K:=2,KW:=0,BH:=0,RITZVERSATZ:=0,ESZ:=0,ESXY1:=7,ESY:=3)
+CALL _saege_y_V5 ( VAL SX:=0,SY:=0,SZ:=-6,EY:=0,EZ:=-15,BL:=2,EINPASSEN:=0,EL:=100,AL:=100,PARALLEL:=0,K:=2,KW:=0,BH:=0,RITZVERSATZ:=0,ESZ:=0,ESXY1:=3,ESY:=5)
+;ENDE Sägen
+;**************************************************
+;START Futter Links
+IF Werkteil=1
+WZF (Schrupp_Tool,_VE,_V,_VA,_SD,_ANF,'1');BREAKPOINT
+;**************************************************
+SP (_rz+Ausladung_Unten-_rz/2,0,-2,1,1,_ANF,0,0,0,5,1,1,2,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_x,_ry-25,0,0,1,2)
+G01 (_x+_rz/2+10,_y,0,0,1,2)
+EP (1,_ANF,0)
+IF Ausladung_Unten>0
+SP (Ausladung_Unten,0,-2,1,1,_ANF,0,0,0,5,1,1,2,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_x,Tiefe_Raum+(_RZ*TAN((((180-(180-90-winkel_unten))/2)-winkel_unten))),0,0,1,2)
+CALL _Geradewx_V5 ( VAL X:=Ausladung_Unten,WINKEL:=-winkel_unten,Z:=0,R:=0,ESD:=2)
+EP (1,_ANF,0)
+END
+;**************************************************
+IF Ausladung_Oben>0
+SP (Ausladung_Oben,0,-2,2,1,_ANF,0,0,0,7,1,1,2,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_x,Tiefe_Raum+(_RZ*TAN((((180-(180-90-winkel_oben))/2)-winkel_oben))),0,0,1,2)
+CALL _Geradewx_V5 ( VAL X:=Ausladung_Oben,WINKEL:=-180+winkel_oben,Z:=0,R:=0,ESD:=2)
+EP (1,_ANF,0)
+END
+SP (_RZ+Ausladung_Oben-_RZ/2,0,-2,2,1,_ANF,0,0,0,7,1,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_x,25,0,0,7,2)
+G01 (_x-_RZ/2,_y,0,0,1,2)
+EP (1,_ANF,0)
+;**************************************************
+WZF (Falz_O_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Ausladung_Oben-10,25,-12,1,2,_ANF,0,0,0,7,0,1,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (Ausladung_Unten-10,_y,0,0,3,2)
+EP (2,_ANF,0)
+;**************************************************
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,-2,2,1,_ANF,0,0,0,1,1,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,3,2)
+EP (1,_ANF,0)
+SP (Ausladung_Unten-10,0,-2,2,1,_ANF,0,0,0,5,1,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (Ausladung_Oben-10,_y,0,0,1,2)
+EP (1,_ANF,0)
+;**************************************************
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+IF Ausladung_Oben>0
+IF Tiefe_Fenster>=68
+Bohrung (_RZ+Ausladung_Oben-_RZ/2,35,8,-13,10,0,0,7,0,0,0,0)
+Bohrung (_RZ+Ausladung_Oben-_RZ/2,Tiefe_Fenster-25,8,-13,10,0,0,7,0,0,0,0)
+END
+IF ((Tiefe_Fenster>=75) & (Tiefe_Fenster<120)) | (Tiefe_Fenster>=250)
+Bohrung (_rz+Ausladung_Oben-_rz/2,Tiefe_Fenster-25-(Tiefe_Fenster-35-25)/2,3,-2,20,0,0,7,1,0,0,0)
+END
+IF Tiefe_Fenster>=120
+Bohrung (_rz+Ausladung_Oben-_rz/2,35+15,3,-2,20,0,0,7,1,0,0,0)
+Bohrung (_rz+Ausladung_Oben-_rz/2,Tiefe_Fenster-25-15,3,-2,20,0,0,7,1,0,0,0)
+END
+CALL _hg_para_winkel_V5 ( VAL PARA:=-_rz/2,X1:=_rz+Ausladung_Oben,Y1:=Tiefe_Raum,WINKEL:=winkel_oben,ESXY1:=1)
+CALL _hg_para_winkel_V5 ( VAL PARA:=25,X1:=0,Y1:=0,WINKEL:=winkel_oben+90,ESXY1:=1)
+CALL _hg_para_winkel_V5 ( VAL PARA:=-25,X1:=_rz+Ausladung_Oben,Y1:=Tiefe_Raum,WINKEL:=winkel_oben+90,ESXY1:=1)
+CALL _hg_para_winkel_V5 ( VAL PARA:=25+15,X1:=0,Y1:=0,WINKEL:=winkel_oben+90,ESXY1:=1)
+Bohrung (_spx1,_spy1,8,-13,10,0,0,0,0,0,0,0)
+Bohrung (_spx3,_spy3,8,-13,10,0,0,0,0,0,0,0)
+IF (_rz*COS(winkel_oben))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Oben)))<200
+CALL _Rbohr_winkel_V5 ( VAL SPX:=_spx7,SPY:=_spy7,WINKEL:=winkel_oben,RASTER:=(24*COS(winkel_oben))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Oben)))-80,ANZAHL:=2,T:=-2,D:=3,TLF:=20,ABSTAND:=0,ESXY:=1,ESD:=1)
+END
+IF (_rz*COS(winkel_oben))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Oben)))>=200
+CALL _Rbohr_winkel_V5 ( VAL SPX:=_spx7,SPY:=_spy7,WINKEL:=winkel_oben,RASTER:=((24*COS(winkel_oben))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Oben)))-80)/2,ANZAHL:=3,T:=-2,D:=3,TLF:=20,ABSTAND:=0,ESXY:=1,ESD:=1)
+END
+END
+IF Ausladung_Oben=0
+Bohrung (_rz/2,35,8,-13,10,0,0,7,0,0,0,0)
+Bohrung (_rz/2,25,8,-13,10,0,0,1,0,0,0,0)
+Bohrung (_rz/2,35+15,3,-2,20,0,0,7,1,0,0,0)
+Bohrung (_rz/2,25+15,3,-2,20,0,0,1,1,0,0,0)
+IF _ry>=250
+Bohrung (_rz/2,0,3,-2,20,0,0,8,1,0,0,0)
+END
+END
+;**************************************************
+IF Ausladung_Unten>0
+IF Tiefe_Fenster>=68
+Bohrung (_rz+Ausladung_Unten-_rz/2,35,8,-13,10,0,0,5,0,0,0,0)
+Bohrung (_rz+Ausladung_Unten-_rz/2,Tiefe_Fenster-25,8,-13,10,0,0,5,0,0,0,0)
+END
+IF ((Tiefe_Fenster>=75) & (Tiefe_Fenster<120)) | (Tiefe_Fenster>=250)
+Bohrung (_rz+Ausladung_Unten-_rz/2,Tiefe_Fenster-25-(Tiefe_Fenster-35-25)/2,3,-2,20,0,0,5,1,0,0,0)
+END
+IF Tiefe_Fenster>=120
+Bohrung (_rz+Ausladung_Unten-_rz/2,35+15,3,-2,20,0,0,5,1,0,0,0)
+Bohrung (_rz+Ausladung_Unten-_rz/2,Tiefe_Fenster-25-15,3,-2,20,0,0,5,1,0,0,0)
+END
+CALL _hg_para_winkel_V5 ( VAL PARA:=-_rz/2,X1:=_rz+Ausladung_Unten,Y1:=Tiefe_Raum,WINKEL:=-winkel_unten,ESXY1:=3)
+CALL _hg_para_winkel_V5 ( VAL PARA:=-25,X1:=0,Y1:=0,WINKEL:=-winkel_unten+90,ESXY1:=3)
+CALL _hg_para_winkel_V5 ( VAL PARA:=25,X1:=_rz+Ausladung_Unten,Y1:=Tiefe_Raum,WINKEL:=-winkel_unten+90,ESXY1:=3)
+CALL _hg_para_winkel_V5 ( VAL PARA:=-25-15,X1:=0,Y1:=0,WINKEL:=-winkel_unten+90,ESXY1:=3)
+IF Ausladung_Oben>0
+Bohrung (_spx29,_spy29,8,-13,10,0,0,0,0,0,0,0)
+Bohrung (_spx39,_spy39,8,-13,10,0,0,0,0,0,0,0)
+IF (_rz*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))<200
+CALL _Rbohr_winkel_V5 ( VAL SPX:=_spx51,SPY:=_spy51,WINKEL:=-winkel_unten+180,RASTER:=(24*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))-80,ANZAHL:=2,T:=-2,D:=3,TLF:=20,ABSTAND:=0,ESXY:=1,ESD:=1)
+END
+IF (_rz*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))>=200
+CALL _Rbohr_winkel_V5 ( VAL SPX:=_spx51,SPY:=_spy51,WINKEL:=-winkel_unten+180,RASTER:=((24*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))-80)/2,ANZAHL:=3,T:=-2,D:=3,TLF:=20,ABSTAND:=0,ESXY:=1,ESD:=1)
+END
+END
+IF Ausladung_Oben=0
+Bohrung (_spx1,_spy1,8,-13,10,0,0,0,0,0,0,0)
+Bohrung (_spx3,_spy3,8,-13,10,0,0,0,0,0,0,0)
+IF (_rz*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))<200
+CALL _Rbohr_winkel_V5 ( VAL SPX:=_spx7,SPY:=_spy7,WINKEL:=-winkel_unten+180,RASTER:=(24*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))-80,ANZAHL:=2,T:=-2,D:=3,TLF:=20,ABSTAND:=0,ESXY:=1,ESD:=1)
+END
+IF (_rz*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))>=200
+CALL _Rbohr_winkel_V5 ( VAL SPX:=_spx7,SPY:=_spy7,WINKEL:=-winkel_unten+180,RASTER:=((24*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))-80)/2,ANZAHL:=3,T:=-2,D:=3,TLF:=20,ABSTAND:=0,ESXY:=1,ESD:=1)
+END
+END
+END
+IF Ausladung_Unten=0
+Bohrung (_rz/2,35,8,-13,10,0,0,5,0,0,0,0)
+Bohrung (_rz/2,25,8,-13,10,0,0,3,0,0,0,0)
+Bohrung (_rz/2,35+15,3,-2,20,0,0,5,1,0,0,0)
+Bohrung (_rz/2,25+15,3,-2,20,0,0,3,1,0,0,0)
+IF _ry>=250
+Bohrung (_rz/2,0,3,-2,20,0,0,4,1,0,0,0)
+END
+END
+END
+;ENDE Futter Links
+;**************************************************
+HGNeuEnd()
+CALL _spiegeln_start_V5 ( VAL SPIEGELN:=1,ACHSE:=0,SPIEGEL_VARIABLE:=0)
+;START Futter Links
+IF Werkteil=2
+WZF (Schrupp_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+;**************************************************
+SP (_rz+Ausladung_Unten-_rz/2,0,-2,1,1,_ANF,0,0,0,5,1,1,2,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_x,_ry-25,0,0,1,2)
+G01 (_x+_rz/2+10,_y,0,0,1,2)
+EP (1,_ANF,0)
+IF Ausladung_Unten>0
+SP (Ausladung_Unten,0,-2,1,1,_ANF,0,0,0,5,1,1,2,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_x,Tiefe_Raum+(_rz*TAN((((180-(180-90-winkel_unten))/2)-winkel_unten))),0,0,1,2)
+CALL _Geradewx_V5 ( VAL X:=Ausladung_Unten,WINKEL:=-winkel_unten,Z:=0,R:=0,ESD:=2)
+EP (1,_ANF,0)
+END
+;**************************************************
+IF Ausladung_Oben>0
+SP (Ausladung_Oben,0,-2,2,1,_ANF,0,0,0,7,1,1,2,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_x,Tiefe_Raum+(_rz*TAN((((180-(180-90-winkel_oben))/2)-winkel_oben))),0,0,1,2)
+CALL _Geradewx_V5 ( VAL X:=Ausladung_Oben,WINKEL:=-180+winkel_oben,Z:=0,R:=0,ESD:=2)
+EP (1,_ANF,0)
+END
+SP (_rz+Ausladung_Oben-_rz/2,0,-2,2,1,_ANF,0,0,0,7,1,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_x,25,0,0,7,2)
+G01 (_x-_rz/2-10,_y,0,0,1,2)
+EP (1,_ANF,0)
+;**************************************************
+WZF (Falz_O_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Ausladung_Oben-10,25,-12,1,2,_ANF,0,0,0,7,0,1,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (Ausladung_Unten-10,_y,0,0,3,2)
+EP (2,_ANF,0)
+;**************************************************
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,-2,2,1,_ANF,0,0,0,1,1,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,3,2)
+EP (1,_ANF,0)
+SP (Ausladung_Unten-10,0,-2,2,1,_ANF,0,0,0,5,1,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (Ausladung_Oben-10,_y,0,0,1,2)
+EP (1,_ANF,0)
+;**************************************************
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+IF Ausladung_Oben>0
+IF Tiefe_Fenster>=68
+Bohrung (_rz+Ausladung_Oben-_rz/2,35,8,-13,10,0,0,7,0,0,0,0)
+Bohrung (_rz+Ausladung_Oben-_rz/2,Tiefe_Fenster-25,8,-13,10,0,0,7,0,0,0,0)
+END
+IF ((Tiefe_Fenster>=75) & (Tiefe_Fenster<120)) | (Tiefe_Fenster>=250)
+Bohrung (_rz+Ausladung_Oben-_rz/2,Tiefe_Fenster-25-(Tiefe_Fenster-35-25)/2,3,-2,20,0,0,7,1,0,0,0)
+END
+IF Tiefe_Fenster>=120
+Bohrung (_rz+Ausladung_Oben-_rz/2,35+15,3,-2,20,0,0,7,1,0,0,0)
+Bohrung (_rz+Ausladung_Oben-_rz/2,Tiefe_Fenster-25-15,3,-2,20,0,0,7,1,0,0,0)
+END
+CALL _hg_para_winkel_V5 ( VAL PARA:=-_rz/2,X1:=_rz+Ausladung_Oben,Y1:=Tiefe_Raum,WINKEL:=winkel_oben,ESXY1:=1)
+CALL _hg_para_winkel_V5 ( VAL PARA:=25,X1:=0,Y1:=0,WINKEL:=winkel_oben+90,ESXY1:=1)
+CALL _hg_para_winkel_V5 ( VAL PARA:=-25,X1:=_rz+Ausladung_Oben,Y1:=Tiefe_Raum,WINKEL:=winkel_oben+90,ESXY1:=1)
+CALL _hg_para_winkel_V5 ( VAL PARA:=25+15,X1:=0,Y1:=0,WINKEL:=winkel_oben+90,ESXY1:=1)
+Bohrung (_spx1,_spy1,8,-13,10,0,0,0,0,0,0,0)
+Bohrung (_spx3,_spy3,8,-13,10,0,0,0,0,0,0,0)
+IF (_rz*COS(winkel_oben))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Oben)))<200
+CALL _Rbohr_winkel_V5 ( VAL SPX:=_spx7,SPY:=_spy7,WINKEL:=winkel_oben,RASTER:=(24*COS(winkel_oben))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Oben)))-80,ANZAHL:=2,T:=-2,D:=3,TLF:=20,ABSTAND:=0,ESXY:=1,ESD:=1)
+END
+IF (_rz*COS(winkel_oben))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Oben)))>=200
+CALL _Rbohr_winkel_V5 ( VAL SPX:=_spx7,SPY:=_spy7,WINKEL:=winkel_oben,RASTER:=((24*COS(winkel_oben))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Oben)))-80)/2,ANZAHL:=3,T:=-2,D:=3,TLF:=20,ABSTAND:=0,ESXY:=1,ESD:=1)
+END
+END
+IF Ausladung_Oben=0
+Bohrung (_rz/2,35,8,-13,10,0,0,7,0,0,0,0)
+Bohrung (_rz/2,25,8,-13,10,0,0,1,0,0,0,0)
+Bohrung (_rz/2,35+15,3,-2,20,0,0,7,1,0,0,0)
+Bohrung (_rz/2,25+15,3,-2,20,0,0,1,1,0,0,0)
+IF _ry>=250
+Bohrung (_rz/2,0,3,-2,20,0,0,8,1,0,0,0)
+END
+END
+;**************************************************
+IF Ausladung_Unten>0
+IF Tiefe_Fenster>=68
+Bohrung (_rz+Ausladung_Unten-_rz/2,35,8,-13,10,0,0,5,0,0,0,0)
+Bohrung (_rz+Ausladung_Unten-_rz/2,Tiefe_Fenster-25,8,-13,10,0,0,5,0,0,0,0)
+END
+IF ((Tiefe_Fenster>=75) & (Tiefe_Fenster<120)) | (Tiefe_Fenster>=250)
+Bohrung (_rz+Ausladung_Unten-_rz/2,Tiefe_Fenster-25-(Tiefe_Fenster-35-25)/2,3,-2,20,0,0,5,1,0,0,0)
+END
+IF Tiefe_Fenster>=120
+Bohrung (_rz+Ausladung_Unten-_rz/2,35+15,3,-2,20,0,0,5,1,0,0,0)
+Bohrung (_rz+Ausladung_Unten-_rz/2,Tiefe_Fenster-25-15,3,-2,20,0,0,5,1,0,0,0)
+END
+CALL _hg_para_winkel_V5 ( VAL PARA:=-_rz/2,X1:=_rz+Ausladung_Unten,Y1:=Tiefe_Raum,WINKEL:=-winkel_unten,ESXY1:=3)
+CALL _hg_para_winkel_V5 ( VAL PARA:=-25,X1:=0,Y1:=0,WINKEL:=-winkel_unten+90,ESXY1:=3)
+CALL _hg_para_winkel_V5 ( VAL PARA:=25,X1:=_rz+Ausladung_Unten,Y1:=Tiefe_Raum,WINKEL:=-winkel_unten+90,ESXY1:=3)
+CALL _hg_para_winkel_V5 ( VAL PARA:=-25-15,X1:=0,Y1:=0,WINKEL:=-winkel_unten+90,ESXY1:=3)
+IF Ausladung_Oben>0
+Bohrung (_spx29,_spy29,8,-13,10,0,0,0,0,0,0,0)
+Bohrung (_spx39,_spy39,8,-13,10,0,0,0,0,0,0,0)
+IF (_rz*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))<200
+CALL _Rbohr_winkel_V5 ( VAL SPX:=_spx51,SPY:=_spy51,WINKEL:=-winkel_unten+180,RASTER:=(24*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))-80,ANZAHL:=2,T:=-2,D:=3,TLF:=20,ABSTAND:=0,ESXY:=1,ESD:=1)
+END
+IF (_rz*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))>=200
+CALL _Rbohr_winkel_V5 ( VAL SPX:=_spx51,SPY:=_spy51,WINKEL:=-winkel_unten+180,RASTER:=((24*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))-80)/2,ANZAHL:=3,T:=-2,D:=3,TLF:=20,ABSTAND:=0,ESXY:=1,ESD:=1)
+END
+END
+IF Ausladung_Oben=0
+Bohrung (_spx1,_spy1,8,-13,10,0,0,0,0,0,0,0)
+Bohrung (_spx3,_spy3,8,-13,10,0,0,0,0,0,0,0)
+IF (_rz*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))<200
+CALL _Rbohr_winkel_V5 ( VAL SPX:=_spx7,SPY:=_spy7,WINKEL:=-winkel_unten+180,RASTER:=(24*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))-80,ANZAHL:=2,T:=-2,D:=3,TLF:=20,ABSTAND:=0,ESXY:=1,ESD:=1)
+END
+IF (_rz*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))>=200
+CALL _Rbohr_winkel_V5 ( VAL SPX:=_spx7,SPY:=_spy7,WINKEL:=-winkel_unten+180,RASTER:=((24*COS(winkel_unten))+(SQRT(SQR(Tiefe_Raum)+SQR(Ausladung_Unten)))-80)/2,ANZAHL:=3,T:=-2,D:=3,TLF:=20,ABSTAND:=0,ESXY:=1,ESD:=1)
+END
+END
+END
+IF Ausladung_Unten=0
+Bohrung (_rz/2,35,8,-13,10,0,0,5,0,0,0,0)
+Bohrung (_rz/2,25,8,-13,10,0,0,3,0,0,0,0)
+Bohrung (_rz/2,35+15,3,-2,20,0,0,5,1,0,0,0)
+Bohrung (_rz/2,25+15,3,-2,20,0,0,3,1,0,0,0)
+IF _ry>=250
+Bohrung (_rz/2,0,3,-2,20,0,0,4,1,0,0,0)
+END
+END
+END
+SPIEGELNEND()
+;ENDE Futter Links
+;**************************************************
+;**************************************************
+;START Futter Unten Fenster
+IF Werkteil=3
+;**************************************************
+WZF (Falz_U_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,25,12,2,1,_ANF,0,0,0,5,1,1,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,_y,0,0,1,2)
+EP (1,_ANF,0)
+;**************************************************
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,-2,2,1,_ANF,0,0,0,5,1,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,7,2)
+EP (1,_ANF,0)
+;**************************************************
+IF Ausladung_Unten=0
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,-2,2,1,_ANF,0,0,0,1,1,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,3,2)
+EP (1,_ANF,0)
+END
+;**************************************************
+IF Ausladung_Unten>0
+Winkel_Temp := (180-(180-90-winkel_unten))/2
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,0,2,1,_ANF,0,0,-90+Winkel_Temp,1,1,2,0,_AT_MAXDEPTH,2,1,0,0,0,0,0,0,0)
+G01 (0,0,0,0,3,2)
+EP (1,_ANF,0)
+END
+;**************************************************
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+HorzB (0,25,0,8,-25,0,0,0,1,1,0,0)
+HorzB (0,35,0,8,-25,0,0,0,7,1,0,0)
+HorzB (0,35,0,8,-25,0,0,180,5,1,0,0)
+HorzB (0,25,0,8,-25,0,0,180,3,1,0,0)
+;**************************************************
+;START Clamex
+Tiefe_Clamex := 14.25
+Winkel_Temp := (180-(180-90-winkel_unten))/2
+/ChangeVar (Winkel_Temp)
+test := (12*SIN(Winkel_Temp))
+/ChangeVar (test)
+test := (_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)
+/ChangeVar (test)
+test := (_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp)
+/ChangeVar (test)
+EbeneF (0,(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),(12*SIN(Winkel_Temp)),180-90-((180-(180-90-winkel_unten))/2),180,1,2)
+WZF (Clamex_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (100,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (100,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (100,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+SP (_rx-100,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_rx-100,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (_rx-100,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+IF (_RX>=400) & (_RX<650)
+SP (_rx/2,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_rx/2,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (_rx/2,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+END
+IF _RX>=650
+SP (100+(_RX-200)/3,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (100+(_RX-200)/3,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (100+(_RX-200)/3,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+SP (100+((_RX-200)/3)*2,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (100+((_RX-200)/3)*2,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (100+((_RX-200)/3)*2,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+END
+Ebene0()
+;ENDE Clamex
+END
+;ENDE Futter Unten Fenster
+;**************************************************
+;**************************************************
+;START Futter Oben Fenster
+IF Werkteil=4
+;-
+WZF (Falz_U_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,25,12,2,1,_ANF,0,0,0,5,1,1,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,_y,0,0,1,2)
+EP (1,_ANF,0)
+;**************************************************
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+HorzB (0,25,0,8,-25,0,0,0,1,1,0,0)
+HorzB (0,35,0,8,-25,0,0,0,7,1,0,0)
+HorzB (0,35,0,8,-25,0,0,180,5,1,0,0)
+HorzB (0,25,0,8,-25,0,0,180,3,1,0,0)
+;**************************************************
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,-2,2,1,_ANF,0,0,0,5,1,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,7,2)
+EP (1,_ANF,0)
+;**************************************************
+IF Ausladung_Oben=0
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,-2,2,1,_ANF,0,0,0,1,1,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,3,2)
+EP (1,_ANF,0)
+END
+;**************************************************
+IF Ausladung_Oben>0
+Winkel_Temp := (180-(180-90-winkel_oben))/2
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,0,2,1,_ANF,0,0,-90+Winkel_Temp,1,1,2,0,_AT_MAXDEPTH,2,1,0,0,0,0,0,0,0)
+G01 (0,0,0,0,3,2)
+EP (1,_ANF,0)
+;**************************************************
+;START Clamex
+Tiefe_Clamex := 14.25
+Winkel_Temp := (180-(180-90-winkel_oben))/2
+/ChangeVar (Winkel_Temp)
+test := (12*SIN(Winkel_Temp))
+/ChangeVar (test)
+test := (_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)
+/ChangeVar (test)
+test := (_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp)
+/ChangeVar (test)
+EbeneF (0,(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),(12*SIN(Winkel_Temp)),180-90-((180-(180-90-winkel_oben))/2),180,1,2)
+WZF (Clamex_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (100,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (100,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (100,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+SP (_rx-100,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_rx-100,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (_rx-100,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+IF (_RX>=400) & (_RX<650)
+SP (_rx/2,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_rx/2,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (_rx/2,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+END
+IF _RX>=650
+SP (100+(_RX-200)/3,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (100+(_RX-200)/3,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (100+(_RX-200)/3,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+SP (100+((_RX-200)/3)*2,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (100+((_RX-200)/3)*2,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (100+((_RX-200)/3)*2,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+END
+END
+Ebene0()
+;ENDE Clamex
+END
+;ENDE Futter Oben Fenster
+;**************************************************
+;**************************************************
+;START Futter Unten Raum
+IF Werkteil=5
+;**************************************************
+/ChangeVar (winkel_unten)
+test := _rz*SIN(winkel_unten)
+/ChangeVar (test)
+Winkel_Temp := (180-(180-90-winkel_unten))/2
+/ChangeVar (Winkel_Temp)
+EbeneF (0,0,_rz*SIN(winkel_unten),-winkel_unten+90,180,7,0)
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,-_rz-2,2,1,_ANF,0,0,0,1,0,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,3,2)
+EP (1,_ANF,0)
+IF Winkel_Temp<=83
+EbeneF (0,0,_rz*SIN(winkel_unten),90-(90-winkel_unten),0,7,0)
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,-2,2,1,_ANF,0,0,0,5,0,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,7,2)
+EP (1,_ANF,0)
+END
+IF Winkel_Temp>83
+EbeneF (0,0,_rz*SIN(winkel_unten),-winkel_unten+90,180,7,0)
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,0,2,1,_ANF,-25,0,0,1,0,1,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,3,2)
+EP (1,_ANF,0)
+END
+Ebene0()
+;**************************************************
+;**************************************************
+Winkel_Temp := (180-(180-90-winkel_unten))/2
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,0,2,1,_ANF,0,0,-90+Winkel_Temp,1,1,2,0,_AT_MAXDEPTH,2,1,0,0,0,0,0,0,0)
+G01 (0,0,0,0,3,2)
+EP (1,_ANF,0)
+;**************************************************
+;START Clamex
+Tiefe_Clamex := 14.25
+Winkel_Temp := (180-(180-90-winkel_unten))/2
+/ChangeVar (Winkel_Temp)
+test := (12*SIN(Winkel_Temp))
+/ChangeVar (test)
+test := (_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)
+/ChangeVar (test)
+test := (_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp)
+/ChangeVar (test)
+EbeneF (0,(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),(12*SIN(Winkel_Temp)),180-90-((180-(180-90-winkel_unten))/2),180,1,2)
+WZF (Clamex_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (100,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (100,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (100,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+SP (_rx-100,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_rx-100,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (_rx-100,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+IF (_RX>=400) & (_RX<650)
+SP (_rx/2,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_rx/2,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (_rx/2,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+END
+IF _RX>=650
+SP (100+(_RX-200)/3,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (100+(_RX-200)/3,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (100+(_RX-200)/3,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+SP (100+((_RX-200)/3)*2,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (100+((_RX-200)/3)*2,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (100+((_RX-200)/3)*2,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+END
+Ebene0()
+;ENDE Clamex
+;**************************************************
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+HorzB (0,25,0,8,-25,0,0,0,1,1,0,0)
+HorzB (0,25,0,8,-25,0,0,0,7,1,0,0)
+HorzB (0,25,0,8,-25,0,0,180,5,1,0,0)
+HorzB (0,25,0,8,-25,0,0,180,3,1,0,0)
+END
+;ENDE Futter Unten Raum
+;**************************************************
+;**************************************************
+;START Futter Oben Raum
+IF Werkteil=6
+;**************************************************
+/ChangeVar (winkel_oben)
+test := _rz*SIN(winkel_oben)
+/ChangeVar (test)
+Winkel_Temp := (180-(180-90-winkel_oben))/2
+/ChangeVar (Winkel_Temp)
+EbeneF (0,0,_rz*SIN(winkel_oben),-winkel_oben+90,180,7,0)
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,-_rz-2,2,1,_ANF,0,0,0,1,0,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,3,2)
+EP (1,_ANF,0)
+IF Winkel_Temp<=83
+EbeneF (0,0,_rz*SIN(winkel_oben),90-(90-winkel_oben),0,7,0)
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,-2,2,1,_ANF,0,0,0,5,0,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,7,2)
+EP (1,_ANF,0)
+END
+IF Winkel_Temp>83
+EbeneF (0,0,_rz*SIN(winkel_oben),-winkel_oben+90,180,7,0)
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,0,2,1,_ANF,-25,0,0,1,0,1,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (0,0,0,0,3,2)
+EP (1,_ANF,0)
+END
+Ebene0()
+;**************************************************
+;**************************************************
+Winkel_Temp := (180-(180-90-winkel_oben))/2
+WZF (Fuege_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (0,0,0,2,1,_ANF,0,0,-90+Winkel_Temp,1,1,2,0,_AT_MAXDEPTH,2,1,0,0,0,0,0,0,0)
+G01 (0,0,0,0,3,2)
+EP (1,_ANF,0)
+;**************************************************
+;START Clamex
+Tiefe_Clamex := 14.25
+Winkel_Temp := (180-(180-90-winkel_oben))/2
+/ChangeVar (Winkel_Temp)
+test := (12*SIN(Winkel_Temp))
+/ChangeVar (test)
+test := (_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)
+/ChangeVar (test)
+test := (_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp)
+/ChangeVar (test)
+EbeneF (0,(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),(12*SIN(Winkel_Temp)),180-90-((180-(180-90-winkel_oben))/2),180,1,2)
+WZF (Clamex_Tool,_VE,_V,_VA,_SD,_ANF,'1')
+SP (100,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (100,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (100,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+SP (_rx-100,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_rx-100,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (_rx-100,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+IF (_RX>=400) & (_RX<650)
+SP (_rx/2,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (_rx/2,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (_rx/2,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+END
+IF _RX>=650
+SP (100+(_RX-200)/3,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (100+(_RX-200)/3,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (100+(_RX-200)/3,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+SP (100+((_RX-200)/3)*2,-_wzr-10,0,0,0,_ANF,0,0,0,5,0,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (100+((_RX-200)/3)*2,-_wzr+Tiefe_Clamex+(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp)/COS(90-Winkel_Temp),0,0,5,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (0,0,+2.8,0,10,2)
+G01 (0,0,-1.4,0,10,2)
+G01 (100+((_RX-200)/3)*2,-10-_wzr-(_rz-(12*SIN(Winkel_Temp)))/TAN(Winkel_Temp),0,0,5,2)
+EP (0,_ANF,0)
+END
+Ebene0()
+;ENDE Clamex
+;**************************************************
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+HorzB (0,25,0,8,-25,0,0,0,1,1,0,0)
+HorzB (0,25,0,8,-25,0,0,0,7,1,0,0)
+HorzB (0,25,0,8,-25,0,0,180,5,1,0,0)
+HorzB (0,25,0,8,-25,0,0,180,3,1,0,0)
+END
+;ENDE Futter Oben Raum
+;**************************************************
+;**************************************************
+;**************************************************
+;**************************************************
+IF (Werkteil=5) & (Ausladung_Unten=0)
+Fehlermeldung ('Ausladung unten ist Null, es gibt kein Werkteil 5: BA')
+END
+IF (Werkteil=6) & (Ausladung_Oben=0)
+Fehlermeldung ('Ausladung oben ist Null, es gibt kein Werkteil 6: BA')
+END

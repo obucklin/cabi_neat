@@ -1,0 +1,66 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=ShowBRadius_V7Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   MX := 0;*VAR*Kreismittelpunkt in X
+   MY := 0;*VAR*KreisMittelpunkt inY
+   PX := 100;*VAR*Punkt auf Kreisbogen
+   PY := 100;*VAR*Punkt auf Kreisbogen
+   Abstand := 100;*VAR*
+   Farbe := 0;*VAR*
+   Text := '';*VAR*Text zum überschreiben
+   TextHoehe := 20;*VAR*Texthöhe
+   Pfeillaenge := 30;*VAR*
+   PfeileInnerhalb := 0;*VAR*Bemaßungspfeile innerhalb
+   WCS := 1;*VAR*Workcenter sichtbar
+   _AktDimValue := 0;
+   dx := 0;
+   dy := 0;
+   l := 0;
+   dxn := 0;
+   dyn := 0;
+   WinkelBem := 0;
+   Radius := 0;
+   EndPosX := 0;
+   EndPosY := 0;
+   Pfeilwinkel := 10;
+   esxy1 := 0;*VAR*
+   esxy2 := 0;*VAR*
+START
+;DIRECT CNC SYSTEME NCHOPS Version 7.x
+Rohteil (1000,2000,19,0,0)
+transesxy (Mx,My,esxy1,0)
+transesxy (Px,Py,esxy2,0)
+Abstand := abs(Abstand)
+Pfeillaenge := abs(Pfeillaenge)
+IF PfeileInnerhalb=0
+Abstand := -Abstand
+END
+dx := MX-PX
+dy := MY-PY
+IF (dx<>0)|(dy<>0)
+CALL Dist2P_V4 (REF Dist:=l VAL P1X:=MX,P1Y:=MY,P2X:=PX,P2Y:=PY)
+dx := Abstand*(dx/l)
+dy := Abstand*(dy/l)
+CALL Pfeil_V7 ( VAL P1X:=PX,P1Y:=PY,P2X:=PX+dx,P2Y:=PY+dy,LÄNGE:=Pfeillaenge,FARBE:=Farbe,PFEILWINKEL:=Pfeilwinkel,WCS:=WCS)
+/ZLinie (EndPosX,EndPosY,Px+dx,Py+dy,Farbe,0,0,0,0,WCS)
+ZLinie (px,py,Px+dx,Py+dy,Farbe,0,0,0,0,WCS)
+;Text ausgeben
+Radius := sqrt(sqr(MX-PX)+sqr(MY-PY))
+CALL GetWinkel2P_V4 (REF Winkel2P:=WinkelBem VAL P1X:=Px+dx,P1Y:=Py+dy,P2X:=Px,P2Y:=Py)
+IF StrLength(Text)=0
+CALL FloatToStr_V4 (REF StrWert:=Text VAL Wert:=Radius)
+_AktDimValue := Radius
+Text := 'R'+Text
+END
+IF ((WinkelBem>=0)&(WinkelBem<=90))|((WinkelBem>270)&(WinkelBem<=360))
+ZText (Text,Px+dx,Py+dy,Texthoehe,WinkelBem,1,Farbe,'',0,0,0,0,0,WCS)
+ELSE
+IF ((WinkelBem>90)&(WinkelBem<=270))
+WinkelBem := WinkelBem+180
+ZText (Text,Px+dx,Py+dy,TextHoehe,WinkelBem,7,Farbe,'',0,0,0,0,0,WCS)
+ELSE
+END
+END
+END

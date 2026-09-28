@@ -1,0 +1,79 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.2.1[Hops.exe]
+;BILD=HH_SPOILBOARD.WMF
+;INFO=
+;WZGV=7225K_V7_DEMO
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=HH_SPOILBOARD
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 3100;Dimension X
+   DY := 1400;Dimension Y
+   DZ := 5;Dimension Z
+   Ueberlappung := 3;*VAR*Ueberlappung
+   Versatz := 0;Versatz
+   Uebst_RE_LI := 20;Überstand Rechts LINKS
+   Uebst_HI_VO := 20;Überstand Hinten_VORNE
+   AKT_Y_POS := -99;aktuelle Y POS
+   Bereich := -99;Fräsbereich
+   L_POS := -99;linke POS
+   R_POS := -99;rechte POS
+   V_POS := -99;vordere POS
+   H_POS := -99;hintere POS
+   Steps := -99;Anzahl Steps in Y
+START
+IF Ueberlappung<19
+Fehlermeldung ('ERROR = ' + INTTOSTR(Ueberlappung) + ' > 19mm')
+ELSE
+IF _WZD <= 0
+Fehlermeldung ('no Tool selected')
+ELSE
+L_POS := -_WZR-Uebst_RE_LI
+R_POS := _RX+_WZR+Uebst_RE_LI
+V_POS := _WZR-Uebst_HI_VO
+H_POS := _RY-_WZR+Uebst_HI_VO
+Bereich := H_POS-V_POS
+Steps := ROUND(Bereich/(_WZD-Ueberlappung))
+AKT_Y_POS := V_POS
+ZRechteck (-Uebst_RE_LI-_WZD,-Uebst_HI_VO,_RX+(2*Uebst_RE_LI)+(2*_WZD),_RY+(2*Uebst_HI_VO),0,0,1,0,0,1)
+Versatz := Bereich/(Steps)
+SP (L_POS,AKT_Y_POS,0,0,0,_ANF,0,0,0,1,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+WHILE AKT_Y_POS<=H_POS
+;nach rechts
+IF AKT_Y_POS<=H_POS
+G01 (R_POS,AKT_Y_POS,0,0,0,2)
+ELSE
+EP (0,_ANF,0)
+EXITMACRO
+END
+AKT_Y_POS := AKT_Y_POS+Versatz
+;Rechts Y Bewegung
+IF AKT_Y_POS<=H_POS
+G01 (R_POS,AKT_Y_POS,0,0,0,2)
+END
+;nach links
+IF AKT_Y_POS<=H_POS
+G01 (L_POS,AKT_Y_POS,0,0,0,2)
+END
+AKT_Y_POS := AKT_Y_POS+Versatz
+;Links Y Bewegung
+IF AKT_Y_POS<=H_POS
+G01 (L_POS,AKT_Y_POS,0,0,0,2)
+ELSE
+EP (0,_ANF,0)
+EXITMACRO
+END
+END
+END
+END

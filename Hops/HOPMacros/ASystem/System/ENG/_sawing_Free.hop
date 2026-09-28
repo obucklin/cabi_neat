@@ -1,0 +1,229 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=Makro1
+;MASCHINE=SIMU
+;WZGV=DEMO
+;BILD=saegen.wmf
+VARS
+   Breite := 500;breite
+   Höhe := 300;Höhe
+   Stärke := 30;Stärke
+   winkel := 0;Sägewinkel
+   abst_x := 0;
+   abst_y := 0;
+   sägelänge := 0;
+   SX := ;*VAR*Startpunkt in X
+   SY := ;*VAR*Startpunkt in Y
+   SZ := -3;*VAR*Tiefe in Z
+   EX := ;*VAR*Endpunkt in X
+   EY := ;*VAR*Endpunkt in Y
+   EZ := -_RZ-2;*VAR*Tiefe in Z
+   BL := 2;*VAR*Lage   0=mittig    1=links   2=rechts
+   Einpassen := 0;*VAR*Einpassen  0/1
+   EL := 0;*VAR*Einlauf in mm
+   AL := 0;*VAR*Auslauf in mm
+   Parallel := 0;*VAR*Schnitt parallel versetzen
+   K := 0;*VAR*Kenner
+   KW := 0;*VAR*Kippwinkel
+   BH := _RZ;*VAR*Bezugshöhe
+   SX_Versatz := 0;Versatz in X beim Einlauf
+   SY_Versatz := 0;Versatz in Y beim Einlauf
+   EX_Versatz := 0;Versatz in X beim Auslauf
+   EY_Versatz := 0;Versatz in Y beim Auslauf
+   SX_Para := 0;Parallelversatz in x
+   SY_Para := 0;Parallelversatz in y
+   Saege_Art := 1;Säge fix = 0     Sägeaggregat = 1
+   SX_Para_ritz := 0;
+   SY_Para_ritz := 0;
+   ritzversatz := 0.05;*VAR*Versatz beim Ritzen
+START
+;direkt cnc systeme NCHOPS Version 3.4
+;-  freies Sägen / MD / 07.01
+;-  Einlauf / Auslauf getrennt
+;-  Parallele
+;-
+;-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+;-  ÄNDERUNGSSTAND !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+;-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+;-  MW 22.08.2001
+;-  Kenner = 3 eingefügt Vorritzen vom Endpunkt zum Startpunkt hin
+;-
+;-
+;--------------------------------------------------------
+;- ACHTUNG:
+;-
+;- Die Schnitte können nur editiert werden,
+;- wenn sie auskommentiert sind !!
+;- Weil Einpassen und Bearbeitungslage
+;- sonst nicht mehr variabel sind
+;-
+;- ACHTUNG:
+;--------------------------------------------------------
+;-
+;- Wenn eingepasst sägen, dann kein Einlauf/Auslauf
+IF Einpassen=1
+el := 0
+al := 0
+END
+;-
+IF KW>60
+Fehlermeldung (KIPPWINKEL_MAXIMAL_60_GRAD)
+END
+abst_x := ex-sx
+abst_y := ey-sy
+IF (abst_x=0)&(abst_y=0)
+Fehlermeldung (START_UND_ENDPUNKT_GLEICH)
+END
+;---- Versatz Ritzen nur wenn ritzen angewählt wurde
+;Neu MW 22.08.2001  Kenner=3
+IF (k<>2) & (k<>3)
+ritzversatz := 0
+SZ := EZ
+END
+sägelänge := sqrt(sqr(abst_x)+sqr(abst_y))
+winkel := arccos(abst_x/sägelänge)
+;----- Versätze für Ein-Auslauf
+SX_Versatz := cos(winkel)*EL
+SY_Versatz := sin(winkel)*EL
+EX_Versatz := cos(winkel)*AL
+EY_Versatz := sin(winkel)*AL
+;----- Versätze für Parallele
+SX_Para := cos(winkel)*parallel
+SY_Para := sin(winkel)*parallel
+SX_Para_ritz := cos(winkel)*ritzversatz
+SY_Para_ritz := sin(winkel)*ritzversatz
+;**************** 0 Grad *******
+IF (SX<EX) & (abst_y=0)
+GiveOutHint (Sawing0)
+IF (k=0) | (k=1)
+Sawing (SX-SX_Versatz,SY-parallel,EZ,EX+EX_Versatz,EY-parallel,EZ,BL,Einpassen,0,k,KW,BH)
+END
+IF k=2
+Sawing (SX-SX_Versatz,SY-parallel,SZ,EX+EX_Versatz,EY-parallel,SZ,BL,Einpassen,0,0,KW,BH)
+Sawing (SX-SX_Versatz,SY-parallel-ritzversatz,EZ,EX+EX_Versatz,EY-parallel-ritzversatz,EZ,BL,Einpassen,0,1,KW,BH)
+END
+;Neu MW 22.08.2001
+IF k=3
+Sawing (SX-SX_Versatz,SY-parallel,SZ,EX+EX_Versatz,EY-parallel,SZ,BL,Einpassen,0,1,KW,BH)
+Sawing (SX-SX_Versatz,SY-parallel-ritzversatz,EZ,EX+EX_Versatz,EY-parallel-ritzversatz,EZ,BL,Einpassen,0,0,KW,BH)
+END
+END
+;**************** 90 Grad *******
+IF (SY<EY) & (abst_x=0)
+GiveOutHint (Sawing90)
+IF (k=0) | (k=1)
+Sawing (SX+parallel,SY-SY_Versatz,EZ,EX+parallel,EY+EY_Versatz,EZ,BL,Einpassen,0,k,KW,BH)
+END
+IF k=2
+Sawing (SX+parallel,SY-SY_Versatz,SZ,EX+parallel,EY+EY_Versatz,SZ,BL,Einpassen,0,0,KW,BH)
+Sawing (SX+parallel+ritzversatz,SY-SY_Versatz,EZ,EX+parallel+ritzversatz,EY+EY_Versatz,EZ,BL,Einpassen,0,1,KW,BH)
+END
+;Neu MW 22.08.2001
+IF k=3
+Sawing (SX+parallel,SY-SY_Versatz,SZ,EX+parallel,EY+EY_Versatz,SZ,BL,Einpassen,0,1,KW,BH)
+Sawing (SX+parallel+ritzversatz,SY-SY_Versatz,EZ,EX+parallel+ritzversatz,EY+EY_Versatz,EZ,BL,Einpassen,0,0,KW,BH)
+END
+END
+;**************** 180 Grad *******
+IF (SX>EX) & (abst_y=0)
+GiveOutHint (Sawing180)
+IF (k=0) | (k=1)
+Sawing (SX-SX_Versatz,SY+parallel,EZ,EX+EX_Versatz,EY+parallel,EZ,BL,Einpassen,0,k,KW,BH)
+END
+IF k=2
+Sawing (SX-SX_Versatz,SY+parallel,SZ,EX+EX_Versatz,EY+parallel,SZ,BL,Einpassen,0,0,KW,BH)
+Sawing (SX-SX_Versatz,SY+parallel+ritzversatz,EZ,EX+EX_Versatz,EY+parallel+ritzversatz,EZ,BL,Einpassen,0,1,KW,BH)
+END
+;Neu MW 22.08.2001
+IF k=3
+Sawing (SX-SX_Versatz,SY+parallel,SZ,EX+EX_Versatz,EY+parallel,SZ,BL,Einpassen,0,1,KW,BH)
+Sawing (SX-SX_Versatz,SY+parallel+ritzversatz,EZ,EX+EX_Versatz,EY+parallel+ritzversatz,EZ,BL,Einpassen,0,0,KW,BH)
+END
+END
+;**************** 270 Grad *******
+IF (SY>EY) & (abst_x=0)
+GiveOutHint (Sawing270)
+IF (k=0) | (k=1)
+Sawing (SX-parallel,SY+SY_Versatz,EZ,EX-parallel,EY-EY_Versatz,EZ,BL,Einpassen,0,k,KW,BH)
+END
+IF k=2
+Sawing (SX-parallel,SY+SY_Versatz,SZ,EX-parallel,EY-EY_Versatz,SZ,BL,Einpassen,0,0,KW,BH)
+Sawing (SX-parallel-ritzversatz,SY+SY_Versatz,EZ,EX-parallel-ritzversatz,EY-EY_Versatz,EZ,BL,Einpassen,0,1,KW,BH)
+END
+;Neu MW 22.08.2001
+IF k=3
+Sawing (SX-parallel,SY+SY_Versatz,SZ,EX-parallel,EY-EY_Versatz,SZ,BL,Einpassen,0,1,KW,BH)
+Sawing (SX-parallel-ritzversatz,SY+SY_Versatz,EZ,EX-parallel-ritzversatz,EY-EY_Versatz,EZ,BL,Einpassen,0,0,KW,BH)
+END
+END
+;*********************************
+;*********************************
+;*********************************
+;*********** 0 - 90 Grad *******
+IF (SX<EX) & (SY<EY)
+GiveOutHint (Sawing0_90)
+IF (k=0) | (k=1)
+Sawing (SX-SX_Versatz+SY_Para,SY-SY_Versatz-SX_Para,EZ,EX+EX_Versatz+SY_Para,EY+EY_Versatz-SX_Para,EZ,BL,Einpassen,0,k,KW,BH)
+END
+IF k=2
+Sawing (SX-SX_Versatz+SY_Para,SY-SY_Versatz-SX_Para,SZ,EX+EX_Versatz+SY_Para,EY+EY_Versatz-SX_Para,SZ,BL,Einpassen,0,0,KW,BH)
+Sawing (SX-SX_Versatz+SY_Para+SY_Para_ritz,SY-SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz+SY_Para+SY_Para_ritz,EY+EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,1,KW,BH)
+END
+;Neu MW 22.08.2001
+IF k=3
+Sawing (SX-SX_Versatz+SY_Para,SY-SY_Versatz-SX_Para,SZ,EX+EX_Versatz+SY_Para,EY+EY_Versatz-SX_Para,SZ,BL,Einpassen,0,1,KW,BH)
+Sawing (SX-SX_Versatz+SY_Para+SY_Para_ritz,SY-SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz+SY_Para+SY_Para_ritz,EY+EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,0,KW,BH)
+END
+END
+;*********** 90 - 180 Grad *******
+IF (SX>EX) & (SY<EY)
+GiveOutHint (Sawing90_180)
+IF (k=0) | (k=1)
+Sawing (SX-SX_Versatz+SY_Para,SY-SY_Versatz-SX_Para,EZ,EX+EX_Versatz+SY_Para,EY+EY_Versatz-SX_Para,EZ,BL,Einpassen,0,k,KW,BH)
+END
+IF k=2
+Sawing (SX-SX_Versatz+SY_Para,SY-SY_Versatz-SX_Para,SZ,EX+EX_Versatz+SY_Para,EY+EY_Versatz-SX_Para,SZ,BL,Einpassen,0,0,KW,BH)
+Sawing (SX-SX_Versatz+SY_Para+SY_Para_ritz,SY-SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz+SY_Para+SY_Para_ritz,EY+EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,1,KW,BH)
+END
+;Neu MW 22.08.2001
+IF k=3
+Sawing (SX-SX_Versatz+SY_Para,SY-SY_Versatz-SX_Para,SZ,EX+EX_Versatz+SY_Para,EY+EY_Versatz-SX_Para,SZ,BL,Einpassen,0,1,KW,BH)
+Sawing (SX-SX_Versatz+SY_Para+SY_Para_ritz,SY-SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz+SY_Para+SY_Para_ritz,EY+EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,0,KW,BH)
+END
+END
+;*********** 180 - 270 Grad *******
+IF (SX>EX) & (SY>EY)
+GiveOutHint (Sawing180270)
+IF (k=0) | (k=1)
+Sawing (SX-SX_Versatz-SY_Para,SY+SY_Versatz-SX_Para,EZ,EX+EX_Versatz-SY_Para,EY-EY_Versatz-SX_Para,EZ,BL,Einpassen,0,k,KW,BH)
+END
+IF k=2
+Sawing (SX-SX_Versatz-SY_Para,SY+SY_Versatz-SX_Para,SZ,EX+EX_Versatz-SY_Para,EY-EY_Versatz-SX_Para,SZ,BL,Einpassen,0,0,KW,BH)
+Sawing (SX-SX_Versatz-SY_Para-SY_Para_ritz,SY+SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz-SY_Para-SY_Para_ritz,EY-EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,1,KW,BH)
+END
+;Neu MW 22.08.2001
+IF k=3
+Sawing (SX-SX_Versatz-SY_Para,SY+SY_Versatz-SX_Para,SZ,EX+EX_Versatz-SY_Para,EY-EY_Versatz-SX_Para,SZ,BL,Einpassen,0,1,KW,BH)
+Sawing (SX-SX_Versatz-SY_Para-SY_Para_ritz,SY+SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz-SY_Para-SY_Para_ritz,EY-EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,0,KW,BH)
+END
+END
+;*********** 270 - 0 Grad *******
+IF (SX<EX) & (SY>EY)
+GiveOutHint (Sawing270_0)
+IF (k=0) | (k=1)
+Sawing (SX-SX_Versatz-SY_Para,SY+SY_Versatz-SX_Para,EZ,EX+EX_Versatz-SY_Para,EY-EY_Versatz-SX_Para,EZ,BL,Einpassen,0,k,KW,BH)
+END
+IF k=2
+Sawing (SX-SX_Versatz-SY_Para,SY+SY_Versatz-SX_Para,SZ,EX+EX_Versatz-SY_Para,EY-EY_Versatz-SX_Para,SZ,BL,Einpassen,0,0,KW,BH)
+Sawing (SX-SX_Versatz-SY_Para-SY_Para_ritz,SY+SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz-SY_Para-SY_Para_ritz,EY-EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,1,KW,BH)
+END
+;Neu MW 22.08.2001
+IF k=3
+Sawing (SX-SX_Versatz-SY_Para,SY+SY_Versatz-SX_Para,SZ,EX+EX_Versatz-SY_Para,EY-EY_Versatz-SX_Para,SZ,BL,Einpassen,0,1,KW,BH)
+Sawing (SX-SX_Versatz-SY_Para-SY_Para_ritz,SY+SY_Versatz-SX_Para-SX_Para_ritz,EZ,EX+EX_Versatz-SY_Para-SY_Para_ritz,EY-EY_Versatz-SX_Para-SX_Para_ritz,EZ,BL,Einpassen,0,0,KW,BH)
+END
+END
+

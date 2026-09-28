@@ -1,0 +1,20 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowProcessInfoNCI_V7Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   x1 := 0;*VAR*
+   y1 := 0;*VAR*
+   esxy1 := 0;*VAR*
+   x2 := 0;*VAR*
+   y2 := 0;*VAR*
+   esxy2 := 0;*VAR*
+   Depth := 0;*VAR*
+   Type := 0;*VAR*
+   Value := 0;*VAR*
+   DeleteOutsideFP := 0;*VAR*
+   BorderDist := 0;*VAR*
+START
+transesxy (x1,y1,esxy1,1)
+transesxy (x2,y2,esxy2,1)
+nciext (-210002,'NCISys',1,0,1,x1,y1,x2,y2,Depth,Type,Value,DeleteOutsideFP,BorderDist)

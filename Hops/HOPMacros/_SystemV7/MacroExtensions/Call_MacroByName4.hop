@@ -1,0 +1,21 @@
+;AUTOSCRIPTSTART=0
+;MAKROTYP=1
+VARS
+   Macroname := '';*VAR*
+   x := 0;*VAR*
+   y := 0;*VAR*
+   z := 0;*VAR*
+   HBorderAngle := 0;*VAR*
+   HTableAngle := 0;*VAR*Mirror
+   HCutAngle := 0;*VAR*
+   HComponentAngle := 0;*VAR*
+   CounterWidth := 0;*VAR*
+   VorProfilieren := 0;*VAR*
+   VorUmspannen := 0;*VAR*
+   ProfileShape := '';*VAR*
+   ProfileSide := '';*VAR*
+   HopsAngle := 0;*VAR*
+   VariableList := '';*VAR*
+   ProcessAngle := 0;*VAR*
+START
+CALLDLL MACROBYNAME4(MacroExtensions,DefaultStr, VAL MACRONAME:=MacroName,X:=x,Y:=y,Z:=z,HBORDERANGLE:=HBorderAngle,HTABLEANGLE:=HTableAngle,HCUTANGLE:=HCutAngle,HCOMPONENTANGLE:=HComponentAngle,COUNTERWIDTH:=CounterWidth,VORPROFILIEREN:=VorProfilieren,VORUMSPANNEN:=VorUmspannen,PROFILESHAPE:=ProfileShape,PROFILESIDE:=ProfileSide,HOPSANGLE:=HopsAngle,VARIABLELIST:=VariableList,PROCESSANGLE:=ProcessAngle)

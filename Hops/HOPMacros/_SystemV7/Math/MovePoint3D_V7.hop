@@ -1,0 +1,15 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowMovePoint3D_V7Dialog
+VARS
+   P1X := ;*VAR**REF*
+   P1Y := ;*VAR**REF*
+   P1Z := ;*VAR**REF*
+   Factor := 1;*VAR*
+   VX := 0;*VAR*
+   VY := 0;*VAR*
+   VZ := 0;*VAR*
+START
+P1X := P1X + Factor*VX
+P1Y := P1Y + Factor*VY
+P1Z := P1Z + Factor*VZ

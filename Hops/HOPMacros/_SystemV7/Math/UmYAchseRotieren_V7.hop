@@ -1,0 +1,15 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowUmYAchseRotieren_V7Dialog
+VARS
+   x := ;*VAR**REF*X-Wert des Normalenvektors
+   y := ;*VAR**REF*Y-Wert des Normalenvektors
+   z := ;*VAR**REF*Z-Wert des Normalenvektors
+   DW := 45;*VAR*
+   x1 := 0;
+   z1 := 0;
+START
+x1 := x*cos(DW)+z*sin(DW)
+z1 := -x*sin(DW)+z*cos(DW)
+x := x1
+z := z1

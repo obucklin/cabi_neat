@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;AUTOSCRIPTSTART=0
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowRANDOMIZEDialog
+VARS
+   UseRandSeed := 0;*VAR*
+   RandSeed := 0;*VAR*
+START
+CALLDLL RANDOMIZE(Extensions,DefaultStr,VAL RandSeed:=RandSeed,UseRandSeed:=UseRandSeed)

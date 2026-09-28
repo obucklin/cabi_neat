@@ -1,0 +1,33 @@
+;MAKROTYP=1
+;BILD=Reihenbohrung.WMF
+;INFO=NC1000
+;WZGV=NC1000
+;MASCHINE=NC1000
+;NCNAME=_ZRechteck_2P
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   SX := 0;*VAR*Startpunkt in X
+   SY := 0;*VAR*Startpunkt in Y
+   EX := 100;*VAR*Endpunkt in X
+   EY := 50;*VAR*Endpunkt in Y
+   Füllen := 0;*VAR*Füllung
+   Farbe := 0;*VAR*
+   FehlerText := '';
+   Toleranz := 0.001;
+START
+;*******************************************************
+;*******  Zeichne Rechteck über 2 Punkte  *******
+;*******************************************************
+Rohteil (500,400,19,0,0)
+;*******************************************************
+;**************************************************
+IF Füllen=0
+ZRechteck(SX,SY,EX-SX,EY-SY,0,Farbe)
+ELSE
+ZRechteck(SX,SY,EX-SX,EY-SY,1,Farbe)
+END

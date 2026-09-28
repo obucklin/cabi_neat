@@ -1,0 +1,108 @@
+;MAKROTYP=1
+;BILD=Hor_Lochreihe.wmf
+;INFO=
+;WZGV=7123K_021
+;MASCHINE=HOLZHER
+;NCNAME=Hor_Lochreihen
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=DialogBA_1.Dll
+;DIALOGPROC=ShowH_L_Y_BohrenDialog
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   SpY :=0;*VAR*Mindestwert Startpunkt
+   EpY :=0;*VAR*Endpunkt in X
+   SpZ :=0.00;*VAR*Höhe in Z
+   TLF :=0;*VAR*Bohrflag
+   Tiefe :=-35.00;*VAR*Bohrtiefe
+   Raster :=32;*VAR*Raster
+   Dm :=8.00;*VAR*Durchmesser
+   CheckTyp :=0;*VAR*LochreihenTyp 0 / 1 
+   CheckRichtung :=0;*VAR*Lochreihen Richtung 0=Links / 1= rechts
+   SnapSY :=5;*VAR*Easy Snap in Start Y
+   SnapEY :=3;*VAR*Easy Snap in End Y
+   SnapZ :=1;*VAR*Easy Snap in Z
+   Dummy := 0.00;
+   Seite := 0;Links / Rechts
+   Länge := 0;
+   ANZ := 0.00;
+   Rest := 0.0;
+   I := 0;Zählvariable  
+   PosX:=0; 
+   MerkerSpY:=0;
+START
+;*********************************
+; HolzHer Schweiz AG B. Achermann
+;*********************************
+;Horizontale Lochreihe in Y
+Transesxy (Dummy,SPY,SnapSy,1)
+Transesxy (Dummy,EPY,SnapEy,1)
+TransESZ (SPZ,SnapZ)
+Raster := abs(Raster)
+IF CheckRichtung = 0
+ Seite := 0.00
+ PosX:=0
+ELSE
+ Seite := 180.00
+ PosX:= _Rx
+END
+IF (SPY>EPY)&(CheckTyp=1)
+;-- wenn Referenzpunkt rechts
+;-- nur wenn einpassen gewählt
+MerkerSPY := SPY
+SPY := EPY
+EPY := MerkerSPY
+END
+MerkerSPY := SPY
+IF CheckTyp=1
+Länge := epY-spY
+anz := (Länge)/Raster
+anz := anz DIV 1 +1
+rest := (Länge-(anz-1)*Raster)/2
+FOR i := 0 TO anz-1 STEP 1
+HorzB(PosX,SpY + Rest+ (I * Raster),SPZ,Dm,Tiefe,TLF,0,Seite,0,0,0,0)
+END
+ELSE
+IF EPY > SPY
+WHILE SPY <= EPY
+HorzB(PosX,SpY ,SPZ,Dm,Tiefe,TLF,0,Seite,0,0,0,0)
+SPY := SPY + Raster
+END
+ELSE
+WHILE SPY >= EPY
+HorzB(PosX,SpY ,SPZ,Dm,Tiefe,TLF,0,Seite,0,0,0,0)
+SPY := SPY - Raster
+END
+END
+END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

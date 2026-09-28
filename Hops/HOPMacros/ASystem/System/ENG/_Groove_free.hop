@@ -1,0 +1,169 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=simu
+;MASCHINE=Simu
+;WZGV=DIREKT
+;BILD=_nutenWMF.bmp
+VARS
+   X1 := _RX/2;*VAR*X
+   Y1 := 0;*VAR*Y
+   X2 := _RX/2;*VAR*X_Ende
+   Y2 := _RY;*VAR*Y_Ende
+   NB := 6;*VAR*NUTBREITE
+   Tiefe := -10;*VAR*Nuttiefe
+   LAGE := 0;*VAR*0->MITTE,1->LINKS,2->RECHTS
+   RK := 0;*VAR*Richtungs Kenner f¸r Gleichlauf / Gegenlauf
+   SPEGA := 0;Startpunkt: < 0 -> Einpassen, 0 -> genau, > 0 Auslaus
+   EPEGA := 0;Endpunkt: < 0 -> Einpassen, 0 -> genau, > 0 Auslaus
+   B := 0;BREITE
+   DX := 10;VEKTORKOMX
+   DY := 10;VEKTORKOMY
+   LAENGE := 10;VEKTORL‰NGE
+   DXN := 10;NORMALENVEKTORX
+   DYN := 10;NORMALENVEKTORY
+   ANZAHL := 1;SCHNITTANZAHL
+   UEL := 1;‹BERLAPPUNG
+   SBB := 3;TAT.S‰GEBLATTBREITE
+   X1N := 0;NEUER
+   Y1N := 0;NEUER
+   X2N := 100;NEUER
+   Y2N := 100;NEUER
+   I := 0;Z‰HLER
+   T := 0;Abs von Tiefe
+   ELx := 0;Einpassl‰nge
+   ELy := 0;Enpassl‰nge
+   Saege_Art := 1;S‰ge fix = 0     S‰geaggregat = 1
+START
+;direkt cnc systeme NCHOPS Version3.0
+;S‰genut V 3.4/
+;Korrektur letzter Schnitt wird jetzt links von der Bahn definiert!
+;############################################
+;S‰genut V 3.4.1/  MW
+;Variable RK f¸r Richtungsumkehr hinzugenommen
+;############################################
+;x1 := 0
+;x2 := _RX
+;y1 := 0
+;y2 := _Ry
+;nb := 12
+;VEKTORDESS‰GESCHNITTSBERECHNEN
+IF (_SBB>0) & (_SBB<=NB)
+IF Lage=1
+Lage := -1
+END
+IF Lage=2
+Lage := 1
+END
+IF  Tiefe>0
+Tiefe := -Tiefe
+T := -Tiefe
+ELSE
+T := -Tiefe
+END
+DX:=X2-X1
+DY:=Y2-Y1
+;L‰NGEDESS‰GESCHNITTSBERECHNEN
+LAENGE:=SQRT(SQR(DX)+SQR(DY))
+IF LAENGE>0
+;NORMIERTER DES RICHTUNGSVEKTORS ZUM S‰GESCHNITT BERECHNEN
+DXN := DX/LAENGE
+DYN := DY/LAENGE
+ELx := DXN*(SQRT(SQR(_WZR)-SQR(_WZR-T)))
+ELy := DYN*(SQRT(SQR(_WZR)-SQR(_WZR-T)))
+IF SPEGA<0
+;Einpassen
+X1 := x1+ELx
+y1 := y1+ELy
+ELSE
+IF SPEGA=0
+;Genau
+ELSE
+X1 := x1-DXN*SPEGA
+y1 := y1-DYN*SPEGA
+END
+END
+IF EPEGA<0
+;Einpassen
+X2 := x2-ELx
+y2 := y2-ELy
+ELSE
+IF EPEGA=0
+;Genau
+ELSE
+X2 := x2+DXN*EPEGA
+y2 := y2+DYN*EPEGA
+END
+END
+END
+DX:=X2-X1
+DY:=Y2-Y1
+;L‰NGEDESS‰GESCHNITTSBERECHNEN
+LAENGE:=SQRT(SQR(DX)+SQR(DY))
+IF LAENGE>0
+;‹BERLAPPUNGBER¸CKSICHTIGEN
+SBB := _SBB-UEL
+;ANZAHLDERS‰GESCHNITTEBERECHNEN
+ANZAHL := (NB-2*UEL)/SBB
+IF LAGE=0
+DXN:=DY/LAENGE
+DYN:=-DX/LAENGE
+X1:=X1+NB/2*DXN
+Y1:=Y1+NB/2*DYN
+X2:=X2+NB/2*DXN
+Y2:=Y2+NB/2*DYN
+LAGE:=-1
+END
+;NORMIERTERNORMALENVEKTORZUMS‰GESCHNITTBERECHNEN
+DXN:=LAGE*DY/LAENGE
+DYN:=-LAGE*DX/LAENGE
+;BEGINNS‰GESCHNITTBERECHNEN
+X1N := _SBB*DXN/2+X1
+Y1N:=_SBB*DYN/2+Y1
+X2N:=_SBB*DXN/2+X2
+Y2N:=_SBB*DYN/2+Y2
+IF Anzahl<1
+IF LAGE=-1
+Sawing (X1,Y1,Tiefe,X2,Y2,Tiefe,1,0,0,RK,0,_RZ)
+ELSE
+Sawing (X1,Y1,Tiefe,X2,Y2,Tiefe,2,0,0,RK,0,_RZ)
+END
+END
+FOR I := 1 TO ANZAHL STEP 1
+IF I=1
+IF LAGE=-1
+Sawing (X1,Y1,Tiefe,X2,Y2,Tiefe,1,0,0,RK,0,_RZ)
+ELSE
+Sawing (X1,Y1,Tiefe,X2,Y2,Tiefe,2,0,0,RK,0,_RZ)
+END
+ELSE
+X1N:=SBB*DXN+X1N
+Y1N:=SBB*DYN+Y1N
+X2N:=SBB*DXN+X2N
+Y2N:=SBB*DYN+Y2N
+Sawing (X1N,Y1N,Tiefe,X2N,Y2N,Tiefe,0,0,0,RK,0,_RZ)
+END
+END
+B:=(SQRT(SQR(X1N-X1)+SQR(Y1N-Y1))+_SBB/2)
+IF B<NB
+X1N:=NB*DXN+X1
+Y1N:=NB*DYN+Y1
+X2N:=NB*DXN+X2
+Y2N:=NB*DYN+Y2
+IF LAGE=1
+Sawing (X1N,Y1N,Tiefe,X2N,Y2N,Tiefe,1,0,0,RK,0,_RZ)
+ELSE
+Sawing (X1N,Y1N,Tiefe,X2N,Y2N,Tiefe,2,0,0,RK,0,_RZ)
+END
+END
+END
+ELSE
+IF (_SBB<=0)
+GiveOutHint (Saw_thickness_or_Tool_not_defined)
+ELSE
+GiveOutHint (Groove_width_to_small)
+END
+END
+

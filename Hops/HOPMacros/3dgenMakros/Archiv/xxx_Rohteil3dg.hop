@@ -1,0 +1,231 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.867[Hops.exe]
+;BILD=ROHTEIL3DG.WMF
+;INFO=
+;WZGV=activemachine
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=Rohteil3dg
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   ProcessID := 0;
+   Schw := 0;Schuka wandeln Ja=1; Nein=0
+   _Drehwinkel := 0;
+   Drehwinkel := 0;
+   _spiegel3DG := 0;
+   l := 1000;*VAR*
+   b := 500;*VAR*
+   d := 20;*VAR*
+   kv := 0;
+   kvm := 'test';
+   kh := 0;
+   khm := '';
+   kr := 0;
+   krm := '';
+   kl := 0;
+   klm := '';
+   anschlag := 0;
+   _KanteLinks := '';
+   Laser := 0;
+   _nest := 0;
+   sPID := '';
+   ToolID := 0;
+START
+;HOLZHER GmbH
+;Copyright 2016
+;2016-05-04 - CC-Makros V2.0 KRI
+;3DG-Rohteilmakro
+;CALL _UserInterface3DG (REF RESULT:=Laser VAL INPUTTEXT:='GetLaserActive')
+;Einstellung für Schubkastenwandeln
+;Teile zusammenfassen (Rohteil verlängern)
+;Drehen ausschalten bei VCNC
+CALL _UserInterface3DG (REF RESULT:=ToolID VAL INPUTTEXT:='GetStandardRouterID')
+IF STRLENGTH(_PID_ActiveZeroPointPID)>4
+sPID := _PID_ActiveZeroPointPID
+ELSE
+sPID := _Standard_PID
+END
+IF STRLENGTH(sPID)>4
+IF STRPOS('PID#', sPID)>0
+sPID := STRREPLACE(sPID, 'PID#','')
+ProcessID := STRTOINT(sPID)
+ELSE
+IF STRPOS('pid#', sPID)>0
+sPID := STRREPLACE(sPID, 'pid#','')
+ProcessID := STRTOINT(sPID)
+ELSE
+ProcessID := 0
+END
+END
+ELSE
+IF STRLENGTH(sPID)=1
+ProcessID := STRTOINT(sPID)
+ELSE
+ProcessID := 0
+END
+END
+CALL _ProcessVar3DG ( VAL PROCESSID:=ProcessID)
+IF textsame(_Teiletyp,'Seite')|textsame(_Teiletyp,'Boden')
+IF (b<300) & (Schw=1)
+b := b*2+10
+IF textsame(_Teiletyp,'Seite')
+ZText ('Schuka Seite',10,_ry+100,30,0,3,0,'',0,0,0,0)
+ELSE
+ZText ('Schuka V-H Stück',10,_ry+100,30,0,3,0,'',0,0,0,0)
+END
+ELSE
+ZText (_Teiletyp,10,_ry+100,30,0,3,0,'',0,0,0,0)
+END
+ELSE
+ZText (_Teiletyp,10,_ry+100,30,0,3,0,'',0,0,0,0)
+END
+;Ende Schukawandeln
+;-----------------------------------------------------------
+;Fertigteil definieren
+;Prüfen, ob lange Seite in X
+;Braun ? wid das gebraucht IF _lx<_ly
+;IF _lx<_ly
+IF _TeilGedreht=0
+;Evolution      _MNCDC_SplitKind<>-1
+/IF _MNCDC_SplitKind<>-1
+IF _MaschinenTYP=2
+;_MNCDC_ZeroScoreKind (1=RollerTrack 2=Kleinteil)
+IF _MNCDC_ZeroScoreKind=1
+Fertigteil (l,b,d,0,0,_ZugabeL/2,0,0,'',0,Laser,0)
+ELSE
+Fertigteil (l,b,d,0,0,_ZugabeL/2,_ZugabeB/2,0,'',0,Laser,0)
+END
+ELSE
+Fertigteil (l,b,d,0,0,_ZugabeL/2,_ZugabeB/2,0,'',0,Laser,0)
+END
+;ZText ('Teil Gedreht',_rx/2,_ry/2+40,30,0,9,0,'',0,1,0,0)
+;Anschlag Zeichnen
+ZLinie (_rx,0,_rx-50,0,255,0,0)
+ZLinie (_rx-50,0,_rx,50,255)
+ZLinie (_rx,0,_rx,50,255)
+ELSE
+;Evolution      _MNCDC_SplitKind<>-1
+/IF _MNCDC_SplitKind<>-1
+IF _MaschinenTYP=2
+;_MNCDC_ZeroScoreKind (1=RollerTrack 2=Kleinteil)
+IF _MNCDC_ZeroScoreKind=1
+Fertigteil (l,b,d,0,0,_ZugabeL/2,0,0,'',0,Laser,0)
+ELSE
+Fertigteil (l,b,d,0,0,_ZugabeL/2,_ZugabeB/2,0,'',0,Laser,0)
+END
+ELSE
+Fertigteil (l,b,d,0,0,_ZugabeL/2,_ZugabeB/2,0,'',0,Laser,0)
+END
+;Anschlag Zeichnen
+ZLinie (0,0,50,0,255)
+ZLinie (50,0,0,50,255)
+ZLinie (0,0,0,50,255)
+END
+;Ende Prüfung lange Seite in X
+;-----------------------------------------------------------
+;Türanschlag prüfen- Drehwinkel definieren
+;Vorsicht 3DG dreht Türe autom. lange Seite in X
+IF textsame(_Teiletyp,'Tuer')
+IF _TuerAnschlag=2
+ZText ('Rechte Tür',10,_ry+100,30,0,3,0,'',0,0,0,0)
+Drehwinkel := Drehwinkel+180
+;Indikator ob vom 3DG schon gedreht
+IF _FrontTeilGedreht=1
+Drehwinkel := Drehwinkel+180
+END
+END
+IF _TuerAnschlag=1
+ZText ('Linke Tür',10,_ry+100,30,0,3,0,'',0,0,0,0)
+END
+END
+;***************************************
+;Auszug drehen um  Nut nach hinten
+;IF (textsame(_Teiletyp,'Auszugseite'))&(_TeilGedreht=1)
+;Drehwinkel := Drehwinkel+180
+;END
+;-----------------------------------------------------------
+;Teilbeschriftung
+ZText ('Mat: '+_Material,-50,_ry+50,30,0,2,0,'',0,0,0,0)
+ZText ('Stärke: '+IntToStr(_LZ),-50,_ry+20,30,0,2,0,'',0,0,0,0)
+CALL _ZRechteck_2P_V5 ( VAL SX:=-150,SY:=-150,EX:=-100,EY:=-100,FUELLEN:=0,FARBE:=0,ESXY1:=1,ESXY2:=5)
+;Bemassung einfügen
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=0,P2Y:=0,ABSTAND:=120,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=0,ESXY1:=1,ESXY2:=3)
+CALL B2Punkte_V5 ( VAL P1X:=0,P1Y:=0,P2X:=0,P2Y:=0,ABSTAND:=-90,FARBE:=0,TEXT:='',TEXTHOEHE:=20,PFEILLAENGE:=20mm,PFEILEINNERHALB:=0,ESXY1:=1,ESXY2:=7)
+;Ende Teilbeschriftung
+;-----------------------------------------------------------
+;Entscheidung ob Spiegeln
+IF _TeilGedreht=1
+;ZText ('Teil Gedreht',_rx/2,_ry/2,30,0,9,0,'',0,1,0,0,0)
+ZText('Teil Gedreht',_rx/2,_ry/2-40,30,0,9,0,'',0,1,0,0)
+;ZText ('Linker Anschlag',_rx/2,_ry/2-40,30,0,9,0,'',0,1,0,0)
+;Braun Ausgeschaltet
+;CALL _spiegeln_start_V5 ( VAL SPIEGELN:=1,ACHSE:=0,SPIEGEL_VARIABLE:=0)
+ELSE
+;ZText ('Rechter Anschlag',_rx/2,_ry/2-40,30,0,9,0,'',0,1,0,0)
+END
+;Beschriftung drehen wenn Front
+;vom 3DG gedreht
+;Wenn Ja, Kommentar in Beschreibung
+IF _FrontTeilGedreht=1
+ZText ('Front Gedreht vom 3DG',5,5,12,0,1,0,'',0,0,0,0)
+ZText (_KanteVorn,_RX+20,_ry/2,30,90,9,0,'',0,0,0,0)
+ZText (_KanteHinten,-20,_ry/2,30,90,9,0,'',0,0,0,0)
+ZText (_KanteLinks,_rx/2,-20,30,0,9,0,'',0,0,0,0)
+ZText (_KanteRechts,_RX/2,_ry+20,30,0,9,0,'',0,0,0,0)
+;Maserrichtung zeichnen
+ZLinie (_rx/2,_ry/2-_ry*0.2,_rx/2,_ry/2+_ry*0.2,255,0,0)
+ZLinie (_rx/2-(_ry/2-_ry*0.1)*0.1,_ry/2-_ry*0.1,_rx/2-(_ry/2-_ry*0.1)*0.1,_ry/2+_ry*0.1,255,0,0)
+ZLinie (_rx/2+(_ry/2-_ry*0.1)*0.1,_ry/2-_ry*0.1,_rx/2+(_ry/2-_ry*0.1)*0.1,_ry/2+_ry*0.1,255,0,0)
+ELSE
+ZText (_KanteVorn,_RX/2,-20,30,0,9,0,'',0,0,0,0)
+ZText (_KanteHinten,_RX/2,_ry+20,30,0,9,0,'',0,0,0,0)
+ZText (_KanteLinks,-20,_ry/2,30,90,9,0,'',0,0,0,0)
+ZText (_KanteRechts,_RX+20,_ry/2,30,90,9,0,'',0,0,0,0)
+;Maserrichtung zeichnen
+ZLinie (_rx/2-_rx*0.2,_ry/2,_rx/2+_rx*0.2,_ry/2,255,0,0)
+ZLinie (_rx/2-_rx*0.1,_ry/2-(_rx/2-_rx*0.1)*0.15,_rx/2+_rx*0.1,_ry/2-(_rx/2-_rx*0.1)*0.15,255,0,0)
+ZLinie (_rx/2-_rx*0.1,_ry/2+(_rx/2-_rx*0.1)*0.15,_rx/2+_rx*0.1,_ry/2+(_rx/2-_rx*0.1)*0.15,255,0,0)
+END
+;Ende Entscheidung ob Spiegeln
+;-----------------------------------------------------------
+;Drehung je nach Definition und Maschtyp oben ausführen
+;VCNC
+/IF _MNCDC_SplitKind<>-1
+IF _MaschinenTYP=2
+;keine Drehung
+;--- RaWeDo Fehler auf EVO ---
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=Drehwinkel,ESXY1:=9)
+ELSE
+;CNC
+CALL _DrehenBBStart_V5 ( VAL DX:=0,DY:=0,DW:=Drehwinkel,ESXY1:=9)
+END
+;Ende Drehung
+;-----------------------------------------------------------
+CALL _ZoomAll ()
+;-----------------------------------------------------------
+;-----------------------------------------------------------
+_Drehwinkel := Drehwinkel
+IF _pVar_PreCutID>0
+ZText ('ProcessVar: ' + INTTOSTR(_pVar_PreCutID) +' ' + _pVar_PreCutName,150,-80,10,0,1,8421376,'Arial',0,0,0,0,5)
+ZText ('No Drilling V:' + INTTOSTR(_pVar_NoDrillingV) +' / H:' + + INTTOSTR(_pVar_NoDrillingH),150,-65,10,0,1,8421376,'Arial',0,0,0,0,5)
+ZText ('No Process V:' + INTTOSTR(_pVar_NoProcessV) +' / H:' + + INTTOSTR(_pVar_NoProcessH),150,-50,10,0,1,8421376,'Arial',0,0,0,0,5)
+ZText ('No Format: ' + INTTOSTR(_pVar_NoFormat),150,-35,10,0,1,8421376,'Arial',0,0,0,0,5)
+ELSE
+END
+;V7 Nesting
+CALL Keep_Part_V7 ( VAL POSX:=50,POSY:=50,POSZ:=0,POSX2:=50,POSY2:=50,POSZ2:=0,ASLINE:=0,ESXY:=0,ESZ:=0,ESXY2:=0,ESZ2:=2)
+IF (_MaschinenTYP=3) | (_MaschinenTYP=4)
+CALL BN_NestKontur ()
+/CALL NestKontur ()
+ELSE
+END

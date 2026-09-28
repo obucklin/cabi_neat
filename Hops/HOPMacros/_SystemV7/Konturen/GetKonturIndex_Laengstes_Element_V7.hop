@@ -1,0 +1,21 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowGetKonturIndex_Laengstes_Element_V7Dialog
+VARS
+   KN := '';*VAR*
+   StartElement := ;*VAR**REF*
+   i := 0;
+   EleAnz := 0;Elementanzahl
+   EleLength := 0;Länge Element
+START
+;**
+EleAnz := GetKE_Anzahl(KN)
+;**
+;** Suche nach dem längsten Element...
+FOR i := 1 TO EleAnz STEP 1
+IF EleLength < GetKE_Laenge(KN,i)
+EleLength := GetKE_Laenge(KN,i)
+StartElement := i
+END
+END
+;**

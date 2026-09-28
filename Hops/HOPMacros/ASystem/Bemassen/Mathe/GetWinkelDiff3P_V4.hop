@@ -1,0 +1,38 @@
+;MAKROTYP=1
+;BILD=
+;INFO=GetWinkelDiff3P_V4
+;WZGV=demo
+;MASCHINE=demo
+;NCNAME=BT_GetWinkel2P
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   P1X := 100;*VAR*Anfangspunkt
+   P1Y := 0;*VAR*Anfangspunkt
+   MX := 0;*VAR*Endpunkt
+   MY := 0;*VAR*Endpunkt
+   P3X := -100;*VAR*
+   P3Y := -100;*VAR*
+   WinkelDiff3P := 0;*VAR**REF*
+   Vx := 0;
+   Vy := 0;
+   Vxabs := 0;
+   Vyabs := 0;
+   Toleranz := 0.0000001;
+   wa := 0;
+   we := 0;
+START
+;Winkelberechnung anhand von drei Punkten (eingeschlossener Winkel)
+CALL GetWinkel2P_V4 (REF Winkel2P:=wa VAL P1X:=MX,P1Y:=MY,P2X:=P1X,P2Y:=P1Y)
+CALL GetWinkel2P_V4 (REF Winkel2P:=we VAL P1X:=MX,P1Y:=MY,P2X:=P3X,P2Y:=P3Y)
+IF wa>we
+we := we+360
+END
+WinkelDiff3P := we-wa
+IF WinkelDiff3P>=360
+WinkelDiff3P := WinkelDiff3P-360
+END

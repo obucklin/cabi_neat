@@ -1,0 +1,43 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   esxy := 1;*VAR*
+   esy := 3;*VAR**REF*Dieser Easysnap wird in Abhängigkeit von esxy auf X-angepasst
+START
+IF (esxy=1)|(esxy=7)|(esxy=8)
+IF esy=3
+;Bezugspunkt ENDE = links gewählt
+;jetzt muss Y berücksichtigt werden
+esy := 1
+END
+IF esy=4
+;Bezugspunkt ENDE = links gewählt
+;jetzt muss Y berücksichtigt werden
+esy := 8
+END
+IF esy=5
+;Bezugspunkt ENDE = links gewählt
+;jetzt muss Y berücksichtigt werden
+esy := 7
+END
+ELSE
+IF (esxy=2)|(esxy=9)|(esxy=6)
+IF esy=3
+;Bezugspunkt ENDE = links gewählt
+;jetzt muss Y berücksichtigt werden
+esy := 2
+END
+IF esy=4
+;Bezugspunkt ENDE = links gewählt
+;jetzt muss Y berücksichtigt werden
+esy := 9
+END
+IF esy=5
+;Bezugspunkt ENDE = links gewählt
+;jetzt muss Y berücksichtigt werden
+esy := 6
+END
+END
+END

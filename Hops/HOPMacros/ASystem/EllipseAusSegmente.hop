@@ -1,0 +1,90 @@
+;MAKROTYP=1
+;BILD=
+;INFO=
+;WZGV=DEMO
+;MASCHINE=DXF
+;NCNAME=EllipseAusSegmente
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   mx := 250;*VAR*Mitte in X
+   my := 150;*VAR*Mitte in Y
+   a := 250;*VAR*X-Achse
+   b := 150;*VAR*Y-Achse
+   z := 0;*VAR*Tiefe
+   BL := 2;*VAR*Lage   0=mittig    1=links   2=rechts
+   anf_bew := 2;*VAR*Anfahrbewegung
+   ANF := _ANF;*VAR*Anfahrfaktor
+   Anzahl := 9;Anzahl viertel Kreis
+   DeltaW := 0;
+   i := 0;
+   Radius := 0;
+   Term1 := 0;
+   Term2 := 0;
+   Term3 := 0;
+   index := 0;
+   Dindex := 1;
+   Offset := 0;
+START
+Rohteil (500,300,19,0,0)
+DeltaW := 90/Anzahl
+IF a>b
+Offset := 1
+SP (MX,MY-b,z,BL,anf_bew,ANF,0,0,0)
+ELSE
+Offset := Anzahl+1
+SP (MX-a,MY,z,BL,anf_bew,ANF,0,0,0)
+END
+;Erste viertel
+index := 1
+FOR i := Offset TO Anzahl+Offset-1 STEP 1
+Term1 := a*a*b*b
+Term2 := sqr(SIN((index+0.5)*DeltaW))/sqr(a)
+Term3 := sqr(COS((index+0.5)*DeltaW))/sqr(b)
+Radius := Term1*sqrt((Term2+Term3)*(Term2+Term3)*(Term2+Term3))
+G02R (MX-a*SIN(i*DeltaW),MY-b*COS(i*DeltaW),_Z,Radius,0)
+;ZLinie (MX,MY,_X,_Y,65300)
+;ZText(FloatToStr(Radius,5,1),_X,_Y,15,0,5,0,'MS Sans Serif',0,0,0,0)
+index := index+1
+END
+;Zweite viertel
+index := Anzahl
+FOR i := Offset+Anzahl TO 2*Anzahl+Offset-1 STEP 1
+Term1 := a*a*b*b
+Term2 := sqr(SIN((index+0.5)*DeltaW))/sqr(a)
+Term3 := sqr(COS((index+0.5)*DeltaW))/sqr(b)
+Radius := Term1*sqrt((Term2+Term3)*(Term2+Term3)*(Term2+Term3))
+G02R (MX-a*SIN(i*DeltaW),MY-b*COS(i*DeltaW),_Z,Radius,0)
+;ZLinie (MX,MY,_X,_Y,65300)
+;ZText(FloatToStr(Radius,5,1),_X,_Y,15,0,5,0,'MS Sans Serif',0,0,0,0)
+index := index-1
+END
+;Dritte viertel
+index := 1
+FOR i := Offset+2*Anzahl TO 3*Anzahl+Offset-1 STEP 1
+Term1 := a*a*b*b
+Term2 := sqr(SIN((index+0.5)*DeltaW))/sqr(a)
+Term3 := sqr(COS((index+0.5)*DeltaW))/sqr(b)
+Radius := Term1*sqrt((Term2+Term3)*(Term2+Term3)*(Term2+Term3))
+G02R (MX-a*SIN(i*DeltaW),MY-b*COS(i*DeltaW),_Z,Radius,0)
+;ZLinie (MX,MY,_X,_Y,65300)
+;ZText(FloatToStr(Radius,5,1),_X,_Y,15,0,5,0,'MS Sans Serif',0,0,0,0)
+index := index+1
+END
+;Vierte viertel
+index := Anzahl
+FOR i := Offset+3*Anzahl TO 4*Anzahl+Offset-1 STEP 1
+Term1 := a*a*b*b
+Term2 := sqr(SIN((index+0.5)*DeltaW))/sqr(a)
+Term3 := sqr(COS((index+0.5)*DeltaW))/sqr(b)
+Radius := Term1*sqrt((Term2+Term3)*(Term2+Term3)*(Term2+Term3))
+G02R (MX-a*SIN(i*DeltaW),MY-b*COS(i*DeltaW),_Z,Radius,0)
+;ZLinie (MX,MY,_X,_Y,65300)
+;ZText(FloatToStr(Radius,5,1),_X,_Y,15,0,5,0,'MS Sans Serif',0,0,0,0)
+index := index-1
+END
+EP (anf_bew,ANF,0)

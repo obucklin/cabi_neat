@@ -1,0 +1,40 @@
+;MAKROTYP=1
+;BILD=DXFNed.wmf
+;INFO=SchreibeVariablen
+;WZGV=DEMO
+;MASCHINE=SIMU
+;NCNAME=DXFNed
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   SC_ZUSTELLUNG := 0;
+   BTiefe2_50000 := -10;
+   BTyp2_50000 := 10;
+   BTiefe3_00000 := -10;
+   BTyp3_00000 := 10;
+   BTiefe5_00000 := -5;
+   BTyp5_00000 := 20;
+   BTiefe8_00000 := -10;
+   BTyp8_00000 := 10;
+   BTiefe8_20000 := -10;
+   BTyp8_20000 := 10;
+   BTiefe10_00000 := -10;
+   BTyp10_00000 := 10;
+   BTiefe12_00000 := -15;
+   BTyp12_00000 := 10;
+   BTiefe15_00000 := -10;
+   BTyp15_00000 := 10;
+   BTiefe35_00000 := -6;
+   BTyp35_00000 := 30;
+START
+FZ := 32
+Gereedschapsnummer := 501
+Rohteil (FX,FY,FZ,0,0)
+Gereedschapsnummer := 1
+Inloop := 1
+Uitloop := 1
+TRC := 1

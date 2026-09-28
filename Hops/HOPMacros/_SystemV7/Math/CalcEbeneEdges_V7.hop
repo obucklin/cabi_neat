@@ -1,0 +1,19 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowCalcEbeneEdges_V7Dialog
+VARS
+   x1 := ;*VAR**REF*
+   y1 := ;*VAR**REF*
+   x2 := ;*VAR**REF*
+   y2 := ;*VAR**REF*
+   x3 := ;*VAR**REF*
+   y3 := ;*VAR**REF*
+   x4 := ;*VAR**REF*
+   y4 := ;*VAR**REF*
+START
+;.
+CALL trans_esxy_V7 (REF XX:=x1,YY:=y1 VAL NR:=5)
+CALL trans_esxy_V7 (REF XX:=x2,YY:=y2 VAL NR:=3)
+CALL trans_esxy_V7 (REF XX:=x3,YY:=y3 VAL NR:=1)
+CALL trans_esxy_V7 (REF XX:=x4,YY:=y4 VAL NR:=7)
+;.

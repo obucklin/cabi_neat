@@ -1,0 +1,79 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.0.1.885[Hops.exe]
+;BILD=GETTOOLID.WMF
+;INFO=
+;WZGV=7707D_103
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=GetToolID
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   _STRListTool := 1;
+   FileName := '';D:\CAMPUS\Data\Hops\Hop\Nesting\NestRawBoards\Material_Tool.csv
+   ToolID_NoInterface := 20;Tool ID if no Interface was selected or no tool found in file
+   ActStrID := 0;
+   MaxStrID := 0;
+   Materialstr := '';*VAR*
+   ZeileStr := '';
+   Pos2 := 0;
+   Pos1 := 0;
+   RestStr1 := '';
+   Str1 := '';
+   ToolID := 20;*VAR**REF*
+   HitID := 0;
+   ToolStr := '';
+   WithInterface := 1;Mit Interfaceanfrage
+   DummyValue := 0;
+START
+;Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;CALL HH_Park ( VAL PARK:=3,X:=0,Y:=0)
+IF TEXTSAME(Materialstr,'')=0
+IF WithInterface=1
+CALL _UserInterfaceParser (REF RESULTSTR:=FileName,RESULT:=DummyValue VAL INPUTTEXT:='GetMaterialFilename')
+END
+IF TEXTSAME(FileName,'')=0
+StringListCreate (_STRListTool)
+StringListLoadFromFile (_STRListTool,FileName)
+StringListCount (_STRListTool,MaxStrID)
+WHILE (ActStrID<MaxStrID-1) & (HitID=0)
+ActStrID := ActStrID + 1
+StringListString (_STRListTool,ActStrID,ZeileStr)
+Pos1 := STRPOS(';',ZeileStr)
+IF Pos1>0
+Str1 := STRCOPY(ZeileStr,1,Pos1-1)
+IF TEXTSAME(Materialstr, Str1)
+RestStr1 := STRCOPY(ZeileStr,Pos1+1,STRLENGTH(ZeileStr))
+Pos2 := STRPOS(';',RestStr1)
+IF Pos2>0
+ToolStr := STRCOPY(RestStr1,1,Pos2-1)
+ELSE
+ToolStr := STRCOPY(RestStr1,1,STRLENGTH(RestStr1))
+END
+;ToolStr := STRCOPY(ZeileStr,Pos1+1,6)
+ToolID := STRTOINT(ToolStr)
+HitID := ActStrID-1
+END
+ELSE
+END
+END
+END
+ELSE
+END
+IF ToolID>0
+ELSE
+IF WithInterface=1
+CALL _UserInterfaceParser (REF RESULTSTR:=ToolStr,RESULT:=ToolID VAL INPUTTEXT:='GetStandardNestTool')
+ELSE
+ToolID := ToolID_NoInterface
+END
+END

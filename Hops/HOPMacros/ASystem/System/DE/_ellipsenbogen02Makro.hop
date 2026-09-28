@@ -1,0 +1,21 @@
+;MAKROTYP=1
+;DZ=0.00
+;DY=0.00
+;DX=0.00
+;KOMMENTAR=
+;NCNAME=_ellipsenbogen03Makro
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=
+VARS
+   mx := _RX/2;*VAR*Mitte in X
+   my := _RY/2;*VAR*Mitte in Y
+   a := _RX/2;*VAR*Laenge der waagrechten Halbachse
+   b := _RY/2;*VAR*Laenge der senkrechten Halbachse
+   ew := 0;*VAR*Endwinkel Ellipse X+ = 0°
+   Z := _Z;*VAR*Zustellung
+   dw := 0;*VAR*Drehwinkel
+   r := 0;*VAR*Verrundungsradius mit naechstem Element
+START
+CALLDLL ELLIPSENBOGEN02(Fraesen,Dummy, VAL MX:=MX,MY:=MY,a:=a,b:=b,ew:=ew,Z:=Z,dw:=dw,R:=R)
+

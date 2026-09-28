@@ -1,0 +1,19 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowArc_Height_V7Dialog
+VARS
+   X1 := 936;*VAR*SP
+   Y1 := 0;*VAR*SP
+   X2 := 932.76;*VAR*EP
+   Y2 := 55;*VAR*EP
+   Mx := 0;*VAR*
+   My := 0;*VAR*
+   L := 0;Abstand
+   W := 0;Winkel Stirnseite
+   R := 0;Radius
+   SH := ;*VAR**REF*Sehnenhöhe (REF)
+   DW := 0;
+START
+CALL GetWinkelDiff3P_V4 (REF WINKELDIFF3P:=DW VAL P1X:=X1,P1Y:=Y1,MX:=Mx,MY:=My,P3X:=X2,P3Y:=Y2)
+CALL Dist2P_V4 (REF DIST:=R VAL P1X:=x1,P1Y:=y1,P2X:=Mx,P2Y:=My)
+SH := R*(1-sqrt(1-sqr(sin(DW/2))))

@@ -1,0 +1,146 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.10.0.108[Hops.exe]
+;BILD=P_S_RE_LI_HORI_V7.WMF
+;INFO=
+;WZGV=7535D_320
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=P_S_RE_LI_HORI_V7
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=HHDialogs_P_System_BASE_V7.dll
+;DIALOGPROC=ShowPSystemKanteRE_LI_BASE_V7
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 600;Dimension X
+   DY := 400;Dimension Y
+   DZ := 19;Dimension Z
+   PDV_Y_1 := 60;*VAR*Position des Verbinders in Y (links oben)
+   PDV_Y_2 := 0;*VAR*Position des Verbinders in Y (links mitte)
+   PDV_Y_3 := 60;*VAR*Position des Verbinders in Y (links unten)
+   PDV_Y_4 := 60;*VAR*Position des Verbinders in Y (rechts oben)
+   PDV_Y_5 := 0;*VAR*Position des Verbinders in Y (rechts mitte)
+   PDV_Y_6 := 60;*VAR*Position des Verbinders in Y (rechts unten)
+   APV_1 := 0;*VAR*Auswahl Position Verbinder links/oben
+   APV_2 := 0;*VAR*Auswahl Position Verbinder links/mitte
+   APV_3 := 1;*VAR*Auswahl Position Verbinder links/unten
+   APV_4 := 0;*VAR*Auswahl Position Verbinder rechts/oben
+   APV_5 := 0;*VAR*Auswahl Position Verbinder rechts/mitte
+   APV_6 := 0;*VAR*Auswahl Position Verbinder rechts/unten
+   Z_Stum_Li := 9.5;*VAR*Z-Wert bei stumpfen nuten
+   Z_Stum_Re := 9.5;*VAR*Z-Wert bei stumpfen nuten
+   EITI := 10.0;FIX_Eintauchtiefe des Werkzeuges
+   RAFB := 5.5;Fixer Randabstand Bohrung (7.5/5.3)
+   BOHR_L := 1;*VAR*Linke Seite bohren
+   BOHR_R := 1;*VAR*Rechte Seite bohren
+   ToolID := -99999;
+   Ausw_ClamexBisco := 1;*VAR*Welcher Typ von Clamex wurde angewählt
+   CLAMEX_TYP := 1;
+   Z_BEWEG := 1.4;Default 1.4
+   ABST_KANTE := 1.5;Sicherheitsabstand zur Kante
+   TEXT := 'nix';
+   _STRING_STL := '';
+START
+/Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+;Clamex_V7_SK 26.06.2017
+;Draw Darstellung_SK 22.08.2023
+CALL _UserInterface3DG (REF RESULT:=ToolID VAL INPUTTEXT:='GetStandardRouterID')
+IF (_MaschinenTyp=3) | (_MaschinenTyp=4)
+_EXECUTELEADINOUT := 1
+ELSE
+_EXECUTELEADINOUT := 0
+END
+;0=Tenso; 1=Divario; 2=Medius 14/10; 3=P10; 4=P14
+;P10
+IF Ausw_ClamexBisco=0
+CLAMEX_TYP := 3
+TEXT := 'P-10'
+RAFB := 5.5
+Z_BEWEG := 1
+EITI := 10
+_STRING_STL := 'P10.stl'
+END
+;P14
+IF Ausw_ClamexBisco=1
+CLAMEX_TYP := 4
+TEXT := 'P-14'
+RAFB := 7.5
+Z_BEWEG := 1
+EITI := 14
+_STRING_STL := 'P14.stl'
+END
+;Tenso P14
+IF Ausw_ClamexBisco=2
+CLAMEX_TYP := 0
+TEXT := 'Ten-14'
+Z_BEWEG := 1
+EITI := 14
+_STRING_STL := 'TN.stl'
+END
+;Bisco P10
+IF Ausw_ClamexBisco=3
+CLAMEX_TYP := 3
+Z_BEWEG := 0
+TEXT := 'Bis-10'
+EITI := 10
+_STRING_STL := 'BI10.stl'
+END
+;Bisco P14
+IF Ausw_ClamexBisco=4
+CLAMEX_TYP := 4
+Z_BEWEG := 0
+TEXT := 'Bis-14'
+EITI := 14
+_STRING_STL := 'BI14.stl'
+END
+;Divario P18
+/IF Ausw_ClamexBisco=5
+/CLAMEX_TYP := 1
+/TEXT := 'Div-18'
+/EITI := 18
+/END
+/_STRING_STL := 'DV.stl'
+;-----------LINKS------------
+;LINKS oben
+IF APV_1=1
+CALL P_S_BASE_HORI ( VAL POS_X:=0,POS_Y:=_RY-PDV_Y_1,POS_Z:=Z_Stum_Li,DRILL_DISTANCE:=RAFB,VIEW:=2,DRILL:=BOHR_L,Z_BEWEG:=Z_BEWEG,NUT_TIEFE:=-EITI,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+CALL HH_Clamex_DRAW ( VAL X_1:=0,Y_1:=_RY-PDV_Y_1,DW:=0,EITI:=EITI)
+ZText (TEXT,-50,_RY-PDV_Y_1,25,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+;LINKS Mitte
+IF APV_2=1
+CALL P_S_BASE_HORI ( VAL POS_X:=0,POS_Y:=_Ry/2+PDV_Y_2,POS_Z:=Z_Stum_Li,DRILL_DISTANCE:=RAFB,VIEW:=2,DRILL:=BOHR_L,Z_BEWEG:=Z_BEWEG,NUT_TIEFE:=-EITI,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+CALL HH_Clamex_DRAW ( VAL X_1:=0,Y_1:=_RY/2+PDV_Y_2,DW:=0,EITI:=EITI)
+ZText (TEXT,-50,_Ry/2+PDV_Y_2,25,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+;LINKS unten
+IF APV_3=1
+CALL P_S_BASE_HORI ( VAL POS_X:=0,POS_Y:=PDV_Y_3,POS_Z:=Z_Stum_Li,DRILL_DISTANCE:=RAFB,VIEW:=2,DRILL:=BOHR_L,Z_BEWEG:=Z_BEWEG,NUT_TIEFE:=-EITI,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+CALL HH_Clamex_DRAW ( VAL X_1:=0,Y_1:=PDV_Y_3,DW:=0,EITI:=EITI)
+ZText (TEXT,-50,PDV_Y_3,25,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+;-----------RECHTS------------
+;RECHTS oben
+IF APV_4=1
+CALL P_S_BASE_HORI ( VAL POS_X:=_RX,POS_Y:=_RY-PDV_Y_4,POS_Z:=Z_Stum_Re,DRILL_DISTANCE:=RAFB,VIEW:=4,DRILL:=BOHR_R,Z_BEWEG:=Z_BEWEG,NUT_TIEFE:=-EITI,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+CALL HH_Clamex_DRAW ( VAL X_1:=_RX,Y_1:=_RY-PDV_Y_4,DW:=180,EITI:=EITI)
+ZText (TEXT,_RX+50,_RY-PDV_Y_4,25,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+;RECHTS Mitte
+IF APV_5=1
+CALL P_S_BASE_HORI ( VAL POS_X:=_RX,POS_Y:=_RY/2+PDV_Y_5,POS_Z:=Z_Stum_Re,DRILL_DISTANCE:=RAFB,VIEW:=4,DRILL:=BOHR_R,Z_BEWEG:=Z_BEWEG,NUT_TIEFE:=-EITI,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+CALL HH_Clamex_DRAW ( VAL X_1:=_RX,Y_1:=_RY/2+PDV_Y_5,DW:=180,EITI:=EITI)
+ZText (TEXT,_RX+50,_RY/2+PDV_Y_5,25,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END
+;RECHTS unten
+IF APV_6=1
+CALL P_S_BASE_HORI ( VAL POS_X:=_RX,POS_Y:=PDV_Y_6,POS_Z:=Z_Stum_Re,DRILL_DISTANCE:=RAFB,VIEW:=4,DRILL:=BOHR_R,Z_BEWEG:=Z_BEWEG,NUT_TIEFE:=-EITI,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+CALL HH_Clamex_DRAW ( VAL X_1:=_RX,Y_1:=PDV_Y_6,DW:=180,EITI:=EITI)
+ZText (TEXT,_RX+50,PDV_Y_6,25,0,9,0,'Times New Roman',0,0,0,0,0,1)
+END

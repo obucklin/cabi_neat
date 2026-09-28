@@ -1,0 +1,113 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_Bohgx_V5Dialog
+;AUTOSCRIPTSTART=0
+VARS
+   SPY := 10;*VAR*Startwert (y)
+   BIX := 64;*VAR*Bohrung1 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIX := 64+37;*VAR*Bohrung2 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIIX := 0;*VAR*Bohrung3 (Wert=0-> Bohrung wird nicht abgesetzt)
+   BIIIIX := 0;*VAR*Bohrung4 (Wert=0-> Bohrung wird nicht abgesetzt)
+   Spiegeln := 0;*VAR*1=>gespiegelt
+   T := -13;*VAR*Bohrtiefe
+   D := 8mm;*VAR*Bohrdurchmesser
+   TLF := 0;*VAR*Tieflochflag
+   Inkrement := 0;*VAR*Absolut oder Inkremental
+   B1 := 0;Bohrung 1
+   B2 := 0;Bohrung 2
+   B3 := 0;Bohrung 3
+   B4 := 0;Bohrung 4
+   esxy := 1;*VAR*
+   esd := 0;*VAR*
+   Use2 := 1;*VAR*
+   Use3 := 0;*VAR*
+   Use4 := 0;*VAR*
+   DummyY := 0;
+START
+;direkt cnc systeme NCHOPS Version 4.x
+;Bohrgruppe in X
+Transesd (T,esd)
+IF T>0
+T := -T
+END
+IF Inkrement=0
+transesxy (BIX,SPY,esxy,1)
+transesxy (BIIX,DummyY,esxy,1)
+transesxy (BIIIX,DummyY,esxy,1)
+transesxy (BIIIIX,DummyY,esxy,1)
+;IF (BIX<>0)
+Bohrung (BIX,SPY,D,T,TLF,0,0)
+;END
+;IF (BIIX<>0)
+IF (Use2<>0)
+Bohrung (BIIX,SPY,D,T,TLF,0,0)
+END
+;IF (BIIIX<>0)
+IF (Use3<>0)
+Bohrung (BIIIX,SPY,D,T,TLF,0,0)
+END
+;IF (BIIIIX<>0)
+IF (Use4<>0)
+Bohrung (BIIIIX,SPY,D,T,TLF,0,0)
+END
+;Gespiegelte Bohrungen
+IF Spiegeln <> 0
+;IF (BIX<>_RX/2)&(BIX<>0)
+Bohrung (_RX-BIX,SPY,D,T,TLF,0,0)
+;END
+;IF (BIIX<>_RX/2)&(BIIX<>0)
+IF (Use2<>0)
+Bohrung (_RX-BIIX,SPY,D,T,TLF,0,0)
+END
+;IF (BIIIX<>_RX/2)&(BIIIX<>0)
+IF (Use3<>0)
+Bohrung (_RX-BIIIX,SPY,D,T,TLF,0,0)
+END
+;IF (BIIIIX<>_RX/2)&(BIIIIX<>0)
+IF (Use4<>0)
+Bohrung (_RX-BIIIIX,SPY,D,T,TLF,0,0)
+END
+END
+ELSE
+B1 := BIX
+B2 := BIX+BIIX
+B3 := BIX+BIIX+BIIIX
+B4 := BIX+BIIX+BIIIX+BIIIIX
+transesxy (B1,SPY,esxy,1)
+transesxy (B2,DummyY,esxy,1)
+transesxy (B3,DummyY,esxy,1)
+transesxy (B4,DummyY,esxy,1)
+;IF (BIX<>0)
+Bohrung (B1,SPY,D,T,TLF,0,0)
+;END
+;IF (BIIX<>0)
+IF (Use2<>0)
+Bohrung (B2,SPY,D,T,TLF,0,0)
+END
+;IF (BIIIX<>0)
+IF (Use3<>0)
+Bohrung (B3,SPY,D,T,TLF,0,0)
+END
+;IF (BIIIIX<>0)
+IF (Use4<>0)
+Bohrung (B4,SPY,D,T,TLF,0,0)
+END
+;Gespiegelte Bohrungen
+IF Spiegeln <> 0
+;IF (BIX<>_RX/2)&(BIX<>0)
+Bohrung (_RX-B1,SPY,D,T,TLF,0,0)
+;END
+;IF (BIIX<>_RX/2)&(BIIX<>0)
+IF (Use2<>0)
+Bohrung (_RX-B2,SPY,D,T,TLF,0,0)
+END
+;IF (BIIIX<>_RX/2)&(BIIIX<>0)
+IF (Use3<>0)
+Bohrung (_RX-B3,SPY,D,T,TLF,0,0)
+END
+;IF (BIIIIX<>_RX/2)&(BIIIIX<>0)
+IF (Use4<>0)
+Bohrung (_RX-B4,SPY,D,T,TLF,0,0)
+END
+END
+END

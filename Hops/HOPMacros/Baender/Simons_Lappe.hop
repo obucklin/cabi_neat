@@ -1,0 +1,81 @@
+;MAKROTYP=0
+;INSTVERSION=6.4.4.2
+;EXEVERSION=6.6.2.207[Hops.exe]
+;BILD=SimonsLappe95.wmf
+;INFO=
+;WZGV=7125K_208
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=SimonsLappe95
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_11.Dll
+;DIALOGPROC=Show_Lappen_SB_Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   DX := 1800;Dimension X
+   DY := 400;Dimension Y
+   DZ := 45;Dimension Z
+   Anz := 3;*VAR*Anzahl Band
+   Pos_X := 200;*VAR*Position Band oben
+   Pos_XM := DX/2;*VAR*Position Band mitte
+   Pos_XU := DX - 220;*VAR*Position Band unten
+START
+Fertigteil (DX,DY,DZ,0,0,0,0,0,'',0,0,0)
+CALL HH_Park ( VAL PARK:=3,X:=0,Y:=0)
+WZF (113,_VE,_V,_VA,_SD,_ANF,'1')
+SP (Pos_X + 47.5,-30,- (15 + 3),1,0,_ANF,0,0,0,1,0,1,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (Pos_X + 47.5,_Wzr,0,0,1,2)
+G01 (Pos_X - 47.5,_Wzr,0,0,1,2)
+G01 (Pos_X - 47.5,-30,0,0,1,2)
+EP (0,_ANF,0)
+SP (Pos_X - 47.5,-30,- (15 + 3),2,0,_ANF,0,0,0,1,0,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (Pos_X - 47.5,22,0,12,1,2)
+G01 (Pos_X + 47.5,22,0,12,1,2)
+G01 (Pos_X + 47.5,-30,0,0,1,2)
+EP (0,_ANF,0)
+;Bamd mitte
+IF Anz = 3
+SP (Pos_XM + 47.5,-30,- (15 + 3),1,0,_ANF,0,0,0,1,0,1,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (Pos_XM + 47.5,_Wzr,0,0,1,2)
+G01 (Pos_XM - 47.5,_Wzr,0,0,1,2)
+G01 (Pos_XM - 47.5,-30,0,0,1,2)
+EP (0,_ANF,0)
+SP (Pos_XM - 47.5,-30,- (15 + 3),2,0,_ANF,0,0,0,1,0,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (Pos_XM - 47.5,22,0,12,1,2)
+G01 (Pos_XM + 47.5,22,0,12,1,2)
+G01 (Pos_XM + 47.5,-30,0,0,1,2)
+EP (0,_ANF,0)
+END
+;Band unten
+SP (Pos_XU + 47.5,-30,- (15 + 3),1,0,_ANF,0,0,0,1,0,1,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (Pos_XU + 47.5,_Wzr,0,0,1,2)
+G01 (Pos_XU - 47.5,_Wzr,0,0,1,2)
+G01 (Pos_XU - 47.5,-30,0,0,1,2)
+EP (0,_ANF,0)
+SP (Pos_XU - 47.5,-30,- (15 + 3),2,0,_ANF,0,0,0,1,0,2,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (Pos_XU - 47.5,22,0,12,1,2)
+G01 (Pos_XU + 47.5,22,0,12,1,2)
+G01 (Pos_XU + 47.5,-30,0,0,1,2)
+EP (0,_ANF,0)
+;Bohrungen Schr
+WZB (501,_VE,_V,_VA,_SD,_ANF,'1')
+Bohrung (Pos_X -47.5 + 10,22 - 8,3,-25,20,0,0,1,0,0,0,0)
+Bohrung (Pos_X -47.5 + 28,22 - 12,3,-25,20,0,0,1,0,0,0,0)
+Bohrung (Pos_X + 47.5 - 28,22 - 12,3,-25,20,0,0,1,0,0,0,0)
+Bohrung (Pos_X + 47.5 - 10,22 - 8,3,-25,20,0,0,1,0,0,0,0)
+IF Anz = 3
+Bohrung (Pos_XM -47.5 + 10,22 - 8,3,-25,20,0,0,1,0,0,0,0)
+Bohrung (Pos_XM -47.5 + 28,22 - 12,3,-25,20,0,0,1,0,0,0,0)
+Bohrung (Pos_XM + 47.5 - 28,22 - 12,3,-25,20,0,0,1,0,0,0,0)
+Bohrung (Pos_XM + 47.5 - 10,22 - 8,3,-25,20,0,0,1,0,0,0,0)
+END
+Bohrung (Pos_XU -47.5 + 10,22 - 8,3,-25,20,0,0,1,0,0,0,0)
+Bohrung (Pos_XU -47.5 + 28,22 - 12,3,-25,20,0,0,1,0,0,0,0)
+Bohrung (Pos_XU + 47.5 - 28,22 - 12,3,-25,20,0,0,1,0,0,0,0)
+Bohrung (Pos_XU + 47.5 - 10,22 - 8,3,-25,20,0,0,1,0,0,0,0)

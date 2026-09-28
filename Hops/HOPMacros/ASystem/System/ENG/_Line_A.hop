@@ -1,0 +1,17 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=NCName
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=WGerade.WMF
+VARS
+   Laenge := ;*VAR*Länge der Geraden
+   Winkel := ;*VAR*Winkel gegen X
+   Z := _Z;*VAR*Zustelltiefe
+   R := 0;*VAR*verrundungsradius
+START
+G01(_X+LAENGE*COS(WINKEL),_Y+LAENGE*SIN(WINKEL),Z,R)
+

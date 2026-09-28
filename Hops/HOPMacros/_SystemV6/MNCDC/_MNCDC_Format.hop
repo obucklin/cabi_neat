@@ -1,0 +1,222 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.0.1.1093[Hops.exe]
+;BILD=_MNCDC_FORMAT.WMF
+;INFO=_MNCDC_Format
+;WZGV=B_NC1000_V7
+;WZGVCONFIG=
+;MASCHINE=NC1000_H6
+;NCNAME=
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=0
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   Eckenverrundung := 0;*VAR*Radius der Eckenverrundung
+   Tiefe := -2;*VAR*Fraestiefe
+   Aufmass := 0;*VAR*Aufmass zur Kontur
+   ANF := _ANF;*VAR*Anfahrfaktor
+   esmd := 1;*VAR*
+   ggl := 0;*VAR*Gleich-/Gegenlauf
+   laser := 0;*VAR*
+   depth := 0;*VAR*
+   Delta := 0;
+   Kante_Single := 0;Kante im Hops. die einzeln programmiert werden muss
+   AB := 1;Anfahrbewegunf für 3seitige Fräsung
+START
+;******************************************
+;DIREKT CNC SYSTEME NCHOPS
+;*** Formatieren aufgeteilt ***
+Fertigteil (600,400,19,0,0,0,0,0,'',0,0,0,0)
+;******************************************
+IF _Job_OffX>=((_AT_COLLRADIUS*2)*_ANFAKT)
+Fehlermeldung (GetMessageText('2001','Offset in X zu groß'))
+END
+;******************************************
+IF Aufmass<>0
+Fehlermeldung (GetMessageText('2002','Aufmass beim formatieren nicht erlaubt'))
+END
+IF (Depth<>0) & (Tiefe<>depth)
+Fehlermeldung (GetMessageText('2003','Mehrfachzustellung beim formatieren nicht möglich'))
+END
+;******************************************
+IF Eckenverrundung<0
+Eckenverrundung := 0
+END
+;******************************************
+/ChangeVar (_JOB_FieldID)
+/ChangeVar (_JOB_MIRX)
+/ChangeVar (_JOB_MIRY)
+;- Kante, die im WoCe vorne liegt ermitteln
+IF (_JOB_MIRX=0) & (_JOB_MIRY=0)
+;- Keine Spiegelung aktiv
+IF _JOB_ROT=0
+Kante_Single := 1
+ELSE
+Kante_Single := _JOB_ROT + 1
+END
+ELSE
+IF (_JOB_MIRX=1) & (_JOB_MIRY=1)
+;- Spiegeln um X- und Y-Achse
+Kante_Single := _JOB_ROT + 3
+IF Kante_Single>4
+Kante_Single := Kante_Single-4
+END
+ELSE
+;- Nur Spiegeln um X-Achse
+IF _JOB_MIRX=1
+IF _JOB_ROT=0
+Kante_Single := 1
+ELSE
+Kante_Single := _JOB_ROT + 1
+END
+ELSE
+;- Nur Spiegeln um Y-Achse
+Kante_Single := _JOB_ROT + 3
+IF Kante_Single>4
+Kante_Single := Kante_Single-4
+END
+END
+END
+END
+;******************************************
+/ChangeVar (Kante_Single)
+;- Konturen erzeugen (GUZ) :  immer Unten zuerst
+IF Kante_Single=1
+;- Vordere Seite
+KB ('U','',-Aufmass,0,0,'',0,0)
+KG01 ('',-Aufmass,0,0,'',3,2)
+IF Eckenverrundung > 0
+KB ('LOR','',Eckenverrundung + abs(Aufmass) + 2,0,0,'',3,0)
+KG01 ('',0,0,0,'',3,2)
+KG01 ('',0,0,0,'',5,2)
+KG01 ('',0,0,0,'',7,2)
+KG01 ('',0,0,0,'',1,2)
+KG01 ('',Eckenverrundung + abs(Aufmass) + 2,0,0,'',1,2)
+AB := 2
+ELSE
+KB ('LOR','',0,0,0,'',3,0)
+KG01 ('',0,0,0,'',5,2)
+KG01 ('',0,0,0,'',7,2)
+KG01 ('',0,0,0,'',1,2)
+END
+END
+IF Kante_Single=2
+;- Linke Seite
+KB ('U','',0,-Aufmass,0,'',7,0)
+KG01 ('',0,-Aufmass,0,'',1,2)
+IF Eckenverrundung > 0
+KB ('LOR','',0,Eckenverrundung + abs(Aufmass) + 2,0,'',1,0)
+KG01 ('',0,0,0,'',1,2)
+KG01 ('',0,0,0,'',3,2)
+KG01 ('',0,0,0,'',5,2)
+KG01 ('',0,0,0,'',7,2)
+KG01 ('',0,Eckenverrundung + abs(Aufmass) + 2,0,'',7,2)
+AB := 2
+ELSE
+KB ('LOR','',0,0,0,'',1,0)
+KG01 ('',0,0,0,'',3,2)
+KG01 ('',0,0,0,'',5,2)
+KG01 ('',0,0,0,'',7,2)
+END
+END
+IF Kante_Single=3
+;- Hintere Seite
+KB ('U','',-Aufmass,0,0,'',5,0)
+KG01 ('',-Aufmass,0,0,'',7,2)
+IF Eckenverrundung > 0
+KB ('LOR','',Eckenverrundung + abs(Aufmass) + 2,0,0,'',7,0)
+KG01 ('',0,0,0,'',7,2)
+KG01 ('',0,0,0,'',1,2)
+KG01 ('',0,0,0,'',3,2)
+KG01 ('',0,0,0,'',5,2)
+KG01 ('',Eckenverrundung + abs(Aufmass) + 2,0,0,'',5,2)
+AB := 2
+ELSE
+KB ('LOR','',0,0,0,'',7,0)
+KG01 ('',0,0,0,'',1,2)
+KG01 ('',0,0,0,'',3,2)
+KG01 ('',0,0,0,'',5,2)
+END
+END
+IF Kante_Single=4
+;- Rechte Seite
+KB ('U','',0,-Aufmass,0,'',3,0)
+KG01 ('',0,-Aufmass,0,'',5,2)
+IF Eckenverrundung > 0
+KB ('LOR','',0,Eckenverrundung + abs(Aufmass) + 2,0,'',5,0)
+KG01 ('',0,0,0,'',5,2)
+KG01 ('',0,0,0,'',7,2)
+KG01 ('',0,0,0,'',1,2)
+KG01 ('',0,0,0,'',3,2)
+AB := 2
+KG01 ('',0,Eckenverrundung + abs(Aufmass) + 2,0,'',3,2)
+ELSE
+KB ('LOR','',0,0,0,'',5,0)
+KG01 ('',0,0,0,'',7,2)
+KG01 ('',0,0,0,'',1,2)
+KG01 ('',0,0,0,'',3,2)
+END
+END
+;******************************************
+;- Unten fraesen... (nur von rechts nach links möglich!)
+KSP ('???','???',Tiefe,2,1,_ANF,Aufmass,0,0,0,0,0,0,depth,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('U','KSP','KEP',0,Eckenverrundung,0,0,0,0,0,0)
+EP (1,_ANF,1)
+;- LOR fraesen... (in gewünschter Laufrichtung)
+KSP ('???','???',Tiefe,2,AB,_ANF,Aufmass,0,0,0,0,ggl,0,depth,0,0,0,0,0,0,0,0,0)
+KonturFraesen ('LOR','KSP','KEP',0,Eckenverrundung,0,0,0,0,0,0)
+EP (AB,_ANF,0)
+;******************************************
+;-
+;-
+;-
+;-
+EXITMACRO
+;- ALT !!!!!
+IF _Job_MirY
+CALL _spiegeln_start_V5 ( VAL SPIEGELN:=1,ACHSE:=1,SPIEGEL_VARIABLE:=0)
+;Spezielle Bohrmaschine aktiv gespiegelt
+;Untere Seite
+SP (-Aufmass,-Aufmass,Tiefe,2,1,ANF*2,0,0,0,0,0,ggl,0,depth,0,0,LASER,0,0,0,0,0,0)
+G01 (-Aufmass,_Y,_Z,0,3,0)
+EP (1,ANF*2,0)
+;Linke/Rechte/Obere Seite
+SP (_RX+Aufmass-Eckenverrundung,-Aufmass,Tiefe,2,2,ANF,0,0,0,0,0,ggl,0,depth,0,0,LASER,0,0,0,0,0,0)
+IF Eckenverrundung>0
+G03R (Eckenverrundung,Eckenverrundung,0,Eckenverrundung,0,10,2)
+END
+G01 (_X,_RY+Aufmass,_Z,Eckenverrundung,0,0)
+G01 (-Aufmass,_Y,_Z,Eckenverrundung,0,0)
+G01 (_X,-Aufmass+Eckenverrundung,_Z,0,0,0)
+IF Eckenverrundung>0
+G03R (Eckenverrundung,-Eckenverrundung,0,Eckenverrundung,0,10,2)
+END
+EP (2,ANF,0)
+SPIEGELNEND()
+ELSE
+;Spezielle Bohrmaschine aktiv
+;Untere Seite
+SP (-Aufmass,-Aufmass,Tiefe,2,1,ANF*2,0,0,0,0,0,ggl,0,depth,0,0,LASER,0,0,0,0,0,0)
+G01 (-Aufmass,_Y,_Z,0,3,0)
+EP (1,ANF*2,0)
+;Linke/Rechte/Obere Seite
+SP (_RX+Aufmass-Eckenverrundung,-Aufmass,Tiefe,2,2,ANF,0,0,0,0,0,ggl,0,depth,0,0,LASER,0,0,0,0,0,0)
+IF Eckenverrundung>0
+G03R (Eckenverrundung,Eckenverrundung,0,Eckenverrundung,0,10,2)
+END
+G01 (_X,_RY+Aufmass,_Z,Eckenverrundung,0,0)
+G01 (-Aufmass,_Y,_Z,Eckenverrundung,0,0)
+G01 (_X,-Aufmass+Eckenverrundung,_Z,0,0,0)
+IF Eckenverrundung>0
+G03R (Eckenverrundung,-Eckenverrundung,0,Eckenverrundung,0,10,2)
+END
+EP (2,ANF,0)
+END
+;------------------------------

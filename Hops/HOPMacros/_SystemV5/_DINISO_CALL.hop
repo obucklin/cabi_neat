@@ -1,0 +1,55 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsPPHH.Dll
+;DIALOGPROC=ShowDINISODialog
+;AUTOSCRIPTSTART=0
+VARS
+   xMode := 0;alt
+   ToolCall := 0;*VAR*
+   Speed := 0;*VAR*Drehzahl
+   ViewChange := 0;*VAR*
+   LiftPos := 0;*VAR*[-1]=ohne [0]=default [1]=pos1 [2]=pos2
+   SX := 0;*VAR*Startpunkt X
+   SY := 0;*VAR*Startpunkt Y
+   SZ := 0;*VAR*Startpunkt Z
+   ebx := 0;*VAR*Einfügepunkt der Ebene in X
+   eby := 0;*VAR*Einfügepunkt der Ebene in Y
+   ebz := 0;*VAR*Einfügepunkt der Ebene in Z
+   ebkw := 0;*VAR*Kippwinkel der Ebene
+   ebdw := 0;*VAR*Drehwinkel der Ebene
+   esxy := 0;*VAR*Easysnap ebene
+   esz := 0;*VAR*Easysnap Ebene Z
+   esxysp := 0;*VAR*Easysnap Startpunkt
+   eszsp := 0;*VAR*Easysnap Startpunkt Z
+   CodeStr := '';*VAR*
+   MaxWorkpiece := 1;Anzahl der Max. Werkstücke im Workcenter - verhindert einen falschen NP - Bezug
+START
+Fertigteil (1000,2000,19,0,0,0,0,0,'',0,0,0)
+;-- New MW 22.06.2006 - disable
+;-- Toolopti with ncinfo -600#
+;NCINFO (-600,0,0,0,0,0,0,'',0,0,0)
+;only EXTCALL
+;Mode=1 mit Werkzeugaufruf aber ohne Ebenenwechsel/
+;Mode=2 mit Werkzeugewechsen und Ebenenwechsel
+Transesz (SZ,eszsp)
+transesxy (SX,SY,esxySP,1)
+NCINFO (7710,xMode,LiftPos,ToolCall,Speed,Viewchange,0,Dummy,0,0,0)
+;IF (Mode<>1)&(Mode<>2)
+;Fehlermeldung ('wrong DINISO call MODE')
+;WZF (9998,_VE,_V,_VA,_SD,_ANF,'1')
+;END
+IF (_BoxID<=0)
+Fehlermeldung ('DINISO - tool call missing')
+;WZF (9998,_VE,_V,_VA,_SD,_ANF,'1')
+END
+IF Viewchange=1
+;SF Trans verschoben, um Fehlermeldung zu vermeiden
+Transesz (EBZ,esz)
+transesxy (ebx,eby,esxy,1)
+EbeneF (ebx,eby,ebz,ebkw,ebdw,0,0)
+ELSE
+END
+NCInfoProcess (7710,SX,SY,SZ,0,0,0,'','',MaxWorkpiece,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+;NCINFO (7711,xMode,LiftPos,ToolCall,Speed,Viewchange,0,codestr,0,0,0)
+NCINFO (8711,xMode,LiftPos,ToolCall,Speed,Viewchange,0,codestr,0,0,0)
+;NCINFO (7710,ID,HEADID,0,0,0,0,'WZW(2)',0,0,0)
+Ebene0()

@@ -1,0 +1,9 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys.Dll
+;DIALOGPROC=Show_Tvorschub_V5Dialog
+VARS
+   Vorschub := _V;*VAR*Vorschub auf Fräsbahn
+   _vorschub := 0;
+START
+TP (_BL,Vorschub,_DW,_KW)
+_vorschub := vorschub

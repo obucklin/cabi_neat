@@ -1,0 +1,13 @@
+;MAKROTYP=1
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;AUTOSCRIPTSTART=0
+VARS
+   CADPX1 := 0;*VAR*Kreismittelpunkt (X.Y)
+   CADPY1 := 0;*VAR*
+   CADPX2 := 0;*VAR*Kreispunkt (X.Y)
+   CADPY2 := 0;*VAR*
+   Tiefe := 0;*VAR*
+   sdfasdf := 0;
+START
+CALL _saege_frei_V5 ( VAL SX:=CADPX1,SY:=CADPY1,SZ:=-3,EX:=CADPX2,EY:=CADPY2,EZ:=-2,BL:=0,EINPASSEN:=0,EL:=0,AL:=0,PARALLEL:=0,K:=0,KW:=0,BH:=0,RITZVERSATZ:=0.05,ESZ:=0,ESXY1:=0,ESXY2:=0)

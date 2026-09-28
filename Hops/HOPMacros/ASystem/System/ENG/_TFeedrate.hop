@@ -1,0 +1,16 @@
+;MAKROTYP=1
+;DZ=0
+;DY=0
+;DX=0
+;KOMMENTAR=
+;NCNAME=4711
+;MASCHINE=Simu
+;WZGV=demo
+;BILD=tvWMF.bmp
+VARS
+   Vorschub := _V;*VAR*Vorschub auf Fräsbahn
+   _vorschub := 0;
+START
+TP(_BL,VORSCHUB,_DW,_KW)
+_vorschub := vorschub
+

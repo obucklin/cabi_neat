@@ -1,0 +1,77 @@
+;MAKROTYP=1
+;BILD=FORMATWMF.bmp
+;INFO=_Format
+;WZGV=demo
+;MASCHINE=Simu
+;NCNAME=_Format_V4
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   Eckenverrundung := 0;*VAR*Radius der Eckenverrundung
+   Richtung := 0;*VAR*0=Uhrzeiger,1=gegenUhrzeiger
+   Tiefe := -_RZ-2;*VAR*Frästiefe
+   Aufmass := 0;*VAR*Aufmass zur Kontur
+   ANF := _ANF;*VAR*Anfahrfaktor
+   Achtung := 'Eckverrundung entfällt !  Aufmass ist grösser als Eckradius.';
+   STOP := 'Negatives Ausmass zu gross !';
+START
+;DIREKT CNC SYSTEME NCHOPS VERSION 4
+;*********************************
+;*** Formatieren Standard ***
+;*********************************
+;Rohteil (300,300,19,0,0)
+;WZF (1,_VE,_V,_VA,_SD,_ANF)
+;*********************************
+;*** Fehleingaben abfangen ***
+IF ((Aufmass < 0) & (_RX <= (Aufmass*(-2))) | (_RY <= (Aufmass*(-2))))
+Fehlermeldung (stop)
+ELSE
+END
+;*********************************
+IF Tiefe>0
+Tiefe := -Tiefe
+ELSE
+END
+;*********************************
+;*** Keine negative Radien zugelassen ***
+IF Eckenverrundung<0
+Eckenverrundung := -Eckenverrundung
+END
+;*********************************
+;*** Radien manipulieren ****
+IF (Eckenverrundung>0) & (Aufmass>=0)
+Eckenverrundung := Aufmass+Eckenverrundung
+END
+IF (Eckenverrundung>0) & (Aufmass<0)
+Eckenverrundung := Aufmass+Eckenverrundung
+IF Eckenverrundung<0
+Eckenverrundung := 0
+Hinweismeldung (Achtung)
+END
+END
+;*********************************
+;*********************************
+;*** CW ****
+IF Richtung=0
+SP (0-Aufmass,_RY/2,Tiefe,1,2,ANF,0,0,0)
+G01 (_X,_RY+Aufmass,_Z,Eckenverrundung)
+G01 (_RX+Aufmass,_Y,_Z,Eckenverrundung)
+G01 (_X,-Aufmass,_Z,Eckenverrundung)
+G01 (-Aufmass,_Y,_Z,Eckenverrundung)
+G01 (_X,_RY/2+_WZR,_Z,0)
+ELSE
+;*** CCW ****
+SP (-Aufmass,_RY/2,Tiefe,2,2,ANF,0,0,0)
+;MW - Fehler gefunden am 13.6.2002
+;G01 (_X,-Aufmass,-_RZ-2,Eckenverrundung)
+G01 (_X,-Aufmass,_Z,Eckenverrundung)
+G01 (_RX+Aufmass,_Y,_Z,Eckenverrundung)
+G01 (_X,_RY+Aufmass,_Z,Eckenverrundung)
+G01 (-Aufmass,_Y,_Z,Eckenverrundung)
+G01 (_X,_RY/2-_WZR,_Z,0)
+END
+EP (2,ANF,0)

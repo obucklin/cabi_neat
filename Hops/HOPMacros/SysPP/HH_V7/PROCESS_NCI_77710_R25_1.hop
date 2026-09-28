@@ -1,0 +1,57 @@
+;MAKROTYP=0
+;INSTVERSION=
+;EXEVERSION=7.5.5.93[Hops.exe]
+;BILD=PROCESS_NCI_77710_R25_1.WMF
+;INFO=PROCESS_NCI_77710
+;WZGV=7735D_114
+;WZGVCONFIG=
+;MASCHINE=
+;NCNAME=PROCESS_NCI_77710_R25_1
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   TC := 1;*VAR*with ToolChange
+   Speed := 0;*VAR*with Motorspeed
+   VC := 1;*VAR*with ViewChange
+   LiftPos := 0;*VAR*with Liftpos (if available)
+   x1 := 0;*VAR*XPOS 1
+   y1 := 0;*VAR*YPOS 1
+   z1 := 0;*VAR*ZPOS 1
+   x2 := 0;*VAR*XPOS 2
+   y2 := 0;*VAR*YPOS 2
+   z2 := 0;*VAR*ZPOS 2
+   str1 := '';*VAR*Codeline 1
+   str2 := '';*VAR*Codeline 2
+   ProcessKind := 4;Definiert den ProcessKind [4] Milling without ZSafety
+   error := 0;
+START
+;--
+;-- HH7 - Macro fuer das durchschhleusen von DINISO - Anweisungen
+;--
+;-- Vorab - NCINFO #7710 nicht mehr notwendig, da Zugriff auf die
+;notwendigen Parameter beim TC/VC direkt ueber das Object
+;stattfindet
+/NCINFO (7710,0,Liftpos,TC,Speed,VC,0,'',0,0,0)
+;--
+;--
+;--
+error := 0
+IF (TC=0) & (Speed<>0)
+;-- ohne Werkzeugwechselaufruf gibt es auch keinen Drehzahlaufruf
+error := 1
+END
+NCInfoProcess (77710,x1,y1,z1,x2,y2,z2,str1,str2,0,TC,VC,Speed,LiftPos,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,ProcessKind)
+IF STRLENGTH(str1)>0
+ZText ('NCINFOPROCESS 77710 CodeLine='+STR1,0,0,24,0,3,16776960,'Arial Narrow',0,0,0,0,1,1)
+END
+IF STRLENGTH(str2)>0
+ZText ('NCINFOPROCESS 77710 CodeLine='+STR2,0,-50,24,0,3,16776960,'Arial Narrow',0,0,0,0,1,1)
+END

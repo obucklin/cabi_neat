@@ -1,0 +1,12 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogeNCISys.Dll
+;DIALOGPROC=ShowTOOLOPTIFASERRICHTUNG_V7Dialog
+;AUTOSCRIPTSTART=0
+;DIMENSION_UNIT=0
+VARS
+   Hold := 0;*VAR*1 bis zum Werkzeugwechsel verwenden
+   HoldCloneMoveZ := 0;*VAR*1 Fräsbahnen mit mehrfach Z-Zustellung einfügen
+   Para1 := 0;*VAR*Faserrichtung
+   Para2 := 1;*VAR*<>1 Berechnung aus, =1 Berechnung eingeschaltet
+START
+nciext (-107300,'NCISys',1,Hold,HoldCloneMoveZ,Para1,Para2)

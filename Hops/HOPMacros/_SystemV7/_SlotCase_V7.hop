@@ -1,0 +1,350 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_1.Dll
+;DIALOGPROC=Show_HorTasche_V7Dialog
+;AUTOSCRIPTSTART=0
+;VERSION=7.0.0.1
+VARS
+   XPos := 0;*VAR*Startpostion in X Taschenmitte (auf die Ebene bezogen)
+   YPos := 0;*VAR*Startposition in Y-TaschenMitte (auf die Ebene bezogen)
+   ZPos := 0;*VAR*StartTiefe in Z (auf die Ebene bezogen)
+   esXY := 0;*VAR*
+   esz := 1;*VAR*
+   Laenge := 100;*VAR*Länge der Tasche
+   Hoehe := 22;*VAR*Hoehe der Tasche
+   Radius := 6;*VAR*Rundungsradius
+   EBENE := 0;*VAR*BearbeitungsEbene
+   Pendeln := 1;*VAR*Pendeln = in Linien abzeilen
+   Interpol := 1;*VAR*Interpolation
+   EINZUG := 0;*VAR*Einzug im Falz
+   Z1 := 30;*VAR*Tiefe der 1. Zone
+   Z2 := 0;*VAR*Tiefe der 2. Zone (Kettenmass)
+   Z3 := 0;*VAR*Tiefe der 3. Zone (Kettenmass)
+   V1 := 3000;*VAR*Vorschubgeschwindigkeit in der 1. Zone
+   V2 := 3000;*VAR*Vorschubgeschwindigkeit in der 2. Zone
+   V3 := 3000;*VAR*Vorschubgeschwindigkeit in der 3. Zone
+   ZUST1 := 10;*VAR*Zustelltiefe in Zone 1
+   ZUST2 := 0;*VAR*Zustelltiefe in Zone 2
+   ZUST3 := 0;*VAR*Zustelltiefe in Zone 3
+   Reduzierung := 0.1;*VAR*Reduzierung pro Zustellung
+   umkehren := 0;*VAR*Bearbeitung umkehren
+   Tiefe := 0;GesamtTiefe der Tasche (berechnet)
+   L1 := 0;Kastenlänge ohne Werkzeugdurchmesser
+   ZFRAES := 0;Koordinate der Z-Fräsung
+   ZUST := 0;aktuelle Zustellung
+   Richt := -1;
+   Lauf := 0;
+   Farbe := 0;Mit Farbe Fuellen JA/NEIN 0/1
+   CW := 0;Fahrtrichtung intern
+   Radiuskorrektur := 1;Radiuskorrektur
+   ZMax_Zone := 0;Max. Z innerhalb der Zonen
+START
+;------------------------------------------------------------
+;direkt cnc systeme NC-HOPS / Version 7
+;------------------------------------------------------------
+;- Rectangle horizontal with 3 zones
+;------------------------------------------------------------
+fertigteil (500,500,40,0,0,0,0,0,'',0,0,0)
+/WZF (1402,_VE,_V,_VA,_SD,_ANF,'1')
+;------------------------------------------------------------
+Ebene0()
+transesxy (xpos,ypos,esxy,1)
+Transesz (ZPos,esz)
+;------------------------------------------------------------
+ebene := ebene+1
+IF (Z1=0) & (Z2=0) & (Z3=0)
+Fehlermeldung (GetMessageText('6','Bitte Tiefe eingeben'))
+END
+;***** Ueberpruefung Tiefe negativ *****
+IF Z1<0
+Z1 := Z1*(-1)
+END
+IF Z2<0
+Z2 := Z2*(-1)
+END
+IF Z3<0
+Z3 := Z3*(-1)
+END
+;***** Ueberpruefung ZuTiefe negativ *****
+IF ZUST1<0
+ZUST1 := ZUST1*(-1)
+END
+IF ZUST2<0
+ZUST2 := ZUST2*(-1)
+END
+IF ZUST3<0
+ZUST3 := ZUST3*(-1)
+END
+;**** Zustellung auf einmal
+IF Zust1=0
+Zust1 := Z1
+END
+IF Zust2=0
+Zust2 := Z2
+END
+IF Zust3=0
+Zust3 := Z3
+END
+;***** Ueberpruefung des WZD bei umfahren *****
+IF (Pendeln=0) & (_WZD>Hoehe)
+Fehlermeldung (GetMessageText('7','Fraeserdurchmesser ist groesser als die Taschenhoehe!'))
+END
+;****************************
+IF Radius>Hoehe/2
+Radius := Hoehe/2
+Hinweismeldung (GetMessageText('8','Radius wurde auf die Haelfte der Hoehe geaendert'))
+END
+IF (abs(Radius)<_WZR)
+Hinweismeldung (GetMessageText('32','Eckradius wird geloescht da Werkzeug zu gross ist'))
+Radius := 0
+END
+;****************************
+IF pendeln=1
+Hoehe := Hoehe-2*_wzr
+END
+;****************************
+IF umkehren=1
+Radiuskorrektur := 1
+CW := 1
+ELSE
+Radiuskorrektur := 2
+CW := -1
+END
+;-
+;Berechnung von internen Variablen
+Tiefe := Z1 + Z2 + Z3
+;**************************************************************************************
+;Horizontales Taschenfraesen auf EB1-EB4
+;**************************************************************************************
+IF (Ebene=1)
+;Von VORNE
+ZLinie (XPOS-Laenge/2,YPOS,XPOS+Laenge/2,YPOS,12632256,0,0,0,0)
+ZRechteck (XPOS-Laenge/2,YPOS + EINZUG,Laenge,Z1,Farbe,12632256,0,0,0)
+ZRechteck (XPOS-Laenge/2,YPOS + EINZUG,Laenge,Z1+Z2,Farbe,8421504,0,0,0)
+ZRechteck (XPOS-Laenge/2,YPOS + EINZUG,Laenge,Z1+Z2+Z3,Farbe,1,0,0,0)
+EbeneF (XPOS,YPOS,ZPos,90,0,0,0)
+END
+;**************************************************************************************
+IF (Ebene=2)
+;Von LINKS
+ZLinie (XPOS,YPOS-Laenge/2,XPOS,YPOS+Laenge/2,12632256,0,0,0,0)
+ZRechteck (XPOS + EINZUG,YPOS-Laenge/2,Z1,Laenge,Farbe,12632256,0,0,0)
+ZRechteck (XPOS + EINZUG,YPOS-Laenge/2,Z1+Z2,Laenge,Farbe,8421504,0,0,0)
+ZRechteck (XPOS + EINZUG,YPOS-Laenge/2,Z1+Z2+Z3,Laenge,Farbe,1,0,0,0)
+EbeneF (XPOS,YPOS,ZPOS,90,270,0,0)
+END
+;**************************************************************************************
+IF (Ebene=3)
+;Von Hinten
+ZLinie (XPOS-Laenge/2,YPOS,XPOS+Laenge/2,YPOS,12632256,0,0,0,0)
+ZRechteck (XPOS-Laenge/2,YPOS - EINZUG,Laenge,-Z1,Farbe,12632256,0,0,0)
+ZRechteck (XPOS-Laenge/2,YPOS - EINZUG,Laenge,-Z1-Z2,Farbe,8421504,0,0,0)
+ZRechteck (XPOS-Laenge/2,YPOS - EINZUG,Laenge,-Z1-Z2-Z3,Farbe,1,0,0,0)
+EbeneF (XPOS,YPOS,ZPOS,90,180,0,0)
+END
+;**************************************************************************************
+IF (Ebene=4)
+;Von Rechts
+ZLinie (XPOS,YPOS-Laenge/2,XPOS,YPOS+Laenge/2,12632256,0,0,0,0)
+ZRechteck (XPOS - EINZUG,YPOS-Laenge/2,-Z1,Laenge,Farbe,12632256,0,0,0)
+ZRechteck (XPOS - EINZUG,YPOS-Laenge/2,-Z1-Z2,Laenge,Farbe,8421504,0,0,0)
+ZRechteck (XPOS - EINZUG,YPOS-Laenge/2,-Z1-Z2-Z3,Laenge,Farbe,1,0,0,0)
+EbeneF (XPOS,YPOS,ZPos,90,90,0,0)
+END
+;**************************************************************************************
+;************************************************************************************
+IF Pendeln=0
+;-
+IF Interpol=0
+;*** Senkrechte Zustellung
+;-
+SP (0,Hoehe/2,0,Radiuskorrektur,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+ZFRAES := EINZUG
+G01 (0,0,-ZFRAES,0,10,0)
+ZUST := ZUST1
+WHILE ZFRAES < (Tiefe+EINZUG)
+Lauf := Lauf+1
+;.
+;.
+;Zone 1
+IF (ZFRAES>=EINZUG) & (ZFRAES<=EINZUG+Z1-ZUST1)
+ZUST := ZUST1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=V1)
+END
+;.
+;Zone 2
+IF (ZFRAES>=EINZUG+Z1) & (ZFRAES<=EINZUG+Z1+Z2-ZUST2)
+ZUST := ZUST2
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=V2)
+END
+;.
+;Zone 3
+IF (ZFRAES>=EINZUG+Z1+Z2) & (ZFRAES<=EINZUG+Z1+Z2+Z3-ZUST3)
+ZUST := ZUST3
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=V3)
+END
+;.
+ZFRAES := ZFRAES + ZUST
+IF ZFRAES > Tiefe + EINZUG
+ZFRAES := Tiefe+EINZUG
+END
+G01 (0,0,-ZFRAES,0,10,0)
+G01 (_X - (Laenge/2-(Reduzierung/2*lauf))*CW,_Y,_Z,Radius,0,0)
+G01 (_X,_Y - Hoehe,_Z,Radius,0,0)
+G01 (_X + (Laenge-(Reduzierung*lauf))*CW,_Y,_Z,Radius,0,0)
+G01 (_X,_Y+Hoehe,_Z,Radius)
+G01 (_X - (Laenge/2-(Reduzierung/2*lauf))*CW,_Y,_Z,Radius,0,0)
+END
+EP (0,_ANF,0)
+;*********************************************
+ELSE
+;*********************************************
+;*** Interpolative Zustellung
+;-
+SP (0,Hoehe/2,0,Radiuskorrektur,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+ZFRAES := EINZUG
+G01 (0,0,-ZFRAES,0,10,0)
+ZUST := ZUST1
+WHILE ZFRAES < (Tiefe+EINZUG)
+Lauf := Lauf+1
+;.
+;.
+;Zone 1
+IF (ZFRAES>=EINZUG) & (ZFRAES<=EINZUG+Z1-ZUST1)
+ZUST := ZUST1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=V1)
+END
+;.
+;Zone 2
+IF (ZFRAES>=EINZUG+Z1) & (ZFRAES<=EINZUG+Z1+Z2-ZUST2)
+ZUST := ZUST2
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=V2)
+END
+;.
+;Zone 3
+IF (ZFRAES>=EINZUG+Z1+Z2) & (ZFRAES<=EINZUG+Z1+Z2+Z3-ZUST3)
+ZUST := ZUST3
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=V3)
+END
+;.
+ZFRAES := ZFRAES + ZUST
+IF ZFRAES > Tiefe + EINZUG
+ZFRAES := Tiefe+EINZUG
+Zust := Tiefe + Einzug + _Z
+END
+G01 (_X - (Laenge/2-(Reduzierung/2*lauf))*CW,_Y,_Z - Zust/4,Radius,0,0)
+G01 (_X,_Y - Hoehe,_Z,Radius)
+G01 (_X + (Laenge-(Reduzierung*lauf))*CW,_Y,_Z - Zust/2,Radius,0,0)
+G01 (_X,_Y + Hoehe,_Z,Radius)
+G01 (_X - (Laenge/2-(Reduzierung/2*lauf))*CW,_Y,_Z - Zust/4,0,0,0)
+END
+G01 (_X - (Laenge/2-(Reduzierung/2*lauf))*CW,_Y,0,Radius,0,2)
+G01 (_X,_Y - Hoehe,_Z,Radius)
+G01 (_X + (Laenge-(Reduzierung*lauf))*CW,_Y,0,Radius,0,2)
+G01 (_X,_Y + Hoehe,_Z,Radius)
+G01 (_X - (Laenge/2-(Reduzierung/2*lauf))*CW,_Y,0,0,0,2)
+EP (0,_ANF,0)
+END
+END
+;************************************************************************************
+;************************************************************************************
+;************************************************************************************
+;************************************************************************************
+IF Pendeln=1
+;-
+L1 := Laenge - _WZD
+;.
+IF Interpol=0
+;.
+;- Variante mit senkrechter Zustellung und Verjüngung
+;- Variante mit senkrechter Zustellung und Verjüngung
+;.
+SP (L1/2,0,0,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+;.
+ZFRAES := EINZUG
+G01 (0,0,-ZFRAES,0,10,0)
+ZUST := ZUST1
+WHILE ZFRAES < (Tiefe+EINZUG)
+Lauf := Lauf+1
+;.
+;.
+;Zone 1
+IF (ZFRAES>=EINZUG) & (ZFRAES<=EINZUG+Z1-ZUST1)
+ZUST := ZUST1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=V1)
+END
+;.
+;Zone 2
+IF (ZFRAES>=EINZUG+Z1) & (ZFRAES<=EINZUG+Z1+Z2-ZUST2)
+ZUST := ZUST2
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=V2)
+END
+;.
+;Zone 3
+IF (ZFRAES>=EINZUG+Z1+Z2) & (ZFRAES<=EINZUG+Z1+Z2+Z3-ZUST3)
+ZUST := ZUST3
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=V3)
+END
+;.
+ZFRAES := ZFRAES + ZUST
+IF ZFRAES > Tiefe + EINZUG
+ZFRAES := Tiefe+EINZUG
+END
+G01 (0,0,-ZFRAES,0,10,0)
+G01 ((L1-Reduzierung/2*lauf)*richt,0,0,0,10,2)
+Richt := -Richt
+END
+IF ZFRAES <> Tiefe + EINZUG
+G01 (0,0,-Tiefe-EINZUG,0,10,0)
+G01 ((L1-Reduzierung/2*Lauf)*richt,0,0,0,10,2)
+END
+EP (0,_ANF,0)
+;.
+ELSE
+;.
+;-  Variante mit fliegendem Eintauchen
+;-  Variante mit fliegendem Eintauchen
+;.
+SP (0,0,0,0,0,_ANF,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+;.
+ZFRAES := EINZUG
+G01 (0,0,-ZFRAES,0,10,0)
+ZUST := ZUST1
+WHILE ZFRAES < (Tiefe+EINZUG)
+Lauf := Lauf+1
+;.
+;.
+;Zone 1
+IF (ZFRAES>=EINZUG) & (ZFRAES<=EINZUG+Z1-ZUST1)
+ZUST := ZUST1
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=V1)
+END
+;.
+;Zone 2
+IF (ZFRAES>=EINZUG+Z1) & (ZFRAES<=EINZUG+Z1+Z2-ZUST2)
+ZUST := ZUST2
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=V2)
+END
+;.
+;Zone 3
+IF (ZFRAES>=EINZUG+Z1+Z2) & (ZFRAES<=EINZUG+Z1+Z2+Z3-ZUST3)
+ZUST := ZUST3
+CALL _Tvorschub_v5 ( VAL VORSCHUB:=V3)
+END
+;.
+ZFRAES := ZFRAES + ZUST
+IF ZFRAES > Tiefe+EINZUG
+ZFRAES := Tiefe + EINZUG
+Zust := Tiefe + Einzug + _Z
+END
+G01 ((-L1/2+Reduzierung/2*lauf),0,-ZFRAES+ZUST*0.75,0,10,0)
+G01 ((L1-Reduzierung*lauf),0,-ZFRAES+ZUST*0.25,0,10,0)
+G01 (0,0,-ZFRAES,0,0,0)
+END
+G01 ((L1/2-Reduzierung/2*lauf),0,-ZFRAES,0,10,0)
+G01 ((-L1/2+Reduzierung/2*lauf),0,-ZFRAES,0,10,0)
+G01 ((-L1/2+Reduzierung/2*lauf),0,-ZFRAES,0,10,0)
+EP (0,_ANF,0)
+END
+END
+;************************************************************************************
+ebene0()

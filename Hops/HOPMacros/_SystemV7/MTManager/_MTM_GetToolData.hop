@@ -1,0 +1,11 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowMTMGetToolDataDialog
+;AUTOSCRIPTSTART=0
+VARS
+   ToolID := 0;*VAR*Tool ID
+   ValueID := 0;*VAR*Value ID
+   StrValue := '';*VAR**REF*
+   FloatValue := ;*VAR**REF*
+START
+CALLDLL MTM_GetToolData(HopsMTManagerExt,DefaultStr,REF STRVALUE:=StrValue,FLOATVALUE:=FloatValue VAL TOOLID:=ToolID,VALUEID:=ValueID)

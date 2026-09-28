@@ -1,0 +1,7 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowLOADMCDDialog
+VARS
+   MCDNAME := '';*VAR*
+START
+CALLDLL MTM_LOADMCD(HopsMTManagerExt,DefaultStr,VAL TooltableName:=MCDNAME)

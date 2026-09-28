@@ -1,0 +1,160 @@
+;MAKROTYP=1
+;DZ=0.000
+;DY=0.000
+;DX=0.000
+;KOMMENTAR=
+;NCNAME=_get_ur
+;MASCHINE=NC1000
+;WZGV=NC1000
+;BILD=
+VARS
+   get_ur_zeichnen := 0;1 [Anzeige ein]
+   p1_x := 0;*VAR*
+   p1_y := 0;*VAR*
+   p2_x := 500;*VAR*
+   p2_y := 0;*VAR*
+   p3_x := 500;*VAR*
+   p3_y := 1500;*VAR*
+   p4_x := 0;*VAR*
+   p4_y := 1500;*VAR*
+   Refpunkt := 1;*VAR*P1 - P4
+   W := -80;*VAR*Rotationswinkel um Teil waagrecht zu legen
+   _MIN_X := 999999;Kleinster Wert in X
+   _MIN_Y := 999999;Kleinster Wert in Y
+   _MAX_X := -999999;Groester Wert in X
+   _MAX_Y := -999999;Groester Wert in Y
+   _lang_x := 0;Längster Abstand in X
+   _lang_y := 0;Längster Abstand in Y
+   my := 0;Rotationspunkt in y
+   mx := 0;Rotationspunkt in x
+START
+Rohteil (1000,2000,19,0,0)
+IF get_ur_zeichnen=1
+ZText ("P1",p1_x,p1_y,50,0,1,0)
+ZText ("P2",p2_x,p2_y,50,0,1,0)
+ZText ("P3",p3_x,p3_y,50,0,1,0)
+ZText ("P4",p4_x,p4_y,50,0,1,0)
+END
+;drehen der Punkte um RefPunkt
+_min_x := 999999
+_min_y := 999999
+_max_x := -999999
+_max_y := -999999
+IF refpunkt=1
+mx := p1_x
+my := p1_y
+END
+IF refpunkt=2
+mx := p2_x
+my := p2_y
+END
+IF refpunkt=3
+mx := p3_x
+my := p3_y
+END
+IF refpunkt=4
+mx := p4_x
+my := p4_y
+END
+CALL SetRotPara (VAL MX:=MX,MY:=MY,RotW:=W)
+CALL SetPunkt (VAL X:=p1_x,Y:=p1_y)
+CALL RotUmPunkt ()
+p1_x := _AktPosX
+p1_y := _AktPosY
+CALL SetPunkt (VAL X:=p2_x,Y:=p2_y)
+CALL RotUmPunkt ()
+p2_x := _AktPosX
+p2_y := _AktPosY
+CALL SetPunkt (VAL X:=p3_x,Y:=p3_y)
+CALL RotUmPunkt ()
+p3_x := _AktPosX
+p3_y := _AktPosY
+CALL SetPunkt (VAL X:=p4_x,Y:=p4_y)
+CALL RotUmPunkt ()
+p4_x := _AktPosX
+p4_y := _AktPosY
+IF get_ur_zeichnen=1
+ZLinie (p1_X,p1_Y,p2_x,p2_y,0)
+ZLinie (p3_X,p3_Y,p4_x,p4_y,0)
+ZLinie (p1_X,p1_Y,p4_x,p4_y,0)
+ZLinie (p3_X,p3_Y,p2_x,p2_y,0)
+ZText ("P1_",p1_x,p1_y,50,0,1,0)
+ZText ("P2_",p2_x,p2_y,50,0,1,0)
+ZText ("P3_",p3_x,p3_y,50,0,1,0)
+ZText ("P4_",p4_x,p4_y,50,0,1,0)
+END
+;----- Min. in X ermitteln -----
+IF P1_X<_Min_X
+_MIN_X := P1_X
+END
+IF P2_X<_Min_X
+_MIN_X := P2_X
+END
+IF P3_X<_Min_X
+_MIN_X := P3_X
+END
+IF P4_X<_Min_X
+_MIN_X := P4_X
+END
+;----- Min. in Y ermitteln -----
+IF P1_Y<_Min_Y
+_MIN_Y := P1_Y
+END
+IF P2_Y<_Min_Y
+_MIN_Y := P2_Y
+END
+IF P3_Y<_Min_Y
+_MIN_Y := P3_Y
+END
+IF P4_Y<_Min_Y
+_MIN_Y := P4_Y
+END
+;----- Max. in X ermitteln -----
+IF P1_X>_Max_X
+_MAX_X := P1_X
+END
+IF P2_X>_Max_X
+_MAX_X := P2_X
+END
+IF P3_X>_Max_X
+_MAX_X := P3_X
+END
+IF P4_X>_Max_X
+_MAX_X := P4_X
+END
+;----- Max. in Y ermitteln -----
+IF P1_y>_Max_Y
+_MAX_Y := P1_Y
+END
+IF P2_y>_Max_Y
+_MAX_Y := P2_Y
+END
+IF P3_y>_Max_Y
+_MAX_Y := P3_Y
+END
+IF P4_y>_Max_Y
+_MAX_Y := P4_Y
+END
+;HGNeu()
+;HLineX (_min_x)
+;HLineX (_max_x)
+;HLineY (_min_y)
+;HLiney (_max_y)
+_lang_x := _max_x-_min_x
+_lang_y := _max_y-_min_y
+IF get_ur_zeichnen=1
+ZRechteck (_min_x,_min_y,_lang_X,_lang_y,0,16000000)
+_stringvalue1 := _lang_x
+_stringvalue2 := _lang_y
+ZText ("Länge in X %1",_Min_X+_lang_x/2,_Max_y,80,0,8,0)
+ZText ("Länge in Y %2",_max_x,(_Min_y)+_lang_y/2,80,90,8,0)
+END
+;Fiktiven Nullpunkt der Platte ermitteln
+;minx / miny ist immer links unten
+CALL SetRotPara (VAL MX:=MX,MY:=MY,RotW:=360-W)
+CALL SetPunkt (VAL X:=_min_x,Y:=_min_y)
+CALL RotUmPunkt ()
+_refposX := _AktPosX
+_refposY := _AktPosY
+;HGNeuEnd()
+

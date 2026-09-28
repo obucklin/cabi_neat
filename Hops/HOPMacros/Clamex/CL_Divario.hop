@@ -1,0 +1,256 @@
+;MAKROTYP=1
+;INSTVERSION=6.4.0.4
+;EXEVERSION=6.6.2.165[Hops.exe]
+;BILD=CL_Divario.wmf
+;INFO=
+;WZGV=7225K_138
+;WZGVCONFIG=
+;MASCHINE=HOLZHER
+;NCNAME=CL_Divario
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=DialogBA_7.dll
+;DIALOGPROC=ShowTDivario_Dialog
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   CLAMEX_ID :=1108;*VAR*Fräswkz
+   Art :=0;*VAR*0 = Verbinder einzel / 1 = Nut und verbinder
+   Nut_T := 8.50;*VAR*Nuttiefe
+   Nut_Li :=-1;*VAR*Nutlinks Ja/Nein
+   Nut_Re :=-1;*VAR*Nutrechts Ja/Nein
+   L_Dreh :=0;*VAR*Bearbeitung umdrehen links
+   R_Dreh :=-1;*VAR*Bearbeitung umdrehen rechts
+   C_TIEFE :=18.2;*VAR*Clamex Tiefe
+   X_Wert := -70.00;X Wert eintauchen
+   Y_Wert := -12.2;Y- Wert ein oder austauchen
+   B_Art :=2;*VAR*Fräsrichtung 0= ohne / 1= Mitlauf / 2= Gegenlauf
+   Hoehe :=-(_Rz /2);*VAR*Höhe in der Kante
+   SNAP_Z :=0;*VAR*Easy Snap Z
+   EY1 :=60.00;*VAR*Pos Y
+   EY2 :=00.00;*VAR*Pos Y
+   EY3 :=60.00;*VAR*Pos Y
+   EY4 :=60.00;*VAR*Pos Y
+   EY5 :=00.00;*VAR*Pos Y
+   EY6 :=60.00;*VAR*Pos Y
+   C1 :=-1;*VAR*Clamex1
+   C2 :=-1;*VAR*Clamex2
+   C3 :=-1;*VAR*Clamex3
+   C4 :=-1;*VAR*Clamex4
+   C5 :=-1;*VAR*Clamex5
+   C6 :=-1;*VAR*Clamex6
+   C1_Ein :=0;*VAR*Nut hi li eintauchen
+   C3_Ein :=-1;*VAR*Nut vo li eintauchen
+   C4_Ein :=0;*VAR*Nut hi re eintauchen
+   C6_Ein :=-1;*VAR*Nut vo re eintauchen
+   T := _Wzr - C_TIEFE;Tiefe Fräsung
+   ; 03.04.2015 B. Achermann
+START
+Fertigteil (500,500,19,0,0,0,0,0,'',0,0,0)
+WZF (Clamex_ID,_VE,_V,_VA,_SD,_ANF,'1')
+IF Art = 0
+;Linke Seite
+IF Nut_Li = -1
+IF C1_Ein = -1
+;Einfahren
+SP (X_Wert,Y_Wert,Hoehe,2,0,_ANF,0,0,0,7,SNAP_Z,B_Art,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Nut_T,Y_Wert,0,0,7,2)
+ELSE
+;Ausfahren
+SP (Nut_T ,X_Wert,Hoehe,2,0,_ANF,0,0,0,7,SNAP_Z,B_Art,0,0,0,0,0,0,0,0,0,0,0)
+END
+IF C3_Ein = -1
+G01 (Nut_T,Y_Wert,0,0,1,2)
+G01 (X_Wert,Y_Wert,0,0,1,2)
+EP (0,_ANF,0)
+ELSE
+G01 (Nut_T,X_Wert,0,0,1,2)
+EP (0,_ANF,0)
+END
+END
+;Verbinder
+IF C1=-1
+;Links hinten
+T := _WzR - C_Tiefe
+SP (-70,EY1,Hoehe,0,0,_ANF,0,0,0,7,SNAP_Z,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-T,EY1,0,0,7,2)
+G01 (-T,EY1,-1.4,0,7,2)
+G01 (-T,EY1,2.8,0,7,2)
+G01 (-T,EY1,-1.4,0,7,2)
+G01 (-70,EY1,0,0,7,2)
+EP (0,_ANF,0)
+END
+IF C2=-1
+;Links Mitte
+T := _WzR - C_Tiefe
+SP (-70,EY2,Hoehe,0,0,_ANF,0,0,0,8,SNAP_Z,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-T,EY2,0,0,8,2)
+G01 (-T,EY2,-1.4,0,8,2)
+G01 (-T,EY2,2.8,0,8,2)
+G01 (-T,EY2,-1.4,0,8,2)
+G01 (-70,EY2,0,0,8,2)
+EP (0,_ANF,0)
+END
+IF C3=-1
+;Links Vorne
+T := _WzR - C_Tiefe
+SP (-70,EY3,Hoehe,0,0,_ANF,0,0,0,1,SNAP_Z,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-T,EY3,0,0,1,2)
+G01 (-T,EY3,-1.4,0,1,2)
+G01 (-T,EY3,2.8,0,1,2)
+G01 (-T,EY3,-1.4,0,1,2)
+G01 (-70,EY3,0,0,1,2)
+EP (0,_ANF,0)
+END
+;rechte Seite
+IF Nut_Re = -1
+IF C4_Ein = -1
+;Einfahren
+SP (X_Wert,Y_Wert,Hoehe,1,0,_ANF,0,0,0,5,SNAP_Z,B_Art,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Nut_T,Y_Wert,0,0,5,2)
+ELSE
+;Ausfahren
+SP (Nut_T,X_Wert,Hoehe,1,0,_ANF,0,0,0,5,SNAP_Z,B_Art,0,0,0,0,0,0,0,0,0,0,0)
+END
+IF C6_Ein = -1
+G01 (Nut_T,Y_Wert,0,0,3,2)
+G01 (X_Wert,Y_Wert,0,0,3,2)
+EP (0,_ANF,0)
+ELSE
+G01 (Nut_T,X_Wert,0,0,3,2)
+EP (0,_ANF,0)
+END
+END
+IF C4=-1
+;Rechts hinten
+T := _WzR - C_Tiefe
+SP (-70,EY4,Hoehe,0,0,_ANF,0,0,0,5,SNAP_Z,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-T,EY4,0,0,5,2)
+G01 (-T,EY4,-1.4,0,5,2)
+G01 (-T,EY4,2.8,0,5,2)
+G01 (-T,EY4,-1.4,0,5,2)
+G01 (-70,EY4,0,0,5,2)
+EP (0,_ANF,0)
+END
+IF C5=-1
+;Rechts mitte
+T := _WzR - C_Tiefe
+SP (-70,EY5,Hoehe,0,0,_ANF,0,0,0,4,SNAP_Z,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-T,EY5,0,0,4,2)
+G01 (-T,EY5,-1.4,0,4,2)
+G01 (-T,EY5,2.8,0,4,2)
+G01 (-T,EY5,-1.4,0,4,2)
+G01 (-70,EY5,0,0,4,2)
+EP (0,_ANF,0)
+END
+IF C6=-1
+;Rechts vorne
+T := _WzR - C_Tiefe
+SP (-70,EY6,Hoehe,0,0,_ANF,0,0,0,3,SNAP_Z,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (-T,EY6,0,0,3,2)
+G01 (-T,EY6,-1.4,0,3,2)
+G01 (-T,EY6,2.8,0,3,2)
+G01 (-T,EY6,-1.4,0,3,2)
+G01 (-70,EY6,0,0,3,2)
+EP (0,_ANF,0)
+END
+ELSE
+IF Nut_Li = -1
+;Ohne absetzen
+;*****************************************************
+T := _WzR - C_Tiefe
+IF C1_Ein = -1
+;Einfahren
+SP (X_Wert,Y_Wert + 50.2,Hoehe,0,0,_ANF,0,0,0,7,SNAP_Z,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Nut_T -_Wzr,Y_Wert +50.2,0,0,7,2)
+ELSE
+;Ausfahren
+SP (Nut_T -_Wzr,X_Wert,Hoehe,0,0,_ANF,0,0,0,7,SNAP_Z,B_Art,0,0,0,0,0,0,0,0,0,0,0)
+END
+IF C1=-1
+; Verbinder hinten Links
+G01 (Nut_T - _Wzr,EY1,0,0,7,2)
+G01 (-T,EY1,0,0,7,2)
+G01 (-T,EY1,-1.4,0,7,2)
+G01 (-T,EY1,2.8,0,7,2)
+G01 (-T,EY1,-1.4,0,7,2)
+G01 (Nut_T -_Wzr,EY1,0,0,7,2)
+END
+IF C2=-1
+;Verbinder mitte Links
+G01 (Nut_T - _Wzr,EY2,0,0,8,2)
+G01 (-T,EY2,0,0,8,2)
+G01 (-T,EY2,-1.4,0,8,2)
+G01 (-T,EY2,2.8,0,8,2)
+G01 (-T,EY2,-1.4,0,8,2)
+G01 (Nut_T -_Wzr,EY2,0,0,8,2)
+END
+IF C3=-1
+;Verbinder vorne Links
+G01 (Nut_T - _Wzr,EY3,0,0,1,2)
+G01 (-T,EY3,0,0,1,2)
+G01 (-T,EY3,-1.4,0,1,2)
+G01 (-T,EY3,2.8,0,1,2)
+G01 (-T,EY3,-1.4,0,1,2)
+G01 (Nut_T -_Wzr,EY3,0,0,1,2)
+END
+IF C3_Ein = -1
+G01 (Nut_T -_Wzr,Y_Wert +50.2,0,0,1,2)
+G01 (X_Wert,Y_Wert +50.2,0,0,1,2)
+EP (0,_ANF,L_Dreh)
+ELSE
+G01 (Nut_T - _Wzr,X_Wert,0,0,1,2)
+EP (0,_ANF,L_Dreh)
+END
+END
+;Rechte Seite
+IF Nut_Re= -1
+IF C4_Ein = -1
+;Einfahren
+SP (X_Wert,Y_Wert + 50.2,Hoehe,0,0,_ANF,0,0,0,5,SNAP_Z,0,0,0,0,0,0,0,0,0,0,0,0)
+G01 (Nut_T -_Wzr,Y_Wert +50.2,0,0,5,2)
+ELSE
+;Ausfahren
+SP (Nut_T -_Wzr,X_Wert,Hoehe,0,0,_ANF,0,0,0,5,SNAP_Z,B_Art,0,0,0,0,0,0,0,0,0,0,0)
+END
+IF C4=-1
+; Verbinder hinten Links
+G01 (Nut_T - _Wzr,EY1,0,0,5,2)
+G01 (-T,EY1,0,0,5,2)
+G01 (-T,EY1,-1.4,0,5,2)
+G01 (-T,EY1,2.8,0,5,2)
+G01 (-T,EY1,-1.4,0,5,2)
+G01 (Nut_T -_Wzr,EY1,0,0,5,2)
+END
+IF C5=-1
+;Verbinder mitte Links
+G01 (Nut_T - _Wzr,EY2,0,0,4,2)
+G01 (-T,EY2,0,0,4,2)
+G01 (-T,EY2,-1.4,0,4,2)
+G01 (-T,EY2,2.8,0,4,2)
+G01 (-T,EY2,-1.4,0,4,2)
+G01 (Nut_T -_Wzr,EY2,0,0,4,2)
+END
+IF C6=-1
+;Verbinder vorne Links
+G01 (Nut_T - _Wzr,EY3,0,0,3,2)
+G01 (-T,EY3,0,0,3,2)
+G01 (-T,EY3,-1.4,0,3,2)
+G01 (-T,EY3,2.8,0,3,2)
+G01 (-T,EY3,-1.4,0,3,2)
+G01 (Nut_T -_Wzr,EY3,0,0,3,2)
+END
+IF C6_Ein = -1
+G01 (Nut_T -_Wzr,Y_Wert +50.2,0,0,3,2)
+G01 (X_Wert,Y_Wert +50.2,0,0,3,2)
+EP (0,_ANF,R_Dreh)
+ELSE
+G01 (Nut_T - _Wzr,X_Wert,0,0,3,2)
+EP (0,_ANF,R_Dreh)
+END
+END
+END

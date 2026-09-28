@@ -1,0 +1,7 @@
+;MAKROTYP=1
+;DIALOGDLL=DialogsHopSys_2.Dll
+;DIALOGPROC=ShowActivateMCD_V7Dialog
+VARS
+   MCDName := '';*VAR*
+START
+CALLDLL MTM_ACTIVATEMCD(HopsMTManagerExt,DefaultStr, VAL MCDNAME:=MCDName)

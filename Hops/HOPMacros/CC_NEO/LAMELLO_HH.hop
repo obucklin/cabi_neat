@@ -1,0 +1,706 @@
+;MAKROTYP=1
+;INSTVERSION=
+;EXEVERSION=7.6.8.49[Hops.exe]
+;BILD=LAMELLO_HH.WMF
+;INFO=
+;WZGV=7225K_SCHULUNG
+;WZGVCONFIG=
+;MASCHINE=BetterSIM
+;NCNAME=LAMELLO_HH
+;KOMMENTAR=
+;DX=0
+;DY=0
+;DZ=0
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+;DIALOGKIND=0
+;AUTOSCRIPTSTART=1
+;BUTTONBILD=
+;DIMENSION_UNIT=0
+VARS
+   X := 9.5;*VAR*X-Position
+   Y := 60;*VAR*Y-Position
+   Z := -9.5;*VAR*Z-Position
+   D := 5.1;*VAR*Durchmesser
+   TIEFE := 14;*VAR*Tiefe
+   Typ_HHCH := -999;Typ: 0=Clamex_P15  1=Clamex_P14  2=Clamex_P10
+   Typ := 1;*VAR*Typ: 0=Clamex_P10 . 1=Clamex_P14 . 2=Tenso_P14. 3=Bisco_P10. 4=BiscoP14. 5=Divario. 6=Medius_P14_P10. 8=Tenso_P10. 10=Clamex_P14 o.Bohrung.  11=Clamex_P10 o.Bohrung
+   TYP_DIREKT := -999;Typ für Direkt Clamex
+   Winkel := 0;*VAR*Winkel
+   Flaeche := 0;*VAR*Flaeche =1  Kante=0
+   Kante := 0;*VAR*Kante
+   ToolID := -99999;Wird nur für _UserInterface3DG benötigt
+   TEXT := 'NIX';Text
+   RAFB := -999;Randabstand fuer Bohrung
+   Z_BEWEG := -999;Hub in Z
+   DRILL := 0;Bohren ja nein
+   _intern1 := 0;Interne Variable Nut links
+   _intern2 := 0;Intern Variable Nut Rechts
+   _STRING_STL := '';String für Stl
+   _Z_POS_Winkel_NEG := -999;Z Abstand von Teile UnterKante fuer Winkel_NEGATIV
+   _Z_POS_Winkel_HI := -999;Z Abstand von Teile Oberkante fuer Winkel hinten
+   _Z_POS_Winkel_VO := -999;Z Abstand von Teile Oberkante fuer Winkel vorne
+   _Z_POS_Winkel_RE := -999;Z Abstand von Teile Oberkante fuer Winkel rechts
+   _Z_POS_Winkel_LI := -999;Z Abstand von Teile Oberkante fuer Winkel links
+   WZ1_HHVE := -999;Clamex_Nuter_ID
+   WZ1_HHV := -999;Clamex_Nuter_ID
+   WZ1_HHVA := -999;Clamex_Nuter_ID
+   WZ1_HHSD := -999;Clamex_Nuter_ID
+   WZ2_HHVE := -999;_Clamex_Nuter_X_WKG_ID
+   WZ2_HHV := -999;_Clamex_Nuter_X_WKG_ID
+   WZ2_HHVA := -999;_Clamex_Nuter_X_WKG_ID
+   WZ2_HHSD := -999;_Clamex_Nuter_X_WKG_ID
+   WZ3_HHVE := -999;_Clamex_Nuter_Y_WKG_ID
+   WZ3_HHV := -999;_Clamex_Nuter_Y_WKG_ID
+   WZ3_HHVA := -999;_Clamex_Nuter_Y_WKG_ID
+   WZ3_HHSD := -999;_Clamex_Nuter_Y_WKG_ID
+   WZ4_HHVE := -999;_Clamex_Stiftfraeser_ID
+   WZ4_HHV := -999;_Clamex_Stiftfraeser_ID
+   WZ4_HHVA := -999;_Clamex_Stiftfraeser_ID
+   WZ4_HHSD := -999;_Clamex_Stiftfraeser_ID
+   WZ5_HHVE := -999;_Clamex_Bohrer_ID
+   WZ5_HHV := -999;_Clamex_Bohrer_ID
+   WZ5_HHVA := -999;_Clamex_Bohrer_ID
+   WZ5_HHSD := -999;_Clamex_Bohrer_ID
+   WZ6_HHVE := -999;_Clamex_Winkel_ID
+   WZ6_HHV := -999;_Clamex_Winkel_ID
+   WZ6_HHVA := -999;_Clamex_Winkel_ID
+   WZ6_HHSD := -999;_Clamex_Winkel_ID
+   WZ7_HHVA := -999;_Clamex_Nuter_WKG_ID
+   WZ7_HHV := -999;_Clamex_Nuter_WKG_ID
+   WZ7_HHVE := -999;_Clamex_Nuter_WKG_ID
+   WZ7_HHSD := -999;_Clamex_Nuter_WKG_ID
+   Temp_Flanke_HI := -999;Flanke vom Winkel Hinten
+   Temp_Flanke_VO := -999;Flanke vom Winkel Vorne
+   Temp_Flanke_RE := -999;Flanke vom Winkel Rechts
+   Temp_Flanke_LI := -999;Flanke vom Winkel Links
+   Temp_VO_unten := -999;Untere Position auf der Flanke vom Winkel Vorne
+   Temp_HI_unten := -999;Untere Position auf der Flanke vom Winkel Hinten
+   Temp_LI_unten := -999;Untere Position auf der Flanke vom Winkel Links
+   Temp_RE_unten := -999;Untere Position auf der Flanke vom Winkel Rechts
+START
+;HOLZHER GmbH
+;Copyright 15.02.2021
+;Version 15.02.2021 (Freigabe HH)
+;---------Änderungen hier reinschreiben: ----------***
+;Version 14.04.2021
+;Erweiterung Winkel Vorne
+Fertigteil (1000,2000,19,0,0,0,0,0,'',0,0,0)
+CALL _UserInterface3DG (REF RESULT:=ToolID VAL INPUTTEXT:='GetStandardRouterID')
+;Sicherheitsabfrage
+IF (_Clamex_Nuter_WKG_ID=136) | (_Clamex_Nuter_WKG_ID=139)
+Fehlermeldung ('Crash /_Clamex_Nuter_WKG_ID = 136 / 139')
+EXITMACRO
+END
+;Mittelseiten und Fläche =  MEDIUS 10 gesetzt
+/IF _pVar_NoLamello=1
+;Prozessvariable - Keine horizontale Lammellobearbeitung aktiv
+/ELSE
+CALL _DrehenBBEnde ()
+;P10
+IF Typ=0
+TEXT := 'P-10'
+RAFB := 5.5
+Z_BEWEG := 1
+DRILL := 1
+_STRING_STL := 'P10.stl'
+TYP_DIREKT := 3
+Typ_HHCH := 2
+END
+;P14
+IF Typ=1
+TEXT := 'P-14'
+RAFB := 7.5
+Z_BEWEG := 1
+DRILL := 1
+_STRING_STL := 'P14.stl'
+TYP_DIREKT := 4
+Typ_HHCH := 1
+END
+;Tenso P14
+IF Typ=2
+TEXT := 'Ten-14'
+Z_BEWEG := 1
+RAFB := 0
+DRILL := 0
+_STRING_STL := 'TN.stl'
+TYP_DIREKT := 0
+Typ_HHCH := 1
+END
+;Bisco P10
+IF TYP=3
+Z_BEWEG := 0
+TEXT := 'Bis-10'
+RAFB := 0
+DRILL := 0
+/_STRING_STL := 'BI10.stl'
+TYP_DIREKT := 3
+Typ_HHCH := 2
+END
+;Bisco P14
+IF TYP=4
+Z_BEWEG := 0
+TEXT := 'Bis-14'
+RAFB := 0
+DRILL := 0
+/_STRING_STL := 'BI14.stl'
+TYP_DIREKT := 4
+Typ_HHCH := 1
+END
+;Divario P18
+IF TYP=5
+Z_BEWEG := 1
+TEXT := 'Div-18'
+RAFB := 0
+DRILL := 0
+_STRING_STL := 'DV.stl'
+TYP_DIREKT := 1
+END
+;Medius P14_P10
+IF TYP=6
+Z_BEWEG := 1
+TEXT := 'Med-14/10'
+RAFB := 7.5
+DRILL := 1
+TYP_DIREKT := 2
+Typ_HHCH := 2
+END
+;Tenso P10
+/Typ := 8
+IF (Typ=8)|(Typ=28)
+TEXT := 'Ten-10'
+Z_BEWEG := 1
+RAFB := 0
+DRILL := 0
+_STRING_STL := 'TN.stl'
+TYP_DIREKT := 3
+Typ_HHCH := 0
+END
+;P10 ohne Bohrung (TYP 11)
+IF Typ=11
+TEXT := 'P-10!'
+RAFB := 5.5
+Z_BEWEG := 1
+DRILL := 0
+_STRING_STL := 'P10.stl'
+TYP_DIREKT := 3
+Typ_HHCH := 2
+END
+;P14 ohne Bohrung (TYP 11)
+IF Typ=10
+TEXT := 'P-14!'
+RAFB := 7.5
+Z_BEWEG := 1
+DRILL := 0
+_STRING_STL := 'P14.stl'
+TYP_DIREKT := 4
+Typ_HHCH := 1
+END
+;DEFINITION _Clamex_Nuter_ID
+WZF (_Clamex_Nuter_ID,_VE,_V,_VA,_SD,_ANF,'1')
+WZ1_HHVE := _VE
+WZ1_HHVA := _VA
+WZ1_HHV := _V
+WZ1_HHSD := _SD
+;DEFINITION _Clamex_Nuter_X_WKG_ID
+WZF (_Clamex_Nuter_X_WKG_ID,_VE,_V,_VA,_SD,_ANF,'1')
+WZ2_HHVE := _VE
+WZ2_HHVA := _VA
+WZ2_HHV := _V
+WZ2_HHSD := _SD
+;DEFINITION _Clamex_Nuter_Y_WKG_ID
+WZF (_Clamex_Nuter_Y_WKG_ID,_VE,_V,_VA,_SD,_ANF,'1')
+WZ3_HHVE := _VE
+WZ3_HHVA := _VA
+WZ3_HHV := _V
+WZ3_HHSD := _SD
+;DEFINITION _Clamex_Stiftfraeser_ID
+WZF (_Clamex_Stiftfraeser_ID,_VE,_V,_VA,_SD,_ANF,'1')
+WZ4_HHVE := _VE
+WZ4_HHVA := _VA
+WZ4_HHV := _V
+WZ4_HHSD := _SD
+;DEFINITION _Clamex_Bohr_ID
+WZF (_Clamex_Bohrer_ID,_VE,_V,_VA,_SD,_ANF,'1')
+WZ5_HHVE := _VE
+WZ5_HHVA := _VA
+WZ5_HHV := _V
+WZ5_HHSD := _SD
+;DEFINITION_ID für Winkel
+WZF (_Clamex_Nutfraeser_D7_ID,_VE,_V,_VA,_SD,_ANF,'1')
+WZ6_HHVE := _VE
+WZ6_HHVA := _VA
+WZ6_HHV := _V
+WZ6_HHSD := _SD
+;DEFINITION_Clamex_Nuter_WKG_ID
+WZF (_Clamex_Nuter_WKG_ID,_VE,_V,_VA,_SD,_ANF,'1')
+WZ7_HHVE := _VE
+WZ7_HHVA := _VA
+WZ7_HHV := _V
+WZ7_HHSD := _SD
+;Sägen im Winkel
+/IF (_WL <> 0) | (_WR <> 0)
+/CALL Winkel_Saege ()
+/END
+;Winkel tauschen - = +
+IF Winkel < 0
+Winkel := Winkel*-1
+END
+;%%%%%%%%%%%%%%%%%%%%%%%WINKELBERECHNUNG %%%%%%%%%%%%%%%%%%
+;Winkel Z Pos Berechnung  Vordere Kante 1
+Temp_Flanke_VO := _lz/SIN(90-_wv)
+Temp_VO_unten := Z/SIN(90-_wv)
+_Z_POS_Winkel_VO := Temp_Flanke_VO-Temp_VO_unten
+;Winkel Z Pos Berechnung Links Kante 2
+;Winkel Z Pos Neg Berechnung Links Kante 2
+Temp_Flanke_LI := _lz/SIN(90-_wl)
+Temp_LI_unten := Z/SIN(90-_wl)
+_Z_POS_Winkel_LI := Temp_Flanke_LI-Temp_LI_unten
+;Winkel Z Pos Berechnung Hintere Kante 3
+Temp_Flanke_HI := _lz/SIN(90-_wh)
+Temp_HI_unten := Z/SIN(90-_wh)
+_Z_POS_Winkel_HI := Temp_Flanke_HI-Temp_Hi_unten
+;Winkel Z Pos Berechnung Rechts Kante 4
+;Winkel Z Pos Neg Berechnung Rechts Kante 4
+Temp_Flanke_RE := _lz/SIN(90-_wr)
+Temp_RE_unten := Z/SIN(90-_wr)
+_Z_POS_Winkel_RE := Temp_Flanke_RE-Temp_RE_unten
+;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+;##########################################################################################################
+;_______________________________________KANTEN BEARBEITUNG_______________________
+;##########################################################################################################
+IF Flaeche=0
+;Divario NUT nur bei 5Achs, EVO und Standardmaschinen möglich (keine Nesting)
+IF (typ=5) & ((_MaschinenTyp=1) | (_MaschinenTyp=2)| (_MaschinenTyp=5))
+;DIVARIO NUT Links
+IF (Kante=2) & (_intern1=0)
+WZF (_Clamex_Nuter_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (8,0,Z,2,1,_ANF,0,0,0,7,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (8,10,0,0,1,2)
+G01 (-20,10,0,0,1,2)
+EP (1,_ANF,0)
+_intern1 := 1
+END
+;DIVARIO NUT Rechts
+IF (Kante=4) & (_intern2=0)
+WZF (_Clamex_Nuter_ID,_VE,_V,_VA,_SD,_ANF,'1')
+SP (8,0,z,1,1,_ANF,0,0,0,5,1,0,0,_AT_MAXDEPTH,0,0,0,0,0,0,0,0,0)
+G01 (8,10,0,0,3,2)
+G01 (-20,10,0,0,3,2)
+EP (1,_ANF,0)
+_intern2 := 1
+END
+END
+;Medius um wandeln in P14 für die Kante!
+IF Typ=6
+Typ := 1
+END
+;*********************************************************************************************************************
+;**********KANTE VORNE = 1
+;*********************************************************************************************************************
+IF Kante=1
+IF _WV <> 0;BREAKPOINT
+;Fehlermeldung wenn Tool ID 9999
+IF _Clamex_Nutfraeser_D7_ID=9999
+Fehlermeldung ('define a angle Tool (ID P-Sys Nuter Winkel/angle)')
+EXITMACRO
+END
+;Fehlermeldung wenn Winkel und Divario
+IF Typ >= 12
+Fehlermeldung ('TYP not used on view (HH_8879)')
+EXITMACRO
+ELSE
+;Bei Winkel wird FIX --> P10 verwendet.
+/Typ := 1
+IF _pVar_NoLamello_Winkel=0
+IF _wv<0
+;WZ 136 benötigt eine 2 Schneide mit ID 135
+;(CCTools = WZ P-Sys Nuter Winkel)
+;%%%%%%%%%%%%%%NEGATIV Winkel%%%%%%%%%%%%%%
+_Z_POS_Winkel_NEG := _Z_POS_Winkel_VO;BREAKPOINT
+IF Typ=0
+CALL P_S_HI_VO_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_H:=0,BOHREN_V:=-1,CL_BOPOS:=5.50,B_DM:=6,WINKEL_H:=45,WINKEL_V:=90+_wv,X1:=60.00,Y1:=00.00,X2:=00.00,Y2:=00.00,X3:=60.00,Y3:=00.00,X4:=X,Y4:=00.00,X5:=00.00,Y5:=00.00,X6:=60.00,Y6:=00.00,C1:=0,C2:=0,C3:=0,C4:=-1,C5:=0,C6:=0,C_TIEFE:=10.00,CL_TYP:=2,POS1:=0,POS2:=0,DREH_W_H:=0,DREH_W_V:=0,REF_XH:=0.00,REF_XV:=0.00)
+END
+IF Typ=1
+CALL P_S_HI_VO_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_H:=0,BOHREN_V:=-1,CL_BOPOS:=7.50,B_DM:=6,WINKEL_H:=45,WINKEL_V:=90+_wv,X1:=60.00,Y1:=00.00,X2:=00.00,Y2:=00.00,X3:=60.00,Y3:=00.00,X4:=X,Y4:=00.00,X5:=00.00,Y5:=00.00,X6:=60.00,Y6:=00.00,C1:=0,C2:=0,C3:=0,C4:=-1,C5:=0,C6:=0,C_TIEFE:=14.00,CL_TYP:=1,POS1:=0,POS2:=0,DREH_W_H:=0,DREH_W_V:=0,REF_XH:=0.00,REF_XV:=0.00)
+END
+IF Typ=2
+CALL P_S_HI_VO_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_H:=0,BOHREN_V:=-1,CL_BOPOS:=7.50,B_DM:=6,WINKEL_H:=45,WINKEL_V:=90+_wv,X1:=60.00,Y1:=00.00,X2:=00.00,Y2:=00.00,X3:=60.00,Y3:=00.00,X4:=X,Y4:=00.00,X5:=00.00,Y5:=00.00,X6:=60.00,Y6:=00.00,C1:=0,C2:=0,C3:=0,C4:=-1,C5:=0,C6:=0,C_TIEFE:=14.00,CL_TYP:=3,POS1:=0,POS2:=0,DREH_W_H:=0,DREH_W_V:=0,REF_XH:=0.00,REF_XV:=0.00)
+END
+IF (Typ=3) | (Typ=4) | (Typ=5) | (Typ=6)
+Fehlermeldung ('Error not used Typ')
+EXITMACRO
+END
+IF (Typ=8) | (Typ=28)
+CALL P_S_HI_VO_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_H:=0,BOHREN_V:=0,CL_BOPOS:=5.50,B_DM:=6,WINKEL_H:=45,WINKEL_V:=90+_wv,X1:=60.00,Y1:=00.00,X2:=00.00,Y2:=00.00,X3:=60.00,Y3:=00.00,X4:=X,Y4:=00.00,X5:=00.00,Y5:=00.00,X6:=60.00,Y6:=00.00,C1:=0,C2:=0,C3:=0,C4:=-1,C5:=0,C6:=0,C_TIEFE:=10.00,CL_TYP:=2,POS1:=0,POS2:=0,DREH_W_H:=0,DREH_W_V:=0,REF_XH:=0.00,REF_XV:=0.00)
+END
+IF Typ=10
+CALL P_S_HI_VO_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_H:=0,BOHREN_V:=0,CL_BOPOS:=7.50,B_DM:=6,WINKEL_H:=45,WINKEL_V:=90+_wv,X1:=60.00,Y1:=00.00,X2:=00.00,Y2:=00.00,X3:=60.00,Y3:=00.00,X4:=X,Y4:=00.00,X5:=00.00,Y5:=00.00,X6:=60.00,Y6:=00.00,C1:=0,C2:=0,C3:=0,C4:=-1,C5:=0,C6:=0,C_TIEFE:=14.00,CL_TYP:=1,POS1:=0,POS2:=0,DREH_W_H:=0,DREH_W_V:=0,REF_XH:=0.00,REF_XV:=0.00)
+END
+IF Typ=11
+CALL P_S_HI_VO_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_H:=0,BOHREN_V:=0,CL_BOPOS:=5.50,B_DM:=6,WINKEL_H:=45,WINKEL_V:=90+_wv,X1:=60.00,Y1:=00.00,X2:=00.00,Y2:=00.00,X3:=60.00,Y3:=00.00,X4:=X,Y4:=00.00,X5:=00.00,Y5:=00.00,X6:=60.00,Y6:=00.00,C1:=0,C2:=0,C3:=0,C4:=-1,C5:=0,C6:=0,C_TIEFE:=10.00,CL_TYP:=2,POS1:=0,POS2:=0,DREH_W_H:=0,DREH_W_V:=0,REF_XH:=0.00,REF_XV:=0.00)
+END
+ZText (TEXT + ' neg- °',X,Y,25,0,4,0,'Times New Roman',0,0,0,0,0,1)
+ELSE
+;%%%%%%%%%%%%%%POSITIV Winkel%%%%%%%%%%%%%%
+;Bei 45 Grad Schränke fix Z Pos--> Abstand von Teileoberkante (schräg) =7
+IF _wl=45
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=_Clamex_Nutfraeser_D7_ID,WKZ_NUT_H:='1',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='1',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_Y_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WV,VERBINDUNG:=4,SEITE:=0,BOHR:=DRILL,DRILLINGD:=6,SEITETEIL:=0,VERBINDER:=1,ABSTAND:=X,ABSTAND2:=_RZ/2,ABSTAND3:=0,TSK:=0,FF:=0,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=7,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+ELSE
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=_Clamex_Nutfraeser_D7_ID,WKZ_NUT_H:='1',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='1',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_Y_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WV,VERBINDUNG:=4,SEITE:=0,BOHR:=DRILL,DRILLINGD:=6,SEITETEIL:=0,VERBINDER:=1,ABSTAND:=X,ABSTAND2:=_RZ/2,ABSTAND3:=0,TSK:=0,FF:=0,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_VO,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+END
+ZText (TEXT + ' °',X,Y,25,0,4,0,'Times New Roman',0,0,0,0,0,1)
+END
+ELSE
+END
+END
+ELSE
+;%%%%%%%%%%%%%% KEIN WINKEL %%%%%%%%%%%%%
+IF _pVar_NoLamello_H=0
+CALL P_S_BASE_HORI ( VAL POS_X:=X,POS_Y:=Y,POS_Z:=Z,DRILL_DISTANCE:=RAFB,VIEW:=Kante,DRILL:=DRILL,Z_BEWEG:=Z_BEWEG,NUT_TIEFE:=TIEFE,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+ZText (TEXT,X,Y+30,25,0,4,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END
+;*********************************************************************************************************************
+;**********KANTE LINKS = 2
+;*********************************************************************************************************************
+IF Kante=2
+;%%%%%%%%%%%%%% WINKEL LINKS %%%%%%%%%%%%%
+IF _WL <> 0
+;Fehlermeldung wenn Tool ID 9999
+IF _Clamex_Nutfraeser_D7_ID=9999
+Fehlermeldung ('define a angle Tool (ID P-Sys Nuter Winkel/angle)')
+EXITMACRO
+END
+;Fehlermeldung wenn Winkel und Divario
+IF Typ >= 12
+Fehlermeldung ('TYP not used on view (HH_8879)')
+EXITMACRO
+ELSE
+;Bei Winkel wird FIX --> P10 verwendet.
+/Typ := 1
+IF _pVar_NoLamello_Winkel=0
+IF _wl<0
+;WZ 136 benötigt eine 2 Schneide mit ID 135
+;(CCTools = WZ P-Sys Nuter Winkel)
+;%%%%%%%%%%%%%%NEGATIV Winkel%%%%%%%%%%%%%%
+_Z_POS_Winkel_NEG := _Z_POS_Winkel_LI
+IF Typ=0
+CALL P_S_RE_LI_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_L:=-1,BOHREN_R:=-1,CL_BOPOS:=5.50,B_DM:=6,WINKEL_L:=90+_wl,WINKEL_R:=15,X1:=00.00,Y1:=60.00,X2:=00.00,Y2:=00.00,X3:=00.00,Y3:=Y,X4:=00.00,Y4:=60.00,X5:=00.00,Y5:=00.00,X6:=00.00,Y6:=60.00,C1:=0,C2:=0,C3:=-1,C4:=0,C5:=0,C6:=0,C_TIEFE:=10.00,CL_TYP:=2,POS1:=0,POS2:=0)
+END
+IF Typ=1
+CALL P_S_RE_LI_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_L:=-1,BOHREN_R:=-1,CL_BOPOS:=7.50,B_DM:=6,WINKEL_L:=90+_wl,WINKEL_R:=15,X1:=00.00,Y1:=60.00,X2:=00.00,Y2:=00.00,X3:=00.00,Y3:=Y,X4:=00.00,Y4:=60.00,X5:=00.00,Y5:=00.00,X6:=00.00,Y6:=60.00,C1:=0,C2:=0,C3:=-1,C4:=0,C5:=0,C6:=0,C_TIEFE:=14.00,CL_TYP:=1,POS1:=0,POS2:=0)
+END
+IF Typ=2
+CALL P_S_RE_LI_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_L:=-1,BOHREN_R:=-1,CL_BOPOS:=7.50,B_DM:=6,WINKEL_L:=90+_wl,WINKEL_R:=15,X1:=00.00,Y1:=60.00,X2:=00.00,Y2:=00.00,X3:=00.00,Y3:=Y,X4:=00.00,Y4:=60.00,X5:=00.00,Y5:=00.00,X6:=00.00,Y6:=60.00,C1:=0,C2:=0,C3:=-1,C4:=0,C5:=0,C6:=0,C_TIEFE:=14.00,CL_TYP:=3,POS1:=0,POS2:=0)
+END
+IF (Typ=3) | (Typ=4) | (Typ=5) | (Typ=6)
+Fehlermeldung ('Error not used Typ')
+EXITMACRO
+END
+IF (Typ=8) | (Typ=28)
+CALL P_S_RE_LI_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_L:=0,BOHREN_R:=-1,CL_BOPOS:=5.50,B_DM:=6,WINKEL_L:=90+_wl,WINKEL_R:=15,X1:=00.00,Y1:=60.00,X2:=00.00,Y2:=00.00,X3:=00.00,Y3:=Y,X4:=00.00,Y4:=60.00,X5:=00.00,Y5:=00.00,X6:=00.00,Y6:=60.00,C1:=0,C2:=0,C3:=-1,C4:=0,C5:=0,C6:=0,C_TIEFE:=10.00,CL_TYP:=2,POS1:=0,POS2:=0)
+END
+IF Typ=10
+CALL P_S_RE_LI_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_L:=0,BOHREN_R:=0,CL_BOPOS:=7.50,B_DM:=6,WINKEL_L:=90+_wl,WINKEL_R:=15,X1:=00.00,Y1:=60.00,X2:=00.00,Y2:=00.00,X3:=00.00,Y3:=Y,X4:=00.00,Y4:=60.00,X5:=00.00,Y5:=00.00,X6:=00.00,Y6:=60.00,C1:=0,C2:=0,C3:=-1,C4:=0,C5:=0,C6:=0,C_TIEFE:=14.00,CL_TYP:=1,POS1:=0,POS2:=0)
+END
+IF Typ=11
+CALL P_S_RE_LI_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_L:=0,BOHREN_R:=0,CL_BOPOS:=5.50,B_DM:=6,WINKEL_L:=90+_wl,WINKEL_R:=15,X1:=00.00,Y1:=60.00,X2:=00.00,Y2:=00.00,X3:=00.00,Y3:=Y,X4:=00.00,Y4:=60.00,X5:=00.00,Y5:=00.00,X6:=00.00,Y6:=60.00,C1:=0,C2:=0,C3:=-1,C4:=0,C5:=0,C6:=0,C_TIEFE:=10.00,CL_TYP:=2,POS1:=0,POS2:=0)
+END
+ZText (TEXT + ' neg- °',X,Y,25,0,4,0,'Times New Roman',0,0,0,0,0,1)
+ELSE
+;%%%%%%%%%%%%%%POSITIV Winkel%%%%%%%%%%%%%%
+;Bei 45 Grad Schränke fix Z Pos--> Abstand von Teileoberkante (schräg) =7
+IF _wl=45
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=_Clamex_Nutfraeser_D7_ID,WKZ_NUT_H:='1',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='1',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_Y_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WL,VERBINDUNG:=4,SEITE:=0,BOHR:=DRILL,DRILLINGD:=6,SEITETEIL:=1,VERBINDER:=1,ABSTAND:=Y,ABSTAND2:=_RZ/2,ABSTAND3:=0,TSK:=0,FF:=0,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=7,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+ELSE
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=_Clamex_Nutfraeser_D7_ID,WKZ_NUT_H:='1',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='1',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_Y_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WL,VERBINDUNG:=4,SEITE:=0,BOHR:=DRILL,DRILLINGD:=6,SEITETEIL:=1,VERBINDER:=1,ABSTAND:=Y,ABSTAND2:=_RZ/2,ABSTAND3:=0,TSK:=0,FF:=0,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_LI,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+END
+ZText (TEXT + ' °',X,Y,25,0,4,0,'Times New Roman',0,0,0,0,0,1)
+END
+ELSE
+END
+END
+ELSE
+;%%%%%%%%%%%%%% KEIN WINKEL %%%%%%%%%%%%%
+IF _pVar_NoLamello_H=0
+CALL P_S_BASE_HORI ( VAL POS_X:=X,POS_Y:=Y,POS_Z:=Z,DRILL_DISTANCE:=RAFB,VIEW:=Kante,DRILL:=DRILL,Z_BEWEG:=Z_BEWEG,NUT_TIEFE:=TIEFE,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+ZText (TEXT,X,Y,25,0,4,0,'Times New Roman',0,0,0,0,0,1)
+ELSE
+END
+END
+END
+;*********************************************************************************************************************
+;**********KANTE HINTEN = 3
+;*********************************************************************************************************************
+IF Kante=3
+IF _WH <> 0
+;Fehlermeldung wenn Tool ID 9999
+IF _Clamex_Nutfraeser_D7_ID=9999
+Fehlermeldung ('define a angle Tool (ID P-Sys Nuter Winkel/angle)')
+EXITMACRO
+END
+;Fehlermeldung wenn Winkel und Divario
+IF Typ >= 12
+Fehlermeldung ('TYP not used on view (HH_8879)')
+EXITMACRO
+ELSE
+;Bei Winkel wird FIX --> P10 verwendet.
+/Typ := 1
+IF _pVar_NoLamello_Winkel=0
+IF _wh<0
+;WZ 136 benötigt eine 2 Schneide mit ID 135
+;(CCTools = WZ P-Sys Nuter Winkel)
+;%%%%%%%%%%%%%%NEGATIV Winkel%%%%%%%%%%%%%%
+_Z_POS_Winkel_NEG := _Z_POS_Winkel_HI
+IF Typ=0
+CALL P_S_HI_VO_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_H:=-1,BOHREN_V:=0,CL_BOPOS:=5.50,B_DM:=6,WINKEL_H:=90+_wh,WINKEL_V:=,X1:=X,Y1:=00.00,X2:=00.00,Y2:=00.00,X3:=60.00,Y3:=00.00,X4:=X,Y4:=00.00,X5:=00.00,Y5:=00.00,X6:=60.00,Y6:=00.00,C1:=-1,C2:=0,C3:=0,C4:=0,C5:=0,C6:=0,C_TIEFE:=10.00,CL_TYP:=2,POS1:=0,POS2:=0,DREH_W_H:=0,DREH_W_V:=0,REF_XH:=0.00,REF_XV:=0.00)
+END
+IF Typ=1
+CALL P_S_HI_VO_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_H:=-1,BOHREN_V:=0,CL_BOPOS:=7.50,B_DM:=6,WINKEL_H:=90+_wh,WINKEL_V:=c,X1:=X,Y1:=00.00,X2:=00.00,Y2:=00.00,X3:=60.00,Y3:=00.00,X4:=X,Y4:=00.00,X5:=00.00,Y5:=00.00,X6:=60.00,Y6:=00.00,C1:=-1,C2:=0,C3:=0,C4:=0,C5:=0,C6:=0,C_TIEFE:=14.00,CL_TYP:=1,POS1:=0,POS2:=0,DREH_W_H:=0,DREH_W_V:=0,REF_XH:=0.00,REF_XV:=0.00)
+END
+IF Typ=2
+CALL P_S_HI_VO_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_H:=-1,BOHREN_V:=0,CL_BOPOS:=7.50,B_DM:=6,WINKEL_H:=90+_wh,WINKEL_V:=90+_wv,X1:=X,Y1:=00.00,X2:=00.00,Y2:=00.00,X3:=60.00,Y3:=00.00,X4:=X,Y4:=00.00,X5:=00.00,Y5:=00.00,X6:=60.00,Y6:=00.00,C1:=-1,C2:=0,C3:=0,C4:=0,C5:=0,C6:=0,C_TIEFE:=14.00,CL_TYP:=3,POS1:=0,POS2:=0,DREH_W_H:=0,DREH_W_V:=0,REF_XH:=0.00,REF_XV:=0.00)
+END
+IF (Typ=3) | (Typ=4) | (Typ=5) | (Typ=6)
+Fehlermeldung ('Error not used Typ')
+EXITMACRO
+END
+IF (Typ=8) | (Typ=28)
+CALL P_S_HI_VO_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_H:=0,BOHREN_V:=0,CL_BOPOS:=5.50,B_DM:=6,WINKEL_H:=90+_wh,WINKEL_V:=90+_wv,X1:=X,Y1:=00.00,X2:=00.00,Y2:=00.00,X3:=60.00,Y3:=00.00,X4:=X,Y4:=00.00,X5:=00.00,Y5:=00.00,X6:=60.00,Y6:=00.00,C1:=-1,C2:=0,C3:=0,C4:=0,C5:=0,C6:=0,C_TIEFE:=10.00,CL_TYP:=2,POS1:=0,POS2:=0,DREH_W_H:=0,DREH_W_V:=0,REF_XH:=0.00,REF_XV:=0.00)
+END
+IF Typ=10
+CALL P_S_HI_VO_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_H:=0,BOHREN_V:=0,CL_BOPOS:=7.50,B_DM:=6,WINKEL_H:=90+_wh,WINKEL_V:=90+_wv,X1:=X,Y1:=00.00,X2:=00.00,Y2:=00.00,X3:=60.00,Y3:=00.00,X4:=X,Y4:=00.00,X5:=00.00,Y5:=00.00,X6:=60.00,Y6:=00.00,C1:=-1,C2:=0,C3:=0,C4:=0,C5:=0,C6:=0,C_TIEFE:=14.00,CL_TYP:=1,POS1:=0,POS2:=0,DREH_W_H:=0,DREH_W_V:=0,REF_XH:=0.00,REF_XV:=0.00)
+END
+IF Typ=11
+CALL P_S_HI_VO_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_H:=0,BOHREN_V:=0,CL_BOPOS:=5.50,B_DM:=6,WINKEL_H:=90+_wh,WINKEL_V:=90+_wv,X1:=X,Y1:=00.00,X2:=00.00,Y2:=00.00,X3:=60.00,Y3:=00.00,X4:=X,Y4:=00.00,X5:=00.00,Y5:=00.00,X6:=60.00,Y6:=00.00,C1:=-1,C2:=0,C3:=0,C4:=0,C5:=0,C6:=0,C_TIEFE:=10.00,CL_TYP:=2,POS1:=0,POS2:=0,DREH_W_H:=0,DREH_W_V:=0,REF_XH:=0.00,REF_XV:=0.00)
+END
+ZText (TEXT + ' neg- °',X,Y,25,0,4,0,'Times New Roman',0,0,0,0,0,1)
+ELSE
+;%%%%%%%%%%%%%%POSITIV Winkel%%%%%%%%%%%%%%
+;Bei 45 Grad Schränke fix Z Pos--> Abstand von Teileoberkante (schräg) =7
+IF _wl=45
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=_Clamex_Nutfraeser_D7_ID,WKZ_NUT_H:='1',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='1',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_Y_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WH,VERBINDUNG:=4,SEITE:=0,BOHR:=DRILL,DRILLINGD:=6,SEITETEIL:=2,VERBINDER:=1,ABSTAND:=X,ABSTAND2:=_RZ/2,ABSTAND3:=0,TSK:=0,FF:=0,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=7,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+ELSE
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=_Clamex_Nutfraeser_D7_ID,WKZ_NUT_H:='1',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='1',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_Y_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WH,VERBINDUNG:=4,SEITE:=0,BOHR:=DRILL,DRILLINGD:=6,SEITETEIL:=2,VERBINDER:=1,ABSTAND:=X,ABSTAND2:=_RZ/2,ABSTAND3:=0,TSK:=0,FF:=0,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_VO,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+END
+ZText (TEXT + ' °',X,Y,25,0,4,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END
+ELSE
+IF _pVar_NoLamello_H=0
+CALL P_S_BASE_HORI ( VAL POS_X:=X,POS_Y:=_RY+Y,POS_Z:=Z,DRILL_DISTANCE:=RAFB,VIEW:=Kante,DRILL:=DRILL,Z_BEWEG:=Z_BEWEG,NUT_TIEFE:=TIEFE,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+ZText (TEXT,X,_RY+Y,25,0,4,0,'Times New Roman',0,0,0,0,0,1)
+END
+END
+END
+;*********************************************************************************************************************
+;**********KANTE RECHTS = 4
+;*********************************************************************************************************************
+IF Kante=4
+;%%%%%%%%%%%%%% WINKEL RECHTS %%%%%%%%%%%%%
+IF _WR <> 0
+;Fehlermeldung wenn Tool ID 9999
+IF _Clamex_Nutfraeser_D7_ID=9999
+Fehlermeldung ('define a angle Tool (ID P-Sys Nuter Winkel/angle)')
+EXITMACRO
+END
+;Fehlermeldung wenn Winkel und Divario
+IF Typ >= 12
+Fehlermeldung ('TYP not used on view (8879)')
+EXITMACRO
+ELSE
+;Bei Winkel wird FIX --> P10 verwendet.
+/Typ := 1
+IF _pVar_NoLamello_Winkel=0
+IF _wr<0
+;(CCTools = WZ P-Sys Nuter Winkel)
+;WZ 136 benötigt eine 2 Schneide mit ID 135
+;%%%%%%%%%%%%%%NEGATIV Winkel%%%%%%%%%%%%%%
+_Z_POS_Winkel_NEG := _Z_POS_Winkel_RE
+IF Typ=0
+CALL P_S_RE_LI_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_L:=0,BOHREN_R:=-1,CL_BOPOS:=5.50,B_DM:=6,WINKEL_L:=90+_wr,WINKEL_R:=90+_wr,X1:=00.00,Y1:=60.00,X2:=00.00,Y2:=00.00,X3:=00.00,Y3:=Y,X4:=00.00,Y4:=60.00,X5:=00.00,Y5:=00.00,X6:=00.00,Y6:=Y,C1:=0,C2:=0,C3:=0,C4:=0,C5:=0,C6:=-1,C_TIEFE:=10.00,CL_TYP:=2,POS1:=0,POS2:=0)
+END
+IF Typ=1
+CALL P_S_RE_LI_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_L:=-1,BOHREN_R:=-1,CL_BOPOS:=7.50,B_DM:=6,WINKEL_L:=90+_wr,WINKEL_R:=90+_wr,X1:=00.00,Y1:=60.00,X2:=00.00,Y2:=00.00,X3:=00.00,Y3:=Y,X4:=00.00,Y4:=60.00,X5:=00.00,Y5:=00.00,X6:=00.00,Y6:=Y,C1:=0,C2:=0,C3:=0,C4:=0,C5:=0,C6:=-1,C_TIEFE:=14.00,CL_TYP:=1,POS1:=0,POS2:=0)
+END
+IF Typ=2
+CALL P_S_RE_LI_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_L:=-1,BOHREN_R:=-1,CL_BOPOS:=7.50,B_DM:=6,WINKEL_L:=90+_wr,WINKEL_R:=90+_wr,X1:=00.00,Y1:=60.00,X2:=00.00,Y2:=00.00,X3:=00.00,Y3:=Y,X4:=00.00,Y4:=60.00,X5:=00.00,Y5:=00.00,X6:=00.00,Y6:=Y,C1:=0,C2:=0,C3:=0,C4:=0,C5:=0,C6:=-1,C_TIEFE:=14.00,CL_TYP:=3,POS1:=0,POS2:=0)
+END
+IF (Typ=3) | (Typ=4) | (Typ=5) | (Typ=6)
+Fehlermeldung ('Error not used Typ')
+EXITMACRO
+END
+IF (Typ=8) | (Typ=28)
+CALL P_S_RE_LI_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_L:=0,BOHREN_R:=0,CL_BOPOS:=5.50,B_DM:=6,WINKEL_L:=90+_wr,WINKEL_R:=90+_wr,X1:=00.00,Y1:=60.00,X2:=00.00,Y2:=00.00,X3:=00.00,Y3:=Y,X4:=00.00,Y4:=60.00,X5:=00.00,Y5:=00.00,X6:=00.00,Y6:=Y,C1:=0,C2:=0,C3:=0,C4:=0,C5:=0,C6:=-1,C_TIEFE:=10.00,CL_TYP:=2,POS1:=0,POS2:=0)
+END
+IF Typ=10
+CALL P_S_RE_LI_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_L:=0,BOHREN_R:=0,CL_BOPOS:=7.50,B_DM:=6,WINKEL_L:=90+_wr,WINKEL_R:=90+_wr,X1:=00.00,Y1:=60.00,X2:=00.00,Y2:=00.00,X3:=00.00,Y3:=Y,X4:=00.00,Y4:=60.00,X5:=00.00,Y5:=00.00,X6:=00.00,Y6:=Y,C1:=0,C2:=0,C3:=0,C4:=0,C5:=0,C6:=-1,C_TIEFE:=14.00,CL_TYP:=1,POS1:=0,POS2:=0)
+END
+IF Typ=11
+CALL P_S_RE_LI_NEG_CC ( VAL F_TOOL:=_Clamex_Nutfraeser_D7_ID,B_TOOL:=_Clamex_Bohrer_ID,BOHREN_L:=0,BOHREN_R:=0,CL_BOPOS:=5.50,B_DM:=6,WINKEL_L:=90+_wr,WINKEL_R:=90+_wr,X1:=00.00,Y1:=60.00,X2:=00.00,Y2:=00.00,X3:=00.00,Y3:=Y,X4:=00.00,Y4:=60.00,X5:=00.00,Y5:=00.00,X6:=00.00,Y6:=Y,C1:=0,C2:=0,C3:=0,C4:=0,C5:=0,C6:=-1,C_TIEFE:=10.00,CL_TYP:=2,POS1:=0,POS2:=0)
+END
+ZText (TEXT + ' neg- °',_RX-X,Y,25,0,4,0,'Times New Roman',0,0,0,0,0,1)
+ELSE
+;%%%%%%%%%%%%%%POSITIV Winkel%%%%%%%%%%%%%%
+;Bei 45 Grad Schränke fix Z Pos--> Abstand von Teileoberkante (schräg) =7
+IF _WR=45
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=_Clamex_Nutfraeser_D7_ID,WKZ_NUT_H:='1',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='1',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_Y_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WR,VERBINDUNG:=4,SEITE:=0,BOHR:=DRILL,DRILLINGD:=6,SEITETEIL:=3,VERBINDER:=1,ABSTAND:=Y,ABSTAND2:=_RZ/2,ABSTAND3:=0,TSK:=0,FF:=0,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=7,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+ELSE
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=_Clamex_Nutfraeser_D7_ID,WKZ_NUT_H:='1',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='1',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_Y_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WR,VERBINDUNG:=4,SEITE:=0,BOHR:=DRILL,DRILLINGD:=6,SEITETEIL:=3,VERBINDER:=1,ABSTAND:=Y,ABSTAND2:=_RZ/2,ABSTAND3:=0,TSK:=0,FF:=0,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_RE,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+END
+ZText (TEXT + ' °',_RX-X,Y,25,0,4,0,'Times New Roman',0,0,0,0,0,1)
+END
+ELSE
+END
+END
+ELSE
+;%%%%%%%%%%%%%% KEIN WINKEL %%%%%%%%%%%%%
+IF _pVar_NoLamello_H=0
+CALL P_S_BASE_HORI ( VAL POS_X:=_RX-X,POS_Y:=Y,POS_Z:=Z,DRILL_DISTANCE:=RAFB,VIEW:=Kante,DRILL:=DRILL,Z_BEWEG:=Z_BEWEG,NUT_TIEFE:=TIEFE,TEMP_VAR1:=0,TEMP_VAR2:=0,TEMP_VAR3:=0,WKZ_NUT:=_Clamex_Nuter_ID,WKZ_BOHR:=_Clamex_Bohrer_ID)
+ZText (TEXT,_RX-X,Y,25,0,4,0,'Times New Roman',0,0,0,0,0,1)
+ELSE
+END
+END
+END
+END
+;########################################################################################
+;########################################################################################
+;__________________________FLÄCHE BEARBEITUNG________________
+;########################################################################################
+;########################################################################################
+IF (Flaeche=1)&(_pVar_NoLamello=0);BREAKPOINT
+/ELSE
+;***********************************************************************************************
+;********************************************************************* KANTE 1 VORNE
+;***********************************************************************************************
+IF Kante=1;BREAKPOINT
+;5 Achsmaschine
+IF (_MaschinenTyp=1)
+;Y Bereich vorne bis 80mm
+IF y<80
+;von aussen mit _Clamex_Nuter_Y_WKG_ID
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=9999,WKZ_NUT_H:='110',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='110',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_Y_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WR,VERBINDUNG:=0,SEITE:=1,BOHR:=0,DRILLINGD:=6,SEITETEIL:=0,VERBINDER:=1,ABSTAND:=X,ABSTAND2:=Y,ABSTAND3:=0,TSK:=0,FF:=_PSystemStift,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_RE,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+CALL _ZRechteck_2P_V5 ( VAL SX:=X-40,SY:=Y- 3.5,EX:=X+40,EY:=Y+3.5,FUELLEN:=1,FARBE:=0,ESXY1:=1,ESXY2:=1)
+ZText (TEXT,X,Y+35,25,0,9,0,'Times New Roman',0,0,0,0,1,1)
+ELSE
+;Mitte Platte mit Stiftfräser wenn Clamex Nuter WKG auf  9999
+IF _Clamex_Nuter_WKG_ID =  9999
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=9999,WKZ_NUT_H:='110',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='1',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=9999,WKZ_90_H:='110',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WR,VERBINDUNG:=0,SEITE:=1,BOHR:=0,DRILLINGD:=6,SEITETEIL:=0,VERBINDER:=1,ABSTAND:=X,ABSTAND2:=Y,ABSTAND3:=0,TSK:=0,FF:=1,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_RE,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+CALL _ZRechteck_2P_V5 ( VAL SX:=X-40,SY:=Y- 3.5,EX:=X+40,EY:=Y+3.5,FUELLEN:=1,FARBE:=0,ESXY1:=1,ESXY2:=1)
+ZText (TEXT,X,Y+35,25,0,9,0,'Times New Roman',0,0,0,0,1,1)
+ELSE
+;Mitte Platte mit WKG _Clamex_Nuter_WKG_ID
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=9999,WKZ_NUT_H:='110',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='110',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ7_HHVE,WKZ_90_V2:=WZ7_HHV,WKZ_90_V3:=WZ7_HHVA,WKZ_90_D:=WZ7_HHSD,WINKEL:=_WR,VERBINDUNG:=0,SEITE:=1,BOHR:=0,DRILLINGD:=6,SEITETEIL:=0,VERBINDER:=1,ABSTAND:=X,ABSTAND2:=Y,ABSTAND3:=0,TSK:=0,FF:=_PSystemStift,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_RE,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+CALL _ZRechteck_2P_V5 ( VAL SX:=X-40,SY:=Y- 3.5,EX:=X+40,EY:=Y+3.5,FUELLEN:=1,FARBE:=0,ESXY1:=1,ESXY2:=1)
+ZText (TEXT,X,Y+35,25,0,9,0,'Times New Roman',0,0,0,0,1,1)
+END
+END
+ELSE
+CALL P_S_HI_VO_FLAT_V7 ( VAL APV_1:=0,APV_2:=0,APV_3:=0,APV_4:=1,APV_5:=0,APV_6:=0,PDV_X_1:=-9999,PDV_X_2:=0,PDV_X_3:=60,PDV_X_4:=X,PDV_X_5:=0,PDV_X_6:=60,PDV_Y_1:=-9999,PDV_Y_2:=9.5,PDV_Y_3:=9.5,PDV_Y_4:=Y,PDV_Y_5:=9.5,PDV_Y_6:=9.5,AUSW_CLAMEXBISCO:=Typ)
+END
+END
+;***********************************************************************************************
+;*********************************************************************KANTE 2 LINKS
+;***********************************************************************************************
+IF Kante=2
+IF (Winkel>0) & (Winkel<>90)
+;Rotation
+CALL P_S_BASE_FLAT_STIFT_ROT_V2 ( VAL CL_TYP:=Typ_HHCH,POSX:=X,POSY:=Y,DW:=90-Winkel,ESXY:=0)
+ZText (TEXT + ' rotation',X+30,Y-20,25,0,1,0,'Times New Roman',0,0,0,0,0,1)
+ELSE
+;5 Achsmaschine
+IF (_MaschinenTyp=1)
+;Bereich links bis 80mm
+IF x<80
+;von aussen mit _Clamex_Nuter_Y_WKG_ID
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=9999,WKZ_NUT_H:='110',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='110',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_Y_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WR,VERBINDUNG:=0,SEITE:=1,BOHR:=0,DRILLINGD:=6,SEITETEIL:=1,VERBINDER:=1,ABSTAND:=Y,ABSTAND2:=X,ABSTAND3:=0,TSK:=0,FF:=_PSystemStift,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_RE,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+CALL _ZRechteck_2P_V5 ( VAL SX:=X - 3.5,SY:=Y+40,EX:=X+3.5,EY:=Y-40,FUELLEN:=1,FARBE:=0,ESXY1:=1,ESXY2:=1)
+ZText (TEXT,X+35,Y,25,0,9,0,'Times New Roman',0,0,0,0,1,1)
+ELSE
+;Mitte Platte mit Stiftfräser wenn Clamex Nuter WKG auf  9999
+IF _Clamex_Nuter_WKG_ID =  9999
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=9999,WKZ_NUT_H:='110',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='1',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=9999,WKZ_90_H:='110',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WR,VERBINDUNG:=0,SEITE:=1,BOHR:=0,DRILLINGD:=6,SEITETEIL:=1,VERBINDER:=1,ABSTAND:=Y,ABSTAND2:=X,ABSTAND3:=0,TSK:=0,FF:=1,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_RE,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+CALL _ZRechteck_2P_V5 ( VAL SX:=X - 3.5,SY:=Y+40,EX:=X+3.5,EY:=Y-40,FUELLEN:=1,FARBE:=0,ESXY1:=1,ESXY2:=1)
+ZText (TEXT,X+35,Y,25,0,9,0,'Times New Roman',0,0,0,0,1,1)
+ELSE
+;Mitte Platte mit WKG _Clamex_Nuter_WKG_ID
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=9999,WKZ_NUT_H:='110',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='110',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ7_HHVE,WKZ_90_V2:=WZ7_HHV,WKZ_90_V3:=WZ7_HHVA,WKZ_90_D:=WZ7_HHSD,WINKEL:=_WR,VERBINDUNG:=0,SEITE:=1,BOHR:=0,DRILLINGD:=6,SEITETEIL:=1,VERBINDER:=1,ABSTAND:=Y,ABSTAND2:=X,ABSTAND3:=0,TSK:=0,FF:=_PSystemStift,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_RE,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+CALL _ZRechteck_2P_V5 ( VAL SX:=X - 3.5,SY:=Y+40,EX:=X+3.5,EY:=Y-40,FUELLEN:=1,FARBE:=0,ESXY1:=1,ESXY2:=1)
+ZText (TEXT,X+35,Y,25,0,9,0,'Times New Roman',0,0,0,0,1,1)
+END
+END
+ELSE
+CALL P_S_RE_LI_FLAT_V7 ( VAL APV_1:=0,APV_2:=0,APV_3:=1,APV_4:=0,APV_5:=0,APV_6:=0,PDV_X_1:=9.5,PDV_X_2:=9.5,PDV_X_3:=X,AUSW_CLAMEXBISCO:=Typ,PDV_X_5:=9.5,PDV_X_4:=9.5,PDV_X_6:=9.5,PDV_Y_1:=60,PDV_Y_2:=0,PDV_Y_3:=Y,PDV_Y_4:=60,PDV_Y_5:=0,PDV_Y_6:=60)
+END
+END
+END
+;***********************************************************************************************
+;********************************************************************* KANTE 3 HINTEN
+;***********************************************************************************************
+IF Kante=3;BREAKPOINT
+;5 Achsmaschine
+IF (_MaschinenTyp=1);BREAKPOINT
+;Y Bereich hinten bis 80mm
+/IF _ry-80<y
+IF y<80
+;von aussen mit _Clamex_Nuter_Y_WKG_ID
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=9999,WKZ_NUT_H:='110',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='110',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_Y_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WR,VERBINDUNG:=0,SEITE:=1,BOHR:=0,DRILLINGD:=6,SEITETEIL:=2,VERBINDER:=1,ABSTAND:=X,ABSTAND2:=Y,ABSTAND3:=0,TSK:=0,FF:=_PSystemStift,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_RE,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+CALL _ZRechteck_2P_V5 ( VAL SX:=X-40,SY:=Y- 3.5,EX:=X+40,EY:=Y+3.5,FUELLEN:=1,FARBE:=0,ESXY1:=7,ESXY2:=7)
+ZText (TEXT,X,Y+35,25,0,9,0,'Times New Roman',0,0,0,0,7,1)
+ELSE
+;Mitte Platte mit Stiftfräser wenn Clamex Nuter WKG auf  9999
+IF _Clamex_Nuter_WKG_ID =  9999
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=9999,WKZ_NUT_H:='110',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='1',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=9999,WKZ_90_H:='110',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WR,VERBINDUNG:=0,SEITE:=1,BOHR:=0,DRILLINGD:=6,SEITETEIL:=2,VERBINDER:=1,ABSTAND:=X,ABSTAND2:=Y,ABSTAND3:=0,TSK:=0,FF:=1,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_RE,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+CALL _ZRechteck_2P_V5 ( VAL SX:=X-40,SY:=Y- 3.5,EX:=X+40,EY:=Y+3.5,FUELLEN:=1,FARBE:=0,ESXY1:=7,ESXY2:=7)
+ZText (TEXT,X,Y+35,25,0,9,0,'Times New Roman',0,0,0,0,7,1)
+ELSE
+;Mitte Platte mit WKG _Clamex_Nuter_WKG_ID
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=9999,WKZ_NUT_H:='110',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='110',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ7_HHVE,WKZ_90_V2:=WZ7_HHV,WKZ_90_V3:=WZ7_HHVA,WKZ_90_D:=WZ7_HHSD,WINKEL:=_WR,VERBINDUNG:=0,SEITE:=1,BOHR:=0,DRILLINGD:=6,SEITETEIL:=2,VERBINDER:=1,ABSTAND:=X,ABSTAND2:=Y,ABSTAND3:=0,TSK:=0,FF:=_PSystemStift,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_RE,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+CALL _ZRechteck_2P_V5 ( VAL SX:=X-40,SY:=Y- 3.5,EX:=X+40,EY:=Y+3.5,FUELLEN:=1,FARBE:=0,ESXY1:=7,ESXY2:=7)
+ZText (TEXT,X,Y+35,25,0,9,0,'Times New Roman',0,0,0,0,7,1)
+END
+END
+ELSE
+CALL P_S_HI_VO_FLAT_V7 ( VAL APV_1:=1,APV_2:=0,APV_3:=0,APV_4:=0,APV_5:=0,APV_6:=0,PDV_X_1:=X,PDV_X_2:=0,PDV_X_3:=60,PDV_X_4:=X,PDV_X_5:=0,PDV_X_6:=60,PDV_Y_1:=Y,PDV_Y_2:=9.5,PDV_Y_3:=9.5,PDV_Y_4:=Y,PDV_Y_5:=9.5,PDV_Y_6:=9.5,AUSW_CLAMEXBISCO:=TYP)
+END
+END
+;***********************************************************************************************
+;********************************************************************* KANTE 4 RECHTS
+;***********************************************************************************************
+IF Kante=4
+IF (Winkel>0) & (Winkel<>90)
+CALL P_S_BASE_FLAT_STIFT_ROT ( VAL CL_WKZ:=_Clamex_Stiftfraeser_ID,CL_TYP:=Typ_HHCH,POSX:=X,POSY:=Y,DW:=Winkel+90,ESXY:=0)
+ZText (TEXT,X-30,Y-20,25,0,7,0,'Times New Roman',0,0,0,0,0,1)
+ELSE
+;5 Achsmaschine
+IF (_MaschinenTyp=1)
+;Bereich aussen bis 80mm
+/IF _rx-80<x
+IF x<80;BREAKPOINT
+;von aussen mit _Clamex_Nuter_Y_WKG_ID
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=9999,WKZ_NUT_H:='110',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='110',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_Y_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WR,VERBINDUNG:=0,SEITE:=1,BOHR:=0,DRILLINGD:=6,SEITETEIL:=3,VERBINDER:=1,ABSTAND:=Y,ABSTAND2:=X,ABSTAND3:=0,TSK:=0,FF:=_PSystemStift,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_RE,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+CALL _ZRechteck_2P_V5 ( VAL SX:=X - 3.5,SY:=Y+40,EX:=X+3.5,EY:=Y-40,FUELLEN:=1,FARBE:=0,ESXY1:=3,ESXY2:=3)
+ZText (TEXT,X+35,Y,25,0,9,0,'Times New Roman',0,0,0,0,3,1)
+ELSE
+;Mitte Platte mit Stiftfräser wenn Clamex Nuter WKG auf  9999
+IF _Clamex_Nuter_WKG_ID =  9999
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=9999,WKZ_NUT_H:='110',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='1',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=9999,WKZ_90_H:='110',WKZ_90_V1:=WZ3_HHVE,WKZ_90_V2:=WZ3_HHV,WKZ_90_V3:=WZ3_HHVA,WKZ_90_D:=WZ3_HHSD,WINKEL:=_WR,VERBINDUNG:=0,SEITE:=1,BOHR:=0,DRILLINGD:=6,SEITETEIL:=3,VERBINDER:=1,ABSTAND:=Y,ABSTAND2:=X,ABSTAND3:=0,TSK:=0,FF:=1,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_RE,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+CALL _ZRechteck_2P_V5 ( VAL SX:=X - 3.5,SY:=Y+40,EX:=X+3.5,EY:=Y-40,FUELLEN:=1,FARBE:=0,ESXY1:=3,ESXY2:=3)
+ZText (TEXT,X+35,Y,25,0,9,0,'Times New Roman',0,0,0,0,3,1)
+ELSE
+;Mitte Platte mit WKG _Clamex_Nuter_WKG_ID
+CALL Clamex_V7 ( VAL WKZ_NUT_NR:=9999,WKZ_NUT_H:='110',WKZ_NUT_V1:=WZ6_HHVE,WKZ_NUT_V2:=WZ6_HHV,WKZ_NUT_V3:=WZ6_HHVA,WKZ_NUT_D:=WZ6_HHSD,WKZ_BOHR_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_H:='1',WKZ_BOHR_V1:=WZ5_HHVE,WKZ_BOHR_V2:=WZ5_HHV,WKZ_BOHR_V3:=WZ5_HHVA,WKZ_BOHR_D:=WZ5_HHSD,WKZ_BOHR_S_NR:=_Clamex_Bohrer_ID,WKZ_BOHR_S_H:='1',WKZ_BOHR_S_V1:=WZ5_HHVE,WKZ_BOHR_S_V2:=WZ5_HHV,WKZ_BOHR_S_V3:=WZ5_HHVA,WKZ_BOHR_S_D:=WZ5_HHSD,WKZ_FINGER_NR:=_Clamex_Stiftfraeser_ID,WKZ_FINGER_H:='110',WKZ_FINGER_V1:=WZ4_HHVE,WKZ_FINGER_V2:=WZ4_HHV,WKZ_FINGER_V3:=WZ4_HHVA,WKZ_FINGER_D:=WZ4_HHSD,WKZ_90_NR:=_Clamex_Nuter_WKG_ID,WKZ_90_H:='1',WKZ_90_V1:=WZ7_HHVE,WKZ_90_V2:=WZ7_HHV,WKZ_90_V3:=WZ7_HHVA,WKZ_90_D:=WZ7_HHSD,WINKEL:=_WR,VERBINDUNG:=0,SEITE:=1,BOHR:=0,DRILLINGD:=6,SEITETEIL:=3,VERBINDER:=1,ABSTAND:=Y,ABSTAND2:=X,ABSTAND3:=0,TSK:=0,FF:=_PSystemStift,TYP:=TYP_DIREKT,SK:=0,SPSK:=0,EPSK:=0,ADDEITI:=0,WUE:=10,BOU:=1.4,OTHERSIDE:=0,RES1:=0,RES2:=-111111,RES3:=_RZ/2,RES4:=_Z_POS_Winkel_RE,RES5:=-111111,RES6:=-111111,RES7:=-111111,RES8:=-111111,RES9:=-111111,RES10:=-111111,RES11:=-111111,RES12:=-111111,RES13:=-111111,RES14:=-111111,RES15:=-111111,RES16:='',RES17:='',RES18:='',RES19:='',RES20:='')
+CALL _ZRechteck_2P_V5 ( VAL SX:=X - 3.5,SY:=Y+40,EX:=X+3.5,EY:=Y-40,FUELLEN:=1,FARBE:=0,ESXY1:=3,ESXY2:=3)
+ZText (TEXT,X+35,Y,25,0,9,0,'Times New Roman',0,0,0,0,3,1)
+END
+END
+ELSE
+CALL P_S_RE_LI_FLAT_V7 ( VAL APV_1:=0,APV_2:=0,APV_3:=0,APV_4:=0,APV_5:=0,APV_6:=1,PDV_X_1:=9.5,PDV_X_2:=9.5,PDV_X_3:=X,AUSW_CLAMEXBISCO:=Typ,PDV_X_5:=9.5,PDV_X_4:=9.5,PDV_X_6:=X,PDV_Y_1:=60,PDV_Y_2:=0,PDV_Y_3:=Y,PDV_Y_4:=60,PDV_Y_5:=0,PDV_Y_6:=Y)
+END
+END
+END
+;Ende Kante 4
+END

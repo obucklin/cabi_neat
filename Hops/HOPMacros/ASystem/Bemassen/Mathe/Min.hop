@@ -1,0 +1,23 @@
+;MAKROTYP=1
+;BILD=
+;INFO=
+;WZGV=Demo
+;MASCHINE=Simu
+;NCNAME=Min
+;KOMMENTAR=
+;DX=0.000
+;DY=0.000
+;DZ=0.000
+;DIALOGDLL=Dialoge.Dll
+;DIALOGPROC=StandardFormAnzeigen
+VARS
+   W := 0;*VAR**REF*
+   W1 := 0;*VAR*
+   W2 := 0;*VAR*
+START
+IF W1<W
+W := W1
+END
+IF W2<W
+W := W2
+END
