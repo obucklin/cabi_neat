@@ -175,6 +175,7 @@ def test_per_section_hinges_drawers_and_drawer_shelves():
         Cell("drawer"),
         Cell(door_style="single", hinges={"hinge_count": 2, "cup_edge_distance": 3}),
         drawer_shelves=True,
+        drawer_shelf_width=70,
     )
     config = CabinetConfig(interior=interior, hinges={"end_distance": 80})
     layout = resolve_layout(config)
@@ -190,8 +191,11 @@ def test_per_section_hinges_drawers_and_drawer_shelves():
     # the options survive JSON and conversion to section form
     assert CabinetConfig.from_json(config.to_json()) == config
     converted = sectioned(config).interior
-    assert converted.drawer_shelves is True
+    assert converted.drawer_shelves is True and converted.drawer_shelf_width == 70
     assert converted.children[0].drawer == {"front_one_piece": True, "bottom_offset": 15}
     assert converted.children[2].hinges == {"hinge_count": 2, "cup_edge_distance": 3}
+    # shelf holes keep their place in section form
+    holes = CabinetConfig(interior=rows(Cell(), Cell(shelf_holes=False), Cell(door_style="single"), shelf_holes=True))
+    assert sorted((h.part, h.point) for h in resolve_layout(sectioned(holes)).holes) == sorted((h.part, h.point) for h in resolve_layout(holes).holes)
     with pytest.raises(ValueError, match="Unknown drawer settings"):
         Cell("drawer", drawer={"color": "red"})

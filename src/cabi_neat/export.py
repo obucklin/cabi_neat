@@ -1,4 +1,5 @@
-"""Fabrication output: BTLx (through compas_timber) and HOPS (see :mod:`cabi_neat.hops`).
+"""Fabrication output: BTLx (through compas_timber), HOPS (see :mod:`cabi_neat.hops`) and part outlines as DXF (see
+:mod:`cabi_neat.dxf`).
 
 Both work from a built :class:`cabi_neat.Cabinet` and return a report of what they left out. Features that aren't
 BTLx processings (the Clamex P-14 grooves) can't go into BTLx; the HOPS programs make them with the Clamex macros.
@@ -217,6 +218,44 @@ def hops_zip(cabinet, tools=None):
     return buffer.getvalue(), report
 
 
+# ==========================================================================
+# DXF
+# ==========================================================================
+
+
+def dxf(cabinet, filepath=None):
+    """The outlines of all the cabinet's parts in one DXF R12 file, for nesting, written to ``filepath`` if given.
+
+    See :mod:`cabi_neat.dxf` for what it contains.
+
+    Returns
+    -------
+    tuple(str, :class:`ExportReport`)
+    """
+    from .dxf import DxfPart
+    from .dxf import dxf_bytes
+    from .dxf import plate_outline
+    from .dxf import to_dxf
+
+    report = ExportReport()
+    parts = []
+    for part in cabinet.layout.parts:
+        plate = cabinet.plates[part.name]
+        try:
+            outline, pieces = plate_outline(plate)
+        except Exception as e:  # keep going: one part's problem shouldn't stop the others
+            report.errors.append("{}: {}".format(part.name, e))
+            continue
+        if pieces > 1:
+            report.errors.append("{}: the part falls apart into {} pieces, only the largest is drawn".format(part.name, pieces))
+        parts.append(DxfPart(part.name, plate.thickness, outline))
+    text = to_dxf(parts)
+    if filepath:
+        with open(filepath, "wb") as f:
+            f.write(dxf_bytes(text))
+    return text, report
+
+
 def _short_summary(report):
     """A one-line summary of a report, e.g. for a response header."""
     from collections import Counter
@@ -227,19 +266,20 @@ def _short_summary(report):
 
 
 def main():
-    """Export a cabinet config to BTLx and/or HOPS: ``python -m cabi_neat.export cabinet.json --btlx out.btlx --hops out/``."""
+    """Export a cabinet config: ``python -m cabi_neat.export cabinet.json --btlx out.btlx --hops out/ --dxf outlines.dxf``."""
     import argparse
 
     from .builder import Cabinet
     from .config import CabinetConfig
 
-    parser = argparse.ArgumentParser(description="Export a cabinet to BTLx and/or HOPS.")
+    parser = argparse.ArgumentParser(description="Export a cabinet to BTLx, HOPS and/or DXF.")
     parser.add_argument("config", help="Cabinet config JSON file.")
     parser.add_argument("--btlx", help="BTLx file to write.")
     parser.add_argument("--hops", help="Directory to write one .hop file per part into.")
+    parser.add_argument("--dxf", help="DXF file to write the part outlines to, for nesting.")
     args = parser.parse_args()
-    if not (args.btlx or args.hops):
-        parser.error("give --btlx and/or --hops")
+    if not (args.btlx or args.hops or args.dxf):
+        parser.error("give --btlx, --hops and/or --dxf")
     cabinet = Cabinet(CabinetConfig.from_json(args.config))
     for error in cabinet.errors:
         print("Joinery: {}".format(error))
@@ -249,6 +289,9 @@ def main():
     if args.hops:
         files, report = hops(cabinet, args.hops)
         print("{} HOPS files written to {}. {}".format(len(files), args.hops, report.summary()))
+    if args.dxf:
+        _, report = dxf(cabinet, args.dxf)
+        print("DXF written to {}. {}".format(args.dxf, report.summary()))
 
 
 if __name__ == "__main__":

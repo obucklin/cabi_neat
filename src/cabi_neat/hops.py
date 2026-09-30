@@ -7,8 +7,9 @@ and ``Park_V7``, then the machining:
 * pockets (rabbets, grooves, mortises, housings): ``_RechteckTasche_V5`` with the largest router that fits,
   ``_ExecutePocket_V5`` for other shapes;
 * hinge pots: ``_Kreisbahn_V5`` with a router (403 Ø20);
-* drillings: ``Bohrung`` into faces and ``HorzB`` into edges, always with a spindle drill of the hole's diameter
-  (``WZB``), never the drill head;
+* drillings: ``Bohrung`` into faces and ``HorzB`` into edges, with a spindle drill of the hole's diameter (``WZB``).
+  Shelf holes use the drill head instead (``WZB`` 501, as the workshop's macros call it) if it has a bit of their
+  diameter that's long enough;
 * Clamex P-14: in faces ``Clamex_MS_FI`` (finger mill), in edges ``Clamex1_Stumpf`` (ends) and ``Clamex1_Stumpf_X``
   (long edges) with the disc, including the access holes.
 
@@ -67,6 +68,10 @@ ETH_DRILLS = (
     Drill(603, 8.0, 80.0, "Drill Ø8"),  # in the table, not loaded yet
     Drill(602, 3.0, 30.0, "Drill Ø3"),  # not in the table yet: number and length are placeholders
 )
+# the drill head (Bohrkopf), as the workshop's macros call it (_Drill_Standard_ID), and its vertical bits
+DRILL_HEAD = 501
+ETH_DRILL_HEAD_BITS = (Drill(DRILL_HEAD, 5.0, 30.0, "Drill head Ø5"),)  # assumed: check against the machine's drill head
+
 # routers in the table that aren't for pockets
 NOT_FOR_POCKETS = (401,)  # Turbex lock-case cutter
 
@@ -82,7 +87,10 @@ class HopsTools:
     Parameters
     ----------
     routers, drills
-        What's in the tool changer. Default: the ETH machine (tool table 260611_ETH). The drill head isn't used.
+        What's in the tool changer. Default: the ETH machine (tool table 260611_ETH).
+    drill_head, drill_head_bits
+        The drill head's tool number (``WZB``) and its vertical bits, as :class:`Drill` s with that number. Shelf holes
+        use it when it has a bit of their diameter that's long enough; ``()`` never uses it.
     saw
         Saw blade for the format (``WZS``).
     clamex_disc, clamex_finger, clamex_drill
@@ -102,6 +110,8 @@ class HopsTools:
 
     routers: Tuple[Router, ...] = ETH_ROUTERS
     drills: Tuple[Drill, ...] = ETH_DRILLS
+    drill_head: int = DRILL_HEAD
+    drill_head_bits: Tuple[Drill, ...] = ETH_DRILL_HEAD_BITS
     saw: int = 201
     clamex_disc: int = 108
     clamex_finger: int = 136
@@ -117,8 +127,8 @@ class HopsTools:
     def from_too(cls, path, **kwargs):
         """Tools from a HOPS tool table (``.too``, UTF-16). Only loaded tools (a tool number other than -1) are used.
 
-        Routers are the group ``Schaft`` (except those in ``NOT_FOR_POCKETS``), drills ``Drill`` and the saw the first
-        of ``Saw blades``. The drill head (``Bohrkopf``) isn't used. Other settings are passed on as ``kwargs``.
+        Routers are the group ``Schaft`` (except those in ``NOT_FOR_POCKETS``), drills ``Drill``, the drill head's bits
+        ``Bohrkopf`` and the saw the first of ``Saw blades``. Other settings are passed on as ``kwargs``.
         """
         import configparser
 
@@ -128,7 +138,8 @@ class HopsTools:
         table = configparser.ConfigParser(strict=False, interpolation=None)
         table.optionxform = str
         table.read_string(text)
-        routers, drills, saws = [], [], []
+        routers, drills, saws, head = [], [], [], []
+        head_number = kwargs.get("drill_head", DRILL_HEAD)
         for i in range(int(table["ToolsCount"]["Tools"])):
             tool = table["ToolData{}".format(i)]
             edge = table["ToolData{}CuttingEdge0".format(i)]
@@ -142,10 +153,13 @@ class HopsTools:
                 routers.append(Router(number, diameter, usable, name))
             elif group == "Drill":
                 drills.append(Drill(number, diameter, usable, name))
+            elif group == "Bohrkopf":
+                head.append(Drill(head_number, diameter, usable, name))
             elif group == "Saw blades":
                 saws.append(number)
         kwargs.setdefault("routers", tuple(sorted(routers, key=lambda r: -r.diameter)))
         kwargs.setdefault("drills", tuple(drills))
+        kwargs.setdefault("drill_head_bits", tuple(head))
         if saws:
             kwargs.setdefault("saw", saws[0])
         return cls(**kwargs)
@@ -159,6 +173,13 @@ class HopsTools:
         """The shortest spindle drill of ``diameter`` that reaches ``depth``, or None."""
         drills = [d for d in self.drills if _close(d.diameter, diameter) and d.usable_length >= depth]
         return min(drills, key=lambda d: d.usable_length, default=None)
+
+    def head_drill_for(self, diameter, depth):
+        """A bit of the drill head for a hole into a face if one fits, else :meth:`drill_for`."""
+        bits = [d for d in self.drill_head_bits if _close(d.diameter, diameter) and d.usable_length >= depth]
+        if bits:
+            return bits[0]
+        return self.drill_for(diameter, depth)
 
     def closest_drills(self, diameter):
         """Diameters that could drill instead, for messages."""
@@ -677,8 +698,11 @@ class PlateProgram:
             if through or depth >= thickness - 1e-6:
                 depth = thickness + self.tools.through_overcut
             x, y, _ = self.space.hops_point(local_entry, face)
-            drill = self.tools.drill_for(diameter, depth)
+            # shelf holes (see cabi_neat.builder) with the drill head if possible, everything else with a spindle drill
+            drill = self.tools.head_drill_for(diameter, depth) if getattr(drilling, "shelf_hole", False) else self.tools.drill_for(diameter, depth)
             comment = "Drilling D{}, {} deep".format(_n(diameter), _n(depth))
+            if drill is not None and drill.number == self.tools.drill_head:
+                comment += " (drill head)"
             if drill is not None:
                 return [_Op("drill", drill.number, [_bohrung(x, y, diameter, depth)], comment, face, (y, x))]
             self._skip("drilling D{} {} deep - no drill for it (closest: {})".format(_n(diameter), _n(depth), ", ".join("D" + _n(d) for d in self.tools.closest_drills(diameter))))

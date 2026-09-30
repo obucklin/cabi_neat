@@ -9,6 +9,7 @@ from compas_timber.btlx import BTLxReader  # noqa: E402
 from cabi_neat import Cabinet  # noqa: E402
 from cabi_neat import CabinetConfig  # noqa: E402
 from cabi_neat import export  # noqa: E402
+from cabi_neat.hops import Drill  # noqa: E402
 from cabi_neat.hops import HopsTools  # noqa: E402
 from cabi_neat.hops import Router  # noqa: E402
 
@@ -116,6 +117,10 @@ def test_hops_tools():
     assert tools.drill_for(8, 20).number == 603
     assert tools.drill_for(5, 40) is None
     assert tools.drill_for(7, 10) is None
+    # shelf holes: the drill head if it has a bit for them, else a spindle drill
+    assert tools.head_drill_for(5, 12).number == 501
+    assert tools.head_drill_for(8, 12).number == 603
+    assert HopsTools(drill_head_bits=()).head_drill_for(5, 12).number == 609
 
 
 def test_hops_tools_from_tool_table(tmp_path):
@@ -161,6 +166,7 @@ UseableLength=110
     tools = HopsTools.from_too(str(path), clamex_disc=109)
     assert tools.routers == (Router(403, 20.0, 95.0, "Turbex D20"),)
     assert tools.drills == ()  # not in the tool changer
+    assert tools.drill_head_bits == (Drill(501, 35.0, 50.0, "35 mm"),)
     assert tools.saw == 202 and tools.clamex_disc == 109
 
 
@@ -207,3 +213,89 @@ def test_hops_stopped_dado_tenons_are_milled_from_the_end():
     assert left[2:7] == ["G01 (-26.7,0,0,0,0,2)", "G02R (-20,-6.7,0,6.7,0,0,2)", "G01 (-20,-11.3,0,0,0,2)", "G02R (-26.7,-18,0,6.7,0,0,2)", "G01 (-31.7,-18,0,0,0,2)"]
     # and a straight pass for the rest of the notch, out to the edge
     assert left[8].startswith("SP (-2.58,11.7,-6,0,")
+
+
+def _dxf_pairs(text):
+    lines = text.split("\n")
+    return [(int(lines[i]), lines[i + 1]) for i in range(0, len(lines) - 1, 2)]
+
+
+def test_dxf(cabinet, tmp_path):
+    from cabi_neat.dxf import layer_name
+
+    path = tmp_path / "outlines.dxf"
+    text, report = export.dxf(cabinet, str(path))
+    assert report.errors == []
+    assert b"\r\n" in path.read_bytes()
+    pairs = _dxf_pairs(text)
+    assert (1, "AC1009") in pairs
+    # one block and one insert per part, on the layer of its thickness
+    assert pairs.count((0, "BLOCK")) == len(cabinet.plates)
+    inserts = [i for i, p in enumerate(pairs) if p == (0, "INSERT")]
+    assert len(inserts) == len(cabinet.plates)
+    layers = {pairs[i + 1][1] for i in inserts}
+    assert layers == {layer_name(p.thickness) for p in cabinet.plates.values()}
+    assert text.count("\nTEXT\n") == len(cabinet.plates)
+    for name in cabinet.plates:
+        assert "\n{}\n".format(name.upper()) in text and "\n{}\n".format(name) in text
+
+
+def test_dxf_outlines(cabinet):
+    from cabi_neat.dxf import plate_outline
+
+    # a shelf with two tenons on each end: its outline has them
+    shelf = cabinet.plates[[n for n in cabinet.plates if n.startswith("shelf")][0]]
+    outline, pieces = plate_outline(shelf)
+    assert pieces == 1
+    assert len(outline) == 4 + 2 * 2 * 4
+    xs, ys = zip(*outline)
+    box = shelf.modelgeometry.aabb
+    assert max(xs) == pytest.approx(box.xmax - box.xmin, abs=0.01)
+    assert max(ys) == pytest.approx(box.ymax - box.ymin, abs=0.01)
+    # a side with pockets and grooves that don't go through is a plain rectangle
+    outline, _ = plate_outline(cabinet.plates["side_left"])
+    assert sorted(outline) == pytest.approx(sorted([(0, 0), (500, 0), (500, 1200), (0, 1200)]), abs=0.01)
+
+
+def test_dxf_arrangement():
+    from cabi_neat.dxf import DxfPart
+    from cabi_neat.dxf import arrange
+
+    parts = [DxfPart("p{}".format(i), t, [(0, 0), (w, 0), (w, h), (0, h)]) for i, (t, w, h) in enumerate([(18, 800, 500), (18, 1200, 500), (18, 2500, 400), (8, 700, 700), (18, 300, 200)])]
+    placed = arrange(parts, row_width=3000, gap=50)
+    boxes = {p.name: (x, y, x + p.width, y + p.height) for p, (x, y) in placed}
+    names = list(boxes)
+    for i, a in enumerate(names):
+        for b in names[i + 1 :]:
+            A, B = boxes[a], boxes[b]
+            assert A[2] + 50 <= B[0] + 1e-9 or B[2] + 50 <= A[0] + 1e-9 or A[3] + 50 <= B[1] + 1e-9 or B[3] + 50 <= A[1] + 1e-9, (a, b)
+    # thinnest first, at the top; each thickness in its own band below
+    assert boxes["p3"][1] > max(boxes[n][3] for n in ("p0", "p1", "p2", "p4"))
+    assert all(boxes[n][2] <= 3000 for n in names)
+
+
+def test_dxf_reads_back(cabinet, tmp_path):
+    ezdxf = pytest.importorskip("ezdxf")
+    path = tmp_path / "outlines.dxf"
+    export.dxf(cabinet, str(path))
+    doc = ezdxf.readfile(str(path))
+    assert doc.dxfversion == "AC1009"
+    assert not doc.audit().has_errors
+    inserts = doc.modelspace().query("INSERT")
+    assert len(inserts) == len(cabinet.plates)
+    block = doc.blocks.get("SIDE_LEFT")
+    assert [e.dxftype() for e in block] == ["POLYLINE", "TEXT"]
+    assert block.query("POLYLINE")[0].is_closed
+
+
+def test_hops_shelf_holes_use_the_drill_head():
+    from cabi_neat.config import Cell
+
+    cabinet = Cabinet(CabinetConfig(interior=Cell(door_style="single", shelf_holes=True)))
+    side = export.hops(cabinet)[0]["side_left.hop"]
+    drilled = len([h for h in cabinet.layout.holes if h.part == "side_left"]) - len(cabinet.skipped_holes)
+    assert "WZB (501,_VE,_V,_VA,_SD,_ANF,'1')" in side
+    assert side.count("(drill head)") == drilled
+    assert side.count(",5,-8,10,") == drilled
+    # the hinge plates' holes still use the spindle drill
+    assert "WZB (609," in side and side.count(",5,-12,10,") == 8

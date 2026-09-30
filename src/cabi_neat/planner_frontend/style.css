@@ -616,3 +616,8 @@ details.collapsible > summary .changed {
   border-radius: 4px;
   box-shadow: inset 3px 0 0 var(--accent);
 }
+
+.shelf-hole {
+  stroke: #2f6fdb;
+  opacity: 0.7;
+}

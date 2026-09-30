@@ -15,7 +15,7 @@ dependencies = ["compas_timber"]
 [project.optional-dependencies]
 occ = ["compas_brep[occ]"]
 viewer = ["compas_threejs", "compas_brep[occ]"]
-dev = ["pytest>=8", "ruff", "compas_brep[occ]"]
+dev = ["pytest>=8", "ruff", "compas_brep[occ]", "ezdxf"]
 
 [project.scripts]
 cabi-neat = "cabi_neat.__main__:main"

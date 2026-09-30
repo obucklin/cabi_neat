@@ -51,6 +51,8 @@ def _collapse(node):
     if len(node.children) == 1 and not node.one_door:
         child = node.children[0]
         child.size = node.size
+        if child.shelf_holes is None:
+            child.shelf_holes = node.shelf_holes
         return child
     return node
 
@@ -64,10 +66,10 @@ def _section_cell(cell, style, hinge, covered):
     style = cell.door_style or style
     hinge = cell.hinge_side or hinge
     if cell.kind == ZoneKind.DRAWER:
-        return Cell(ZoneKind.DRAWER, door_style=DoorStyle.NONE, hinge_side=HingeSide.LEFT, drawer=cell.drawer)
+        return Cell(ZoneKind.DRAWER, door_style=DoorStyle.NONE, hinge_side=HingeSide.LEFT, drawer=cell.drawer, shelf_holes=cell.shelf_holes)
     if covered:
-        return Cell(door_style=DoorStyle.NONE, hinge_side=HingeSide.LEFT)
-    return Cell(door_style=style, hinge_side=hinge, hinges=cell.hinges)
+        return Cell(door_style=DoorStyle.NONE, hinge_side=HingeSide.LEFT, shelf_holes=cell.shelf_holes)
+    return Cell(door_style=style, hinge_side=hinge, hinges=cell.hinges, shelf_holes=cell.shelf_holes)
 
 
 def _section_split(node, path, regions, style, hinge, t, covered):
@@ -104,7 +106,7 @@ def _section_split(node, path, regions, style, hinge, t, covered):
         indices = group["indices"]
         first = node.children[indices[0]]
         if len(indices) > 1:
-            cells = [Cell(door_style=DoorStyle.NONE, hinge_side=HingeSide.LEFT) for _ in indices]
+            cells = [Cell(door_style=DoorStyle.NONE, hinge_side=HingeSide.LEFT, shelf_holes=node.children[i].shelf_holes) for i in indices]
             if any(node.children[i].size is not None for i in indices):
                 # keep the members where they are; the last one takes whatever the group's size leaves
                 for k, i in enumerate(indices[:-1]):
@@ -133,6 +135,18 @@ def _section_split(node, path, regions, style, hinge, t, covered):
     panel_joints = joints([group["indices"][-1] for group in groups[:-1]])
     if own_door:
         return Split(
-            node.direction, children, door_style=style, hinge_side=hinge, one_door=True, panel_joints=panel_joints, hinges=node.hinges, drawer_shelves=node.drawer_shelves
+            node.direction, children, door_style=style, hinge_side=hinge, one_door=True, panel_joints=panel_joints, hinges=node.hinges,
+            drawer_shelves=node.drawer_shelves,
+            drawer_shelf_width=node.drawer_shelf_width,
+            shelf_holes=node.shelf_holes,
         )
-    return Split(node.direction, children, door_style=DoorStyle.NONE, hinge_side=HingeSide.LEFT, panel_joints=panel_joints, drawer_shelves=node.drawer_shelves)
+    return Split(
+        node.direction,
+        children,
+        door_style=DoorStyle.NONE,
+        hinge_side=HingeSide.LEFT,
+        panel_joints=panel_joints,
+        drawer_shelves=node.drawer_shelves,
+        drawer_shelf_width=node.drawer_shelf_width,
+        shelf_holes=node.shelf_holes,
+    )

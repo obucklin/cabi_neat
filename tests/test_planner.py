@@ -144,6 +144,18 @@ def test_export_errors_are_readable(planner, monkeypatch):
     assert b"HOPS export failed: ValueError: no plates" in response.body
 
 
+def test_export_dxf(planner):
+    from cabi_neat import Cabinet
+
+    assert ("/planner/api/export/dxf", ("GET",)) in planner.configurator.app.routes
+    planner.configurator.stale = False
+    planner.configurator.cabinet = Cabinet(planner.configurator.config)
+    response = planner.get_dxf()
+    assert response.status_code == 200 and response.media_type == "application/dxf"
+    assert b"AC1009\r\n" in response.body
+    assert 'filename="cabinet_outlines.dxf"' in response.headers["content-disposition"]
+
+
 def test_new_cabinet(planner):
     from cabi_neat.config import Cell
 
@@ -164,3 +176,13 @@ def test_highlight_and_pick(planner):
     assert planner.get_version()["pick"] == {"name": "shelf_0_1", "count": 3}
     door = next(p for p in planner.get_state()["layout"]["parts"] if p["category"] == "door")
     assert len(door["attributes"]["hinges"]) == 4 and door["attributes"]["cup_diameter"] == 35
+
+
+def test_layout_to_data_shelf_holes():
+    from cabi_neat.config import Cell
+
+    data = layout_to_data(resolve_layout(CabinetConfig(interior=Cell(shelf_holes=True))))
+    # one mark per height and side (the front and rear rows coincide in the front view): x of the face, z, into the panel, depth
+    left = [h for h in data["holes"] if h[2] < 0]
+    assert left and all(h[0] == pytest.approx(18) and h[3] == pytest.approx(8) for h in left)
+    assert len(data["holes"]) == 2 * len(left)
