@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  setShelfHoles,
+  shelfHolesOf,
+  setDrawerShelfWidth,
   coveredBy,
   dividersOf,
   doorOf,
@@ -253,6 +256,12 @@ test("drawers fill a section, replace its shelves, and apply to every column", (
   assert.equal(drawersOf(root), 2);
   root = setDrawerShelves(root, [], true);
   assert.ok(root.children.every((c) => c.drawer_shelves === true));
+  root = setDrawerShelfWidth(root, [], 80);
+  assert.ok(root.children.every((c) => c.drawer_shelf_width === 80));
+  // the rails stay when the drawer count changes
+  assert.equal(setDrawers(root, [], 3).children[0].drawer_shelf_width, 80);
+  root = setDrawerShelfWidth(root, [], null);
+  assert.ok(root.children.every((c) => c.drawer_shelf_width === null));
   // drawer settings carry over when the count changes
   let one = setDrawers(cell(), [], 1);
   one.drawer = { bottom_offset: 12 };
@@ -296,4 +305,18 @@ test("drawer settings apply to every drawer of a section", () => {
   root = setDrawerOption(root, [], "bottom_offset", null);
   assert.equal(firstDrawer(root).drawer, null);
   assert.equal(firstDrawer(setShelves(cell(), [], 1)), null);
+});
+
+test("shelf holes are inherited and switched per section", () => {
+  let root = setDividers(cell(), [], 1);
+  assert.equal(shelfHolesOf(root, [0]), false);
+  root = setShelfHoles(root, [], true);
+  assert.equal(shelfHolesOf(root, [0]), true);
+  root = setShelfHoles(root, [1], false);
+  assert.equal(shelfHolesOf(root, [0]), true);
+  assert.equal(shelfHolesOf(root, [1]), false);
+  // switching a section clears what's set inside it
+  root = setShelfHoles(root, [], true);
+  assert.equal(root.children[1].shelf_holes, null);
+  assert.equal(shelfHolesOf(root, [1]), true);
 });

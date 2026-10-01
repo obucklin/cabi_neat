@@ -47,6 +47,31 @@ export function coveredBy(root, path) {
   return null;
 }
 
+/** Whether the section at `path` gets shelf holes: its own setting, else the nearest ancestor's (default: no). */
+export function shelfHolesOf(root, path) {
+  for (let n = path.length; n >= 0; n--) {
+    const own = getNode(root, path.slice(0, n)).shelf_holes;
+    if (own !== null && own !== undefined) return own;
+  }
+  return false;
+}
+
+/** Switch shelf holes on or off for the section at `path` and everything in it. */
+export function setShelfHoles(root, path, on) {
+  root = clone(root);
+  const node = getNode(root, path);
+  const clear = (n) => {
+    if (!isSplit(n)) return;
+    for (const child of n.children) {
+      child.shelf_holes = null;
+      clear(child);
+    }
+  };
+  clear(node);
+  node.shelf_holes = on;
+  return root;
+}
+
 function replace(root, path, node) {
   if (path.length === 0) return node;
   getNode(root, path.slice(0, -1)).children[path[path.length - 1]] = node;
@@ -103,7 +128,11 @@ function collapseTo(node, first) {
     result.hinges = node.hinges ?? null;
     if (isSplit(result)) result.one_door = true;
   }
-  if (isSplit(result) && isSplit(node)) result.drawer_shelves = node.drawer_shelves ?? null;
+  result.shelf_holes = node.shelf_holes ?? first.shelf_holes ?? null;
+  if (isSplit(result) && isSplit(node)) {
+    result.drawer_shelves = node.drawer_shelves ?? null;
+    result.drawer_shelf_width = node.drawer_shelf_width ?? null;
+  }
   return result;
 }
 
@@ -381,6 +410,7 @@ function withDrawers(node, n) {
     one_door: false,
     panel_joints: null,
     drawer_shelves: isSplit(node) && existing ? (node.drawer_shelves ?? null) : null,
+    drawer_shelf_width: isSplit(node) && existing ? (node.drawer_shelf_width ?? null) : null,
   };
 }
 
@@ -397,13 +427,23 @@ export function setDrawers(root, path, n) {
   return replace(root, path, withDrawers(node, n));
 }
 
-/** Set "shelves between drawers" for the drawer stacks of the section at `path` (every column's, with dividers). */
-export function setDrawerShelves(root, path, on) {
+/** Set `field` (e.g. "drawer_shelves") of the drawer stacks of the section at `path` (every column's, with dividers). */
+export function setDrawerStacks(root, path, field, value) {
   root = clone(root);
   const node = getNode(root, path);
   const stacks = node.direction === COLUMNS ? node.children.filter(isSplit) : [node];
-  for (const stack of stacks) stack.drawer_shelves = on;
+  for (const stack of stacks) stack[field] = value;
   return root;
+}
+
+/** Set "shelves between drawers" for the drawer stacks of the section at `path` (every column's, with dividers). */
+export function setDrawerShelves(root, path, on) {
+  return setDrawerStacks(root, path, "drawer_shelves", on);
+}
+
+/** Make the shelves between drawers of the section at `path` front rails `width` deep (null: full-depth shelves). */
+export function setDrawerShelfWidth(root, path, width) {
+  return setDrawerStacks(root, path, "drawer_shelf_width", width);
 }
 
 // ============================================================================

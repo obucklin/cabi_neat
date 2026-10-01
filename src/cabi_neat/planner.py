@@ -9,6 +9,7 @@ from pathlib import Path
 from fastapi import Body
 from fastapi import Response
 
+from .config import SHELF_HOLE_DEFAULTS
 from .config import CabinetConfig
 from .config import Cell
 from .joints import CupHingeJoint
@@ -37,7 +38,9 @@ def layout_to_data(layout):
                 "attributes": {k: v for k, v in p.attributes.items() if k in _PART_ATTRIBUTES},
             }
         )
-    return {"parts": parts, "regions": {k: list(v) for k, v in layout.regions.items()}}
+    # shelf holes projected onto the front: (x of the panel face, z, direction into the panel along x, depth), once per height
+    holes = sorted({(h.point[0], h.point[2], h.direction[0], h.depth) for h in layout.holes})
+    return {"parts": parts, "regions": {k: list(v) for k, v in layout.regions.items()}, "holes": [list(h) for h in holes]}
 
 
 def _export_error(kind, error, message=None):
@@ -99,8 +102,8 @@ class Planner:
         ``{"rows": [[category, name, length, width, thickness], ...]}`` for the current cabinet.
     ``GET /planner/api/new``
         A fresh cabinet's config: default dimensions and settings, and an empty interior.
-    ``GET /planner/api/export/btlx``, ``GET /planner/api/export/hops``
-        The cabinet as a BTLx file, or its HOPS jobs as a zip (generating the model first if needed). The header
+    ``GET /planner/api/export/btlx``, ``GET /planner/api/export/hops``, ``GET /planner/api/export/dxf``
+        The cabinet as a BTLx file, its HOPS jobs as a zip, or its part outlines as a DXF (generating the model first if needed). The header
         ``X-Export-Summary`` says what couldn't be exported.
     ``POST /planner/api/display``
         ``{"show_fronts", "open_fronts"}`` (either optional): what the 3D view shows.
@@ -118,6 +121,7 @@ class Planner:
         app.add_route("/planner/api/highlight", self.post_highlight, methods=("POST",))
         app.add_route("/planner/api/export/btlx", self.get_btlx)
         app.add_route("/planner/api/export/hops", self.get_hops)
+        app.add_route("/planner/api/export/dxf", self.get_dxf)
         app.add_route("/planner/api/display", self.post_display, methods=("POST",))
         app.add_static_mount("/planner", FRONTEND_DIR, name="planner_frontend")
         _revalidate_planner_files(app)
@@ -154,6 +158,7 @@ class Planner:
             "stale": self.configurator.stale,
             "joint_defaults": config.joint_defaults(),
             "hinge_defaults": {key: CupHingeJoint.PARAMETERS[key] for key in CupHingeJoint.DIMENSIONS},
+            "shelf_hole_defaults": SHELF_HOLE_DEFAULTS,
         }
 
     def post_generate(self):
@@ -187,6 +192,16 @@ class Planner:
         except Exception as e:
             return _export_error("HOPS", e)
         return Response(content=data, media_type="application/zip", headers=_download_headers("cabinet_hops.zip", report))
+
+    def get_dxf(self):
+        from . import export
+        from .dxf import dxf_bytes
+
+        try:
+            text, report = export.dxf(self._built_cabinet())
+        except Exception as e:
+            return _export_error("DXF", e)
+        return Response(content=dxf_bytes(text), media_type="application/dxf", headers=_download_headers("cabinet_outlines.dxf", report))
 
     def get_cut_list(self):
         # the cut list is measured on the built plates

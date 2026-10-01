@@ -166,14 +166,29 @@ JOINT_PARAMETERS = {
 }
 
 
+# the dimensions of shelf holes that can be set in CabinetConfig.shelf_hole_options: 32 mm system holes for shelf pins
+SHELF_HOLE_DEFAULTS = {
+    "diameter": 5.0,
+    "depth": None,  # None: half the panel thickness minus 1, so holes drilled from both faces of a divider don't meet
+    "spacing": 32.0,
+    "front_distance": 37.0,  # from the panel's front edge to the front row
+    "back_distance": 37.0,  # from the back panel to the rear row
+    "end_distance": 50.0,  # minimum from a compartment's bottom and top to the nearest hole
+}
+SHELF_HOLE_OPTIONS = tuple(SHELF_HOLE_DEFAULTS)
+
+
 # per-drawer settings (Cell.drawer), each defaulting to the cabinet's field in DRAWER_DEFAULTS
-DRAWER_OPTIONS = ("front_one_piece", "bottom_offset", "bottom_thickness", "groove_depth")
+DRAWER_OPTIONS = ("front_one_piece", "bottom_offset", "bottom_thickness", "groove_depth", "side_height")
 DRAWER_DEFAULTS = {
     "front_one_piece": "drawer_front_one_piece",
     "bottom_offset": "drawer_bottom_offset",
     "bottom_thickness": "drawer_bottom_thickness",
     "groove_depth": "drawer_groove_depth",
+    "side_height": "drawer_side_height",
 }
+# how much lower than its front a drawer box is, unless its side height is set
+DRAWER_SIDE_REDUCTION = 20.0
 
 
 def _check_options(options, allowed, what):
@@ -222,6 +237,8 @@ class Cell:
         Hinge dimensions for this compartment's door, over the cabinet's ``hinges`` (see ``HINGE_DIMENSIONS``).
     drawer
         Settings for this drawer, over the cabinet's (see ``DRAWER_OPTIONS``).
+    shelf_holes
+        Drill rows of shelf holes into the panels left and right of this compartment. ``None`` inherits from the parent.
     """
 
     kind: ZoneKind = ZoneKind.OPEN
@@ -230,6 +247,7 @@ class Cell:
     hinge_side: Optional[HingeSide] = None
     hinges: Optional[dict] = None
     drawer: Optional[dict] = None
+    shelf_holes: Optional[bool] = None
 
     def __post_init__(self):
         self.kind = ZoneKind(self.kind)
@@ -246,6 +264,7 @@ class Cell:
             "hinge_side": _enum_value(self.hinge_side),
             "hinges": dict(self.hinges) if self.hinges else None,
             "drawer": dict(self.drawer) if self.drawer else None,
+            "shelf_holes": self.shelf_holes,
         }
 
 
@@ -284,6 +303,12 @@ class Split:
         Hinge dimensions for this split's door (with ``one_door``), over the cabinet's ``hinges``.
     drawer_shelves
         Put shelves between stacked drawers in this split, overriding the cabinet's ``shelves_between_drawers``.
+    drawer_shelf_width
+        Make the shelves between stacked drawers in this split front rails this deep, overriding the cabinet's
+        ``drawer_shelf_width``.
+    shelf_holes
+        Drill shelf holes for every open compartment in this split (see :attr:`Cell.shelf_holes`). ``None`` inherits
+        from the parent.
     """
 
     direction: SplitDirection = SplitDirection.ROWS
@@ -295,6 +320,8 @@ class Split:
     panel_joints: Optional[List[Union[None, str, dict]]] = None
     hinges: Optional[dict] = None
     drawer_shelves: Optional[bool] = None
+    drawer_shelf_width: Optional[float] = None
+    shelf_holes: Optional[bool] = None
 
     def __post_init__(self):
         self.direction = SplitDirection(self.direction)
@@ -328,6 +355,8 @@ class Split:
             "panel_joints": [dict(j) if isinstance(j, dict) else j for j in self.panel_joints] if self.panel_joints is not None else None,
             "hinges": dict(self.hinges) if self.hinges else None,
             "drawer_shelves": self.drawer_shelves,
+            "drawer_shelf_width": self.drawer_shelf_width,
+            "shelf_holes": self.shelf_holes,
         }
 
 
@@ -374,6 +403,15 @@ class CabinetConfig:
         Distance from each end of a joining edge to the nearest Clamex connector.
     clamex_center
         Add a Clamex connector in the middle of each joining edge.
+    countertop
+        Replace the carcass top with a countertop lying on the sides and the back, so it can overhang the carcass.
+        ``height`` is then the overall height, countertop included.
+    countertop_thickness
+        Thickness of the countertop. ``None`` uses the carcass ``thickness``.
+    countertop_overhang_front, countertop_overhang_back, countertop_overhang_left, countertop_overhang_right
+        How far the countertop reaches beyond the carcass on each side.
+    countertop_joint
+        How the sides join the countertop: ``"clamex_p14"`` (with ``clamex_distance`` and ``clamex_center``) or ``"butt"``.
     interior_joint
         Default for how shelves and dividers join the carcass and each other: ``"mortise_tenon"``, ``"clamex_p14"``,
         ``"stopped_dado"`` (a groove open at the back, so the panel slides in from behind) or ``"butt"``. Each panel can override it (see :attr:`Split.panel_joints`).
@@ -388,6 +426,9 @@ class CabinetConfig:
     hinges
         Door hinge dimensions that differ from :class:`cabi_neat.joints.CupHingeJoint`'s defaults, e.g.
         ``{"door_hole_spacing": 52, "hinge_count": 3}``. The hinge type follows ``door_mount``.
+    shelf_hole_options
+        Shelf hole dimensions that differ from ``SHELF_HOLE_DEFAULTS``, e.g. ``{"depth": 12, "end_distance": 80}``.
+        Which compartments get shelf holes is set in the interior (:attr:`Cell.shelf_holes`, :attr:`Split.shelf_holes`).
     front_thickness
         Thickness of doors and drawer fronts.
     columns
@@ -415,12 +456,18 @@ class CabinetConfig:
         Depth of the grooves holding drawer bottoms. ``None`` uses half the grooved panel's thickness.
     drawer_clearance
         Gap between a drawer box side and the carcass (space for runners).
+    drawer_side_height
+        Height of drawer box sides (and the box's front and back). ``None`` makes them ``DRAWER_SIDE_REDUCTION`` (20)
+        lower than the drawer's front, but at most as high as fits below ``drawer_top_clearance``.
     drawer_top_clearance
-        Gap between the top of a drawer box and the zone above.
+        Minimum gap between the top of a drawer box and what's above it (a shelf, the carcass top, the next drawer's box).
     drawer_height
         Default clear height of drawer zones that don't set their own. ``None`` shares the height like other zones.
     shelves_between_drawers
         Put a shelf between stacked drawers. Without it, stacked drawers are only separated by the front gap.
+    drawer_shelf_width
+        Make the shelves between stacked drawers front rails: strips this deep at the front of the cabinet, not joined to
+        the back. ``None`` makes them full-depth shelves.
     drawer_front_one_piece
         Use the visible drawer front as the front of the drawer box, instead of a separate box front behind it.
     drawer_depth
@@ -439,12 +486,20 @@ class CabinetConfig:
     carcass_joint: str = "clamex_p14"
     clamex_distance: float = 60.0
     clamex_center: bool = True
+    countertop: bool = False
+    countertop_thickness: Optional[float] = None
+    countertop_overhang_front: float = 20.0
+    countertop_overhang_back: float = 0.0
+    countertop_overhang_left: float = 0.0
+    countertop_overhang_right: float = 0.0
+    countertop_joint: str = "clamex_p14"
     interior_joint: str = "mortise_tenon"
     tenon_depth: Optional[float] = None
     tenon_count: int = 2
     dado_depth: Optional[float] = None
     dado_stop: float = 20.0
     hinges: Optional[dict] = None
+    shelf_hole_options: Optional[dict] = None
     front_thickness: float = 18.0
     columns: List[Column] = field(default_factory=lambda: [Column()])
     interior: Optional[Union[Split, Cell]] = None
@@ -458,9 +513,11 @@ class CabinetConfig:
     drawer_bottom_offset: float = 10.0
     drawer_groove_depth: Optional[float] = None
     drawer_clearance: float = 13.0
-    drawer_top_clearance: float = 20.0
+    drawer_side_height: Optional[float] = None
+    drawer_top_clearance: float = 5.0
     drawer_height: Optional[float] = None
     shelves_between_drawers: bool = False
+    drawer_shelf_width: Optional[float] = None
     drawer_front_one_piece: bool = False
     drawer_depth: Optional[float] = None
     drawer_rear_clearance: float = 20.0
@@ -478,8 +535,11 @@ class CabinetConfig:
             unknown = set(self.hinges) - set(HINGE_DIMENSIONS)
             if unknown:
                 raise ValueError("Unknown hinge dimensions: {}.".format(", ".join(sorted(unknown))))
+        self.shelf_hole_options = _check_options(self.shelf_hole_options, SHELF_HOLE_OPTIONS, "shelf hole options")
         if self.carcass_joint not in CARCASS_JOINTS:
             raise ValueError("carcass_joint must be one of {}, got {!r}.".format(", ".join(CARCASS_JOINTS), self.carcass_joint))
+        if self.countertop_joint not in CARCASS_JOINTS:
+            raise ValueError("countertop_joint must be one of {}, got {!r}.".format(", ".join(CARCASS_JOINTS), self.countertop_joint))
         if self.interior_joint not in INTERIOR_JOINTS:
             raise ValueError("interior_joint must be one of {}, got {!r}.".format(", ".join(INTERIOR_JOINTS), self.interior_joint))
 
@@ -523,6 +583,18 @@ class CabinetConfig:
         return replace(CabinetConfig.from_data(self.to_data()), **changes)
 
     @property
+    def top_thickness(self):
+        """Thickness of what closes the carcass at the top: the countertop's with ``countertop``, else ``thickness``."""
+        if self.countertop and self.countertop_thickness is not None:
+            return self.countertop_thickness
+        return self.thickness
+
+    @property
+    def countertop_overhangs(self):
+        """``{"front", "back", "left", "right"}``: the countertop's overhang on each side."""
+        return {side: getattr(self, "countertop_overhang_" + side) for side in ("front", "back", "left", "right")}
+
+    @property
     def drawer_panel_thickness(self):
         """Thickness of drawer box sides, front and back: ``drawer_side_thickness``, or the carcass ``thickness``."""
         return self.drawer_side_thickness if self.drawer_side_thickness is not None else self.thickness
@@ -534,6 +606,13 @@ class CabinetConfig:
         if options["bottom_thickness"] is None:
             options["bottom_thickness"] = self.back_thickness
         return options
+
+    def shelf_hole_dimensions(self, thickness):
+        """The shelf hole dimensions for a panel of ``thickness``: ``SHELF_HOLE_DEFAULTS`` with ``shelf_hole_options``."""
+        dims = dict(SHELF_HOLE_DEFAULTS, **(self.shelf_hole_options or {}))
+        if dims["depth"] is None:
+            dims["depth"] = thickness / 2.0 - 1.0
+        return dims
 
     def hinge_options(self, node):
         """The hinge dimensions of ``node``'s door: its own, falling back to the cabinet's ``hinges``."""

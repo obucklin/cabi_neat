@@ -8,7 +8,8 @@ A `CabinetConfig` describes the cabinet (all dimensions in mm):
 
 - **Outer dimensions**: `width`, `height`, `depth`, plus panel, back and front thicknesses.
 - **Layout**: a list of `Column`s (left to right, separated by dividers), each a stack of `Zone`s from bottom to top (separated by shelves). A zone is `open` or a `drawer`. Consecutive drawers stack without a shelf between them. `None` widths and heights share the remaining space equally.
-- **Drawers**: `drawer_height` sets a default height for drawer zones that don't set their own. `shelves_between_drawers` puts a shelf between stacked drawers. `drawer_front_one_piece` makes the visible front double as the drawer box front, instead of a separate front screwed onto a complete box.
+- **Shelf holes**: `shelf_holes=True` on a `Cell` or `Split` drills rows of Ø5 holes on a 32 mm spacing into the panels left and right of its open compartments; inner sections inherit it and can switch it off with `False`. The rows are 37 behind the panel's front edge and 37 in front of the back panel, the holes centred in each compartment and at least 50 from its bottom and top. They're half the panel thickness minus 1 deep, so the holes in both faces of a divider don't meet. `shelf_hole_options` changes these dimensions (see `SHELF_HOLE_DEFAULTS`). A shelf hole that would come within 2 mm of another hole in the same face, such as a hinge plate's, is left out (`Cabinet.skipped_holes`).
+- **Drawers**: `drawer_height` sets a default height for drawer zones that don't set their own. `shelves_between_drawers` puts a shelf between stacked drawers. With `drawer_shelf_width`, these are only front rails that deep, joined to the sides but not reaching the back (per drawer stack: `Split.drawer_shelves` / `Split.drawer_shelf_width`). `drawer_front_one_piece` makes the visible front double as the drawer box front, instead of a separate front screwed onto a complete box.
 - **Fronts**: `door_mount` is `overlay` (fronts in front of the carcass) or `inset` (fronts flush inside the openings). `door_style` is `none`, `single` (hinged on `hinge_side`, left or right) or `double`. Each run of consecutive open zones in a column gets one door or a pair of doors. Columns can override `door_style` and `hinge_side`. With inset fronts, shelves behind a door are set back behind it, while shelves between fronts come forward flush with the carcass front.
 
 Presets cover the common layouts:
@@ -89,11 +90,20 @@ By default, the top and bottom are joined to the sides with Lamello Clamex P-14 
   - `P14Face(ref_side, x, y, orientation)` in the cross plate's face.
 - `joint.connector_frames()` gives each connector's position and orientation.
 
+With `countertop=True`, a countertop replaces the carcass top. It lies on the sides and the back, which stop below it, so `height` is the overall height including the countertop:
+
+- `countertop_thickness`: default `None`, the carcass `thickness`.
+- `countertop_overhang_front` / `_back` / `_left` / `_right`: how far it reaches beyond the carcass. Defaults are 20 at the front and 0 elsewhere.
+- `countertop_joint`: how the sides join it, `"clamex_p14"` (default, with `clamex_distance` and `clamex_center`) or `"butt"`. The connectors go in the sides' top edges and the grooves in the countertop's underside.
+- Overlay fronts stop below the countertop instead of covering the top's edge.
+
 `cabi_neat.joints.PlateStoppedDadoJoint` is a stopped dado (housing), used as follows:
 
 - The groove in the cross plate runs out through its edge in `open_direction`; the cabinet uses the back. It stops `stop_distance` (`dado_stop`, default 20) behind the main plate's front edge.
 - The main plate's edge is extended into the groove, with a notch where the groove stops, so the panel slides in from behind and nothing shows at the front.
 - The groove's `depth` (`dado_depth`) defaults to a third of the cross plate's thickness.
+
+Drawer boxes (sides, box front and back) are `drawer_side_height` high, or per drawer `drawer={"side_height": ...}`. By default they're 20 lower than the drawer's front, but never closer than `drawer_top_clearance` (default 5) to what's above them: an overlay front covers half the shelf above it, so there a box 20 lower than its front wouldn't fit. A side height that doesn't fit is an error.
 
 Drawer boxes are joined like this:
 
@@ -159,10 +169,10 @@ The page keeps no geometry of its own. It edits the interior tree (`planner_fron
 ## Fabrication output
 
 ```bash
-python -m cabi_neat.export cabinet.json --btlx cabinet.btlx --hops hops/
+python -m cabi_neat.export cabinet.json --btlx cabinet.btlx --hops hops/ --dxf outlines.dxf
 ```
 
-The planner's toolbar has **Export BTLx** and **Export HOPS** (a zip with one program per part and a `report.txt`). From Python, `cabi_neat.export.btlx(cabinet, path)` and `cabi_neat.export.hops(cabinet, directory)` do the same. Each export returns a report of what it couldn't export.
+The planner's toolbar has **Export BTLx**, **Export HOPS** (a zip with one program per part and a `report.txt`) and **Export DXF**. From Python, `cabi_neat.export.btlx(cabinet, path)`, `cabi_neat.export.hops(cabinet, directory)` and `cabi_neat.export.dxf(cabinet, path)` do the same. Each export returns a report of what it couldn't export.
 
 - **BTLx** is written by compas_timber's `BTLxWriter` from the cabinet's `TimberModel`. The model is in millimetres (`Tolerance(unit="MM")`). Features that aren't BTLx processings, the Clamex P-14 grooves, are left out while writing and stay on the plates.
 - **HOPS** programs are written like the workshop's own (`Hops/Hop/OB/flur`) and use its macros (`cabi_neat.hops`), one per plate:
@@ -172,13 +182,20 @@ The planner's toolbar has **Export BTLx** and **Export HOPS** (a zip with one pr
   - Other pockets (mortises, tenon gaps, housings) use `_RechteckTasche_V5` with the largest router that fits, its radius as the corner radius, and no lead-out. Pockets open to an edge are widened past it for a bigger router. Other shapes use a contour and `_ExecutePocket_V5`.
   - The notches that leave a stopped dado's tenon are milled from the plate's end, in its plane (`Ebene1`-`Ebene4`). A contour runs up the tenon's end with arcs of the dado router's radius, so the tenon fits the dado's rounded end. It's run with decreasing allowances, the last 0, to clear the notch.
   - Hinge pots use `_Kreisbahn_V5` with the Ø20 router (403).
-  - Drillings into faces use `Bohrung`, drillings into edges `HorzB`, always with a spindle drill (`WZB`) of the hole's diameter: the shortest one that's deep enough. The drill head isn't used. The defaults include a Ø8 (603) and a Ø3 (602, placeholder number) to be loaded.
+  - Drillings into faces use `Bohrung`, drillings into edges `HorzB`, with a spindle drill (`WZB`) of the hole's diameter: the shortest one that's deep enough. The defaults include a Ø8 (603) and a Ø3 (602, placeholder number) to be loaded.
+  - Shelf holes use the drill head instead (`WZB (501,…)`, the ID the workshop's macros use for the standard drill head) if it has a bit of their diameter that's long enough, else a spindle drill. `HopsTools.drill_head_bits` lists its bits; the default, a single Ø5 × 30, is an assumption to check against the machine. `HopsTools.from_too` reads them from the tool table's `Bohrkopf` group.
   - Clamex P-14 in faces uses `Clamex_MS_FI` with the finger mill (136). In edges it uses `Clamex1_Stumpf` (ends) and `Clamex1_Stumpf_X` (long edges) with the disc (108), plus the access holes (drill 135).
   - With machining on both faces, the other face comes first, then `MachineStop_V7` to turn the panel over about its long edge. A plate with Clamex access holes has their face on top: the underside of shelves and of the top, and the inside of everything else.
   - The tools default to the ETH machine's tool table (092026tools), plus a Ø8 (603) and a Ø3 (602, placeholder number) drill to be loaded. `HopsTools.from_too(path)` reads another table, including the Clamex tools.
   - Identical parts (shelves, drawer bottoms, …) share one program, named after the first with `_CUT_<n>` appended, e.g. `shelf_0_2_CUT_4.hop` is cut four times. `report.txt` lists the parts each one is for.
   - Every part lies on the table with its long edge along X. Of the two ways, drawer parts (sides, back, front) take the one with their bottom edge, and the groove, at Y = 0.
   - Files are written with Windows line endings.
+- **DXF** (`cabi_neat.dxf`) has the 2D outlines of all parts in one file, for planning nesting:
+  - It's DXF R12 (AC1009) for the widest compatibility, in millimetres, with Windows line endings.
+  - Each part is a block named after it (upper case, e.g. `SHELF_0_1`), with its outline as a closed `POLYLINE` and its name as a `TEXT` in the middle.
+  - Each block is inserted once. The inserts are laid out in rows 3 m wide, in one band per thickness, thinnest first.
+  - The inserts, outlines and names are on one layer per material thickness, e.g. `18MM`, `8MM`, `8_5MM`.
+  - An outline is the processed plate's silhouette, seen from its frame's +z side. It includes what goes through the whole thickness: tenons, stopped dado notches, a back widened into its rabbets. Pockets, grooves and drillings aren't in it. The report lists any part whose silhouette falls apart into several pieces; only the largest is drawn.
 
 ## Setup
 

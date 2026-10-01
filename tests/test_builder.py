@@ -1,3 +1,5 @@
+import math
+
 import pytest
 from compas.data import json_dumps
 from compas.data import json_loads
@@ -205,6 +207,19 @@ def test_clamex_carcass_joint():
     assert all(j.center_connector for j in joints)
 
 
+@pytest.mark.parametrize("overhang", [0.0, 20.0])
+def test_clamex_countertop(overhang):
+    config = CabinetConfig(door_style="none", countertop=True, countertop_overhang_left=overhang, countertop_overhang_right=overhang)
+    cabinet = Cabinet(config)
+    assert cabinet.errors == []
+    joints = [j for j in cabinet.model.joints if type(j).__name__ == "ClamexP14Joint" and "countertop" in (j.main_plate.name, j.cross_plate.name)]
+    # the sides' top edges carry the connectors, the countertop's underside the matching grooves
+    assert sorted((j.main_plate.name, j.cross_plate.name) for j in joints) == [("side_left", "countertop"), ("side_right", "countertop")]
+    assert all(len(j.connector_frames()) == 3 for j in joints)
+    box = cabinet.plates["countertop"].modelgeometry.aabb
+    assert (box.xmin, box.xmax, box.ymin, box.zmin) == pytest.approx((-overhang, 800 + overhang, -20, 1182), abs=1e-3)
+
+
 def test_panel_joints_per_panel():
     interior = rows(Cell(), Cell(), Cell(), panel_joints=["clamex_p14", None])
     cabinet = Cabinet(CabinetConfig(interior=interior, door_style="none"))
@@ -379,3 +394,38 @@ def test_layout_hinge_positions_match_the_joint(side):
     drilled = sorted((round(f.point.x, 3), round(f.point.z, 3)) for f in joint.hinge_frames())
     drawn = sorted((round(x, 3), round(z, 3)) for x, z in door.attributes["hinges"])
     assert drawn == drilled and len(drawn) == 3
+
+
+def test_shelf_holes_are_drilled():
+    from compas_timber.fabrication import Drilling
+
+    from cabi_neat.config import Cell
+    from cabi_neat.config import columns
+
+    cabinet = Cabinet(CabinetConfig(interior=columns(Cell(shelf_holes=True), Cell(shelf_holes=True)), door_style="none"))
+    assert cabinet.errors == [] and cabinet.skipped_holes == []
+    count = {name: sum(isinstance(f, Drilling) and getattr(f, "shelf_hole", False) for f in plate.features) for name, plate in cabinet.plates.items()}
+    per_side = len([h for h in cabinet.layout.holes if h.part == "side_left"])
+    assert per_side > 0 and count["side_left"] == count["side_right"] == per_side
+    # the divider gets them in both faces, which don't meet
+    assert count["divider_0"] == 2 * per_side
+    assert all(f.depth == pytest.approx(8) and f.diameter == 5 for p in cabinet.plates.values() for f in p.features if getattr(f, "shelf_hole", False))
+    # the divider loses twice what a side does: the holes in its two faces don't meet
+    plain = Cabinet(CabinetConfig(interior=columns(Cell(), Cell()), door_style="none")).plates
+
+    def removed(name):
+        return plain[name].modelgeometry.volume - cabinet.plates[name].modelgeometry.volume
+
+    assert removed("side_left") > per_side * math.pi * 2.5**2 * 8
+    assert removed("divider_0") == pytest.approx(2 * removed("side_left"), rel=1e-4)
+
+
+def test_shelf_holes_skip_hinge_holes():
+    from cabi_neat.config import Cell
+
+    # hinge plate holes are 37 behind the front edge too; where a shelf hole would come too close to one, it's left out
+    config = CabinetConfig(interior=Cell(door_style="single", shelf_holes=True), shelf_hole_options={"end_distance": 34})
+    cabinet = Cabinet(config)
+    assert cabinet.skipped_holes and all(h.part == "side_left" and h.point[1] == pytest.approx(37) for h in cabinet.skipped_holes)
+    drilled = sum(getattr(f, "shelf_hole", False) for f in cabinet.plates["side_left"].features)
+    assert drilled == len([h for h in cabinet.layout.holes if h.part == "side_left"]) - len(cabinet.skipped_holes)

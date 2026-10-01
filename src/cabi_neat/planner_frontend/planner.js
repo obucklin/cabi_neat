@@ -49,6 +49,7 @@ function applyState(data) {
   if (data.joint_defaults) state.jointDefaults = data.joint_defaults;
   if ("stale" in data) state.stale = data.stale;
   if (data.hinge_defaults) state.hingeDefaults = data.hinge_defaults;
+  if (data.shelf_hole_defaults) state.shelfHoleDefaults = data.shelf_hole_defaults;
   validateSelection();
   render();
   renderProps();
@@ -287,9 +288,12 @@ function render() {
   const W = state.config.width;
   const H = state.config.height;
   const t = state.config.thickness;
+  const hasCountertop = state.config.countertop;
+  const tt = hasCountertop ? state.config.countertop_thickness ?? t : t;
+  const [left, right] = hasCountertop ? [state.config.countertop_overhang_left, state.config.countertop_overhang_right] : [0, 0];
   const m = Math.max(W, H) * 0.08;
   const fs = Math.max(W, H) / 55;
-  svg.setAttribute("viewBox", `${-m} ${-m} ${W + 2 * m} ${H + 2 * m}`);
+  svg.setAttribute("viewBox", `${-m - left} ${-m} ${W + left + right + 2 * m} ${H + 2 * m}`);
 
   const out = [];
   const rect = (x, z, w, h, cls, extra = "") => `<rect x="${x}" y="${H - z - h}" width="${w}" height="${h}" class="${cls}" vector-effect="non-scaling-stroke" ${extra}/>`;
@@ -297,9 +301,9 @@ function render() {
   const line = (points, cls, extra = "") =>
     `<polyline points="${points.map(([x, z]) => `${x},${H - z}`).join(" ")}" class="${cls}" vector-effect="non-scaling-stroke" ${extra}/>`;
 
-  out.push(rect(t, t, W - 2 * t, H - 2 * t, "cavity"));
+  out.push(rect(t, t, W - 2 * t, H - t - tt, "cavity"));
   for (const part of state.layout.parts) {
-    if (["side", "top", "bottom"].includes(part.category)) out.push(rect(part.x, part.z, part.w, part.h, "carcass"));
+    if (["side", "top", "countertop", "bottom"].includes(part.category)) out.push(rect(part.x, part.z, part.w, part.h, "carcass"));
   }
 
   const sel = state.selection;
@@ -340,6 +344,10 @@ function render() {
     else if (own.has(id)) cls += " own";
     else if (inside) cls += " locked";
     out.push(rect(x, z, part.w, part.h, cls, 'stroke-width="1.5"'));
+  }
+  // shelf holes, seen from the front: a short mark into the panel at each height
+  for (const [x, z, dx, depth] of state.layout.holes || []) {
+    out.push(line([[x, z], [x + dx * depth, z]], "shelf-hole", 'stroke-width="2"'));
   }
   // boundaries between stacked drawers have no panel: show a handle
   for (const group of groups) {
@@ -491,9 +499,40 @@ function renderProps() {
         "Carcass joints",
         `<div class="subhead">Back in the sides: rabbet</div>
         ${numberRow("Depth", c.rabbet_depth, `data-param="rabbet_depth" data-nullable min="0" placeholder="${round(c.thickness / 2)}" title="Empty: half the side thickness"`)}
-        <div class="subhead">Top and bottom on the sides: Clamex P-14</div>
+        <div class="subhead">${c.countertop ? "Bottom on the sides" : "Top and bottom on the sides"}: Clamex P-14</div>
         ${numberRow("Connector distance", c.clamex_distance, 'data-param="clamex_distance" min="0"')}
         <label class="row">Center connector <input type="checkbox" data-param="clamex_center" ${c.clamex_center ? "checked" : ""} /></label>`,
+      ),
+    );
+    let countertop = `<label class="row">Countertop instead of top <input type="checkbox" data-param="countertop" ${c.countertop ? "checked" : ""} /></label>`;
+    if (c.countertop) {
+      countertop += `${numberRow("Thickness", c.countertop_thickness, `data-param="countertop_thickness" data-nullable min="1" placeholder="${round(c.thickness)}" title="Empty: the panel thickness"`)}
+        <div class="subhead">Overhang</div>
+        ${numberRow("Front", c.countertop_overhang_front, 'data-param="countertop_overhang_front" min="0"')}
+        ${numberRow("Back", c.countertop_overhang_back, 'data-param="countertop_overhang_back" min="0"')}
+        ${numberRow("Left", c.countertop_overhang_left, 'data-param="countertop_overhang_left" min="0"')}
+        ${numberRow("Right", c.countertop_overhang_right, 'data-param="countertop_overhang_right" min="0"')}
+        <label class="row">On the sides <select data-param="countertop_joint">
+          <option value="clamex_p14" ${c.countertop_joint === "clamex_p14" ? "selected" : ""}>Clamex P-14</option>
+          <option value="butt" ${c.countertop_joint === "butt" ? "selected" : ""}>butt</option>
+        </select></label>
+        <div class="hint">Height includes the countertop.</div>`;
+    }
+    html.push(group("Countertop", countertop));
+    const holes = { ...state.shelfHoleDefaults, ...(c.shelf_hole_options || {}) };
+    const holeRow = (key, label, title, placeholder = "") =>
+      `<label class="row" title="${esc(title)}">${label} <input type="number" min="0" step="1" data-cabinet-option="shelf_hole_options" data-key="${key}"
+        value="${c.shelf_hole_options && c.shelf_hole_options[key] !== undefined ? round(c.shelf_hole_options[key]) : ""}" placeholder="${placeholder || round(holes[key])}" /></label>`;
+    html.push(
+      group(
+        "Shelf holes",
+        `<div class="hint">Switched on per section. The drill head drills them if it has a bit for them.</div>
+        ${holeRow("diameter", "Diameter", "Hole diameter")}
+        ${holeRow("depth", "Depth", "Empty: half the panel thickness minus 1, so holes from both faces of a divider don't meet", round(c.thickness / 2 - 1))}
+        ${holeRow("spacing", "Spacing", "Distance between holes in a row")}
+        ${holeRow("front_distance", "From the front", "From the panel's front edge to the front row")}
+        ${holeRow("back_distance", "From the back", "From the back panel to the rear row")}
+        ${holeRow("end_distance", "From shelves", "Least distance from a compartment's bottom and top to a hole")}`,
       ),
     );
   } else {
@@ -518,6 +557,8 @@ function renderProps() {
 
 /** The parameter groups of the section at `path`: dimensions, front (with its hinges or drawer), shelves and dividers. */
 const TYPE_LABELS = { open: "Open", door: "Door", drawers: "Drawers" };
+// depth of a front rail between drawers when it's switched on
+const DEFAULT_RAIL_WIDTH = 80;
 const DOOR_STYLES = { left: "Left", right: "Right", double: "Double" };
 
 /** The parameter groups of the section at `path`: dimensions, type, then the controls of that type. */
@@ -557,12 +598,18 @@ function sectionGroups(path) {
       const stack = T.isSplit(node) && node.direction === T.COLUMNS ? node.children.find(T.isSplit) : node;
       const on = (stack && stack.drawer_shelves) ?? c.shelves_between_drawers;
       body += `<label class="row">Shelves between drawers <input type="checkbox" data-action="drawer-shelves" ${on ? "checked" : ""} /></label>`;
+      if (on) {
+        const width = (stack && stack.drawer_shelf_width) ?? c.drawer_shelf_width;
+        body += `<label class="row" title="Only a strip at the front of the cabinet, not reaching the back">Front rail only <input type="checkbox" data-action="drawer-rail" ${width !== null ? "checked" : ""} /></label>`;
+        if (width !== null) body += numberRow("Rail width", width, 'data-action="drawer-rail-width" min="1" title="How far the rail reaches back from the front"');
+      }
     }
     body += collapsible("drawer-settings", "Drawer settings" + changed(Object.keys(T.firstDrawer(node).drawer || {}).length), drawerFields(T.firstDrawer(node)), 1);
     body += panelRows(path);
     groups.push(group("Drawers", body));
   } else {
-    groups.push(group(type === "door" ? "Shelves & dividers behind the door" : "Shelves & dividers", counter("Shelves", T.shelvesOf(node), "shelves") + counter("Dividers", T.dividersOf(node), "dividers") + panelRows(path)));
+    const holes = `<label class="row" title="Rows of shelf holes on a 32 mm spacing in the panels left and right of the compartments">Shelf holes (32 mm) <input type="checkbox" data-action="shelf-holes" ${T.shelfHolesOf(root(), path) ? "checked" : ""} /></label>`;
+    groups.push(group(type === "door" ? "Shelves & dividers behind the door" : "Shelves & dividers", counter("Shelves", T.shelvesOf(node), "shelves") + counter("Dividers", T.dividersOf(node), "dividers") + holes + panelRows(path)));
   }
   return groups;
 }
@@ -601,6 +648,7 @@ function drawerFields(drawer) {
     `<label class="row" title="${esc(title)}">${label} <input type="number" min="0" step="1" data-action="drawer-option" data-key="${key}"
       value="${own[key] === undefined ? "" : round(own[key])}" placeholder="${fallback}" /></label>`;
   return `<label class="row" title="The visible front is also the drawer box's front">One-piece front <input type="checkbox" data-action="drawer-option" data-key="front_one_piece" ${onePiece ? "checked" : ""} /></label>
+    ${number("side_height", "Side height", c.drawer_side_height === null ? "front − 20" : round(c.drawer_side_height), "Height of the drawer box. Empty: 20 lower than the front, as far as it fits")}
     ${number("bottom_offset", "Bottom height", round(c.drawer_bottom_offset), "Underside of the bottom above the box's lower edge")}
     ${number("bottom_thickness", "Bottom thickness", round(c.drawer_bottom_thickness ?? c.back_thickness), "Empty: the carcass back's thickness")}
     ${number("groove_depth", "Bottom groove depth", c.drawer_groove_depth ?? round((c.drawer_side_thickness ?? c.thickness) / 2), "Empty: half the grooved panel's thickness")}`;
@@ -760,6 +808,14 @@ props.addEventListener("change", async (evt) => {
     await edit(() => T.setField(root(), sectionOf(), el.dataset.field, el.checked));
     return;
   }
+  if (el.dataset.cabinetOption) {
+    const field = el.dataset.cabinetOption;
+    const options = { ...(state.config[field] || {}) };
+    if (el.value === "") delete options[el.dataset.key];
+    else options[el.dataset.key] = Number(el.value);
+    if (!(await post({ ...state.config, [field]: Object.keys(options).length ? options : null }))) renderProps();
+    return;
+  }
   if (el.dataset.param) {
     let value = el.type === "checkbox" ? el.checked : el.tagName === "SELECT" ? el.value : Number(el.value);
     if ("nullable" in el.dataset && el.value === "") value = null;
@@ -771,6 +827,9 @@ props.addEventListener("change", async (evt) => {
   const group = () => groupsFor(path)[Number(el.dataset.group)];
   if (action in COUNTERS) await edit(() => COUNTERS[action][1](root(), path, Number(el.value)));
   else if (action === "drawer-shelves") await edit(() => T.setDrawerShelves(root(), path, el.checked));
+  else if (action === "shelf-holes") await edit(() => T.setShelfHoles(root(), path, el.checked));
+  else if (action === "drawer-rail") await edit(() => T.setDrawerShelfWidth(root(), path, el.checked ? DEFAULT_RAIL_WIDTH : null));
+  else if (action === "drawer-rail-width" && el.value !== "") await edit(() => T.setDrawerShelfWidth(root(), path, Number(el.value)));
   else if (action === "drawer-option") {
     const value = el.type === "checkbox" ? el.checked : el.value === "" ? null : Number(el.value);
     await edit(() => T.setDrawerOption(root(), path, el.dataset.key, value));
@@ -950,26 +1009,41 @@ document.getElementById("toggle-3d").addEventListener("click", () => {
   main.classList.toggle("no-3d");
   render();
 });
-/** Save `blob` with a save dialog where the browser has one (Chrome/Edge), else as a download. */
-async function saveFile(blob, suggestedName, description, accept) {
-  if (window.showSaveFilePicker) {
-    try {
-      const handle = await window.showSaveFilePicker({ suggestedName, types: [{ description, accept }] });
-      const writable = await handle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-      return handle.name;
-    } catch (e) {
-      if (e.name === "AbortError") return null;
-      throw e;
-    }
+/**
+ * Where to save a file: a file handle from a save dialog where the browser has one (Chrome/Edge), else a download name.
+ * Must be called straight from a click, before anything slow: the browser only shows the dialog for a user gesture.
+ * Returns null if the dialog was cancelled.
+ */
+async function pickSaveTarget(suggestedName, description, accept) {
+  if (!window.showSaveFilePicker) return { download: suggestedName };
+  try {
+    return { handle: await window.showSaveFilePicker({ suggestedName, types: [{ description, accept }] }) };
+  } catch (e) {
+    if (e.name === "AbortError") return null;
+    throw e;
+  }
+}
+
+/** Write `blob` to a target from `pickSaveTarget`. Returns the file's name. */
+async function writeSaveTarget(target, blob) {
+  if (target.handle) {
+    const writable = await target.handle.createWritable();
+    await writable.write(blob);
+    await writable.close();
+    return target.handle.name;
   }
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = suggestedName;
+  a.download = target.download;
   a.click();
   URL.revokeObjectURL(a.href);
-  return suggestedName;
+  return target.download;
+}
+
+/** Save `blob` with a save dialog where the browser has one, else as a download. Returns null if cancelled. */
+async function saveFile(blob, suggestedName, description, accept) {
+  const target = await pickSaveTarget(suggestedName, description, accept);
+  return target && writeSaveTarget(target, blob);
 }
 
 document.getElementById("download").addEventListener("click", async () => {
@@ -988,8 +1062,18 @@ async function exportFile(kind) {
   const formats = {
     btlx: ["cabinet.btlx", "BTLx", { "application/xml": [".btlx"] }],
     hops: ["cabinet_hops.zip", "HOPS programs (zip)", { "application/zip": [".zip"] }],
+    dxf: ["cabinet_outlines.dxf", "Part outlines (DXF)", { "application/dxf": [".dxf"] }],
   };
   const [name, description, accept] = formats[kind];
+  // ask where to save first: after the (slow) export the click no longer counts as a user gesture
+  let target;
+  try {
+    target = await pickSaveTarget(name, description, accept);
+  } catch (e) {
+    setMessage(`Could not export: ${e.message}`, "error");
+    return;
+  }
+  if (!target || state.busy) return;
   state.busy = true;
   updateToolbar();
   setMessage(state.stale ? "Generating 3D and exporting…" : "Exporting…");
@@ -997,8 +1081,8 @@ async function exportFile(kind) {
     const res = await fetch(`api/export/${kind}`);
     if (!res.ok) throw new Error((await res.text()) || `the server answered ${res.status}`);
     const summary = res.headers.get("X-Export-Summary") || "";
-    const saved = await saveFile(await res.blob(), name, description, accept);
-    setMessage(saved ? `Exported ${saved}. ${summary}` : null);
+    const saved = await writeSaveTarget(target, await res.blob());
+    setMessage(`Exported ${saved}. ${summary}`);
     if (state.stale) await load();
   } catch (e) {
     setMessage(`Could not export: ${e.message}`, "error");
@@ -1010,6 +1094,7 @@ async function exportFile(kind) {
 
 document.getElementById("export-btlx").addEventListener("click", () => exportFile("btlx"));
 document.getElementById("export-hops").addEventListener("click", () => exportFile("hops"));
+document.getElementById("export-dxf").addEventListener("click", () => exportFile("dxf"));
 document.getElementById("upload").addEventListener("change", async (evt) => {
   const file = evt.target.files[0];
   evt.target.value = "";

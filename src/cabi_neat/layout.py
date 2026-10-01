@@ -13,6 +13,7 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+from .config import DRAWER_SIDE_REDUCTION
 from .config import HINGE_DEFAULTS
 from .config import CabinetConfig
 from .config import Cell
@@ -26,7 +27,7 @@ from .config import hinge_positions
 
 AXES = ("x", "y", "z")
 
-CARCASS = ("side", "top", "bottom", "back", "divider", "shelf")
+CARCASS = ("side", "top", "countertop", "bottom", "back", "divider", "shelf")
 FRONTS = ("door", "drawer_front")
 DRAWER_BOX = ("drawer_side", "drawer_box_front", "drawer_back", "drawer_bottom")
 
@@ -78,7 +79,8 @@ class Part:
 class Opening:
     """A rectangle in the front (xz) plane, with what bounds it on each side.
 
-    Bounds are ``"outer"`` (a carcass side/top/bottom), ``"inner"`` (a divider or shelf) or ``"none"`` (drawers stacked without a shelf).
+    Bounds are ``"outer"`` (a carcass side/top/bottom), ``"countertop"``, ``"inner"`` (a divider or shelf) or ``"none"``
+    (drawers stacked without a shelf).
     """
 
     x: float
@@ -86,6 +88,18 @@ class Opening:
     width: float
     height: float
     bounds: Dict[str, str]  # keys: left, right, bottom, top
+
+
+@dataclass
+class ShelfHole:
+    """A shelf hole: drilled into the face of ``part`` at ``point``, in ``direction``, ``depth`` deep."""
+
+    part: str
+    point: Tuple[float, float, float]
+    direction: Tuple[float, float, float]
+    diameter: float
+    depth: float
+    node: str  # path key of the compartment it's for
 
 
 @dataclass
@@ -97,6 +111,7 @@ class Layout:
     joints: List[Tuple[str, str]] = field(default_factory=list)  # (main, cross) part names
     joint_kinds: Dict[Tuple[str, str], Tuple[str, Dict]] = field(default_factory=dict)  # (main, cross) -> (kind, parameters), default: butt
     regions: Dict[str, Tuple[float, float, float, float]] = field(default_factory=dict)  # node path key -> (x, z, width, height)
+    holes: List[ShelfHole] = field(default_factory=list)
 
     def add(self, part):
         if any(p.name == part.name for p in self.parts):
@@ -165,7 +180,13 @@ def resolve_layout(config):
     W, H, D, t, bt = c.width, c.height, c.depth, c.thickness, c.back_thickness
     if min(W, H, D, t, bt, c.front_thickness) <= 0:
         raise ValueError("Dimensions and thicknesses must be positive.")
-    if W <= 2 * t or H <= 2 * t or D <= bt:
+    tt = c.top_thickness
+    if c.countertop:
+        if tt <= 0:
+            raise ValueError("Dimensions and thicknesses must be positive.")
+        if min(c.countertop_overhangs.values()) < 0:
+            raise ValueError("Countertop overhangs can't be negative.")
+    if W <= 2 * t or H <= t + tt or D <= bt:
         raise ValueError("Cabinet is too small for its panel thickness.")
 
     layout = Layout(config=c)
@@ -177,33 +198,51 @@ def resolve_layout(config):
         raise ValueError("Cabinet is too shallow for inset fronts.")
 
     # carcass: sides run full height; the back sits between them, full height and flush with the rear;
-    # top and bottom sit between the sides and in front of the back
-    left = layout.add(Part("side_left", "side", (0, 0, 0), (t, D, H), "x"))
-    right = layout.add(Part("side_right", "side", (W - t, 0, 0), (t, D, H), "x"))
+    # top and bottom sit between the sides and in front of the back.
+    # A countertop instead lies on the sides and the back, which stop below it, and overhangs them.
+    sides_h = H - tt if c.countertop else H
+    left = layout.add(Part("side_left", "side", (0, 0, 0), (t, D, sides_h), "x"))
+    right = layout.add(Part("side_right", "side", (W - t, 0, 0), (t, D, sides_h), "x"))
     bottom = layout.add(Part("bottom", "bottom", (t, 0, 0), (W - 2 * t, D - bt, t), "z"))
-    top = layout.add(Part("top", "top", (t, 0, H - t), (W - 2 * t, D - bt, t), "z"))
-    back = layout.add(Part("back", "back", (t, D - bt, 0), (W - 2 * t, bt, H), "y"))
-    for panel in (bottom, top):
-        for side in (left, right):
-            if c.carcass_joint == "clamex_p14":
-                layout.join(panel, side, "clamex_p14", distance=c.clamex_distance, center_connector=c.clamex_center)
-            else:
-                layout.join(panel, side)
+    if c.countertop:
+        o = c.countertop_overhangs
+        origin = (-o["left"], -o["front"], H - tt)
+        size = (W + o["left"] + o["right"], D + o["front"] + o["back"], tt)
+        top = layout.add(Part("countertop", "countertop", origin, size, "z"))
+    else:
+        top = layout.add(Part("top", "top", (t, 0, H - t), (W - 2 * t, D - bt, t), "z"))
+    back = layout.add(Part("back", "back", (t, D - bt, 0), (W - 2 * t, bt, sides_h), "y"))
+
+    def join_carcass(main, cross, joint):
+        if joint == "clamex_p14":
+            layout.join(main, cross, "clamex_p14", distance=c.clamex_distance, center_connector=c.clamex_center)
+        else:
+            layout.join(main, cross)
+
+    for side in (left, right):
+        join_carcass(bottom, side, c.carcass_joint)
+        if c.countertop:
+            join_carcass(side, top, c.countertop_joint)
+        else:
+            join_carcass(top, side, c.carcass_joint)
     for side in (left, right):
         if c.back_joint == "rabbet":
             layout.join(back, side, "rabbet", rabbet_depth=c.rabbet_depth)
         else:
             layout.join(back, side)
-    for panel in (bottom, top):
-        layout.join(panel, back)
+    layout.join(bottom, back)
+    if c.countertop:
+        layout.join(back, top)
+    else:
+        layout.join(top, back)
 
     root = c.interior_tree()
     root_is_cell = isinstance(root, Cell)
     if root_is_cell:
         root = Split(SplitDirection.ROWS, [root])
     panels = {"left": left, "right": right, "bottom": bottom, "top": top}
-    bounds = {"left": "outer", "right": "outer", "bottom": "outer", "top": "outer"}
-    _resolve_split(layout, root, [], (t, t, W - 2 * t, H - 2 * t), panels, bounds, back, front_depth, c.door_style, c.hinge_side, covered=False)
+    bounds = {"left": "outer", "right": "outer", "bottom": "outer", "top": "countertop" if c.countertop else "outer"}
+    _resolve_split(layout, root, [], (t, t, W - 2 * t, H - t - tt), panels, bounds, back, front_depth, c.door_style, c.hinge_side, covered=False, holes=False)
     if root_is_cell:
         # the wrapper split is internal: report the cell as the root region
         layout.regions = {"": layout.regions["0"]}
@@ -219,11 +258,12 @@ def path_key(path):
     return ".".join(str(i) for i in path)
 
 
-def _resolve_split(layout, node, path, rect, panels, bounds, back, front_depth, style, hinge, covered):
+def _resolve_split(layout, node, path, rect, panels, bounds, back, front_depth, style, hinge, covered, holes):
     """Place the panels, drawers and fronts of ``node`` within ``rect`` = (x, z, width, height).
 
     ``panels`` and ``bounds`` describe what surrounds ``rect`` on each side. ``covered`` is True when a single door
-    already covers ``rect``, so panels inside are set back behind it and no further fronts are added.
+    already covers ``rect``, so panels inside are set back behind it and no further fronts are added. ``holes`` is the
+    inherited :attr:`Split.shelf_holes`.
     """
     c = layout.config
     t = c.thickness
@@ -231,6 +271,7 @@ def _resolve_split(layout, node, path, rect, panels, bounds, back, front_depth, 
     x, z, w, h = rect
     style = node.door_style or style
     hinge = node.hinge_side or hinge
+    holes = holes if node.shelf_holes is None else node.shelf_holes
     children = node.children
     if not children:
         raise ValueError("Split {} has no children.".format(_name("at", *path) if path else "at the root"))
@@ -265,7 +306,9 @@ def _resolve_split(layout, node, path, rect, panels, bounds, back, front_depth, 
 
     # a panel separates consecutive children, except between two drawers stacked in a rows split
     drawer_shelves = c.shelves_between_drawers if node.drawer_shelves is None else node.drawer_shelves
-    has_panel = [not (is_rows and is_drawer(a) and is_drawer(b)) or drawer_shelves for a, b in zip(children, children[1:])]
+    between_drawers = [is_rows and is_drawer(a) and is_drawer(b) for a, b in zip(children, children[1:])]
+    has_panel = [not between or drawer_shelves for between in between_drawers]
+    rail_width = c.drawer_shelf_width if node.drawer_shelf_width is None else node.drawer_shelf_width
     available = (h if is_rows else w) - sum(has_panel) * t
     sizes = [ch.size if ch.size is not None else (c.drawer_height if is_rows and is_drawer(ch) else None) for ch in children]
     sizes = distribute(available, sizes, "row height" if is_rows else "column width")
@@ -285,12 +328,19 @@ def _resolve_split(layout, node, path, rect, panels, bounds, back, front_depth, 
                 # with inset fronts, a panel hidden behind a single door is set back behind it; panels between fronts come forward flush
                 set_back = covered or (i in run_of and run_of.get(i + 1) == run_of[i])
                 y0 = front_depth if set_back else 0.0
+                depth = inner_depth - y0
                 attrs = {"node": "_".join(map(str, path)), "split": path_key(path), "gap": i}
+                if between_drawers[i] and rail_width is not None:
+                    # a front rail between two drawers instead of a full shelf
+                    if not 0 < rail_width < depth:
+                        raise ValueError("Front rails between drawers must be between 0 and {:.0f} deep, got {:.0f}.".format(depth, rail_width))
+                    depth = rail_width
+                    attrs["rail"] = True
                 if is_rows:
-                    panel = layout.add(Part(_name("shelf", *path, i), "shelf", (x, y0, pos), (w, inner_depth - y0, t), "z", attrs))
+                    panel = layout.add(Part(_name("shelf", *path, i), "shelf", (x, y0, pos), (w, depth, t), "z", attrs))
                     ends = (panels["left"], panels["right"])
                 else:
-                    panel = layout.add(Part(_name("divider", *path, i), "divider", (pos, y0, z), (t, inner_depth - y0, h), "x", attrs))
+                    panel = layout.add(Part(_name("divider", *path, i), "divider", (pos, y0, z), (t, depth, h), "x", attrs))
                     ends = (panels["bottom"], panels["top"])
                 joint, parameters = node.panel_joint(i, c.interior_joint)
                 parameters = dict(c.joint_defaults()[joint], **parameters)
@@ -298,7 +348,8 @@ def _resolve_split(layout, node, path, rect, panels, bounds, back, front_depth, 
                 panel.attributes["joint_parameters"] = parameters
                 for end in ends:
                     _join_interior(layout, panel, end, joint, parameters)
-                layout.join(panel, back)
+                if "rail" not in attrs:
+                    layout.join(panel, back)
                 prev_panel, prev_bound = panel, "inner"
                 pos += t
             else:
@@ -311,7 +362,7 @@ def _resolve_split(layout, node, path, rect, panels, bounds, back, front_depth, 
         child_path = path + [i]
         if isinstance(child, Split):
             cs, ch = child_style(child)
-            _resolve_split(layout, child, child_path, child_rect, child_panels, child_bounds, back, front_depth, cs, ch, covered)
+            _resolve_split(layout, child, child_path, child_rect, child_panels, child_bounds, back, front_depth, cs, ch, covered, holes)
             openings.append(None)
             continue
         opening = Opening(*child_rect, child_bounds)
@@ -321,6 +372,8 @@ def _resolve_split(layout, node, path, rect, panels, bounds, back, front_depth, 
             if covered:
                 raise ValueError("Drawer {} is behind a door.".format("_".join(map(str, child_path))))
             _add_drawer(layout, "_".join(map(str, child_path)), opening, front_depth, c.drawer_options(child))
+        elif holes if child.shelf_holes is None else child.shelf_holes:
+            _add_shelf_holes(layout, path_key(child_path), child_rect, child_panels)
 
     for ri, run in enumerate(runs):
         first, last = openings[run[0]], openings[run[-1]]
@@ -343,6 +396,38 @@ def _join_interior(layout, panel, other, joint, parameters):
         layout.join(panel, other, joint, open_direction=(0.0, 1.0, 0.0), **parameters)
     else:
         layout.join(panel, other, joint, **parameters)
+
+
+def shelf_hole_positions(rect, panel, config):
+    """Where the shelf holes of a compartment ``rect`` = (x, z, width, height) go in the panel beside it: ``(ys, zs)``.
+
+    The rows run from front to back ``front_distance`` behind the panel's front edge and ``back_distance`` in front of
+    the back panel; along the height, the holes are ``spacing`` apart, centred in the compartment and at least
+    ``end_distance`` from its bottom and top.
+    """
+    dims = config.shelf_hole_dimensions(panel.thickness)
+    _, z, _, h = rect
+    free = h - 2 * dims["end_distance"]
+    if free < 0:
+        return [], []
+    count = int(free // dims["spacing"] + 1e-9) + 1
+    start = z + (h - (count - 1) * dims["spacing"]) / 2.0
+    zs = [start + i * dims["spacing"] for i in range(count)]
+    front = panel.origin[1] + dims["front_distance"]
+    rear = config.depth - config.back_thickness - dims["back_distance"]
+    ys = [front, rear] if rear > front + dims["diameter"] else [front]
+    return ys, zs
+
+
+def _add_shelf_holes(layout, key, rect, panels):
+    """Shelf holes for the compartment ``rect`` in the panels on its left and right."""
+    x, _, w, _ = rect
+    for panel, face_x, direction in ((panels["left"], x, (-1.0, 0.0, 0.0)), (panels["right"], x + w, (1.0, 0.0, 0.0))):
+        dims = layout.config.shelf_hole_dimensions(panel.thickness)
+        ys, zs = shelf_hole_positions(rect, panel, layout.config)
+        for y in ys:
+            for z in zs:
+                layout.holes.append(ShelfHole(panel.name, (face_x, y, z), direction, dims["diameter"], dims["depth"], key))
 
 
 def _add_door(layout, name, opening, style, hinge, attrs, panels, hinges=None):
@@ -393,9 +478,10 @@ def _front_rect(c, opening):
         if opening.bounds["top"] == "none":
             h += g / 2.0
     else:
-        grow = {"outer": t, "inner": t / 2.0, "none": 0.0}
+        grow = {"outer": t, "inner": t / 2.0, "none": 0.0, "countertop": 0.0}
         b = opening.bounds
-        # overlay fronts cover the surrounding panels: fully at the carcass edge, half on shared panels
+        # overlay fronts cover the surrounding panels: fully at the carcass edge, half on shared panels; they stop
+        # below a countertop
         x0 = opening.x - grow[b["left"]] + g / 2.0
         x1 = opening.x + opening.width + grow[b["right"]] - g / 2.0
         z0 = opening.z - grow[b["bottom"]] + g / 2.0
@@ -414,10 +500,16 @@ def _add_drawer(layout, key, opening, front_depth, options):
 
     fx, fz, fw, fh = _front_rect(c, opening)
     bw = opening.width - 2 * clr
-    # the box starts at the bottom of the opening, but never below its front (inset fronts, stacked drawers), and
-    # stops the top clearance below the opening's top
+    # the box starts at the bottom of the opening, but never below its front (inset fronts, stacked drawers); its sides
+    # are 20 lower than the front unless set, and stay the top clearance below the opening's top
     bz = max(opening.z, fz)
-    bh = opening.z + opening.height - c.drawer_top_clearance - bz
+    room = opening.z + opening.height - c.drawer_top_clearance - bz
+    if options["side_height"] is None:
+        bh = min(fh - DRAWER_SIDE_REDUCTION, room)
+    else:
+        bh = options["side_height"]
+        if bh > room + 1e-9:
+            raise ValueError("Drawer {} sides are {:.0f} high, but only {:.0f} fits below what's above them.".format(key, bh, room))
     by = front_depth
     bd = c.drawer_depth if c.drawer_depth is not None else inner_depth - by - c.drawer_rear_clearance
     if bw <= 2 * st or bh <= options["bottom_offset"] + bt or bd <= 2 * st:
