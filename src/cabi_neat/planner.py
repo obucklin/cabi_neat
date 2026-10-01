@@ -61,6 +61,21 @@ def new_config():
     return CabinetConfig(interior=Cell(door_style="none"))
 
 
+def _revalidate_planner_files(app):
+    """Make browsers check the planner's files for changes on every load, so an updated planner shows after a reload
+    instead of a cached copy (static files are otherwise cached heuristically, without asking the server)."""
+    fastapi_app = getattr(getattr(app, "server", None), "fastapi_app", None)
+    if fastapi_app is None:
+        return
+
+    @fastapi_app.middleware("http")
+    async def no_cache(request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith("/planner") and not request.url.path.startswith("/planner/api/"):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
 class Planner:
     """Registers the planner page and its API on a :class:`Configurator`'s App. Must be created before the App starts.
 
@@ -105,6 +120,7 @@ class Planner:
         app.add_route("/planner/api/export/hops", self.get_hops)
         app.add_route("/planner/api/display", self.post_display, methods=("POST",))
         app.add_static_mount("/planner", FRONTEND_DIR, name="planner_frontend")
+        _revalidate_planner_files(app)
 
     @property
     def url(self):

@@ -141,6 +141,7 @@ def hops(cabinet, directory=None, tools=None):
     from .hops import HopsTools
     from .hops import PlateProgram
     from .hops import StoppedDadoNotch
+    from .layout import DRAWER_BOX
 
     tools = tools or HopsTools()
     report = ExportReport()
@@ -148,16 +149,24 @@ def hops(cabinet, directory=None, tools=None):
     directions = _access_directions(cabinet)
     # the notches that leave stopped dados' tenons, to be milled from the end: {plate: {id(feature): notch}}
     notches = {}
+    grooves = {}  # the pockets of grooves (drawer bottoms), milled as lines: {plate: {id(feature)}}
+    # except in visible drawer fronts: a rectangular pocket there
+    pocket_grooves = {cabinet.plates[part.name] for part in cabinet.layout.parts if part.category == "drawer_front"}
     for joint in cabinet.model.joints:
+        if type(joint).__name__ == "PlateGrooveJoint" and joint.cross_plate not in pocket_grooves:
+            grooves.setdefault(joint.cross_plate, set()).update(id(f) for f in joint.features if f in joint.cross_plate.features)
         if type(joint).__name__ != "PlateStoppedDadoJoint":
             continue
         notch = StoppedDadoNotch(joint.pocket_depth, joint.main_plate.thickness, joint.pocket_depth)
         for feature in joint.features:
             if feature in joint.main_plate.features:
                 notches.setdefault(joint.main_plate, {})[id(feature)] = notch
+    # drawer parts lie with their bottom edge (and the bottom's groove) along X at Y = 0
+    drawer_parts = DRAWER_BOX + ("drawer_front",)
     for part in cabinet.layout.parts:
         plate = cabinet.plates[part.name]
-        program = PlateProgram(plate, tools, directions.get(part.name), comment=part.category, stopped_dados=notches.get(plate))
+        down = (0, 0, -1) if part.category in drawer_parts else None
+        program = PlateProgram(plate, tools, directions.get(part.name), part.category, stopped_dados=notches.get(plate), grooves=grooves.get(plate), down=down)
         try:
             text = program.text()
         except Exception as e:  # keep going: one part's problem shouldn't stop the others

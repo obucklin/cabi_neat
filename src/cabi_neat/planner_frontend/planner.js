@@ -602,6 +602,7 @@ function drawerFields(drawer) {
       value="${own[key] === undefined ? "" : round(own[key])}" placeholder="${fallback}" /></label>`;
   return `<label class="row" title="The visible front is also the drawer box's front">One-piece front <input type="checkbox" data-action="drawer-option" data-key="front_one_piece" ${onePiece ? "checked" : ""} /></label>
     ${number("bottom_offset", "Bottom height", round(c.drawer_bottom_offset), "Underside of the bottom above the box's lower edge")}
+    ${number("bottom_thickness", "Bottom thickness", round(c.drawer_bottom_thickness ?? c.back_thickness), "Empty: the carcass back's thickness")}
     ${number("groove_depth", "Bottom groove depth", c.drawer_groove_depth ?? round((c.drawer_side_thickness ?? c.thickness) / 2), "Empty: half the grooved panel's thickness")}`;
 }
 

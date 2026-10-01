@@ -164,3 +164,38 @@ def test_highlight_and_pick(planner):
     assert planner.get_version()["pick"] == {"name": "shelf_0_1", "count": 3}
     door = next(p for p in planner.get_state()["layout"]["parts"] if p["category"] == "door")
     assert len(door["attributes"]["hinges"]) == 4 and door["attributes"]["cup_diameter"] == 35
+
+
+def test_planner_files_are_revalidated():
+    # browsers must ask for changed planner files instead of using a cached copy
+    import asyncio
+
+    from fastapi import FastAPI
+    from starlette.staticfiles import StaticFiles
+
+    from cabi_neat.planner import FRONTEND_DIR
+    from cabi_neat.planner import _revalidate_planner_files
+
+    class App:
+        class server:
+            fastapi_app = FastAPI()
+
+    App.server.fastapi_app.mount("/planner", StaticFiles(directory=FRONTEND_DIR, html=True))
+    _revalidate_planner_files(App)
+
+    async def get(path):
+        scope = {"type": "http", "method": "GET", "path": path, "raw_path": path.encode(), "query_string": b"", "headers": [], "http_version": "1.1"}
+        scope.update(scheme="http", server=("test", 80), client=("test", 1), root_path="")
+        sent = []
+
+        async def receive():
+            return {"type": "http.request", "body": b"", "more_body": False}
+
+        async def send(message):
+            sent.append(message)
+
+        await App.server.fastapi_app(scope, receive, send)
+        return sent[0]["status"], dict(sent[0]["headers"]).get(b"cache-control")
+
+    for path in ("/planner/planner.js", "/planner/tree.js", "/planner/"):
+        assert asyncio.run(get(path)) == (200, b"no-cache"), path

@@ -51,19 +51,16 @@ class Drill:
     name: str = ""
 
 
-# the ETH machine, from its tool table 260611_ETH.too (loaded tools), plus the D3 and D8 drills that will be added
+# the ETH machine, from its tool table 092026tools.too (loaded tools), plus the D3 and D8 drills that will be added
 ETH_ROUTERS = (
     Router(403, 20.0, 95.0, "Turbex Ø20"),
     Router(402, 13.4, 35.0, "Dia Ø14"),
     Router(405, 12.0, 45.0, "Turbex Ø12"),
-    Router(404, 11.8, 45.0, "SRSL Ø12"),
+    Router(404, 11.5, 45.0, "SRSL Ø12"),
     Router(410, 6.0, 22.0, "ER16 Ø6"),
 )
 ETH_DRILLS = (
-    Drill(604, 3.5, 32.0, "Drill Ø3,5"),
     Drill(609, 5.0, 30.0, "Drill Ø5 short"),
-    Drill(607, 4.0, 107.0, "Drill Ø4 long"),
-    Drill(608, 6.0, 55.0, "Drill Ø6"),
     Drill(603, 8.0, 80.0, "Drill Ø8"),  # in the table, not loaded yet
     Drill(602, 3.0, 30.0, "Drill Ø3"),  # not in the table yet: number and length are placeholders
 )
@@ -82,13 +79,14 @@ class HopsTools:
     Parameters
     ----------
     routers, drills
-        What's in the tool changer. Default: the ETH machine (tool table 260611_ETH). The drill head isn't used.
+        What's in the tool changer. Default: the ETH machine (tool table 092026tools). The drill head isn't used.
     saw
         Saw blade for the format (``WZS``).
     clamex_disc, clamex_finger, clamex_drill
         Clamex tools: the disc for edges (108), the finger mill for faces (136), the drill for access holes (135).
-    clamex_hole_diameter
-        Diameter of the Clamex access holes (``B_DM`` of ``Clamex1_Stumpf``).
+    clamex_hole_diameter, clamex_hole_position
+        Diameter of the Clamex access holes and their distance from the edge (``B_DM`` and ``B_POS`` of
+        ``Clamex1_Stumpf``).
     clamex_access_holes
         Drill the access holes next to the edge grooves (``Art 0``). The plate is then machined with the face the holes
         go into on top: the underside of shelves and of the carcass top, the inside of everything else.
@@ -106,7 +104,8 @@ class HopsTools:
     clamex_disc: int = 108
     clamex_finger: int = 136
     clamex_drill: int = 135
-    clamex_hole_diameter: float = 6.8
+    clamex_hole_diameter: float = 6.0
+    clamex_hole_position: float = 5.5
     clamex_access_holes: bool = True
     format_parts: bool = True
     format_depth: float = -2.0
@@ -118,7 +117,8 @@ class HopsTools:
         """Tools from a HOPS tool table (``.too``, UTF-16). Only loaded tools (a tool number other than -1) are used.
 
         Routers are the group ``Schaft`` (except those in ``NOT_FOR_POCKETS``), drills ``Drill`` and the saw the first
-        of ``Saw blades``. The drill head (``Bohrkopf``) isn't used. Other settings are passed on as ``kwargs``.
+        of ``Saw blades``; Clamex tools from ``Special`` by name (``CLAMEX_Nut...``: disc, ``..._Schaft...``: finger mill,
+        ``..._Drill``: drill, and the access holes' diameter). The drill head (``Bohrkopf``) isn't used. Other settings are passed on as ``kwargs``.
         """
         import configparser
 
@@ -144,6 +144,13 @@ class HopsTools:
                 drills.append(Drill(number, diameter, usable, name))
             elif group == "Saw blades":
                 saws.append(number)
+            elif group == "Special" and "clamex" in name.lower():
+                role = {"nut": "clamex_disc", "schaft": "clamex_finger", "drill": "clamex_drill"}
+                for word, key in role.items():
+                    if word in name.lower():
+                        kwargs.setdefault(key, number)
+                        if key == "clamex_drill":
+                            kwargs.setdefault("clamex_hole_diameter", diameter)
         kwargs.setdefault("routers", tuple(sorted(routers, key=lambda r: -r.diameter)))
         kwargs.setdefault("drills", tuple(drills))
         if saws:
@@ -225,30 +232,65 @@ def _sub(a, b):
 class _PlateSpace:
     """The plate's blank as a box [0, L] x [0, W] x [0, T], and HOPS coordinates with one of its faces on top.
 
-    ``up`` is +1 when the blank's +z face is on top, -1 when it's turned over (about X: y -> W - y).
+    ``up`` is +1 when the blank's +z face is on top, -1 when it's turned over (about X: y -> W - y). The part can also
+    lie turned on the table by ``turns`` quarter turns (anticlockwise, seen from above), see :meth:`orient`.
+
+    ``size`` is the part's size in HOPS coordinates (DX, DY, DZ), ``local_size`` the blank's.
     """
 
     def __init__(self, plate):
         blank = plate.blank
         self.frame = blank.frame
-        self.size = (blank.xsize, blank.ysize, blank.zsize)
+        self.local_size = (blank.xsize, blank.ysize, blank.zsize)
+        self.turns = 0
+        self.size = self.local_size
         self.axes = (tuple(self.frame.xaxis), tuple(self.frame.yaxis), tuple(self.frame.zaxis))
+
+    def orient(self, up, down=None):
+        """Turn the part on the table so its long edge is along X.
+
+        Of the two ways that does, the one that takes the world direction ``down`` (if given, and in the part's plane)
+        to -Y, else to -X: e.g. a drawer part's bottom edge, with the bottom's groove, at Y = 0 (at X = 0 if it's the
+        short edge). Without ``down``, the one with the fewest turns.
+        """
+        length, width, thickness = self.local_size
+        turns = [k for k in range(4) if (width if k % 2 else length) >= (length if k % 2 else width) - 1e-6]
+        if down is not None:
+            dx, dy, _ = self.hops_vector(self.local_vector(down), up, turns=0)
+            if math.hypot(dx, dy) > 0.5:
+
+                def along(k):
+                    x, y = dx, dy
+                    for _ in range(k):
+                        x, y = -y, x
+                    return (-y, -x)  # how much it points to -Y, then to -X
+
+                turns.sort(key=along, reverse=True)
+        self.turns = turns[0]
+        self.size = (width, length, thickness) if self.turns % 2 else self.local_size
 
     def local_point(self, point):
         d = _sub(tuple(point), tuple(self.frame.point))
-        return tuple(_dot(d, a) + s / 2.0 for a, s in zip(self.axes, self.size))
+        return tuple(_dot(d, a) + s / 2.0 for a, s in zip(self.axes, self.local_size))
 
     def local_vector(self, vector):
         return tuple(_dot(tuple(vector), a) for a in self.axes)
 
     def hops_point(self, local, up):
         x, y, z = local
-        length, width, thickness = self.size
-        return (x, y, z - thickness) if up > 0 else (x, width - y, -z)
+        length, width, thickness = self.local_size
+        x, y, z = (x, y, z - thickness) if up > 0 else (x, width - y, -z)
+        for _ in range(self.turns):
+            x, y = width - y, x
+            length, width = width, length
+        return (x, y, z)
 
-    def hops_vector(self, local, up):
+    def hops_vector(self, local, up, turns=None):
         x, y, z = local
-        return (x, y, z) if up > 0 else (x, -y, -z)
+        x, y, z = (x, y, z) if up > 0 else (x, -y, -z)
+        for _ in range(self.turns if turns is None else turns):
+            x, y = -y, x
+        return (x, y, z)
 
     def face_normal(self, up):
         """The world normal of the face on top for ``up``."""
@@ -294,15 +336,22 @@ class PlateProgram:
     stopped_dados : dict, optional
         The plate's notches at the closed end of stopped dados, milled from the end instead of as pockets:
         ``{id(FreeContour): StoppedDadoNotch}``.
+    grooves : set, optional
+        ``id`` s of the plate's pockets that are grooves (e.g. for drawer bottoms), milled as lines along their walls.
+    down : vector, optional
+        Parts lie with their long edge along X. Of the two ways, the one that takes this world direction to -Y (else
+        -X), e.g. down for drawer parts: their bottom edge, with the bottom's groove, then lies along X at Y = 0.
     """
 
-    def __init__(self, plate, tools=None, access_direction=None, comment="", stopped_dados=None):
+    def __init__(self, plate, tools=None, access_direction=None, comment="", stopped_dados=None, grooves=None, down=None):
+        self.grooves = grooves or set()
         self.plate = plate
         self.stopped_dados = stopped_dados or {}
         self.tools = tools or HopsTools()
         self.access_direction = access_direction
         self.comment = comment
         self.space = _PlateSpace(plate)
+        self.down = down
         self.skipped = []
         self._contours = 0
 
@@ -313,7 +362,6 @@ class PlateProgram:
 
     def text(self):
         space = self.space
-        length, width, thickness = space.size
         features = list(self.plate.features)
         edge_clamex = [f for f in features if type(f).__name__ == "P14Edge"]
 
@@ -328,6 +376,8 @@ class PlateProgram:
         else:
             top = 1 if faces[1] >= faces[-1] else -1
         first = -top if faces[-top] else None
+        space.orient(top, self.down)
+        length, width, thickness = space.size
 
         ops = {top: [], -top: [], 0: []}
         for index, feature in enumerate(features):
@@ -391,7 +441,7 @@ class PlateProgram:
     def _outline(self, feature):
         contour = feature.contour_param_object
         points = [self.space.local_point(_ref_point(self.plate.ref_sides[feature.ref_side_index], p[0], p[1])) for p in contour.polyline]
-        length, width, _ = self.space.size
+        length, width, _ = self.space.local_size
         if any(min(abs(p[0]), abs(p[0] - length)) > 0.01 or min(abs(p[1]), abs(p[1] - width)) > 0.01 for p in points):
             self._skip("non-rectangular outline - not supported yet, cut it to shape separately")
 
@@ -436,6 +486,10 @@ class PlateProgram:
         if circle:
             return self._pot(circle, depth, face)
         rectangle = _rectangle(points)
+        if rectangle and id(feature) in self.grooves:
+            groove = self._groove(rectangle, depth, face)
+            if groove:
+                return groove
         if rectangle:
             return self._rectangle_pocket(rectangle, depth, face)
         return self._free_pocket(points, depth, face)
@@ -499,11 +553,11 @@ class PlateProgram:
             y_mitte=_n(cy),
             taschenlaenge=_n(a),
             taschenbreite=_n(b),
-            radius=0,
+            radius=_n(router.diameter / 2.0),  # the corners the router leaves anyway
             winkel=_n(angle),
             tiefe=_n(-depth),
             zustellung="_AT_MAXDEPTH",
-            ab=2,
+            ab=0,  # no lead-out
             abf="_ANF",
             interpol=1,
             umkehren=0,
@@ -512,6 +566,56 @@ class PlateProgram:
             laser=0,
         )
         return [_Op("pocket", router.number, [call], "Pocket {} x {}, {} deep".format(_n(a), _n(b), _n(depth)), face, (cy, cx))]
+
+    def _groove(self, rectangle, depth, face):
+        """A groove as lines along its walls, with a linear approach (``SP`` 1) and no lead-out (``EP`` 0).
+
+        The largest router that fits the width, one line with radius correction along each wall (tool inside the
+        groove, on the left of the path) or one down the middle if the router is as wide as the groove, and more
+        down the middle if the two don't clear it. Open ends run out to the part's edge; closed ends stop a tool radius
+        short, so the cut ends at the groove's end; open ones run a tool diameter past the part's edge. ``SP``'s Z is the groove's floor above the underside.
+        Returns None for grooves that aren't along X or Y (milled as pockets instead).
+        """
+        (cx, cy), (a, b), angle = rectangle
+        if abs(math.sin(math.radians(angle))) > 1e-6 and abs(math.cos(math.radians(angle))) > 1e-6:
+            return None
+        if abs(math.sin(math.radians(angle))) > 0.5:
+            a, b = b, a
+        length, width, thickness = self.space.size
+        along_x = a >= b
+        if along_x:
+            lo, hi, start, end, span, name = cy - b / 2, cy + b / 2, cx - a / 2, cx + a / 2, length, "DX"
+        else:
+            lo, hi, start, end, span, name = cx - a / 2, cx + a / 2, cy - b / 2, cy + b / 2, width, "DY"
+        groove_width = hi - lo
+        router = self.tools.router_for(groove_width, depth, end - start)
+        if router is None:
+            self._skip("groove {} wide, {} deep - no router fits".format(_n(groove_width), _n(depth)))
+            return []
+        radius = router.diameter / 2.0
+        # where the tool's center starts and ends along the groove: the part's edge if open, a radius short if closed
+        # open ends run a tool diameter past the part's edge
+        first = _n(-router.diameter) if start <= 1e-3 else _n(start + radius)
+        last = "{}+{}".format(name, _n(router.diameter)) if end >= span - 1e-3 else _n(end - radius)
+        # (position across, radius correction, forwards): the walls with the tool on the left, else the middle
+        if groove_width - router.diameter < 0.01:
+            paths = [(_n((lo + hi) / 2.0), 0, True)]
+        else:
+            paths = [(_n(lo), 1, along_x), (_n(hi), 1, not along_x)]
+            inner = groove_width - 2 * router.diameter
+            count = math.ceil(inner / (0.8 * router.diameter)) if inner > 0 else 0
+            paths += [(_n(lo + router.diameter + (i + 0.5) * inner / count), 0, True) for i in range(count)]
+        lines = []
+        for across, correction, forwards in paths:
+            ends = (first, last) if forwards else (last, first)
+            points = [(e, across) if along_x else (across, e) for e in ends]
+            lines += [
+                "SP ({},{},{},{},1,_ANF*2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0.5mm)".format(points[0][0], points[0][1], _n(thickness - depth), correction),
+                "G01 ({},{},0,0,1,2)".format(points[1][0], points[1][1]),
+                "EP (0,_ANF*2,0)",  # no lead-out
+            ]
+        comment = "Groove {} wide, {} deep".format(_n(groove_width), _n(depth))
+        return [_Op("pocket", router.number, lines, comment, face, (lo, start))]
 
     def _rabbet(self, x0, x1, y0, y1, open_x, open_y, depth, face):
         """A rabbet (a pocket open along one side and at both ends) as a single line along its inner edge.
@@ -585,27 +689,25 @@ class PlateProgram:
         """The notch that leaves the tenon of a stopped dado, milled from the plate's end with the tool axis along it.
 
         A router milling the dado from above leaves its closed end rounded with the router's radius, across the dado's
-        width. So the tenon's end gets the same corners: a contour in the end face, along the tenon's end with an arc
-        of that radius at either face, then straight passes to clear the rest of the notch. The working plane is tilted
-        90 degrees onto the end face (``EbeneF``, as ``Clamex_MS_FI`` does): its X along the edge, its Y up with 0 at the
-        top face, its Z out of the end face; the tool cuts ``notch.depth`` deep, down to the tenon's shoulder.
+        width. So the tenon's end gets the same corners: in the plane of the end face (``Ebene1``-``Ebene4``: X along
+        the face as seen from outside, Y from 0 at the underside to ``DZ``, Z into the part), a contour up the tenon's
+        end with an arc of that radius at either face, ``notch.depth`` deep. It's run with decreasing allowances
+        (``SP``'s ``Aufmass``), the last one 0, so the passes clear the whole notch out to the edge.
         """
         length, width, thickness = self.space.size
         ref_side = self.plate.ref_sides[feature.ref_side_index]
         points = [self.space.hops_point(self.space.local_point(_ref_point(ref_side, p[0], p[1])), top)[:2] for p in feature.contour_param_object.polyline]
         x0, x1 = max(min(p[0] for p in points), 0.0), min(max(p[0] for p in points), length)
         y0, y1 = max(min(p[1] for p in points), 0.0), min(max(p[1] for p in points), width)
-        # which end the tenon is on (normal out of it) and which edge the notch opens to (the origin, on that edge)
-        if abs(x1 - x0 - notch.depth) < 0.01 and (x0 < 1e-3 or x1 > length - 1e-3):
-            end_x = 0.0 if x0 < 1e-3 else length
-            normal = (-1.0, 0.0) if end_x == 0.0 else (1.0, 0.0)
-            origin, inward = ((end_x, width), (0.0, -1.0)) if y1 > width - 1e-3 else ((end_x, 0.0), (0.0, 1.0))
-            stop = y1 - y0
-        elif abs(y1 - y0 - notch.depth) < 0.01 and (y0 < 1e-3 or y1 > width - 1e-3):
-            end_y = 0.0 if y0 < 1e-3 else width
-            normal = (0.0, -1.0) if end_y == 0.0 else (0.0, 1.0)
-            origin, inward = ((length, end_y), (-1.0, 0.0)) if x1 > length - 1e-3 else ((0.0, end_y), (1.0, 0.0))
-            stop = x1 - x0
+        # the end face's plane, and whether the notch opens at the start of the plane's X (else at its end)
+        if abs(x1 - x0 - notch.depth) < 0.01 and x0 < 1e-3:
+            plane, span, at_start, stop = "Ebene2", "DY", y1 > width - 1e-3, y1 - y0  # left end, X runs towards -Y
+        elif abs(x1 - x0 - notch.depth) < 0.01 and x1 > length - 1e-3:
+            plane, span, at_start, stop = "Ebene4", "DY", y0 < 1e-3, y1 - y0  # right end, X runs towards +Y
+        elif abs(y1 - y0 - notch.depth) < 0.01 and y0 < 1e-3:
+            plane, span, at_start, stop = "Ebene1", "DX", x0 < 1e-3, x1 - x0  # front, X runs towards +X
+        elif abs(y1 - y0 - notch.depth) < 0.01 and y1 > width - 1e-3:
+            plane, span, at_start, stop = "Ebene3", "DX", x1 > length - 1e-3, x1 - x0  # rear, X runs towards -X
         else:
             self._skip("stopped dado notch that isn't at the plate's end - milled as a pocket instead")
             return self._pocket(feature)
@@ -614,44 +716,27 @@ class PlateProgram:
             self._skip("stopped dado notch - no router for it")
             return []
         radius = min(router.diameter / 2.0, thickness / 2.0)
-        # the plane's X: normal = X x Z (up) gives X = (-ny, nx); u, the distance from the open edge towards the tenon,
-        # is X or -X
-        axis = (-normal[1], normal[0])
-        sign = 1.0 if axis[0] * inward[0] + axis[1] * inward[1] > 0 else -1.0
-        angle = math.degrees(math.atan2(axis[1], axis[0])) % 360.0
-
-        def at(u, v):
-            return "{},{},0".format(_n(sign * u), _n(v))
-
-        lead = 5.0
-        arc = "G03R" if sign > 0 else "G02R"  # both arcs turn anticlockwise in (u, v)
-        # the tool runs on the notch's side of the tenon: to the right of the path in (u, v), mirrored with X
-        correction = 2 if sign > 0 else 1
-        lines = [
-            "EbeneF ({},{},0,90,{},1,2)".format(_n(origin[0]), _n(origin[1]), _n(angle)),
-            "SP ({},{},{},{},1,_ANF*2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0.5mm)".format(_n(sign * (stop + radius + lead)), 0, _n(-notch.depth), correction),
-            "G01 ({},0,0,2)".format(at(stop + radius, 0)),
-            "{} ({},{},0,0,2)".format(arc, at(stop, -radius), _n(radius)),
-        ]
-        if thickness - 2 * radius > 1e-6:
-            lines.append("G01 ({},0,0,2)".format(at(stop, -thickness + radius)))
-        lines += [
-            "{} ({},{},0,0,2)".format(arc, at(stop + radius, -thickness), _n(radius)),
-            "G01 ({},0,0,2)".format(at(stop + radius + lead, -thickness)),
-            "EP (1,_ANF*2,0)",
-        ]
-        # the rest of the notch, out to the open edge
-        u = stop - radius
-        while u - radius > 0:
-            u = max(u - 0.8 * router.diameter, 0.0)
-            lines += [
-                "SP ({},{},{},0,1,_ANF*2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0.5mm)".format(_n(sign * u), _n(radius + lead), _n(-notch.depth)),
-                "G01 ({},0,0,2)".format(at(u, -thickness - radius - lead)),
-                "EP (1,_ANF*2,0)",
-            ]
+        s, r = _n(stop), _n(radius)
+        if at_start:  # the tenon beyond X = stop: up its end with the tool on the left, arcs clockwise
+            end, corner, correction, arc = s, "{}+{}".format(s, r), 1, "G02R"
+        else:  # the tenon before X = span - stop: tool on the right, arcs anticlockwise
+            end, corner, correction, arc = "{}-{}".format(span, s), "{}-{}-{}".format(span, s, r), 2, "G03R"
+        # allowances: steps of 3/4 of the tool, until the first pass reaches the open edge
+        step = max(math.floor(0.75 * router.diameter), 1)
+        passes = 0
+        while stop - passes * step - router.diameter > 0:
+            passes += 1
+        lines = ["{}()".format(plane)]
+        for allowance in range(passes, -1, -1):
+            lines.append("SP ({},0,{},{},2,_ANF*2,{},0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0.5mm)".format(corner, _n(-notch.depth), correction, allowance * step))
+            lines.append("{} ({},{},0,{},0,1,2)".format(arc, end, r, r))
+            if thickness - 2 * radius > 1e-6:
+                lines.append("G01 ({},DZ-{},0,0,1,2)".format(end, r))
+            lines.append("{} ({},DZ,0,{},0,1,2)".format(arc, corner, r))
+            lines.append("EP (2,_ANF*2,0)")
         lines.append("Ebene0()")
-        comment = "Stopped dado tenon: {} x {} notch milled from the end, corners R{}".format(_n(stop), _n(notch.depth), _n(radius))
-        return [_Op("side_contour", router.number, lines, comment, 0, (origin[1], origin[0]))]
+        comment = "Stopped dado tenon: {} x {} notch milled from the end, corners R{}".format(s, _n(notch.depth), r)
+        return [_Op("side_contour", router.number, lines, comment, 0, (plane,))]
 
     # -- drillings -----------------------------------------------------------
 
@@ -759,7 +844,7 @@ class PlateProgram:
         ends = edge in ("left", "right")
         first = 0 if edge in ("left", "rear") else 3
         params = dict(clamex_id=t.clamex_finger, clamex_id_h=t.clamex_disc, clamex_b_id=t.clamex_drill, art=0 if t.clamex_access_holes else 1)
-        params.update(b_pos="7.5", b_dm=_n(t.clamex_hole_diameter), c_tiefe=14)
+        params.update(b_pos=_n(t.clamex_hole_position), b_dm=_n(t.clamex_hole_diameter), c_tiefe=14)
         values = {}
         for i in range(6):
             values["c{}".format(i + 1)] = 0

@@ -100,7 +100,7 @@ Drawer boxes are joined like this:
 - **Box back:** rabbeted into the sides (`PlateRabbetJoint`).
 - **Box front, two-piece fronts:** also rabbeted into the sides. The visible front is fixed to the box front.
 - **One-piece fronts** (`drawer_front_one_piece`): the visible front is the box front. Each side is fixed to its back face with one Clamex P-14 connector in the middle, plus two Ø8 alignment dowels 30 from the ends.
-- **Bottom:** sits in grooves in the sides, front and back (`cabi_neat.joints.PlateGrooveJoint`), `drawer_bottom_offset` (default 10) above the box's lower edge. The grooves run through the sides. In the front and back they stop, exactly as long as the bottom's edge including its corners reaching into the side grooves: as short as possible without notching the bottom, and invisible on a one-piece front. Their depth (`drawer_groove_depth`) defaults to half the grooved panel's thickness.
+- **Bottom:** sits in grooves in the sides, front and back (`cabi_neat.joints.PlateGrooveJoint`), `drawer_bottom_offset` (default 10) above the box's lower edge. It's as thick as the carcass back unless `drawer_bottom_thickness` says otherwise. The grooves run through the sides. In the front and back they stop, exactly as long as the bottom's edge including its corners reaching into the side grooves: as short as possible without notching the bottom, and invisible on a one-piece front. Their depth (`drawer_groove_depth`) defaults to half the grooved panel's thickness.
 
 Doors hang on European concealed cup hinges ("Topfband") using `cabi_neat.joints.CupHingeJoint`, a joint between the door and the side or divider on its hinge side. Each hinge makes these cuts:
 
@@ -135,7 +135,7 @@ This opens the planner at `http://127.0.0.1:9001/planner/`. It shows a 2D front 
   - **Type:** Open, Door or Drawers. Switching type converts the section, and only that type's controls are shown:
     - **Open:** shelves and dividers, with each panel's position and joint (and that joint's parameters).
     - **Door:** hinged left, right or double, with the door's **Hinges** as a collapsible menu (collapsible General, Door and Side groups). Below that, the shelves and dividers behind the door.
-    - **Drawers:** how many stacked drawers, dividers for side-by-side stacks, and "Shelves between drawers" (with 2 or more). A collapsible **Drawer settings** menu (one-piece front, bottom height, bottom groove depth) applies to all of the section's drawers. The drawer positions can be typed too.
+    - **Drawers:** how many stacked drawers, dividers for side-by-side stacks, and "Shelves between drawers" (with 2 or more). A collapsible **Drawer settings** menu (one-piece front, bottom height, bottom thickness, bottom groove depth) applies to all of the section's drawers. The drawer positions can be typed too.
   - A section behind a door has no type: it's open, with its shelves and dividers.
 
 Empty fields use the cabinet's defaults, shown as placeholders.
@@ -168,14 +168,16 @@ The planner's toolbar has **Export BTLx** and **Export HOPS** (a zip with one pr
 - **HOPS** programs are written like the workshop's own (`Hops/Hop/OB/flur`) and use its macros (`cabi_neat.hops`), one per plate:
   - The part is cut to size first: saw 201 and `_Sformat_V5`.
   - Rabbets are a single line along their inner edge (`SP`/`G01`/`EP`, radius correction 1), as in `sides_schrank`.
-  - Other pockets (grooves, mortises, tenon gaps) use `_RechteckTasche_V5` with the largest router that fits. Pockets open to an edge are widened past it for a bigger router. Other shapes use a contour and `_ExecutePocket_V5`.
-  - The notches that leave a stopped dado's tenon are milled from the plate's end: the working plane is tilted onto the end face (`EbeneF`, as in `Clamex_MS_FI`) and a contour runs along the tenon's end with arcs of the dado router's radius, so the tenon fits the dado's rounded end. Straight passes clear the rest of the notch.
+  - Grooves for drawer bottoms in the drawer sides and back are lines along their walls with a linear approach (`SP` 1) and no lead-out (`EP` 0), with the largest router that fits the width. Closed ends stop a tool radius short, open ones run a tool diameter past the edge. In a one-piece drawer front the groove is a rectangular pocket, like the other pockets. 
+  - Other pockets (mortises, tenon gaps, housings) use `_RechteckTasche_V5` with the largest router that fits, its radius as the corner radius, and no lead-out. Pockets open to an edge are widened past it for a bigger router. Other shapes use a contour and `_ExecutePocket_V5`.
+  - The notches that leave a stopped dado's tenon are milled from the plate's end, in its plane (`Ebene1`-`Ebene4`). A contour runs up the tenon's end with arcs of the dado router's radius, so the tenon fits the dado's rounded end. It's run with decreasing allowances, the last 0, to clear the notch.
   - Hinge pots use `_Kreisbahn_V5` with the Ø20 router (403).
   - Drillings into faces use `Bohrung`, drillings into edges `HorzB`, always with a spindle drill (`WZB`) of the hole's diameter: the shortest one that's deep enough. The drill head isn't used. The defaults include a Ø8 (603) and a Ø3 (602, placeholder number) to be loaded.
   - Clamex P-14 in faces uses `Clamex_MS_FI` with the finger mill (136). In edges it uses `Clamex1_Stumpf` (ends) and `Clamex1_Stumpf_X` (long edges) with the disc (108), plus the access holes (drill 135).
   - With machining on both faces, the other face comes first, then `MachineStop_V7` to turn the panel over about its long edge. A plate with Clamex access holes has their face on top: the underside of shelves and of the top, and the inside of everything else.
-  - The tools default to the ETH machine's tool table (260611_ETH). `HopsTools.from_too(path)` reads another table.
+  - The tools default to the ETH machine's tool table (092026tools), plus a Ø8 (603) and a Ø3 (602, placeholder number) drill to be loaded. `HopsTools.from_too(path)` reads another table, including the Clamex tools.
   - Identical parts (shelves, drawer bottoms, …) share one program, named after the first with `_CUT_<n>` appended, e.g. `shelf_0_2_CUT_4.hop` is cut four times. `report.txt` lists the parts each one is for.
+  - Every part lies on the table with its long edge along X. Of the two ways, drawer parts (sides, back, front) take the one with their bottom edge, and the groove, at Y = 0.
   - Files are written with Windows line endings.
 
 ## Setup

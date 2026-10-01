@@ -167,8 +167,13 @@ JOINT_PARAMETERS = {
 
 
 # per-drawer settings (Cell.drawer), each defaulting to the cabinet's field in DRAWER_DEFAULTS
-DRAWER_OPTIONS = ("front_one_piece", "bottom_offset", "groove_depth")
-DRAWER_DEFAULTS = {"front_one_piece": "drawer_front_one_piece", "bottom_offset": "drawer_bottom_offset", "groove_depth": "drawer_groove_depth"}
+DRAWER_OPTIONS = ("front_one_piece", "bottom_offset", "bottom_thickness", "groove_depth")
+DRAWER_DEFAULTS = {
+    "front_one_piece": "drawer_front_one_piece",
+    "bottom_offset": "drawer_bottom_offset",
+    "bottom_thickness": "drawer_bottom_thickness",
+    "groove_depth": "drawer_groove_depth",
+}
 
 
 def _check_options(options, allowed, what):
@@ -402,7 +407,7 @@ class CabinetConfig:
     drawer_side_thickness
         Thickness of drawer box sides, front and back. ``None`` uses the carcass ``thickness``.
     drawer_bottom_thickness
-        Thickness of drawer box bottoms.
+        Thickness of drawer box bottoms. ``None`` uses the carcass ``back_thickness``.
     drawer_bottom_offset
         Height of a drawer bottom's underside above the box's lower edge. The bottom sits in grooves in the sides,
         front and back, so there must be material below it.
@@ -449,7 +454,7 @@ class CabinetConfig:
     front_gap: float = 3.0
     inset_setback: float = 0.0
     drawer_side_thickness: Optional[float] = None
-    drawer_bottom_thickness: float = 8.0
+    drawer_bottom_thickness: Optional[float] = None
     drawer_bottom_offset: float = 10.0
     drawer_groove_depth: Optional[float] = None
     drawer_clearance: float = 13.0
@@ -525,7 +530,10 @@ class CabinetConfig:
     def drawer_options(self, cell):
         """The settings of the drawer ``cell``: its own, falling back to the cabinet's."""
         own = cell.drawer or {}
-        return {key: own.get(key, getattr(self, field)) for key, field in DRAWER_DEFAULTS.items()}
+        options = {key: own.get(key, getattr(self, field)) for key, field in DRAWER_DEFAULTS.items()}
+        if options["bottom_thickness"] is None:
+            options["bottom_thickness"] = self.back_thickness
+        return options
 
     def hinge_options(self, node):
         """The hinge dimensions of ``node``'s door: its own, falling back to the cabinet's ``hinges``."""

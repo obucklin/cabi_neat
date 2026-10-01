@@ -234,3 +234,19 @@ def test_drawer_boxes_do_not_reach_below_their_fronts(mount, between):
         box = [p for p in layout.parts if p.attributes.get("drawer") == key and p.category != "drawer_front"]
         assert min(p.origin[2] for p in box) >= front.origin[2] - 1e-9, key
         assert max(p.max[2] for p in box) <= front.max[2] + 1e-9, key
+
+
+def test_drawer_bottom_is_as_thick_as_the_back():
+    from cabi_neat.config import Cell
+    from cabi_neat.config import Split
+
+    # by default the carcass back's thickness
+    layout = resolve_layout(CabinetConfig.stack(["drawer", "open"], back_thickness=9))
+    assert layout.part("drawer_0_0_bottom").size[2] == 9
+    # unless set for the cabinet
+    layout = resolve_layout(CabinetConfig.stack(["drawer", "open"], back_thickness=9, drawer_bottom_thickness=12))
+    assert layout.part("drawer_0_0_bottom").size[2] == 12
+    # or for the drawer
+    config = CabinetConfig(interior=Split("rows", [Cell("drawer", drawer={"bottom_thickness": 6}), Cell("drawer")]))
+    parts = [p for p in resolve_layout(config).parts if p.category == "drawer_bottom"]
+    assert sorted(p.size[2] for p in parts) == [6, config.back_thickness]

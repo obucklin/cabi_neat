@@ -409,7 +409,7 @@ def _front_rect(c, opening):
 def _add_drawer(layout, key, opening, front_depth, options):
     """Add a drawer box and front in ``opening``, with its settings ``options`` (see :meth:`CabinetConfig.drawer_options`)."""
     c = layout.config
-    st, bt, clr = c.drawer_panel_thickness, c.drawer_bottom_thickness, c.drawer_clearance
+    st, bt, clr = c.drawer_panel_thickness, options["bottom_thickness"], c.drawer_clearance
     inner_depth = c.depth - c.back_thickness
 
     fx, fz, fw, fh = _front_rect(c, opening)
