@@ -621,3 +621,161 @@ details.collapsible > summary .changed {
   stroke: #2f6fdb;
   opacity: 0.7;
 }
+
+/* toolbar: the cabinet's name and the File / Fabricate drop-down menus */
+.cabinet-name {
+  width: 12em;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  font-weight: 600;
+}
+
+.cabinet-name:hover,
+.cabinet-name:focus {
+  border-color: var(--border);
+  background: var(--bg);
+}
+
+details.menu {
+  position: relative;
+}
+
+details.menu > summary {
+  list-style: none;
+}
+
+details.menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.menu > summary::after {
+  content: " ▾";
+  color: var(--muted);
+}
+
+details.menu[open] > summary {
+  border-color: var(--accent);
+}
+
+.menu-items {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-width: 11em;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+.menu-items button {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-color: transparent;
+  background: transparent;
+  text-align: left;
+}
+
+.menu-items button:hover {
+  border-color: transparent;
+  background: var(--accent-soft);
+}
+
+/* sidebar groups that collapse by clicking their title, some with an option checkbox on the title line */
+details.group {
+  display: block;
+}
+
+.fold-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#sidebar .fold-head h2 {
+  margin: 0;
+}
+
+details.group > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+details.group > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.group > summary h2::before {
+  content: "▸";
+  display: inline-block;
+  width: 1em;
+  transition: transform 0.12s;
+}
+
+details.group[open] > summary h2::before {
+  transform: rotate(90deg);
+}
+
+/* without a body there's nothing to fold: keep the title in line with the foldable ones */
+div.group.fold h2::before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+}
+
+.head-check {
+  margin: 0 0 0 auto;
+}
+
+.fold-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 6px;
+}
+
+/* the carcass level's main groups (Cabinet, Carcass joints, Countertop, Interior): larger titles */
+#sidebar .group.major > .fold-head h2 {
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
+.group.major > .fold-head {
+  padding: 2px 0;
+}
+
+/* groups inside Interior (type, door, drawers, shelves & dividers, shelf holes): indented below its title */
+.group.major > .fold-body > .group {
+  margin-left: 4px;
+  padding: 8px 0 8px 10px;
+  border-bottom: none;
+  border-left: 2px solid var(--border);
+}
+
+/* controls that belong together inside a group (the shelves between drawers with their positions) */
+.subgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.warning {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(194, 65, 45, 0.12);
+  color: var(--danger);
+  font-size: 12.5px;
+}

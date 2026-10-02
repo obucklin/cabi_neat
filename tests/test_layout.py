@@ -211,6 +211,47 @@ def test_shelves_between_drawers():
     assert len(resolve_layout(config.copy(shelves_between_drawers=True)).by_category("shelf")) == 3
 
 
+@pytest.mark.parametrize("mount", ["overlay", "inset"])
+def test_drawer_bottom_clearance_on_shelves(mount):
+    # on a shelf, the bottom clearance puts the bottom's underside that far above the shelf, replacing the bottom offset
+    config = CabinetConfig.stack(["drawer", "drawer", "open"], door_mount=mount, shelves_between_drawers=True, drawer_bottom_clearance=14)
+    layout = resolve_layout(config)
+    shelf = layout.part("shelf_0_0")
+    upper = max(layout.by_category("drawer_bottom"), key=lambda p: p.origin[2])
+    assert upper.origin[2] - shelf.max[2] == pytest.approx(14)
+    assert layout.warnings == []
+    # without shelves it's the bottom offset that counts
+    plain = resolve_layout(config.copy(shelves_between_drawers=False))
+    for bottom in plain.by_category("drawer_bottom"):
+        side = plain.part(bottom.name.replace("_bottom", "_side_l"))
+        assert bottom.origin[2] - side.origin[2] == pytest.approx(config.drawer_bottom_offset)
+
+
+def test_drawer_bottom_close_to_the_edge_warns():
+    config = CabinetConfig.stack(["drawer", "drawer"], shelves_between_drawers=True, drawer_bottom_clearance=4)
+    layout = resolve_layout(config)
+    assert [key for key, _ in layout.warnings] == ["0_0", "0_1"]
+    assert "groove" in layout.warnings[0][1]
+    with pytest.raises(ValueError, match="bottom clearance"):
+        resolve_layout(config.copy(door_mount="inset", drawer_bottom_clearance=0))
+
+
+def test_drawer_bottom_grooves_run_through_the_back():
+    # through the sides and the back (its ends are hidden in the sides' rabbets), stopped in the front
+    layout = resolve_layout(CabinetConfig.stack(["drawer", "open"], door_mount="inset", back_thickness=9, drawer_bottom_thickness=8))
+    kinds = {cross: params["through"] for (main, cross), (kind, params) in layout.joint_kinds.items() if kind == "groove"}
+    assert kinds == {"drawer_0_0_side_l": True, "drawer_0_0_side_r": True, "drawer_0_0_back": True, "drawer_0_0_box_front": False}
+
+
+def test_drawer_side_clearance():
+    from cabi_neat.config import Cell
+
+    config = CabinetConfig(interior=Cell("drawer", drawer={"side_clearance": 5}))
+    layout = resolve_layout(config)
+    left = min(layout.by_category("drawer_side"), key=lambda p: p.origin[0])
+    assert left.origin[0] - config.thickness == pytest.approx(5)
+
+
 def test_inset_shelves_flush_between_fronts():
     config = CabinetConfig.stack(["drawer", "drawer", "open", "open"], door_mount="inset", shelves_between_drawers=True)
     shelves = {p.name: p for p in resolve_layout(config).by_category("shelf")}
@@ -304,6 +345,15 @@ def test_countertop_replaces_top(mount):
     # fronts stay below the countertop
     for front in layout.by_category("door", "drawer_front"):
         assert front.max[2] <= 1170 - config.front_gap / 2.0 + TOL
+
+
+def test_countertop_clamex_options():
+    # the countertop's connectors use the carcass's settings unless it has its own
+    layout = resolve_layout(CabinetConfig(countertop=True, clamex_distance=80, clamex_center=False))
+    assert layout.joint_kinds[("side_left", "countertop")] == ("clamex_p14", {"distance": 80, "center_connector": False})
+    layout = resolve_layout(CabinetConfig(countertop=True, clamex_distance=80, countertop_clamex_distance=50, countertop_clamex_center=True))
+    assert layout.joint_kinds[("side_left", "countertop")] == ("clamex_p14", {"distance": 50, "center_connector": True})
+    assert layout.joint_kinds[("bottom", "side_left")] == ("clamex_p14", {"distance": 80, "center_connector": True})
 
 
 def test_countertop_butt_and_validation():

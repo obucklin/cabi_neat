@@ -233,7 +233,7 @@ class PlateMortiseTenon(_PlateHousingJoint):
         Number of tenons along the edge. Default is 2.
     tenon_length : float, optional
         Length of each tenon along the edge. By default the edge is divided into ``2 * tenon_count + 1`` equal parts,
-        with tenons in every other part, so both ends of the edge are free.
+        with tenons in every other part, so both ends of the edge are free. A single tenon is half the edge, centred.
     **kwargs
         Passed to :class:`compas_timber.connections.PlateJoint` (``topology``, ``a_segment_index``, ``b_segment_index``, ...).
     """
@@ -268,6 +268,8 @@ class PlateMortiseTenon(_PlateHousingJoint):
         """(start, end) of each tenon along an edge of ``length``, from its start."""
         n = self.tenon_count
         if self.tenon_length is None:
+            if n == 1:
+                return [(length / 4.0, 3 * length / 4.0)]
             part = length / (2 * n + 1)
             return [((2 * i + 1) * part, (2 * i + 2) * part) for i in range(n)]
         gap = (length - n * self.tenon_length) / (n + 1)

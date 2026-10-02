@@ -77,7 +77,7 @@ Panels are joined with compas_timber's `PlateLButtJoint` / `PlateTButtJoint`. Th
 
 - `interior_joint="mortise_tenon"` is the default; `"butt"` gives plain T-butts.
 - `tenon_depth`: how far the tenons go in. The default is a quarter of the receiving panel's thickness.
-- `tenon_count`: the number of tenons per edge, default 2. They're evenly spaced, and both ends of the edge are left free.
+- `tenon_count`: the number of tenons per edge, default 2. They're evenly spaced, and both ends of the edge are left free. A single tenon is half the edge long, centred.
 
 The shelf's edge is extended into the other panel. `FreeContour` pockets then cut the extension away between the tenons and cut matching blind mortises. Joints with the back stay plain T-butts.
 
@@ -94,7 +94,8 @@ With `countertop=True`, a countertop replaces the carcass top. It lies on the si
 
 - `countertop_thickness`: default `None`, the carcass `thickness`.
 - `countertop_overhang_front` / `_back` / `_left` / `_right`: how far it reaches beyond the carcass. Defaults are 20 at the front and 0 elsewhere.
-- `countertop_joint`: how the sides join it, `"clamex_p14"` (default, with `clamex_distance` and `clamex_center`) or `"butt"`. The connectors go in the sides' top edges and the grooves in the countertop's underside.
+- `countertop_joint`: how the sides join it, `"clamex_p14"` (default) or `"butt"`. The connectors go in the sides' top edges and the grooves in the countertop's underside.
+- `countertop_clamex_distance` / `countertop_clamex_center`: the Clamex connector distance and center connector for the countertop. Default `None`, the carcass's `clamex_distance` and `clamex_center`.
 - Overlay fronts stop below the countertop instead of covering the top's edge.
 
 `cabi_neat.joints.PlateStoppedDadoJoint` is a stopped dado (housing), used as follows:
@@ -110,7 +111,7 @@ Drawer boxes are joined like this:
 - **Box back:** rabbeted into the sides (`PlateRabbetJoint`).
 - **Box front, two-piece fronts:** also rabbeted into the sides. The visible front is fixed to the box front.
 - **One-piece fronts** (`drawer_front_one_piece`): the visible front is the box front. Each side is fixed to its back face with one Clamex P-14 connector in the middle, plus two Ø8 alignment dowels 30 from the ends.
-- **Bottom:** sits in grooves in the sides, front and back (`cabi_neat.joints.PlateGrooveJoint`), `drawer_bottom_offset` (default 10) above the box's lower edge. It's as thick as the carcass back unless `drawer_bottom_thickness` says otherwise. The grooves run through the sides. In the front and back they stop, exactly as long as the bottom's edge including its corners reaching into the side grooves: as short as possible without notching the bottom, and invisible on a one-piece front. Their depth (`drawer_groove_depth`) defaults to half the grooved panel's thickness.
+- **Bottom:** sits in grooves in the sides, front and back (`cabi_neat.joints.PlateGrooveJoint`), `drawer_bottom_offset` (default 10) above the box's lower edge. With shelves between drawers, `drawer_bottom_clearance` can place it instead, measured from the shelf below (default `None`: use the offset). Less than 5 mm below the groove is buildable but shows a warning. It's as thick as the carcass back unless `drawer_bottom_thickness` says otherwise. The grooves run through the sides and the back, whose ends are hidden in the sides' rabbets. In the front the groove stops, exactly as long as the bottom's edge including its corners reaching into the side grooves: as short as possible without notching the bottom, and invisible on a one-piece front. Their depth (`drawer_groove_depth`) defaults to half the grooved panel's thickness.
 
 Doors hang on European concealed cup hinges ("Topfband") using `cabi_neat.joints.CupHingeJoint`, a joint between the door and the side or divider on its hinge side. Each hinge makes these cuts:
 
@@ -145,7 +146,7 @@ This opens the planner at `http://127.0.0.1:9001/planner/`. It shows a 2D front 
   - **Type:** Open, Door or Drawers. Switching type converts the section, and only that type's controls are shown:
     - **Open:** shelves and dividers, with each panel's position and joint (and that joint's parameters).
     - **Door:** hinged left, right or double, with the door's **Hinges** as a collapsible menu (collapsible General, Door and Side groups). Below that, the shelves and dividers behind the door.
-    - **Drawers:** how many stacked drawers, dividers for side-by-side stacks, and "Shelves between drawers" (with 2 or more). A collapsible **Drawer settings** menu (one-piece front, bottom height, bottom thickness, bottom groove depth) applies to all of the section's drawers. The drawer positions can be typed too.
+    - **Drawers:** how many stacked drawers, dividers for side-by-side stacks, and "Shelves between drawers" (with 2 or more), grouped with "Front rail only", the rail width and the shelf positions. A collapsible **Drawer settings** menu (one-piece front, side clearance for the runners, side height, bottom height or, on shelves, bottom clearance above the shelf, bottom thickness, bottom groove depth) applies to all of the section's drawers. A warning shows when a drawer's bottom groove is less than 5 mm above the sides' lower edge.
   - A section behind a door has no type: it's open, with its shelves and dividers.
 
 Empty fields use the cabinet's defaults, shown as placeholders.
@@ -162,7 +163,9 @@ Empty fields use the cabinet's defaults, shown as placeholders.
 
 **Generate 3D.** Edits only update the plan. **Generate 3D** (top right) builds the timber model and updates the 3D view. It's highlighted while the 3D view is out of date. The cut list generates first if needed.
 
-**Toolbar.** Undo/redo, a snap grid, the cut list, JSON save (with a save dialog in Chrome/Edge) and load, and toggles for fronts in the plan and fronts shown or open in 3D.
+**Toolbar.** The cabinet's name, which is also the default name of its files. A **File** menu: New, Load, Save (Ctrl+S) and Save as. Loading a JSON names the cabinet after the file. In Chrome/Edge, Save writes back to the file it was loaded from or last saved to; elsewhere it downloads. A **Fabricate** menu shows or hides the cut list in the sidebar and writes the cut list (CSV), BTLx, HOPS and DXF. Then undo/redo and a snap grid. On the right, next to Generate 3D, are the view controls: fronts in the plan, fronts shown or open in 3D, and the 3D view toggle.
+
+At the carcass level the sidebar has four main groups: Cabinet, Carcass joints, Countertop and Interior. Interior holds the interior's type, door, drawers, shelves and dividers, and shelf holes. These groups and Shelf holes collapse by clicking their title. Countertop and Shelf holes have their checkbox on the title line, and show their settings only while it's ticked.
 
 The page keeps no geometry of its own. It edits the interior tree (`planner_frontend/tree.js`) and posts the config to `/planner/api/config`. Python then resolves and builds the cabinet, updates the 3D view, and sends the resolved layout back for drawing. `cabi_neat.sections.sectioned(config)` converts any config into the planner's *section form*, where every node has an explicit front, without changing its geometry.
 
@@ -172,7 +175,7 @@ The page keeps no geometry of its own. It edits the interior tree (`planner_fron
 python -m cabi_neat.export cabinet.json --btlx cabinet.btlx --hops hops/ --dxf outlines.dxf
 ```
 
-The planner's toolbar has **Export BTLx**, **Export HOPS** (a zip with one program per part and a `report.txt`) and **Export DXF**. From Python, `cabi_neat.export.btlx(cabinet, path)`, `cabi_neat.export.hops(cabinet, directory)` and `cabi_neat.export.dxf(cabinet, path)` do the same. Each export returns a report of what it couldn't export.
+The planner's **Fabricate** menu has **Write cut list** (CSV), **Write BTLx**, **Write HOPS** (a zip with one program per part and a `report.txt`) and **Write DXF**. From Python, `cabi_neat.export.btlx(cabinet, path)`, `cabi_neat.export.hops(cabinet, directory)` and `cabi_neat.export.dxf(cabinet, path)` do the same. Each export returns a report of what it couldn't export.
 
 - **BTLx** is written by compas_timber's `BTLxWriter` from the cabinet's `TimberModel`. The model is in millimetres (`Tolerance(unit="MM")`). Features that aren't BTLx processings, the Clamex P-14 grooves, are left out while writing and stay on the plates.
 - **HOPS** programs are written like the workshop's own (`Hops/Hop/OB/flur`) and use its macros (`cabi_neat.hops`), one per plate:
@@ -180,7 +183,7 @@ The planner's toolbar has **Export BTLx**, **Export HOPS** (a zip with one progr
   - Rabbets are a single line along their inner edge (`SP`/`G01`/`EP`, radius correction 1), as in `sides_schrank`.
   - Grooves for drawer bottoms in the drawer sides and back are lines along their walls with a linear approach (`SP` 1) and no lead-out (`EP` 0), with the largest router that fits the width. Closed ends stop a tool radius short, open ones run a tool diameter past the edge. In a one-piece drawer front the groove is a rectangular pocket, like the other pockets. 
   - Other pockets (mortises, tenon gaps, housings) use `_RechteckTasche_V5` with the largest router that fits, its radius as the corner radius, and no lead-out. Pockets open to an edge are widened past it for a bigger router. Other shapes use a contour and `_ExecutePocket_V5`.
-  - The notches that leave a stopped dado's tenon are milled from the plate's end, in its plane (`Ebene1`-`Ebene4`). A contour runs up the tenon's end with arcs of the dado router's radius, so the tenon fits the dado's rounded end. It's run with decreasing allowances, the last 0, to clear the notch.
+  - The notches beside tenons, a stopped dado's and a mortise and tenon's, are milled from the plate's end, in its plane (`Ebene1`-`Ebene4`). A contour runs up each tenon end with arcs of the dado or mortise router's radius, so the tenon fits the rounded end the router leaves. It's run with decreasing allowances, the last 0, to clear the notch: out to the edge at a corner of the plate, and from both tenons to the middle between two of them.
   - Hinge pots use `_Kreisbahn_V5` with the Ø20 router (403).
   - Drillings into faces use `Bohrung`, drillings into edges `HorzB`, with a spindle drill (`WZB`) of the hole's diameter: the shortest one that's deep enough. The defaults include a Ø8 (603) and a Ø3 (602, placeholder number) to be loaded.
   - Shelf holes use the drill head instead (`WZB (501,…)`, the ID the workshop's macros use for the standard drill head) if it has a bit of their diameter that's long enough, else a spindle drill. `HopsTools.drill_head_bits` lists its bits; the default, a single Ø5 × 30, is an assumption to check against the machine. `HopsTools.from_too` reads them from the tool table's `Bohrkopf` group.

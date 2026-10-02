@@ -179,16 +179,20 @@ SHELF_HOLE_OPTIONS = tuple(SHELF_HOLE_DEFAULTS)
 
 
 # per-drawer settings (Cell.drawer), each defaulting to the cabinet's field in DRAWER_DEFAULTS
-DRAWER_OPTIONS = ("front_one_piece", "bottom_offset", "bottom_thickness", "groove_depth", "side_height")
+DRAWER_OPTIONS = ("front_one_piece", "bottom_offset", "bottom_clearance", "side_clearance", "bottom_thickness", "groove_depth", "side_height")
 DRAWER_DEFAULTS = {
     "front_one_piece": "drawer_front_one_piece",
     "bottom_offset": "drawer_bottom_offset",
+    "bottom_clearance": "drawer_bottom_clearance",
+    "side_clearance": "drawer_clearance",
     "bottom_thickness": "drawer_bottom_thickness",
     "groove_depth": "drawer_groove_depth",
     "side_height": "drawer_side_height",
 }
 # how much lower than its front a drawer box is, unless its side height is set
 DRAWER_SIDE_REDUCTION = 20.0
+# least material below the bottom's groove in a drawer box's sides, front and back; less is only a warning
+DRAWER_MIN_BELOW_GROOVE = 5.0
 
 
 def _check_options(options, allowed, what):
@@ -411,7 +415,10 @@ class CabinetConfig:
     countertop_overhang_front, countertop_overhang_back, countertop_overhang_left, countertop_overhang_right
         How far the countertop reaches beyond the carcass on each side.
     countertop_joint
-        How the sides join the countertop: ``"clamex_p14"`` (with ``clamex_distance`` and ``clamex_center``) or ``"butt"``.
+        How the sides join the countertop: ``"clamex_p14"`` or ``"butt"``.
+    countertop_clamex_distance, countertop_clamex_center
+        ``clamex_distance`` and ``clamex_center`` for the Clamex connectors between the sides and the countertop.
+        ``None`` uses the carcass's.
     interior_joint
         Default for how shelves and dividers join the carcass and each other: ``"mortise_tenon"``, ``"clamex_p14"``,
         ``"stopped_dado"`` (a groove open at the back, so the panel slides in from behind) or ``"butt"``. Each panel can override it (see :attr:`Split.panel_joints`).
@@ -452,10 +459,13 @@ class CabinetConfig:
     drawer_bottom_offset
         Height of a drawer bottom's underside above the box's lower edge. The bottom sits in grooves in the sides,
         front and back, so there must be material below it.
+    drawer_bottom_clearance
+        For drawers on a shelf (``shelves_between_drawers``): the height of a drawer bottom's underside above the
+        shelf. It replaces ``drawer_bottom_offset`` there. ``None`` uses ``drawer_bottom_offset`` instead.
     drawer_groove_depth
         Depth of the grooves holding drawer bottoms. ``None`` uses half the grooved panel's thickness.
     drawer_clearance
-        Gap between a drawer box side and the carcass (space for runners).
+        Gap between a drawer box side and the carcass (space for runners). A drawer's ``side_clearance`` overrides it.
     drawer_side_height
         Height of drawer box sides (and the box's front and back). ``None`` makes them ``DRAWER_SIDE_REDUCTION`` (20)
         lower than the drawer's front, but at most as high as fits below ``drawer_top_clearance``.
@@ -493,6 +503,8 @@ class CabinetConfig:
     countertop_overhang_left: float = 0.0
     countertop_overhang_right: float = 0.0
     countertop_joint: str = "clamex_p14"
+    countertop_clamex_distance: Optional[float] = None
+    countertop_clamex_center: Optional[bool] = None
     interior_joint: str = "mortise_tenon"
     tenon_depth: Optional[float] = None
     tenon_count: int = 2
@@ -511,6 +523,7 @@ class CabinetConfig:
     drawer_side_thickness: Optional[float] = None
     drawer_bottom_thickness: Optional[float] = None
     drawer_bottom_offset: float = 10.0
+    drawer_bottom_clearance: Optional[float] = None
     drawer_groove_depth: Optional[float] = None
     drawer_clearance: float = 13.0
     drawer_side_height: Optional[float] = None

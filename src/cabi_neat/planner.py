@@ -40,7 +40,12 @@ def layout_to_data(layout):
         )
     # shelf holes projected onto the front: (x of the panel face, z, direction into the panel along x, depth), once per height
     holes = sorted({(h.point[0], h.point[2], h.direction[0], h.depth) for h in layout.holes})
-    return {"parts": parts, "regions": {k: list(v) for k, v in layout.regions.items()}, "holes": [list(h) for h in holes]}
+    return {
+        "parts": parts,
+        "regions": {k: list(v) for k, v in layout.regions.items()},
+        "holes": [list(h) for h in holes],
+        "warnings": [{"node": node, "message": message} for node, message in layout.warnings],
+    }
 
 
 def _export_error(kind, error, message=None):

@@ -30,6 +30,8 @@ const state = {
   showCutList: false,
   cutList: [],
   snap: 10,
+  name: "cabinet", // the default name of saved and written files
+  fileHandle: null, // the JSON file the cabinet was loaded from or last saved to, where the browser can write it (Chrome/Edge)
 };
 
 // ============================================================================
@@ -437,6 +439,30 @@ function group(title, body) {
   return `<div class="group"><h2>${title}</h2>${body}</div>`;
 }
 
+// ids of the collapsed groups, kept across re-renders (groups start open)
+const closedGroups = new Set();
+
+/**
+ * A group that collapses by clicking its title. `check` is an option checkbox shown on the title line: while it's
+ * off the group has nothing to show, so it's just the title and the checkbox.
+ */
+function foldGroup(id, title, body, check = "", major = false) {
+  const head = `<h2>${title}</h2>${check}`;
+  const cls = `group fold${major ? " major" : ""}`;
+  if (!body) return `<div class="${cls}"><div class="fold-head">${head}</div></div>`;
+  return `<details class="${cls}" data-fold="${id}" ${closedGroups.has(id) ? "" : "open"}><summary class="fold-head">${head}</summary><div class="fold-body">${body}</div></details>`;
+}
+
+/** One of the carcass level's main groups: Cabinet, Carcass joints, Countertop, Interior. */
+function majorGroup(id, title, body, check = "") {
+  return foldGroup(id, title, body, check, true);
+}
+
+/** The checkbox on a group's title line; `attrs` say what it switches (data-param or data-action). */
+function headCheck(on, attrs, title) {
+  return `<input type="checkbox" class="head-check" ${attrs} ${on ? "checked" : ""} title="${esc(title)}" aria-label="${esc(title)}" />`;
+}
+
 /** "Section 1.2" for path [0, 1]. */
 function sectionLabel(path) {
   return path.length ? `Section ${path.map((i) => i + 1).join(".")}` : "Carcass";
@@ -479,7 +505,8 @@ function renderProps() {
 
   if (path.length === 0) {
     html.push(
-      group(
+      majorGroup(
+        "cabinet",
         "Cabinet",
         `${numberRow("Width", c.width, 'data-param="width" min="100"')}
         ${numberRow("Height", c.height, 'data-param="height" min="100"')}
@@ -495,7 +522,8 @@ function renderProps() {
       ),
     );
     html.push(
-      group(
+      majorGroup(
+        "carcass-joints",
         "Carcass joints",
         `<div class="subhead">Back in the sides: rabbet</div>
         ${numberRow("Depth", c.rabbet_depth, `data-param="rabbet_depth" data-nullable min="0" placeholder="${round(c.thickness / 2)}" title="Empty: half the side thickness"`)}
@@ -504,9 +532,9 @@ function renderProps() {
         <label class="row">Center connector <input type="checkbox" data-param="clamex_center" ${c.clamex_center ? "checked" : ""} /></label>`,
       ),
     );
-    let countertop = `<label class="row">Countertop instead of top <input type="checkbox" data-param="countertop" ${c.countertop ? "checked" : ""} /></label>`;
+    let countertop = "";
     if (c.countertop) {
-      countertop += `${numberRow("Thickness", c.countertop_thickness, `data-param="countertop_thickness" data-nullable min="1" placeholder="${round(c.thickness)}" title="Empty: the panel thickness"`)}
+      countertop = `${numberRow("Thickness", c.countertop_thickness, `data-param="countertop_thickness" data-nullable min="1" placeholder="${round(c.thickness)}" title="Empty: the panel thickness"`)}
         <div class="subhead">Overhang</div>
         ${numberRow("Front", c.countertop_overhang_front, 'data-param="countertop_overhang_front" min="0"')}
         ${numberRow("Back", c.countertop_overhang_back, 'data-param="countertop_overhang_back" min="0"')}
@@ -515,26 +543,18 @@ function renderProps() {
         <label class="row">On the sides <select data-param="countertop_joint">
           <option value="clamex_p14" ${c.countertop_joint === "clamex_p14" ? "selected" : ""}>Clamex P-14</option>
           <option value="butt" ${c.countertop_joint === "butt" ? "selected" : ""}>butt</option>
-        </select></label>
-        <div class="hint">Height includes the countertop.</div>`;
+        </select></label>`;
+      if (c.countertop_joint === "clamex_p14") {
+        const center = c.countertop_clamex_center ?? c.clamex_center;
+        countertop += `
+        ${numberRow("Connector distance", c.countertop_clamex_distance, `data-param="countertop_clamex_distance" data-nullable min="0" placeholder="${round(c.clamex_distance)}" title="Empty: the carcass's connector distance"`)}
+        <label class="row">Center connector <input type="checkbox" data-param="countertop_clamex_center" ${center ? "checked" : ""} /></label>`;
+      }
+      countertop += `<div class="hint">Height includes the countertop.</div>`;
     }
-    html.push(group("Countertop", countertop));
-    const holes = { ...state.shelfHoleDefaults, ...(c.shelf_hole_options || {}) };
-    const holeRow = (key, label, title, placeholder = "") =>
-      `<label class="row" title="${esc(title)}">${label} <input type="number" min="0" step="1" data-cabinet-option="shelf_hole_options" data-key="${key}"
-        value="${c.shelf_hole_options && c.shelf_hole_options[key] !== undefined ? round(c.shelf_hole_options[key]) : ""}" placeholder="${placeholder || round(holes[key])}" /></label>`;
-    html.push(
-      group(
-        "Shelf holes",
-        `<div class="hint">Switched on per section. The drill head drills them if it has a bit for them.</div>
-        ${holeRow("diameter", "Diameter", "Hole diameter")}
-        ${holeRow("depth", "Depth", "Empty: half the panel thickness minus 1, so holes from both faces of a divider don't meet", round(c.thickness / 2 - 1))}
-        ${holeRow("spacing", "Spacing", "Distance between holes in a row")}
-        ${holeRow("front_distance", "From the front", "From the panel's front edge to the front row")}
-        ${holeRow("back_distance", "From the back", "From the back panel to the rear row")}
-        ${holeRow("end_distance", "From shelves", "Least distance from a compartment's bottom and top to a hole")}`,
-      ),
-    );
+    html.push(majorGroup("countertop", "Countertop", countertop, headCheck(c.countertop, 'data-param="countertop"', "Countertop instead of top")));
+    // the interior's type, front, shelves and dividers, all in one group
+    html.push(majorGroup("interior", "Interior", sectionGroups(path).join("")));
   } else {
     const summary = sectionSummary(T.getNode(root(), path));
     const covered = T.coveredBy(root(), path);
@@ -542,12 +562,12 @@ function renderProps() {
       ? `<div class="hint">Behind the door of <button class="linklike" data-action="select" data-path="${T.key(covered)}">${esc(sectionLabel(covered))}</button>.</div>`
       : "";
     html.push(`<h3>${sectionLabel(path)}</h3>${summary ? `<div class="hint">${esc(summary)}</div>` : ""}${behind}`);
+    html.push(...sectionGroups(path));
   }
-  html.push(...sectionGroups(path));
 
   if (state.showCutList) {
     const rows = state.cutList.map((r) => `<tr><td>${esc(r[1])}</td><td>${round(r[2])}</td><td>${round(r[3])}</td><td>${round(r[4])}</td></tr>`);
-    html.push(group(`Cut list · ${state.cutList.length} parts`, `<table class="cutlist"><thead><tr><th>Part</th><th>L</th><th>W</th><th>T</th></tr></thead><tbody>${rows.join("")}</tbody></table>`));
+    html.push(majorGroup("cutlist", `Cut list · ${state.cutList.length} parts`, `<table class="cutlist"><thead><tr><th>Part</th><th>L</th><th>W</th><th>T</th></tr></thead><tbody>${rows.join("")}</tbody></table>`));
   }
 
   const scroll = props.scrollTop;
@@ -576,7 +596,8 @@ function sectionGroups(path) {
     dims += `${numberRow(rows ? "Height" : "Width", rows ? r[3] : r[2], 'min="1" data-action="size"')}
       <label class="row">Automatic (shares the space evenly) <input type="checkbox" data-action="flex" ${node.size === null ? "checked" : ""} /></label>`;
   }
-  groups.push(group(path.length ? "Dimensions" : "Interior", dims));
+  // the interior's size is the cabinet's, so at the top it's just a note
+  groups.push(path.length ? group("Dimensions", dims) : dims);
 
   // behind a door a section is always open; elsewhere choose what it is
   const type = T.typeOf(node);
@@ -594,24 +615,52 @@ function sectionGroups(path) {
   if (type === "drawers") {
     const drawers = T.drawersOf(node);
     let body = counter("Drawers", drawers, "drawers") + counter("Dividers", T.dividersOf(node), "dividers");
+    let onShelf = false;
     if (drawers === null || drawers > 1) {
       const stack = T.isSplit(node) && node.direction === T.COLUMNS ? node.children.find(T.isSplit) : node;
-      const on = (stack && stack.drawer_shelves) ?? c.shelves_between_drawers;
-      body += `<label class="row">Shelves between drawers <input type="checkbox" data-action="drawer-shelves" ${on ? "checked" : ""} /></label>`;
-      if (on) {
+      onShelf = Boolean((stack && stack.drawer_shelves) ?? c.shelves_between_drawers);
+      // the shelves between the drawers, their kind and their positions, together
+      let shelves = `<label class="row">Shelves between drawers <input type="checkbox" data-action="drawer-shelves" ${onShelf ? "checked" : ""} /></label>`;
+      if (onShelf) {
         const width = (stack && stack.drawer_shelf_width) ?? c.drawer_shelf_width;
-        body += `<label class="row" title="Only a strip at the front of the cabinet, not reaching the back">Front rail only <input type="checkbox" data-action="drawer-rail" ${width !== null ? "checked" : ""} /></label>`;
-        if (width !== null) body += numberRow("Rail width", width, 'data-action="drawer-rail-width" min="1" title="How far the rail reaches back from the front"');
+        shelves += `<label class="row" title="Only a strip at the front of the cabinet, not reaching the back">Front rail only <input type="checkbox" data-action="drawer-rail" ${width !== null ? "checked" : ""} /></label>`;
+        if (width !== null) shelves += numberRow("Rail width", width, 'data-action="drawer-rail-width" min="1" title="How far the rail reaches back from the front"');
       }
-    }
-    body += collapsible("drawer-settings", "Drawer settings" + changed(Object.keys(T.firstDrawer(node).drawer || {}).length), drawerFields(T.firstDrawer(node)), 1);
-    body += panelRows(path);
+      body += `<div class="subgroup">${shelves}${panelRows(path)}</div>`;
+    } else body += panelRows(path);
+    body += collapsible("drawer-settings", "Drawer settings" + changed(Object.keys(T.firstDrawer(node).drawer || {}).length), drawerFields(T.firstDrawer(node), onShelf), 1);
+    body += drawerWarnings(path);
     groups.push(group("Drawers", body));
   } else {
-    const holes = `<label class="row" title="Rows of shelf holes on a 32 mm spacing in the panels left and right of the compartments">Shelf holes (32 mm) <input type="checkbox" data-action="shelf-holes" ${T.shelfHolesOf(root(), path) ? "checked" : ""} /></label>`;
-    groups.push(group(type === "door" ? "Shelves & dividers behind the door" : "Shelves & dividers", counter("Shelves", T.shelvesOf(node), "shelves") + counter("Dividers", T.dividersOf(node), "dividers") + holes + panelRows(path)));
+    groups.push(group(type === "door" ? "Shelves & dividers behind the door" : "Shelves & dividers", counter("Shelves", T.shelvesOf(node), "shelves") + counter("Dividers", T.dividersOf(node), "dividers") + panelRows(path)));
+    const on = T.shelfHolesOf(root(), path);
+    const check = headCheck(on, 'data-action="shelf-holes"', "Rows of shelf holes on a 32 mm spacing in the panels left and right of the compartments");
+    groups.push(foldGroup("shelf-holes", "Shelf holes (32 mm)", on ? shelfHoleRows() : "", check));
   }
   return groups;
+}
+
+/** The layout's warnings about the drawers in the section at `path` (keys like "0_1", "" for the whole interior). */
+function drawerWarnings(path) {
+  const key = path.join("_");
+  const warnings = (state.layout.warnings || []).filter((w) => !key || w.node === key || w.node.startsWith(key + "_"));
+  return warnings.map((w) => `<div class="warning">⚠ ${esc(w.message)}</div>`).join("");
+}
+
+/** The shelf hole dimensions, shared by the whole cabinet. */
+function shelfHoleRows() {
+  const c = state.config;
+  const holes = { ...state.shelfHoleDefaults, ...(c.shelf_hole_options || {}) };
+  const holeRow = (key, label, title, placeholder = "") =>
+    `<label class="row" title="${esc(title)}">${label} <input type="number" min="0" step="1" data-cabinet-option="shelf_hole_options" data-key="${key}"
+      value="${c.shelf_hole_options && c.shelf_hole_options[key] !== undefined ? round(c.shelf_hole_options[key]) : ""}" placeholder="${placeholder || round(holes[key])}" /></label>`;
+  return `<div class="hint">For all shelf holes in the cabinet. The drill head drills them if it has a bit for them.</div>
+    ${holeRow("diameter", "Diameter", "Hole diameter")}
+    ${holeRow("depth", "Depth", "Empty: half the panel thickness minus 1, so holes from both faces of a divider don't meet", round(c.thickness / 2 - 1))}
+    ${holeRow("spacing", "Spacing", "Distance between holes in a row")}
+    ${holeRow("front_distance", "From the front", "From the panel's front edge to the front row")}
+    ${holeRow("back_distance", "From the back", "From the back panel to the rear row")}
+    ${holeRow("end_distance", "From shelves", "Least distance from a compartment's bottom and top to a hole")}`;
 }
 
 /** Positions (and joints, where there's a panel) of the section's shelves, dividers and drawer boundaries. */
@@ -640,16 +689,21 @@ function panelRows(path) {
 }
 
 /** Drawer settings, shown from `drawer` and applied to every drawer of the section; empty fields use the cabinet's. */
-function drawerFields(drawer) {
+/** A drawer's settings. On shelves (`onShelf`) the bottom is placed by its clearance above the shelf, not its height in the box. */
+function drawerFields(drawer, onShelf = false) {
   const c = state.config;
   const own = drawer.drawer || {};
   const onePiece = own.front_one_piece ?? c.drawer_front_one_piece;
   const number = (key, label, fallback, title) =>
     `<label class="row" title="${esc(title)}">${label} <input type="number" min="0" step="1" data-action="drawer-option" data-key="${key}"
       value="${own[key] === undefined ? "" : round(own[key])}" placeholder="${fallback}" /></label>`;
+  const bottom = onShelf
+    ? number("bottom_clearance", "Bottom clearance", round(c.drawer_bottom_clearance ?? own.bottom_offset ?? c.drawer_bottom_offset), "Underside of the bottom above the shelf. At least 5, or the groove for the bottom comes too close to the sides' lower edge")
+    : number("bottom_offset", "Bottom height", round(c.drawer_bottom_offset), "Underside of the bottom above the box's lower edge");
   return `<label class="row" title="The visible front is also the drawer box's front">One-piece front <input type="checkbox" data-action="drawer-option" data-key="front_one_piece" ${onePiece ? "checked" : ""} /></label>
+    ${number("side_clearance", "Side clearance", round(c.drawer_clearance), "Gap between the box's sides and the carcass on each side, for the runners")}
     ${number("side_height", "Side height", c.drawer_side_height === null ? "front − 20" : round(c.drawer_side_height), "Height of the drawer box. Empty: 20 lower than the front, as far as it fits")}
-    ${number("bottom_offset", "Bottom height", round(c.drawer_bottom_offset), "Underside of the bottom above the box's lower edge")}
+    ${bottom}
     ${number("bottom_thickness", "Bottom thickness", round(c.drawer_bottom_thickness ?? c.back_thickness), "Empty: the carcass back's thickness")}
     ${number("groove_depth", "Bottom groove depth", c.drawer_groove_depth ?? round((c.drawer_side_thickness ?? c.thickness) / 2), "Empty: half the grooved panel's thickness")}`;
 }
@@ -700,14 +754,18 @@ function hingeMenu(node) {
   return collapsible("hinges", `Hinges · ${state.config.door_mount}` + changed(Object.keys(own).length), menus.join(""), 1);
 }
 
-// remember which menus are open; `toggle` doesn't bubble, so listen while capturing
+// remember which menus are open and which groups collapsed; `toggle` doesn't bubble, so listen while capturing
 props.addEventListener(
   "toggle",
   (evt) => {
-    const id = evt.target.dataset && evt.target.dataset.menu;
-    if (!id) return;
-    if (evt.target.open) openMenus.add(id);
-    else openMenus.delete(id);
+    const { menu, fold } = evt.target.dataset || {};
+    if (menu) {
+      if (evt.target.open) openMenus.add(menu);
+      else openMenus.delete(menu);
+    } else if (fold) {
+      if (evt.target.open) closedGroups.delete(fold);
+      else closedGroups.add(fold);
+    }
   },
   true,
 );
@@ -917,7 +975,9 @@ function updateToolbar() {
   document.getElementById("view-3d-open").checked = state.display.open_fronts;
   document.getElementById("undo").disabled = !state.history.length || state.busy;
   document.getElementById("redo").disabled = !state.future.length || state.busy;
-  document.getElementById("cutlist-toggle").classList.toggle("active", state.showCutList);
+  const cutList = document.getElementById("cutlist-toggle");
+  cutList.textContent = state.showCutList ? "Hide cut list" : "Show cut list";
+  cutList.title = state.showCutList ? "Hide the cut list in the sidebar" : "Show the cut list in the sidebar";
 }
 
 async function undo() {
@@ -939,6 +999,14 @@ async function redo() {
 }
 
 document.addEventListener("keydown", (evt) => {
+  if ((evt.metaKey || evt.ctrlKey) && evt.key.toLowerCase() === "s") {
+    evt.preventDefault();
+    // let an edited field apply first
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    if (evt.shiftKey) saveAs();
+    else save();
+    return;
+  }
   if (evt.target instanceof Element && evt.target.closest("input, select, textarea")) return;
   const mod = evt.metaKey || evt.ctrlKey;
   if (mod && evt.key.toLowerCase() === "z") {
@@ -959,6 +1027,7 @@ async function newCabinet() {
     const config = await res.json();
     if (await post(config)) {
       select([]);
+      setName("cabinet", null);
       setMessage("New cabinet. Undo brings the previous one back.");
     }
   } catch (e) {
@@ -966,7 +1035,6 @@ async function newCabinet() {
   }
 }
 
-document.getElementById("new").addEventListener("click", newCabinet);
 document.getElementById("undo").addEventListener("click", undo);
 document.getElementById("redo").addEventListener("click", redo);
 document.getElementById("snap").addEventListener("change", (evt) => (state.snap = Number(evt.target.value)));
@@ -1040,71 +1108,176 @@ async function writeSaveTarget(target, blob) {
   return target.download;
 }
 
-/** Save `blob` with a save dialog where the browser has one, else as a download. Returns null if cancelled. */
-async function saveFile(blob, suggestedName, description, accept) {
-  const target = await pickSaveTarget(suggestedName, description, accept);
-  return target && writeSaveTarget(target, blob);
+// ============================================================================
+// files
+// ============================================================================
+
+const JSON_TYPE = { "application/json": [".json"] };
+
+/** Name the cabinet (the default name of its files) and remember the JSON file it now belongs to, if any. */
+function setName(name, handle) {
+  state.name = name.trim() || "cabinet";
+  state.fileHandle = handle;
+  updateName();
 }
 
-document.getElementById("download").addEventListener("click", async () => {
+function updateName() {
+  document.getElementById("cabinet-name").value = state.name;
+  document.title = `${state.name} · Cabinet planner`;
+  const save = document.getElementById("save");
+  save.title = state.fileHandle ? `Save to ${state.fileHandle.name} (Ctrl+S)` : "Save the configuration as JSON (Ctrl+S)";
+}
+
+/** "kitchen" for "kitchen.json". */
+function baseName(filename) {
+  return filename.replace(/\.json$/i, "");
+}
+
+function configBlob() {
+  return new Blob([JSON.stringify(state.config, null, 2)], { type: "application/json" });
+}
+
+/** Open a configuration JSON: with an open dialog that lets Save write back to it where the browser has one. */
+async function loadFile() {
+  if (!window.showOpenFilePicker) {
+    document.getElementById("upload").click();
+    return;
+  }
+  let handle;
   try {
-    const name = await saveFile(new Blob([JSON.stringify(state.config, null, 2)], { type: "application/json" }), "cabinet.json", "Cabinet configuration", {
-      "application/json": [".json"],
-    });
-    if (name) setMessage(`Saved ${name}.`);
+    [handle] = await window.showOpenFilePicker({ types: [{ description: "Cabinet configuration", accept: JSON_TYPE }] });
+  } catch (e) {
+    if (e.name !== "AbortError") setMessage(`Could not open: ${e.message}`, "error");
+    return;
+  }
+  await loadConfig(await handle.getFile(), handle);
+}
+
+async function loadConfig(file, handle) {
+  try {
+    if (await post(JSON.parse(await file.text()))) {
+      select([]);
+      setName(baseName(file.name), handle);
+      setMessage(`Loaded ${file.name}.`);
+    }
+  } catch (e) {
+    setMessage(`Could not read ${file.name}: ${e.message}`, "error");
+  }
+}
+
+/** Save to the JSON file the cabinet belongs to, or ask where to save it if there's none yet. */
+async function save() {
+  const handle = state.fileHandle;
+  if (!handle) return saveAs();
+  try {
+    // a file that was opened needs the user's permission to be written
+    if ((await handle.queryPermission({ mode: "readwrite" })) !== "granted" && (await handle.requestPermission({ mode: "readwrite" })) !== "granted") {
+      setMessage(`Not allowed to write ${handle.name}: use Save as.`, "error");
+      return;
+    }
+    await writeSaveTarget({ handle }, configBlob());
+    setMessage(`Saved ${handle.name}.`);
+  } catch (e) {
+    setMessage(`Could not save ${handle.name}: ${e.message}`, "error");
+  }
+}
+
+async function saveAs() {
+  try {
+    const target = await pickSaveTarget(`${state.name}.json`, "Cabinet configuration", JSON_TYPE);
+    if (!target) return;
+    const name = await writeSaveTarget(target, configBlob());
+    setName(baseName(name), target.handle || null);
+    setMessage(`Saved ${name}.`);
   } catch (e) {
     setMessage(`Could not save: ${e.message}`, "error");
   }
-});
+}
 
-async function exportFile(kind) {
+/** The cut list as CSV, one row per part. */
+async function cutListBlob() {
+  const res = await fetch("api/cutlist");
+  if (!res.ok) throw new Error((await res.text()) || `the server answered ${res.status}`);
+  const { rows } = await res.json();
+  const cell = (v) => (typeof v === "number" ? String(round(v)) : `"${String(v).replace(/"/g, '""')}"`);
+  const lines = [["Category", "Part", "Length", "Width", "Thickness"].map(cell), ...rows.map((r) => r.map(cell))];
+  return { blob: new Blob([lines.map((l) => l.join(",")).join("\r\n") + "\r\n"], { type: "text/csv" }), summary: `${rows.length} parts.` };
+}
+
+/** One of the backend's exports (it generates the model first if needed). */
+async function exportBlob(kind) {
+  const res = await fetch(`api/export/${kind}`);
+  if (!res.ok) throw new Error((await res.text()) || `the server answered ${res.status}`);
+  return { blob: await res.blob(), summary: res.headers.get("X-Export-Summary") || "" };
+}
+
+/** Write one of the files for the workshop, named after the cabinet. */
+async function writeFile(kind) {
   if (state.busy) return;
   const formats = {
-    btlx: ["cabinet.btlx", "BTLx", { "application/xml": [".btlx"] }],
-    hops: ["cabinet_hops.zip", "HOPS programs (zip)", { "application/zip": [".zip"] }],
-    dxf: ["cabinet_outlines.dxf", "Part outlines (DXF)", { "application/dxf": [".dxf"] }],
+    cutlist: [`${state.name}_cutlist.csv`, "Cut list (CSV)", { "text/csv": [".csv"] }, cutListBlob],
+    btlx: [`${state.name}.btlx`, "BTLx", { "application/xml": [".btlx"] }, () => exportBlob("btlx")],
+    hops: [`${state.name}_hops.zip`, "HOPS programs (zip)", { "application/zip": [".zip"] }, () => exportBlob("hops")],
+    dxf: [`${state.name}_outlines.dxf`, "Part outlines (DXF)", { "application/dxf": [".dxf"] }, () => exportBlob("dxf")],
   };
-  const [name, description, accept] = formats[kind];
+  const [name, description, accept, make] = formats[kind];
   // ask where to save first: after the (slow) export the click no longer counts as a user gesture
   let target;
   try {
     target = await pickSaveTarget(name, description, accept);
   } catch (e) {
-    setMessage(`Could not export: ${e.message}`, "error");
+    setMessage(`Could not write ${description}: ${e.message}`, "error");
     return;
   }
   if (!target || state.busy) return;
   state.busy = true;
   updateToolbar();
-  setMessage(state.stale ? "Generating 3D and exporting…" : "Exporting…");
+  setMessage(state.stale ? "Generating 3D and writing…" : "Writing…");
   try {
-    const res = await fetch(`api/export/${kind}`);
-    if (!res.ok) throw new Error((await res.text()) || `the server answered ${res.status}`);
-    const summary = res.headers.get("X-Export-Summary") || "";
-    const saved = await writeSaveTarget(target, await res.blob());
-    setMessage(`Exported ${saved}. ${summary}`);
+    const { blob, summary } = await make();
+    const saved = await writeSaveTarget(target, blob);
+    setMessage(`Wrote ${saved}. ${summary}`);
     if (state.stale) await load();
   } catch (e) {
-    setMessage(`Could not export: ${e.message}`, "error");
+    setMessage(`Could not write ${description}: ${e.message}`, "error");
   } finally {
     state.busy = false;
     updateToolbar();
   }
 }
 
-document.getElementById("export-btlx").addEventListener("click", () => exportFile("btlx"));
-document.getElementById("export-hops").addEventListener("click", () => exportFile("hops"));
-document.getElementById("export-dxf").addEventListener("click", () => exportFile("dxf"));
+// the toolbar's drop-down menus: one open at a time, closed by picking an item or clicking elsewhere
+const menus = [...document.querySelectorAll("#toolbar details.menu")];
+for (const menu of menus) {
+  menu.addEventListener("toggle", () => {
+    if (menu.open) for (const other of menus) if (other !== menu) other.open = false;
+  });
+  menu.querySelector(".menu-items").addEventListener("click", (evt) => {
+    if (evt.target.closest("button")) menu.open = false;
+  });
+}
+document.addEventListener("click", (evt) => {
+  for (const menu of menus) if (menu.open && !menu.contains(evt.target)) menu.open = false;
+});
+
+const MENU_ACTIONS = {
+  new: newCabinet,
+  load: loadFile,
+  save,
+  "save-as": saveAs,
+  "write-cutlist": () => writeFile("cutlist"),
+  "write-btlx": () => writeFile("btlx"),
+  "write-hops": () => writeFile("hops"),
+  "write-dxf": () => writeFile("dxf"),
+};
+for (const [id, action] of Object.entries(MENU_ACTIONS)) document.getElementById(id).addEventListener("click", action);
+
 document.getElementById("upload").addEventListener("change", async (evt) => {
   const file = evt.target.files[0];
   evt.target.value = "";
-  if (!file) return;
-  try {
-    await post(JSON.parse(await file.text()));
-  } catch (e) {
-    setMessage(`Could not read ${file.name}: ${e.message}`, "error");
-  }
+  if (file) await loadConfig(file, null);
 });
+document.getElementById("cabinet-name").addEventListener("change", (evt) => setName(evt.target.value, state.fileHandle));
 
 // ============================================================================
 // start
@@ -1113,6 +1286,7 @@ document.getElementById("upload").addEventListener("change", async (evt) => {
 document.getElementById("view3d").src = `/?ws_host=${location.hostname}&ws_port=${location.port || 80}`;
 new ResizeObserver(() => render()).observe(svg);
 updateToolbar();
+updateName();
 load();
 
 // pick up changes made elsewhere (another planner tab)

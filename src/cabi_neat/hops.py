@@ -6,6 +6,8 @@ and ``Park_V7``, then the machining:
 * format: the saw (``WZS``) and ``_Sformat_V5``, before anything else, so the rest is placed on the finished part;
 * pockets (rabbets, grooves, mortises, housings): ``_RechteckTasche_V5`` with the largest router that fits,
   ``_ExecutePocket_V5`` for other shapes;
+* the notches beside tenons (stopped dados, mortise and tenon): contours in the plane of the plate's end, with the
+  tenons' corners rounded like the ends of the dados and mortises the router leaves;
 * hinge pots: ``_Kreisbahn_V5`` with a router (403 Ø20);
 * drillings: ``Bohrung`` into faces and ``HorzB`` into edges, with a spindle drill of the hole's diameter (``WZB``).
   Shelf holes use the drill head instead (``WZB`` 501, as the workshop's macros call it) if it has a bit of their
@@ -355,9 +357,9 @@ class PlateProgram:
     tools : :class:`HopsTools`, optional
     access_direction : vector, optional
         Where the Clamex access holes should face (world). The face closest to it goes on top if there are any.
-    stopped_dados : dict, optional
-        The plate's notches at the closed end of stopped dados, milled from the end instead of as pockets:
-        ``{id(FreeContour): StoppedDadoNotch}``.
+    tenon_notches : dict, optional
+        The plate's notches beside the tenons of stopped dados and mortise and tenon joints, milled from the end instead
+        of as pockets: ``{id(FreeContour): TenonNotch}``.
     grooves : set, optional
         ``id`` s of the plate's pockets that are grooves (e.g. for drawer bottoms), milled as lines along their walls.
     down : vector, optional
@@ -365,10 +367,10 @@ class PlateProgram:
         -X), e.g. down for drawer parts: their bottom edge, with the bottom's groove, then lies along X at Y = 0.
     """
 
-    def __init__(self, plate, tools=None, access_direction=None, comment="", stopped_dados=None, grooves=None, down=None):
+    def __init__(self, plate, tools=None, access_direction=None, comment="", tenon_notches=None, grooves=None, down=None):
         self.grooves = grooves or set()
         self.plate = plate
-        self.stopped_dados = stopped_dados or {}
+        self.tenon_notches = tenon_notches or {}
         self.tools = tools or HopsTools()
         self.access_direction = access_direction
         self.comment = comment
@@ -452,7 +454,7 @@ class PlateProgram:
 
     def _face_of(self, feature):
         name = type(feature).__name__
-        if id(feature) in self.stopped_dados:
+        if id(feature) in self.tenon_notches:
             return 0  # milled from the end
         if name in ("FreeContour", "Drilling"):
             return self.space.side_of(self.plate.ref_sides[feature.ref_side_index])
@@ -469,8 +471,8 @@ class PlateProgram:
 
     def _convert(self, feature, top):
         name = type(feature).__name__
-        if id(feature) in self.stopped_dados:
-            return self._stopped_dado_notch(feature, self.stopped_dados[id(feature)], top)
+        if id(feature) in self.tenon_notches:
+            return self._tenon_notch(feature, self.tenon_notches[id(feature)], top)
         if name == "FreeContour" and feature.counter_sink:
             return self._pocket(feature)
         if name == "Drilling":
@@ -705,60 +707,83 @@ class PlateProgram:
         )
         return [_Op("pocket", router.number, lines, "Pocket, {} deep".format(_n(depth)), face, (min(ys), min(xs)))]
 
-    # -- stopped dado notches ---------------------------------------------------
+    # -- tenon notches ----------------------------------------------------------
 
-    def _stopped_dado_notch(self, feature, notch, top):
-        """The notch that leaves the tenon of a stopped dado, milled from the plate's end with the tool axis along it.
+    def _tenon_notch(self, feature, notch, top):
+        """A notch beside the tenons of a stopped dado or a mortise and tenon, milled from the plate's end with the tool
+        axis along it.
 
-        A router milling the dado from above leaves its closed end rounded with the router's radius, across the dado's
-        width. So the tenon's end gets the same corners: in the plane of the end face (``Ebene1``-``Ebene4``: X along
-        the face as seen from outside, Y from 0 at the underside to ``DZ``, Z into the part), a contour up the tenon's
-        end with an arc of that radius at either face, ``notch.depth`` deep. It's run with decreasing allowances
-        (``SP``'s ``Aufmass``), the last one 0, so the passes clear the whole notch out to the edge.
+        A router milling the dado or mortise from above leaves its closed ends rounded with the router's radius, across
+        its width. So the tenons' ends get the same corners: in the plane of the end face (``Ebene1``-``Ebene4``: X along
+        the face as seen from outside, Y from 0 at the underside to ``DZ``, Z into the part), a contour up each tenon end
+        beside the notch with an arc of that radius at either face, ``notch.depth`` deep. It's run with decreasing
+        allowances (``SP``'s ``Aufmass``), the last one 0, so the passes clear the notch: out to the edge at a corner of
+        the plate, from both sides to the middle between two tenons.
         """
         length, width, thickness = self.space.size
         ref_side = self.plate.ref_sides[feature.ref_side_index]
         points = [self.space.hops_point(self.space.local_point(_ref_point(ref_side, p[0], p[1])), top)[:2] for p in feature.contour_param_object.polyline]
         x0, x1 = max(min(p[0] for p in points), 0.0), min(max(p[0] for p in points), length)
         y0, y1 = max(min(p[1] for p in points), 0.0), min(max(p[1] for p in points), width)
-        # the end face's plane, and whether the notch opens at the start of the plane's X (else at its end)
+        # the end face's plane, its length and the notch's [lo, hi] along the plane's X
         if abs(x1 - x0 - notch.depth) < 0.01 and x0 < 1e-3:
-            plane, span, at_start, stop = "Ebene2", "DY", y1 > width - 1e-3, y1 - y0  # left end, X runs towards -Y
+            plane, span, size, lo, hi = "Ebene2", "DY", width, width - y1, width - y0  # left end, X runs towards -Y
         elif abs(x1 - x0 - notch.depth) < 0.01 and x1 > length - 1e-3:
-            plane, span, at_start, stop = "Ebene4", "DY", y0 < 1e-3, y1 - y0  # right end, X runs towards +Y
+            plane, span, size, lo, hi = "Ebene4", "DY", width, y0, y1  # right end, X runs towards +Y
         elif abs(y1 - y0 - notch.depth) < 0.01 and y0 < 1e-3:
-            plane, span, at_start, stop = "Ebene1", "DX", x0 < 1e-3, x1 - x0  # front, X runs towards +X
+            plane, span, size, lo, hi = "Ebene1", "DX", length, x0, x1  # front, X runs towards +X
         elif abs(y1 - y0 - notch.depth) < 0.01 and y1 > width - 1e-3:
-            plane, span, at_start, stop = "Ebene3", "DX", x1 > length - 1e-3, x1 - x0  # rear, X runs towards -X
+            plane, span, size, lo, hi = "Ebene3", "DX", length, length - x1, length - x0  # rear, X runs towards -X
         else:
-            self._skip("stopped dado notch that isn't at the plate's end - milled as a pocket instead")
+            self._skip("{} notch that isn't at the plate's end - milled as a pocket instead".format(notch.kind.lower()))
+            return self._pocket(feature)
+        at_start, at_end = lo < 1e-3, hi > size - 1e-3
+        if at_start and at_end:
+            self._skip("{} notch along the whole end - milled as a pocket instead".format(notch.kind.lower()))
             return self._pocket(feature)
         router = self.tools.router_for(notch.dado_width, notch.dado_depth)
         if router is None or router.usable_length < notch.depth:
-            self._skip("stopped dado notch - no router for it")
+            self._skip("{} notch - no router for it".format(notch.kind.lower()))
+            return []
+        if not (at_start or at_end) and hi - lo < router.diameter - 1e-6:
+            self._skip("{} notch {} wide between tenons - narrower than the router (D{})".format(notch.kind.lower(), _n(hi - lo), _n(router.diameter)))
             return []
         radius = min(router.diameter / 2.0, thickness / 2.0)
-        s, r = _n(stop), _n(radius)
-        if at_start:  # the tenon beyond X = stop: up its end with the tool on the left, arcs clockwise
-            end, corner, correction, arc = s, "{}+{}".format(s, r), 1, "G02R"
-        else:  # the tenon before X = span - stop: tool on the right, arcs anticlockwise
-            end, corner, correction, arc = "{}-{}".format(span, s), "{}-{}-{}".format(span, s, r), 2, "G03R"
-        # allowances: steps of 3/4 of the tool, until the first pass reaches the open edge
+        r = _n(radius)
+        # one contour per tenon end beside the notch: (X of the end, X of the arcs' ends on the faces, radius correction,
+        # arc, how wide it clears, the largest allowance that keeps the tool off a tenon on the other side)
+        contours = []
+        if not at_end:  # a tenon beyond X = hi: up its end with the tool on the left, arcs clockwise
+            clear, cap = (hi, None) if at_start else ((hi - lo) / 2.0, hi - lo - router.diameter)
+            contours.append((_n(hi), "{}+{}".format(_n(hi), r), 1, "G02R", clear, cap))
+        if not at_start:  # a tenon before X = lo: tool on the right, arcs anticlockwise
+            if at_end:
+                s = _n(size - lo)
+                contours.append(("{}-{}".format(span, s), "{}-{}-{}".format(span, s, r), 2, "G03R", size - lo, None))
+            else:
+                contours.append((_n(lo), "{}-{}".format(_n(lo), r), 2, "G03R", (hi - lo) / 2.0, hi - lo - router.diameter))
+        # allowances: steps of 3/4 of the tool, until the first pass reaches the open edge (or the middle)
         step = max(math.floor(0.75 * router.diameter), 1)
-        passes = 0
-        while stop - passes * step - router.diameter > 0:
-            passes += 1
         lines = ["{}()".format(plane)]
-        for allowance in range(passes, -1, -1):
-            lines.append("SP ({},0,{},{},2,_ANF*2,{},0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0.5mm)".format(corner, _n(-notch.depth), correction, allowance * step))
-            lines.append("{} ({},{},0,{},0,1,2)".format(arc, end, r, r))
-            if thickness - 2 * radius > 1e-6:
-                lines.append("G01 ({},DZ-{},0,0,1,2)".format(end, r))
-            lines.append("{} ({},DZ,0,{},0,1,2)".format(arc, corner, r))
-            lines.append("EP (2,_ANF*2,0)")
+        for end, corner, correction, arc, clear, cap in contours:
+            passes = 0
+            while clear - passes * step - router.diameter > 0:
+                passes += 1
+            allowances = []
+            for k in range(passes, -1, -1):
+                allowance = k * step if cap is None else min(k * step, cap)
+                if not allowances or allowance < allowances[-1] - 1e-6:
+                    allowances.append(allowance)
+            for allowance in allowances:
+                lines.append("SP ({},0,{},{},2,_ANF*2,{},0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0.5mm)".format(corner, _n(-notch.depth), correction, _n(allowance)))
+                lines.append("{} ({},{},0,{},0,1,2)".format(arc, end, r, r))
+                if thickness - 2 * radius > 1e-6:
+                    lines.append("G01 ({},DZ-{},0,0,1,2)".format(end, r))
+                lines.append("{} ({},DZ,0,{},0,1,2)".format(arc, corner, r))
+                lines.append("EP (2,_ANF*2,0)")
         lines.append("Ebene0()")
-        comment = "Stopped dado tenon: {} x {} notch milled from the end, corners R{}".format(s, _n(notch.depth), r)
-        return [_Op("side_contour", router.number, lines, comment, 0, (plane,))]
+        comment = "{}: {} x {} notch milled from the end, corners R{}".format(notch.kind, _n(hi - lo), _n(notch.depth), r)
+        return [_Op("side_contour", router.number, lines, comment, 0, (plane, lo))]
 
     # -- drillings -----------------------------------------------------------
 
@@ -893,12 +918,14 @@ class PlateProgram:
 
 
 @dataclass(frozen=True)
-class StoppedDadoNotch:
-    """What the HOPS export needs to know about the notch at the closed end of a stopped dado."""
+class TenonNotch:
+    """What the HOPS export needs to know about a notch beside a tenon: at the closed end of a stopped dado, or between
+    and beside the tenons of a mortise and tenon."""
 
-    depth: float  # how far the tenon goes into the dado, the notch's depth from the end
-    dado_width: float  # the dado's width: the tenon plate's thickness
+    depth: float  # how far the tenon goes into the dado or mortise, the notch's depth from the end
+    dado_width: float  # the dado's or mortise's width: the tenon plate's thickness
     dado_depth: float
+    kind: str = "Stopped dado tenon"  # for comments and messages
 
 
 def _slot_groups(connectors, span):

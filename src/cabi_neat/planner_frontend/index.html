@@ -9,8 +9,28 @@
   <body>
     <header id="toolbar">
       <div class="brand">Cabinet planner</div>
+      <input id="cabinet-name" class="cabinet-name" type="text" spellcheck="false" aria-label="Cabinet name" title="The cabinet's name: the default name of saved and written files" />
       <div class="tools">
-        <button id="new" title="Start a new, empty cabinet (Undo brings the current one back)">New</button>
+        <details class="menu">
+          <summary class="button">File</summary>
+          <div class="menu-items">
+            <button id="new" title="Start a new, empty cabinet (Undo brings the current one back)">New</button>
+            <button id="load" title="Open a cabinet configuration (JSON)">Load…</button>
+            <button id="save" title="Save to the file the cabinet was loaded from or last saved to (Ctrl+S)">Save <kbd>Ctrl+S</kbd></button>
+            <button id="save-as" title="Save the configuration to a new JSON file">Save as…</button>
+          </div>
+        </details>
+        <details class="menu">
+          <summary class="button">Fabricate</summary>
+          <div class="menu-items">
+            <button id="cutlist-toggle" title="Show the cut list in the sidebar">Show cut list</button>
+            <button id="write-cutlist" title="Write the cut list as CSV">Write cut list</button>
+            <button id="write-btlx" title="Write the parts and their machining as BTLx">Write BTLx</button>
+            <button id="write-hops" title="Write one HOPS program per part (zip)">Write HOPS</button>
+            <button id="write-dxf" title="Write the outlines of all parts in one DXF, for nesting">Write DXF</button>
+          </div>
+        </details>
+        <input type="file" id="upload" accept=".json,application/json" hidden />
         <button id="undo" title="Undo (Ctrl+Z)">Undo</button>
         <button id="redo" title="Redo (Ctrl+Shift+Z)">Redo</button>
         <label class="inline">Snap
@@ -21,20 +41,14 @@
             <option value="50">50 mm</option>
           </select>
         </label>
-        <button id="cutlist-toggle" title="Show the cut list">Cut list</button>
-        <button id="download" title="Save the configuration as JSON">Save JSON</button>
-        <label class="button" title="Load a configuration JSON">Load JSON<input type="file" id="upload" accept=".json,application/json" hidden /></label>
-        <button id="export-btlx" title="Export the parts and their machining as BTLx">Export BTLx</button>
-        <button id="export-hops" title="Export one HOPS program per part (zip)">Export HOPS</button>
-        <button id="export-dxf" title="Export the outlines of all parts in one DXF, for nesting">Export DXF</button>
       </div>
-      <div class="tools">
+      <div class="tools end">
         <label class="inline" title="Show doors and drawer fronts in the plan"><input type="checkbox" id="view-plan-fronts" checked /> Fronts</label>
         <label class="inline" title="Show doors and drawer fronts in the 3D view"><input type="checkbox" id="view-3d-fronts" checked /> 3D fronts</label>
         <label class="inline" title="Show doors open and drawers pulled out in the 3D view"><input type="checkbox" id="view-3d-open" /> 3D open</label>
         <button id="toggle-3d" title="Show or hide the 3D view">3D view</button>
       </div>
-      <div class="tools end">
+      <div class="tools">
         <button id="generate" class="primary" title="Build the timber model and update the 3D view">Generate 3D</button>
       </div>
     </header>

@@ -182,6 +182,10 @@ def test_mortise_tenon_options():
     joint = cabinet.model.get_joint(cabinet.plates["shelf_0_0"], cabinet.plates["side_right"])
     assert joint.tenon_depth == 6 and joint.tenon_count == 1
     assert cabinet.errors == []
+    # a single tenon is half the edge, centred; more are a (2n + 1)th each
+    assert joint._intervals(400) == [(100, 300)]
+    joint.tenon_count = 2
+    assert joint._intervals(500) == [(100, 200), (300, 400)]
     butt = Cabinet(CabinetConfig.grid(1, 2, interior_joint="butt", door_style="none"))
     assert not any(isinstance(j, PlateMortiseTenon) for j in butt.model.joints)
 

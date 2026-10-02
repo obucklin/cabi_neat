@@ -13,6 +13,7 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+from .config import DRAWER_MIN_BELOW_GROOVE
 from .config import DRAWER_SIDE_REDUCTION
 from .config import HINGE_DEFAULTS
 from .config import CabinetConfig
@@ -112,6 +113,7 @@ class Layout:
     joint_kinds: Dict[Tuple[str, str], Tuple[str, Dict]] = field(default_factory=dict)  # (main, cross) -> (kind, parameters), default: butt
     regions: Dict[str, Tuple[float, float, float, float]] = field(default_factory=dict)  # node path key -> (x, z, width, height)
     holes: List[ShelfHole] = field(default_factory=list)
+    warnings: List[Tuple[str, str]] = field(default_factory=list)  # (node key, message): buildable, but worth a look
 
     def add(self, part):
         if any(p.name == part.name for p in self.parts):
@@ -213,16 +215,18 @@ def resolve_layout(config):
         top = layout.add(Part("top", "top", (t, 0, H - t), (W - 2 * t, D - bt, t), "z"))
     back = layout.add(Part("back", "back", (t, D - bt, 0), (W - 2 * t, bt, sides_h), "y"))
 
-    def join_carcass(main, cross, joint):
+    def join_carcass(main, cross, joint, distance=None, center=None):
         if joint == "clamex_p14":
-            layout.join(main, cross, "clamex_p14", distance=c.clamex_distance, center_connector=c.clamex_center)
+            distance = c.clamex_distance if distance is None else distance
+            center = c.clamex_center if center is None else center
+            layout.join(main, cross, "clamex_p14", distance=distance, center_connector=center)
         else:
             layout.join(main, cross)
 
     for side in (left, right):
         join_carcass(bottom, side, c.carcass_joint)
         if c.countertop:
-            join_carcass(side, top, c.countertop_joint)
+            join_carcass(side, top, c.countertop_joint, c.countertop_clamex_distance, c.countertop_clamex_center)
         else:
             join_carcass(top, side, c.carcass_joint)
     for side in (left, right):
@@ -371,7 +375,8 @@ def _resolve_split(layout, node, path, rect, panels, bounds, back, front_depth, 
         if child.kind == ZoneKind.DRAWER:
             if covered:
                 raise ValueError("Drawer {} is behind a door.".format("_".join(map(str, child_path))))
-            _add_drawer(layout, "_".join(map(str, child_path)), opening, front_depth, c.drawer_options(child))
+            on_shelf = drawer_shelves and opening.bounds["bottom"] != "none"
+            _add_drawer(layout, "_".join(map(str, child_path)), opening, front_depth, c.drawer_options(child), on_shelf)
         elif holes if child.shelf_holes is None else child.shelf_holes:
             _add_shelf_holes(layout, path_key(child_path), child_rect, child_panels)
 
@@ -492,10 +497,11 @@ def _front_rect(c, opening):
     return x, z, w, h
 
 
-def _add_drawer(layout, key, opening, front_depth, options):
-    """Add a drawer box and front in ``opening``, with its settings ``options`` (see :meth:`CabinetConfig.drawer_options`)."""
+def _add_drawer(layout, key, opening, front_depth, options, on_shelf=False):
+    """Add a drawer box and front in ``opening``, with its settings ``options`` (see :meth:`CabinetConfig.drawer_options`).
+    ``on_shelf``: the drawer is in a stack with shelves between drawers, so its bottom can be placed by ``bottom_clearance``."""
     c = layout.config
-    st, bt, clr = c.drawer_panel_thickness, options["bottom_thickness"], c.drawer_clearance
+    st, bt, clr = c.drawer_panel_thickness, options["bottom_thickness"], options["side_clearance"]
     inner_depth = c.depth - c.back_thickness
 
     fx, fz, fw, fh = _front_rect(c, opening)
@@ -510,9 +516,19 @@ def _add_drawer(layout, key, opening, front_depth, options):
         bh = options["side_height"]
         if bh > room + 1e-9:
             raise ValueError("Drawer {} sides are {:.0f} high, but only {:.0f} fits below what's above them.".format(key, bh, room))
+    # on a shelf, the bottom's underside is the bottom clearance above the shelf, wherever the box's lower edge is
+    bottom_offset = options["bottom_offset"]
+    if on_shelf and options["bottom_clearance"] is not None:
+        bottom_offset = options["bottom_clearance"] - (bz - opening.z)
+        if bottom_offset < 0:
+            raise ValueError(
+                "Drawer {} bottom clearance is {:.0f}, but the box's lower edge is already {:.0f} above the shelf.".format(key, options["bottom_clearance"], bz - opening.z)
+            )
+    if bottom_offset < DRAWER_MIN_BELOW_GROOVE:
+        layout.warnings.append((key, "Drawer {}: the bottom's groove is only {:.1f} mm above the lower edge of the sides (less than {:.0f}).".format(key, bottom_offset, DRAWER_MIN_BELOW_GROOVE)))
     by = front_depth
     bd = c.drawer_depth if c.drawer_depth is not None else inner_depth - by - c.drawer_rear_clearance
-    if bw <= 2 * st or bh <= options["bottom_offset"] + bt or bd <= 2 * st:
+    if bw <= 2 * st or bh <= bottom_offset + bt or bd <= 2 * st:
         raise ValueError("Drawer {} is too small ({:.0f} x {:.0f} x {:.0f}).".format(key, bw, bh, bd))
     if by + bd > inner_depth:
         raise ValueError("Drawer depth {:.0f} exceeds the interior depth.".format(bd))
@@ -537,14 +553,14 @@ def _add_drawer(layout, key, opening, front_depth, options):
             layout.join(box_front, side, "rabbet", rabbet_depth=None)
     for side in (side_l, side_r):
         layout.join(box_back, side, "rabbet", rabbet_depth=None)
-    # the bottom sits in grooves, raised off the box's lower edge; they run through the sides and stop in the front and back
-    bottom_z = bz + options["bottom_offset"]
+    # the bottom sits in grooves, raised off the box's lower edge; they run through the sides and the back (whose ends
+    # are hidden in the sides' rabbets) and stop in the front
+    bottom_z = bz + bottom_offset
     box_bottom = layout.add(Part("drawer_{}_bottom".format(key), "drawer_bottom", (bx + st, bottom_y, bottom_z), (bw - 2 * st, by + bd - st - bottom_y, bt), "z", dict(attrs)))
-    for panel in (side_l, side_r):
+    for panel in (side_l, side_r, box_back):
         layout.join(box_bottom, panel, "groove", depth=options["groove_depth"], through=True)
-    # stopped grooves in the front and back, exactly as long as the bottom's edge including its corners in the side grooves
-    for panel in (box_front, box_back):
-        layout.join(box_bottom, panel, "groove", depth=options["groove_depth"], through=False)
+    # a stopped groove in the front, exactly as long as the bottom's edge including its corners in the side grooves
+    layout.join(box_bottom, box_front, "groove", depth=options["groove_depth"], through=False)
 
 
 def part_category_group(category) -> Optional[str]:

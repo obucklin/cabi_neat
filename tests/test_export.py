@@ -235,6 +235,25 @@ def test_hops_stopped_dado_tenons_are_milled_from_the_end():
     assert "Ebene2()" in divider and "Ebene4()" in divider
 
 
+def test_hops_mortise_tenons_are_milled_from_the_end():
+    cabinet = Cabinet(CabinetConfig.grid(2, 2, door_style="none", interior_joint="mortise_tenon"))
+    files, report = export.hops(cabinet)
+    assert report.skipped == []
+    shelf = files["shelf_0_0_CUT_2.hop"]
+    # the cut-outs beside the tenons: no pockets, contours in the ends' planes with the mortise router's corners,
+    # the D13.4 router's R6.7, like the mortises' ends. Per end: one at each corner and one between the two tenons
+    assert "_RechteckTasche_V5" not in shelf
+    assert shelf.count("; Mortise tenon: 98.4 x 4.5 notch milled from the end, corners R6.7") == 6
+    assert shelf.count("Ebene1()") == shelf.count("Ebene3()") == 3
+    # between the tenons (196.8 to 295.2): from the end of the first tenon and from the start of the second, each
+    # clearing half of it, the tool never reaching the other tenon
+    front = shelf[shelf.index("; Mortise tenon", shelf.index("Ebene1()")) :]
+    middle = [block for block in front.split("; Mortise tenon")[1:4] if "G03R (196.8," in block]
+    assert len(middle) == 1 and "G02R (295.2,6.7,0,6.7,0,1,2)" in middle[0]
+    allowances = [float(line.split(",")[6]) for line in middle[0].splitlines() if line.startswith("SP (")]
+    assert max(allowances) + 13.4 <= 98.4 and max(allowances) + 13.4 >= 98.4 / 2 and min(allowances) == 0
+
+
 def test_hops_drawer_bottom_grooves_are_lines_without_lead_out(cabinet):
     files, _ = export.hops(cabinet)
     # through the drawer side: the D6 router along both walls of the 8 mm groove, out to both edges
