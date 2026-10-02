@@ -67,11 +67,11 @@ def test_hops_hinges(cabinet):
     door = export.hops(cabinet)[0]["door_0_2.hop"]
     # pots milled with the D20 router on a circle, 13 deep, as in the earlier programs
     assert "WZF (403," in door
-    assert door.count("CALL _Kreisbahn_V5") == 4 and "RADIUS:=17.5" in door and "TIEFE:=13," in door
+    assert door.count("CALL _Kreisbahn_V5") == 4 and "RADIUS:=17.5" in door and "TIEFE:=-13," in door  # from the top surface
     # the screw holes with the D3 drill, the mounting plates' D5 holes in the side with the short D5: always the spindle
-    assert "WZB (602," in door and door.count("Bohrung (") == 8 and ",3,-11,10," in door
+    assert "WZB (6035," in door and door.count("Bohrung (") == 8 and ",3.5,-11,10," in door
     side = export.hops(cabinet)[0]["side_left.hop"]
-    assert "WZB (609," in side and side.count(",37,5,-12,10,") == 8
+    assert "WZB (605," in side and side.count(",37,5,-12,10,") == 8
 
 
 def test_hops_clamex(cabinet):
@@ -88,7 +88,7 @@ def test_hops_clamex(cabinet):
     assert side.count("CALL Clamex_MS_FI") == 6 and "CL_WKZ:=136" in side and "DW:=90," in side
     # one connector per drawer side, in the middle of its end, and the dowel holes next to it
     drawer_side = files["drawer_0_0_side_l.hop"]
-    assert "C2:=-1" in drawer_side and drawer_side.count("HorzB (0,") == 2 and "WZB (603," in drawer_side
+    assert "C2:=-1" in drawer_side and drawer_side.count("HorzB (0,") == 2 and "WZB (608," in drawer_side
     no_holes = export.hops(cabinet, tools=HopsTools(clamex_access_holes=False))[0]["top.hop"]
     assert "ART:=1" in no_holes
 
@@ -114,14 +114,15 @@ def test_hops_tools():
     assert tools.router_for(30, 9).number == 403
     assert tools.router_for(4, 9) is None
     # drillings: the shortest drill of that diameter that's long enough
-    assert tools.drill_for(5, 12).number == 609
-    assert tools.drill_for(8, 20).number == 603
+    assert tools.drill_for(5, 12).number == 605
+    assert tools.drill_for(8, 20).number == 608
+    assert tools.drill_for(3.5, 11).number == 6035
     assert tools.drill_for(5, 40) is None
     assert tools.drill_for(7, 10) is None
     # shelf holes: the drill head if it has a bit for them, else a spindle drill
     assert tools.head_drill_for(5, 12).number == 501
-    assert tools.head_drill_for(8, 12).number == 603
-    assert HopsTools(drill_head_bits=()).head_drill_for(5, 12).number == 609
+    assert tools.head_drill_for(8, 12).number == 608
+    assert HopsTools(drill_head_bits=()).head_drill_for(5, 12).number == 605
 
 
 def test_hops_tools_from_tool_table(tmp_path):
@@ -386,4 +387,4 @@ def test_hops_shelf_holes_use_the_drill_head():
     assert side.count("(drill head)") == drilled
     assert side.count(",5,-8,10,") == drilled
     # the hinge plates' holes still use the spindle drill
-    assert "WZB (609," in side and side.count(",5,-12,10,") == 8
+    assert "WZB (605," in side and side.count(",5,-12,10,") == 8

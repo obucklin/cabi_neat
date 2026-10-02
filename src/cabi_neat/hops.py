@@ -54,7 +54,7 @@ class Drill:
     name: str = ""
 
 
-# the ETH machine, from its tool table 092026tools.too (loaded tools), plus the D3 and D8 drills that will be added
+# the ETH machine: routers from its tool table 092026tools.too, the spindle drills as set up on 2 Oct 2026
 ETH_ROUTERS = (
     Router(403, 20.0, 95.0, "Turbex Ø20"),
     Router(402, 13.4, 35.0, "Dia Ø14"),
@@ -62,10 +62,10 @@ ETH_ROUTERS = (
     Router(404, 11.5, 45.0, "SRSL Ø12"),
     Router(410, 6.0, 22.0, "ER16 Ø6"),
 )
-ETH_DRILLS = (
-    Drill(609, 5.0, 30.0, "Drill Ø5 short"),
-    Drill(603, 8.0, 80.0, "Drill Ø8"),  # in the table, not loaded yet
-    Drill(602, 3.0, 30.0, "Drill Ø3"),  # not in the table yet: number and length are placeholders
+ETH_DRILLS = (  # usable lengths not known yet: 30 covers every hole the cabinets need
+    Drill(6035, 3.5, 30.0, "Drill Ø3.5"),
+    Drill(605, 5.0, 30.0, "Drill Ø5"),
+    Drill(608, 8.0, 30.0, "Drill Ø8"),
 )
 # the drill head (Bohrkopf), as the workshop's macros call it (_Drill_Standard_ID), and its vertical bits
 DRILL_HEAD = 501
@@ -532,7 +532,7 @@ class PlateProgram:
             "_Kreisbahn_V5",
             x_mitte=_n(cx),
             y_mitte=_n(cy),
-            tiefe=_n(depth),
+            tiefe=_n(-depth),  # from the top surface (a positive value is a height above the underside)
             zutiefe="_AT_MAXDEPTH",
             radius=_n(radius),
             radiuskorrektur=1,

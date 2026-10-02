@@ -176,7 +176,7 @@ def test_door_screw_holes():
     joint = CupHingeJoint.create(model, door, side, hinge_count=2)
     model.process_joinery()
     drillings = [f for f in door.features if type(f).__name__ == "Drilling"]
-    assert len(drillings) == 4 and all(d.diameter == 3 for d in drillings)
+    assert len(drillings) == 4 and all(d.diameter == 3.5 for d in drillings)
     frame = joint.hinge_frames()[0]
     # the holes' centers on the back face: 48 apart along the edge, 6 further from the edge than the cup
     centers = sorted((d.cylinder_from_params_and_element(door).frame.point for d in drillings), key=lambda p: p.z)[:2]

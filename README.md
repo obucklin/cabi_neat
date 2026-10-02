@@ -115,7 +115,7 @@ Drawer boxes are joined like this:
 
 Doors hang on European concealed cup hinges ("Topfband") using `cabi_neat.joints.CupHingeJoint`, a joint between the door and the side or divider on its hinge side. Each hinge makes these cuts:
 
-- **Door:** a Ø35 × 13 pot (`FreeContour`) whose edge is 5 mm from the door edge (the pot offset). Also two Ø3 × 11 screw holes (`Drilling`), 48 apart and 6 further from the edge than the pot centre.
+- **Door:** a Ø35 × 13 pot (`FreeContour`) whose edge is 5 mm from the door edge (the pot offset). Also two Ø3.5 × 11 screw holes (`Drilling`), 48 apart and 6 further from the edge than the pot centre.
 - **Side:** the mounting plate's two Ø5 × 12 screw holes (`Drilling`), 32 apart, on the face towards the door. They're 37 from the door's back face, so for inset doors they move back by the door's thickness.
 
 Each door gets 4 hinges, 100 from its ends; set `hinge_count` to `None` to pick the count from the door height. The hinge type follows `door_mount`.
@@ -185,11 +185,11 @@ The planner's **Fabricate** menu has **Write cut list** (CSV), **Write BTLx**, *
   - Other pockets (mortises, tenon gaps, housings) use `_RechteckTasche_V5` with the largest router that fits, its radius as the corner radius, and no lead-out. Pockets open to an edge are widened past it for a bigger router. Other shapes use a contour and `_ExecutePocket_V5`.
   - The notches beside tenons, a stopped dado's and a mortise and tenon's, are milled from the plate's end, in its plane (`Ebene1`-`Ebene4`). A contour runs up each tenon end with arcs of the dado or mortise router's radius, so the tenon fits the rounded end the router leaves. It's run with decreasing allowances, the last 0, to clear the notch: out to the edge at a corner of the plate, and from both tenons to the middle between two of them.
   - Hinge pots use `_Kreisbahn_V5` with the Ø20 router (403).
-  - Drillings into faces use `Bohrung`, drillings into edges `HorzB`, with a spindle drill (`WZB`) of the hole's diameter: the shortest one that's deep enough. The defaults include a Ø8 (603) and a Ø3 (602, placeholder number) to be loaded.
+  - Drillings into faces use `Bohrung`, drillings into edges `HorzB`, with a spindle drill (`WZB`) of the hole's diameter: the shortest one that's deep enough. The default drills are 6035 (Ø3.5), 605 (Ø5) and 608 (Ø8).
   - Shelf holes use the drill head instead (`WZB (501,…)`, the ID the workshop's macros use for the standard drill head) if it has a bit of their diameter that's long enough, else a spindle drill. `HopsTools.drill_head_bits` lists its bits; the default, a single Ø5 × 30, is an assumption to check against the machine. `HopsTools.from_too` reads them from the tool table's `Bohrkopf` group.
   - Clamex P-14 in faces uses `Clamex_MS_FI` with the finger mill (136). In edges it uses `Clamex1_Stumpf` (ends) and `Clamex1_Stumpf_X` (long edges) with the disc (108), plus the access holes (drill 135).
   - With machining on both faces, the other face comes first, then `MachineStop_V7` to turn the panel over about its long edge. A plate with Clamex access holes has their face on top: the underside of shelves and of the top, and the inside of everything else.
-  - The tools default to the ETH machine's tool table (092026tools), plus a Ø8 (603) and a Ø3 (602, placeholder number) drill to be loaded. `HopsTools.from_too(path)` reads another table, including the Clamex tools.
+  - The tools default to the ETH machine's tool table (092026tools), with the drills 6035, 605 and 608. `HopsTools.from_too(path)` reads another table, including the Clamex tools.
   - Identical parts (shelves, drawer bottoms, …) share one program, named after the first with `_CUT_<n>` appended, e.g. `shelf_0_2_CUT_4.hop` is cut four times. `report.txt` lists the parts each one is for.
   - Every part lies on the table with its long edge along X. Of the two ways, drawer parts (sides, back, front) take the one with their bottom edge, and the groove, at Y = 0.
   - Files are written with Windows line endings.
