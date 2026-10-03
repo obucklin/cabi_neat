@@ -151,12 +151,16 @@ def hops(cabinet, directory=None, tools=None):
     # the notches beside the tenons of stopped dados and mortises and tenons, to be milled from the end:
     # {plate: {id(feature): notch}}
     notches = {}
-    grooves = {}  # the pockets of grooves (drawer bottoms), milled as lines: {plate: {id(feature)}}
-    # except in visible drawer fronts: a rectangular pocket there
-    pocket_grooves = {cabinet.plates[part.name] for part in cabinet.layout.parts if part.category == "drawer_front"}
+    # pockets with their own router and distance to the contour: {plate: {id(feature): "groove" or "housing"}}
+    pocket_kinds = {}
+    dowel_holes = {}  # the drillings of Clamex joints' dowels: {plate: {id(feature)}}
     for joint in cabinet.model.joints:
-        if type(joint).__name__ == "PlateGrooveJoint" and joint.cross_plate not in pocket_grooves:
-            grooves.setdefault(joint.cross_plate, set()).update(id(f) for f in joint.features if f in joint.cross_plate.features)
+        if type(joint).__name__ == "ClamexP14Joint":
+            for plate in (joint.main_plate, joint.cross_plate):
+                dowel_holes.setdefault(plate, set()).update(id(f) for f in joint.features if type(f).__name__ == "Drilling" and f in plate.features)
+        pocket = {"PlateGrooveJoint": "groove", "PlateStoppedDadoJoint": "housing", "PlateMortiseTenon": "housing"}.get(type(joint).__name__)
+        if pocket:
+            pocket_kinds.setdefault(joint.cross_plate, {}).update((id(f), pocket) for f in joint.features if f in joint.cross_plate.features)
         kind = {"PlateStoppedDadoJoint": "Stopped dado tenon", "PlateMortiseTenon": "Mortise tenon"}.get(type(joint).__name__)
         if kind is None:
             continue
@@ -169,7 +173,16 @@ def hops(cabinet, directory=None, tools=None):
     for part in cabinet.layout.parts:
         plate = cabinet.plates[part.name]
         down = (0, 0, -1) if part.category in drawer_parts else None
-        program = PlateProgram(plate, tools, directions.get(part.name), part.category, tenon_notches=notches.get(plate), grooves=grooves.get(plate), down=down)
+        program = PlateProgram(
+            plate,
+            tools,
+            directions.get(part.name),
+            part.category,
+            tenon_notches=notches.get(plate),
+            down=down,
+            pocket_kinds=pocket_kinds.get(plate),
+            dowel_holes=dowel_holes.get(plate),
+        )
         try:
             text = program.text()
         except Exception as e:  # keep going: one part's problem shouldn't stop the others
