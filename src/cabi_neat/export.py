@@ -151,14 +151,23 @@ def hops(cabinet, directory=None, tools=None):
     # the notches beside the tenons of stopped dados and mortises and tenons, to be milled from the end:
     # {plate: {id(feature): notch}}
     notches = {}
-    # pockets with their own router and distance to the contour: {plate: {id(feature): "groove" or "housing"}}
+    # pockets with their own router and distance to the contour: {plate: {id(feature): "groove", "housing" or "dado"}}
     pocket_kinds = {}
     dowel_holes = {}  # the drillings of Clamex joints' dowels: {plate: {id(feature)}}
+    # Clamex face halves milled with the disc from the plate's end: the carcass sides' halves of their joints with the
+    # top and bottom, and the drawer fronts' halves of their joints with the drawer sides
+    end_face_clamex = {}
+    category = {cabinet.plates[part.name]: part.category for part in cabinet.layout.parts}
     for joint in cabinet.model.joints:
+        is_clamex = type(joint).__name__ == "ClamexP14Joint"
+        cross, main = (category.get(joint.cross_plate), category.get(joint.main_plate)) if is_clamex else (None, None)
+        if (cross == "side" and main in ("top", "bottom")) or (cross == "drawer_front" and main == "drawer_side"):
+            faces = (id(f) for f in joint.features if type(f).__name__ == "P14Face" and f in joint.cross_plate.features)
+            end_face_clamex.setdefault(joint.cross_plate, set()).update(faces)
         if type(joint).__name__ == "ClamexP14Joint":
             for plate in (joint.main_plate, joint.cross_plate):
                 dowel_holes.setdefault(plate, set()).update(id(f) for f in joint.features if type(f).__name__ == "Drilling" and f in plate.features)
-        pocket = {"PlateGrooveJoint": "groove", "PlateStoppedDadoJoint": "housing", "PlateMortiseTenon": "housing"}.get(type(joint).__name__)
+        pocket = {"PlateGrooveJoint": "groove", "PlateStoppedDadoJoint": "dado", "PlateMortiseTenon": "housing"}.get(type(joint).__name__)
         if pocket:
             pocket_kinds.setdefault(joint.cross_plate, {}).update((id(f), pocket) for f in joint.features if f in joint.cross_plate.features)
         kind = {"PlateStoppedDadoJoint": "Stopped dado tenon", "PlateMortiseTenon": "Mortise tenon"}.get(type(joint).__name__)
@@ -182,6 +191,7 @@ def hops(cabinet, directory=None, tools=None):
             down=down,
             pocket_kinds=pocket_kinds.get(plate),
             dowel_holes=dowel_holes.get(plate),
+            end_face_clamex=end_face_clamex.get(plate),
         )
         try:
             text = program.text()

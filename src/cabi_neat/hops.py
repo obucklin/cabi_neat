@@ -96,9 +96,11 @@ class HopsTools:
         Saw blade for the format (``WZS``).
     clamex_disc, clamex_finger, clamex_drill
         Clamex tools: the disc for edges (108), the finger mill for faces (136), the drill for access holes (135).
-    clamex_hole_diameter, clamex_hole_position
-        Diameter of the Clamex access holes and their distance from the edge (``B_DM`` and ``B_POS`` of
-        ``Clamex1_Stumpf``).
+    clamex_face_depth
+        Depth of the face halves milled with the disc (``C_TIEFE`` of ``Clamex_Einzeln``).
+    clamex_hole_diameter, clamex_hole_position, clamex_depth
+        Diameter of the Clamex access holes, their distance from the edge and the depth of the edge grooves
+        (``B_DM``, ``B_POS`` and ``C_TIEFE`` of ``Clamex1_Stumpf``).
     clamex_access_holes
         Drill the access holes next to the edge grooves (``Art 0``). The plate is then machined with the face the holes
         go into on top: the underside of shelves and of the carcass top, the inside of everything else.
@@ -110,9 +112,9 @@ class HopsTools:
         How much deeper than the plate through pockets and holes go.
     groove_router, groove_contour_distance
         The router for grooves (drawer bottoms) and how much wider than the groove it cuts on every side.
-    housing_router, housing_contour_distance
-        The same for the pockets that take tenons (mortises, stopped dados); the notches beside the tenons use this
-        router too, so their rounded ends match.
+    housing_router, housing_contour_distance, dado_contour_distance
+        The same for the pockets that take tenons: mortises (``housing_contour_distance``) and stopped dados
+        (``dado_contour_distance``). The notches beside the tenons use this router too, so their rounded ends match.
     part_offset
         X and Y offset of the finished part (``Fertigteil``).
     dowel_extra_depth
@@ -131,7 +133,9 @@ class HopsTools:
     clamex_finger: int = 136
     clamex_drill: int = 135
     clamex_hole_diameter: float = 6.0
-    clamex_hole_position: float = 7.5
+    clamex_hole_position: float = 7.7
+    clamex_depth: float = 14.2
+    clamex_face_depth: float = 14.0
     clamex_access_holes: bool = True
     format_parts: bool = True
     format_depth: float = -2.0
@@ -141,6 +145,7 @@ class HopsTools:
     groove_contour_distance: float = 0.25
     housing_router: int = 404
     housing_contour_distance: float = 0.1
+    dado_contour_distance: float = 0.05
     part_offset: Tuple[float, float] = (2.0, 2.0)
     dowel_extra_depth: float = 4.0
 
@@ -391,18 +396,23 @@ class PlateProgram:
     tenon_notches : dict, optional
         The plate's notches beside the tenons of stopped dados and mortise and tenon joints, milled from the end instead
         of as pockets: ``{id(FreeContour): TenonNotch}``.
+    end_face_clamex : set, optional
+        ``id`` s of the plate's Clamex face halves to mill with the disc from the plate's end (``Clamex_Einzeln``)
+        instead of with the finger mill (``Clamex_MS_FI``): those of a carcass side's joints with the top and
+        bottom, and of a drawer front's joints with the drawer sides.
     dowel_holes : set, optional
         ``id`` s of the plate's drillings that are dowel holes, drilled ``HopsTools.dowel_extra_depth`` deeper.
     pocket_kinds : dict, optional
-        ``{id(FreeContour): "groove" or "housing"}`` for pockets with their own router and distance to the contour
+        ``{id(FreeContour): "groove", "housing" or "dado"}`` for pockets with their own router and distance to the contour
         (see :class:`HopsTools`): grooves for drawer bottoms, and the mortises and dados that take tenons.
     down : vector, optional
         Parts lie with their long edge along X. Of the two ways, the one that takes this world direction to -Y (else
         -X), e.g. down for drawer parts: their bottom edge, with the bottom's groove, then lies along X at Y = 0.
     """
 
-    def __init__(self, plate, tools=None, access_direction=None, comment="", tenon_notches=None, down=None, pocket_kinds=None, dowel_holes=None):
+    def __init__(self, plate, tools=None, access_direction=None, comment="", tenon_notches=None, down=None, pocket_kinds=None, dowel_holes=None, end_face_clamex=None):
         self.plate = plate
+        self.end_face_clamex = end_face_clamex or set()
         self.dowel_holes = dowel_holes or set()
         self.pocket_kinds = pocket_kinds or {}
         self.tenon_notches = tenon_notches or {}
@@ -580,7 +590,7 @@ class PlateProgram:
             rampe=1,
             interpol=1,
             esxy=1,
-            esmd=1,
+            esmd=0,  # depth from the top surface (1 measures it from the underside)
             laser=0,
         )
         return [_Op("pot", router.number, [call], comment, face, (cx, cy))]
@@ -602,10 +612,14 @@ class PlateProgram:
             x0, x1 = _grow(x0, x1, biggest, open_x)
             y0, y1 = _grow(y0, y1, biggest, open_y)
             cx, cy, a, b, angle = (x0 + x1) / 2, (y0 + y1) / 2, x1 - x0, y1 - y0, 0.0
-        if kind in ("groove", "housing"):
+        if kind in ("groove", "housing", "dado"):
             # a groove or a pocket for a tenon: its own router, and wider than the contour on every side
             t = self.tools
-            number, distance = (t.groove_router, t.groove_contour_distance) if kind == "groove" else (t.housing_router, t.housing_contour_distance)
+            number, distance = {
+                "groove": (t.groove_router, t.groove_contour_distance),
+                "housing": (t.housing_router, t.housing_contour_distance),
+                "dado": (t.housing_router, t.dado_contour_distance),
+            }[kind]
             router = t.router(number, depth)
             a, b = a + 2 * distance, b + 2 * distance
             if router is None or router.diameter > min(a, b) + 1e-6:
@@ -905,6 +919,21 @@ class PlateProgram:
         x, y, _ = self.space.hops_point(self.space.local_point(frame.point), face)
         dx, dy, _ = self.space.hops_vector(self.space.local_vector(frame.xaxis), face)
         angle = math.degrees(math.atan2(dy, dx)) % 180.0
+        length = self.space.size[0]
+        if id(feature) in self.end_face_clamex and abs(angle - 90.0) < 1e-3:
+            # near an end, across the part: Clamex_Einzeln with the disc, from that end (8: left, 4: right), the slot
+            # ``EX`` in from the end and ``EY`` from the front edge, as in the workshop's programs
+            left = x < length / 2.0
+            t = self.tools
+            params = dict(clamex_id=t.clamex_disc, clamex_b_id=t.clamex_drill, art=1, b_pos="7.50", b_dm=5, c_tiefe=_n(t.clamex_face_depth))
+            params.update(esxy1=2, esxy2=1, esxy3=5, esxy4=3, ex1=0, ey1="(DZ/2)", ex2="(DZ/2)", ey2=60, ex3=60, ey3="-(DZ/2)", ex4="(DZ/2)", ey4=60)
+            if left:
+                params.update(ex2=_n(x), ey2=_n(y))
+            else:
+                params.update(ex4=_n(length - x), ey4=_n(y))
+            params.update(c_typ=1, richtung=8 if left else 4, rf=2, win=90, gegen_u=-1)
+            comment = "Clamex P-14 (face), with the disc from the {} end".format("left" if left else "right")
+            return [_Op("clamex_face", None, [_call("Clamex_Einzeln", **params)], comment, face, (x, y))]
         call = _call("Clamex_MS_FI", cl_wkz=self.tools.clamex_finger, cl_typ=1, posx=_n(x), posy=_n(y), dw=_n(angle), esxy=1, vers_b="0.00", wkz_typ=-1)
         return [_Op("clamex_face", None, [call], "Clamex P-14 (face)", face, (x, y))]
 
@@ -951,7 +980,7 @@ class PlateProgram:
         ends = edge in ("left", "right")
         first = 0 if edge in ("left", "rear") else 3
         params = dict(clamex_id=t.clamex_finger, clamex_id_h=t.clamex_disc, clamex_b_id=t.clamex_drill, art=0 if t.clamex_access_holes else 1)
-        params.update(b_pos=_n(t.clamex_hole_position), b_dm=_n(t.clamex_hole_diameter), c_tiefe=14)
+        params.update(b_pos=_n(t.clamex_hole_position), b_dm=_n(t.clamex_hole_diameter), c_tiefe=_n(t.clamex_depth))
         values = {}
         for i in range(6):
             values["c{}".format(i + 1)] = 0

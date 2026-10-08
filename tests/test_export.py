@@ -70,6 +70,7 @@ def test_hops_hinges(cabinet):
     # pots milled with the D20 router on a circle, 13 deep, as in the earlier programs
     assert "WZF (403," in door
     assert door.count("CALL _Kreisbahn_V5") == 4 and "RADIUS:=17.5" in door and "TIEFE:=-13," in door  # from the top surface
+    assert door.count("ESMD:=0,") == 4 and "ESMD:=1," not in door.split("_Sformat_V5")[-1]
     # the screw holes with the D3 drill, the mounting plates' D5 holes in the side with the short D5: always the spindle
     assert "WZB (6035," in door and door.count("Bohrung (") == 8 and ",3.5,-11,10," in door
     side = export.hops(cabinet)[0]["side_left.hop"]
@@ -82,12 +83,22 @@ def test_hops_clamex(cabinet):
     top = files["top.hop"]
     assert top.count("CALL Clamex1_Stumpf (") == 2
     assert "CLAMEX_ID_H:=108" in top and "CLAMEX_B_ID:=135" in top and "ART:=0" in top
-    assert top.count("B_POS:=7.5,B_DM:=6,") == 2
+    assert top.count("B_POS:=7.7,B_DM:=6,C_TIEFE:=14.2,") == 2
     left = next(line for line in top.splitlines() if "C1:=-1" in line)
     assert "EY1:=60" in left and "EY3:=60" in left and "C2:=-1" in left and "C4:=0" in left
-    # the face halves with the finger mill, along the joint
     side = files["side_left.hop"]
-    assert side.count("CALL Clamex_MS_FI") == 6 and "CL_WKZ:=136" in side and "DW:=90," in side
+    # the carcass sides' halves of the top's and bottom's joints: with the disc from the end, one call per connector, the
+    # slot 9 in from the end (the middle of the top's thickness) and 60, 246 and 432 from the front edge
+    assert "Clamex_MS_FI" not in side and side.count("CALL Clamex_Einzeln") == 6
+    left = [line for line in side.splitlines() if "RICHTUNG:=8," in line]
+    right = [line for line in side.splitlines() if "RICHTUNG:=4," in line]
+    assert len(left) == len(right) == 3
+    assert all("CLAMEX_ID:=108," in line and "ART:=1," in line and "C_TIEFE:=14," in line for line in left + right)
+    assert [line.split("EY2:=")[1].split(",")[0] for line in left] == ["60", "246", "432"] and all("EX2:=9," in line for line in left)
+    assert all("EX4:=9," in line for line in right)
+    # the drawer fronts' halves too, 38.5 in from each end
+    front = files["drawer_0_0_front.hop"]
+    assert "Clamex_MS_FI" not in front and "EX2:=38.5,EY2:=155," in front and "EX4:=38.5,EY4:=155," in front
     # one connector per drawer side, in the middle of its end, and the dowel holes next to it
     drawer_side = files["drawer_0_0_side_l.hop"]
     assert "C2:=-1" in drawer_side and drawer_side.count("HorzB (0,") == 2 and "WZB (608," in drawer_side
@@ -213,7 +224,7 @@ def test_hops_identical_parts_share_a_program():
 def test_hops_stopped_dado_tenons_are_milled_from_the_end():
     cabinet = Cabinet(CabinetConfig.grid(2, 2, door_style="none", interior_joint="stopped_dado"))
     # (no distance to the contour, to check the geometry)
-    files, report = export.hops(cabinet, tools=HopsTools(housing_contour_distance=0))
+    files, report = export.hops(cabinet, tools=HopsTools(dado_contour_distance=0))
     assert report.skipped == []
     shelf = files["shelf_0_0_CUT_2.hop"]
     divider = files["divider_0.hop"]
@@ -456,7 +467,7 @@ def test_hops_pockets_for_tenons_and_grooves_have_their_own_router_and_distance_
     assert "TASCHENBREITE:=8.5,RADIUS:=3," in files["drawer_0_0_side_l.hop"]
     # stopped dados: also the D11.5, and the shelves' notches with it, so their corners match the dados' ends
     grid = export.hops(Cabinet(CabinetConfig.grid(2, 2, door_style="none", interior_joint="stopped_dado")))[0]
-    assert "TASCHENLAENGE:=18.2,TASCHENBREITE:=508.2,RADIUS:=5.75," in grid["divider_0.hop"]
+    assert "TASCHENLAENGE:=18.1,TASCHENBREITE:=508.1,RADIUS:=5.75," in grid["divider_0.hop"]  # 0.05 per side
     shelf = grid["shelf_0_0_CUT_2.hop"]
     assert shelf.count("corners R5.75") == 2 and "WZF (404," in shelf and "G02R (20,5.75,0,5.75,0,1,2)" in shelf
     # a router that doesn't fit the groove: left out and reported
