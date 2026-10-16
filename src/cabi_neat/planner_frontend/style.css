@@ -162,6 +162,20 @@ input[type="number"] {
   display: none;
 }
 
+table.tools caption {
+  text-align: left;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 0 2px;
+}
+
+table.tools td.name {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
 #sidebar {
   overflow-y: auto;
   padding: 12px;
@@ -778,4 +792,149 @@ div.group.fold h2::before {
   background: rgba(194, 65, 45, 0.12);
   color: var(--danger);
   font-size: 12.5px;
+}
+
+/* a joint's row, with its settings button */
+.joint-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.joint-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.joint-cell select {
+  min-width: 0;
+  flex: 1;
+}
+
+button.gear {
+  padding: 2px 7px;
+  line-height: 1.2;
+}
+
+button.gear.set {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* popups: a joint's settings, the HOPS export */
+dialog.popup {
+  max-width: min(760px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+dialog.popup::backdrop {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+dialog.popup h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+dialog.popup h3 {
+  margin: 14px 0 6px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+dialog.popup .fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+dialog.joint-dialog {
+  width: 560px;
+}
+
+dialog.hops-dialog {
+  width: 1120px;
+  max-width: calc(100vw - 32px);
+}
+
+dialog.popup .columns {
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+  gap: 24px;
+}
+
+dialog.popup section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+dialog.popup .buttons.end {
+  margin-top: 16px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+dialog.popup .grow {
+  flex: 1;
+}
+
+table.machining {
+  border-collapse: collapse;
+  font-size: 12.5px;
+  width: 100%;
+}
+
+table.machining th,
+table.machining td {
+  padding: 3px 4px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+table.machining thead th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+table.machining tbody th {
+  font-weight: 500;
+}
+
+table.machining select {
+  max-width: 160px;
+}
+
+label.mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+}
+
+label.mini input {
+  width: 54px;
+}
+
+details.tool-list summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+@media (max-width: 760px) {
+  dialog.popup .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

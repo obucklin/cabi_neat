@@ -14,6 +14,7 @@ from compas_threejs.viewer import App
 from .builder import Cabinet
 from .builder import open_transformation
 from .config import CabinetConfig
+from .hops import HopsSettings
 from .layout import part_category_group
 from .layout import resolve_layout
 from .planner import Planner
@@ -40,9 +41,11 @@ class Configurator:
     config : :class:`CabinetConfig`, optional
         Initial configuration.
     app : :class:`compas_threejs.viewer.App`, optional
+    hops_settings : :class:`cabi_neat.hops.HopsSettings`, optional
+        The HOPS export's settings (tools, fit tolerances). Default: the defaults.
     """
 
-    def __init__(self, config=None, app=None):
+    def __init__(self, config=None, app=None, hops_settings=None):
         self.app = app or App()
         self.app.default_lighting = True
         self.config = config or CabinetConfig.shelves_and_drawers(2, 2)
@@ -52,6 +55,7 @@ class Configurator:
         self._objects = []
         self._part_objects = {}  # part name -> (displayed geometry, material group)
         self.highlighted = set()
+        self.hops_settings = hops_settings or HopsSettings()
         self.picked = None  # the part last clicked in the 3D view
         self.pick_count = 0
         self._lock = threading.Lock()
@@ -205,10 +209,12 @@ def main():
     parser.add_argument("--no-browser", action="store_true", help="Don't open a browser window.")
     parser.add_argument("--port", type=int, default=9001, help="Server port.")
     parser.add_argument("--frontend-dir", help="Built compas_threejs frontend to serve, if the installed package has none.")
+    parser.add_argument("--hops-settings", help="HOPS settings profile (JSON) to start with: tools, which tool does what, fit tolerances.")
     args = parser.parse_args()
     config = CabinetConfig.from_json(args.config) if args.config else None
+    settings = HopsSettings.from_json(args.hops_settings) if args.hops_settings else None
     app = App(websocket_port=args.port, frontend_dir=args.frontend_dir)
-    Configurator(config, app=app).start(show=not args.no_browser)
+    Configurator(config, app=app, hops_settings=settings).start(show=not args.no_browser)
 
 
 if __name__ == "__main__":

@@ -28,6 +28,13 @@ from .config import HINGE_DEFAULTS
 from .config import hinge_positions
 
 
+def _tag(feature, kind, machining, operation=None, **extra):
+    """Say what ``feature`` is for the fabrication export (``feature.machining``): its ``kind``, and the joint's own
+    tool and tolerances for it from the joint's ``machining`` (for ``operation``, by default ``kind``)."""
+    feature.machining = dict({"kind": kind, "settings": (machining or {}).get(operation or kind)}, **extra)
+    return feature
+
+
 def _refresh_blanks(*plates):
     """Make sure the plates' reference sides include this round of edge extensions.
 
@@ -57,6 +64,9 @@ class PlateRabbetJoint(PlateButtJoint):
         The cross plate, which gets the rabbet.
     rabbet_depth : float, optional
         How deep the rabbet goes into the cross plate. Defaults to half the cross plate's thickness.
+    machining : dict, optional
+        The fabrication export's tool and tolerances for the rabbet: ``{"rabbet": {...}}``, see
+        :func:`cabi_neat.hops.check_machining`.
     **kwargs
         Passed to :class:`compas_timber.connections.PlateJoint` (``topology``, ``a_segment_index``, ``b_segment_index``, ...).
     """
@@ -67,11 +77,13 @@ class PlateRabbetJoint(PlateButtJoint):
     def __data__(self):
         data = super(PlateRabbetJoint, self).__data__
         data["rabbet_depth"] = self.rabbet_depth
+        data["machining"] = self.machining
         return data
 
-    def __init__(self, plate_a=None, plate_b=None, rabbet_depth=None, **kwargs):
+    def __init__(self, plate_a=None, plate_b=None, rabbet_depth=None, machining=None, **kwargs):
         super(PlateRabbetJoint, self).__init__(plate_a, plate_b, **kwargs)
         self.rabbet_depth = rabbet_depth
+        self.machining = machining
 
     def __repr__(self):
         return "PlateRabbetJoint({0}, {1}, {2})".format(self.main_plate, self.cross_plate, JointTopology.get_name(self.topology))
@@ -125,6 +137,7 @@ class PlateRabbetJoint(PlateButtJoint):
         b0, b1 = on_plane(far, margin)
         contour = Polyline([a0, a1, b1, b0, a0])
         feature = FreeContour.from_polyline_and_element(contour, self.cross_plate, depth=self.depth, interior=True)
+        _tag(feature, "rabbet", self.machining)
         self.cross_plate.add_features(feature)
         self.features.append(feature)
 
@@ -139,10 +152,23 @@ class _PlateHousingJoint(PlateButtJoint):
 
     SUPPORTED_TOPOLOGY = JointTopology.TOPO_EDGE_FACE
     DEPTH_FRACTION = 0.25  # default depth, as a fraction of the cross plate's thickness
+    # what the pockets and the trims are, for the fabrication export (``feature.machining``); trims beside tenons are
+    # milled from the plate's end when NOTCH_LABEL is set
+    POCKET_KIND = "pocket"
+    NOTCH_LABEL = None
 
-    def __init__(self, plate_a=None, plate_b=None, depth=None, **kwargs):
+    @property
+    def __data__(self):
+        data = super(_PlateHousingJoint, self).__data__
+        data["machining"] = self.machining
+        return data
+
+    def __init__(self, plate_a=None, plate_b=None, depth=None, machining=None, **kwargs):
         super(_PlateHousingJoint, self).__init__(plate_a, plate_b, **kwargs)
         self.depth = depth
+        # the fabrication export's tool and tolerances for the pockets and the notches beside the tenons:
+        # {POCKET_KIND: {...}, "tenon_notch": {...}}, see cabi_neat.hops.check_machining
+        self.machining = machining
 
     @property
     def pocket_depth(self):
@@ -202,7 +228,9 @@ class _PlateHousingJoint(PlateButtJoint):
         inner = self._cross_planes[0]
         near, far = self._main_planes
         contour = self._rectangle(Line(*intersection_plane_plane(near, inner)), Line(*intersection_plane_plane(far, inner)), start, end)
-        self._add(self.cross_plate, FreeContour.from_polyline_and_element(contour, self.cross_plate, depth=self.pocket_depth, interior=True))
+        feature = FreeContour.from_polyline_and_element(contour, self.cross_plate, depth=self.pocket_depth, interior=True)
+        _tag(feature, self.POCKET_KIND, self.machining)
+        self._add(self.cross_plate, feature)
 
     def _trim(self, start, end):
         """Cut away the main plate's extension into the cross plate from ``start`` to ``end``."""
@@ -211,7 +239,20 @@ class _PlateHousingJoint(PlateButtJoint):
         floor = self._floor()
         beyond = Plane(floor.point + self._into_cross_plate() * self._margin, floor.normal)
         contour = self._rectangle(Line(*intersection_plane_plane(inner, near)), Line(*intersection_plane_plane(beyond, near)), start, end)
-        self._add(self.main_plate, FreeContour.from_polyline_and_element(contour, self.main_plate, depth=self.main_plate.thickness, interior=True))
+        feature = FreeContour.from_polyline_and_element(contour, self.main_plate, depth=self.main_plate.thickness, interior=True)
+        if self.NOTCH_LABEL:
+            # the tenon's depth is the notch's, the dado or mortise is as wide as the tenon plate is thick
+            _tag(
+                feature,
+                "tenon_notch",
+                self.machining,
+                depth=self.pocket_depth,
+                dado_width=self.main_plate.thickness,
+                dado_depth=self.pocket_depth,
+                label=self.NOTCH_LABEL,
+                mating=(self.machining or {}).get(self.POCKET_KIND),  # the router of the dado or mortise sets the corners
+            )
+        self._add(self.main_plate, feature)
 
 
 class PlateMortiseTenon(_PlateHousingJoint):
@@ -237,6 +278,9 @@ class PlateMortiseTenon(_PlateHousingJoint):
     **kwargs
         Passed to :class:`compas_timber.connections.PlateJoint` (``topology``, ``a_segment_index``, ``b_segment_index``, ...).
     """
+
+    POCKET_KIND = "mortise"
+    NOTCH_LABEL = "Mortise tenon"
 
     @property
     def __data__(self):
@@ -315,6 +359,8 @@ class PlateStoppedDadoJoint(_PlateHousingJoint):
     """
 
     DEPTH_FRACTION = 1.0 / 3.0
+    POCKET_KIND = "dado"
+    NOTCH_LABEL = "Stopped dado tenon"
 
     @property
     def __data__(self):
@@ -393,6 +439,7 @@ class PlateGrooveJoint(_PlateHousingJoint):
     """
 
     DEPTH_FRACTION = 0.5
+    POCKET_KIND = "groove"
 
     @property
     def __data__(self):
@@ -599,6 +646,7 @@ class ClamexP14Joint(PlateButtJoint):
         data["dowel_diameter"] = self.dowel_diameter
         data["dowel_edge_depth"] = self.dowel_edge_depth
         data["dowel_face_depth"] = self.dowel_face_depth
+        data["machining"] = self.machining
         return data
 
     def __init__(
@@ -613,9 +661,11 @@ class ClamexP14Joint(PlateButtJoint):
         dowel_diameter=8.0,
         dowel_edge_depth=20.0,
         dowel_face_depth=10.0,
+        machining=None,
         **kwargs,
     ):
         super(ClamexP14Joint, self).__init__(plate_a, plate_b, **kwargs)
+        self.machining = machining  # the dowel holes' tool and tolerances: {"drill": {...}}
         self.distance = distance
         self.center_connector = center_connector
         self.connector_count = connector_count
@@ -734,6 +784,8 @@ class ClamexP14Joint(PlateButtJoint):
             point = frame.point
             main_hole = Drilling.from_line_and_element(Line(point - into_main * 5.0, point + into_main * self.dowel_edge_depth), self.main_plate, self.dowel_diameter)
             face_hole = Drilling.from_line_and_element(Line(point + into_main * 5.0, point - into_main * self.dowel_face_depth), self.cross_plate, self.dowel_diameter)
+            _tag(main_hole, "dowel", self.machining, "drill")
+            _tag(face_hole, "dowel", self.machining, "drill")
             self.main_plate.add_features(main_hole)
             self.cross_plate.add_features(face_hole)
             self.features.extend([main_hole, face_hole])
@@ -796,9 +848,12 @@ class CupHingeJoint(Joint):
     def __data__(self):
         data = super(CupHingeJoint, self).__data__
         data.update({key: getattr(self, key) for key in self.PARAMETERS})
+        data["machining"] = self.machining
         return data
 
     def __init__(self, door=None, panel=None, **kwargs):
+        # the fabrication export's tool and tolerances for the pots and the screw holes: {"pot": ..., "drill": ...}
+        self.machining = kwargs.pop("machining", None)
         parameters = {key: kwargs.pop(key, default) for key, default in self.PARAMETERS.items()}
         super(CupHingeJoint, self).__init__(elements=(door, panel), **kwargs)
         for key, value in parameters.items():
@@ -892,14 +947,16 @@ class CupHingeJoint(Joint):
 
     def _drilling(self, element, point, into, depth, diameter):
         line = Line(point - into * 5.0, point + into * depth)  # start outside the element so the drilling starts on its face
-        return Drilling.from_line_and_element(line, element, diameter)
+        drilling = Drilling.from_line_and_element(line, element, diameter)
+        return _tag(drilling, "hinge_drill", self.machining, "drill")
 
     def _cup(self, frame):
         points = [
             frame.point + frame.xaxis * (math.cos(a) * self.cup_diameter / 2.0) + frame.yaxis * (math.sin(a) * self.cup_diameter / 2.0)
             for a in (2 * math.pi * i / 36 for i in range(36))
         ]
-        return FreeContour.from_polyline_and_element(Polyline(points + [points[0]]), self.door, depth=self.cup_depth, interior=True)
+        cup = FreeContour.from_polyline_and_element(Polyline(points + [points[0]]), self.door, depth=self.cup_depth, interior=True)
+        return _tag(cup, "pot", self.machining)
 
     def add_features(self):
         _refresh_blanks(self.door, self.panel)

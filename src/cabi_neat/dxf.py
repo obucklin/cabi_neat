@@ -11,6 +11,7 @@ cut away through the whole thickness (tenons, stopped dado notches, a back exten
 machining that doesn't go through (pockets, grooves, drillings). Coordinates are in millimetres.
 """
 
+from compas.plugins import PluginNotInstalledError
 from shapely.geometry import MultiPolygon
 from shapely.geometry import Polygon
 from shapely.ops import unary_union
@@ -19,16 +20,37 @@ from shapely.ops import unary_union
 _GRID = 1e-3
 
 
-def plate_outline(plate, tolerance=0.01):
-    """The outline of a processed plate, as ``[(x, y), ...]`` (closed, counter-clockwise, without repeating the first point).
-
-    ``x`` and ``y`` run along the plate frame's x and y axes, shifted so the outline starts at 0.
+def plate_shape(plate):
+    """The silhouette of a processed plate, seen from its frame's +z side, without a Brep backend: its outline (with what
+    joints extended) minus the cuts that go through its whole thickness (e.g. notches beside tenons).
 
     Returns
     -------
-    tuple(list, int)
-        The outline and the number of separate pieces the silhouette had (only the largest one is returned).
+    :class:`shapely.geometry.Polygon` | :class:`shapely.geometry.MultiPolygon`
+        In the plate frame's x and y.
     """
+    frame = plate.frame
+    origin, xaxis, yaxis = list(frame.point), list(frame.xaxis), list(frame.yaxis)
+
+    def local(point):
+        d = [p - o for p, o in zip(point, origin)]
+        return (sum(a * b for a, b in zip(d, xaxis)), sum(a * b for a, b in zip(d, yaxis)))
+
+    shape = Polygon([local(p) for p in plate.outline_a.points[:-1]]).buffer(0)
+    for feature in plate.features:
+        if type(feature).__name__ != "FreeContour" or not feature.counter_sink:
+            continue  # the plate's own outline, or not a pocket
+        contour = feature.contour_param_object
+        if contour.depth < plate.thickness - 1e-6:
+            continue
+        side = plate.ref_sides[feature.ref_side_index]
+        cut = Polygon([local(side.point + side.xaxis * p[0] + side.yaxis * p[1]) for p in contour.polyline]).buffer(0)
+        shape = shape.difference(cut)
+    return shape
+
+
+def _brep_shape(plate):
+    """The silhouette from the plate's Brep, tessellated (see :func:`plate_outline`)."""
     frame = plate.frame
     origin, xaxis, yaxis = list(frame.point), list(frame.xaxis), list(frame.yaxis)
 
@@ -42,7 +64,24 @@ def plate_outline(plate, tolerance=0.01):
             polygon = Polygon([local(p) for p in mesh.face_coordinates(face)])
             if polygon.is_valid and polygon.area > _GRID:
                 polygons.append(polygon)
-    shape = unary_union(polygons)
+    return unary_union(polygons)
+
+
+def plate_outline(plate, tolerance=0.01):
+    """The outline of a processed plate, as ``[(x, y), ...]`` (closed, counter-clockwise, without repeating the first point).
+
+    ``x`` and ``y`` run along the plate frame's x and y axes, shifted so the outline starts at 0. It's the plate's
+    Brep, tessellated, or without a Brep backend (e.g. in the browser) :func:`plate_shape`.
+
+    Returns
+    -------
+    tuple(list, int)
+        The outline and the number of separate pieces the silhouette had (only the largest one is returned).
+    """
+    try:
+        shape = _brep_shape(plate)
+    except PluginNotInstalledError:
+        shape = plate_shape(plate)
     pieces = list(shape.geoms) if isinstance(shape, MultiPolygon) else [shape]
     largest = max(pieces, key=lambda p: p.area)
     outline = Polygon(largest.exterior).simplify(tolerance)

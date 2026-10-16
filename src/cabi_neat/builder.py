@@ -182,6 +182,7 @@ class Cabinet:
 
     def _add_shelf_holes(self):
         """Drill the layout's shelf holes, except where a hole of a joint (e.g. a hinge plate's) is already in the way."""
+        own = (self.config.machining_for("shelf_holes") or {}).get("shelf_hole")
         for hole in self.layout.holes:
             plate = self.plates[hole.part]
             point, direction = Point(*hole.point), Vector(*hole.direction)
@@ -191,7 +192,9 @@ class Cabinet:
             # start outside the plate so the drilling starts on its face
             line = Line(point - direction * 5.0, point + direction * hole.depth)
             drilling = Drilling.from_line_and_element(line, plate, hole.diameter)
-            drilling.shelf_hole = True  # so the HOPS export can use the drill head for it
+            drilling.shelf_hole = True
+            # so the HOPS export can use the drill head for it, with the cabinet's tool and tolerances for them
+            drilling.machining = {"kind": "shelf_hole", "settings": own}
             plate.add_features(drilling)
 
     def parts_by_category(self):

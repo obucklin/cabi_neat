@@ -4,6 +4,8 @@ from cabi_neat import CabinetConfig
 from cabi_neat.planner import Planner
 from cabi_neat.planner import layout_to_data
 from cabi_neat import resolve_layout
+from cabi_neat.hops import HopsSettings
+from cabi_neat.hops import Tolerance
 
 
 class StubApp:
@@ -221,3 +223,48 @@ def test_layout_to_data_shelf_holes():
     left = [h for h in data["holes"] if h[2] < 0]
     assert left and all(h[0] == pytest.approx(18) and h[3] == pytest.approx(8) for h in left)
     assert len(data["holes"]) == 2 * len(left)
+
+
+def test_hops_settings_routes(planner):
+    state = planner.get_hops_settings()
+    assert state["settings"] == HopsSettings().to_data() == state["defaults"]
+    assert "groove" in state["operations"] and "groove" in state["router_operations"] and "drill" not in state["router_operations"]
+    assert state["contours"] == ["saw", "router"]
+    assert state["labels"]["groove"] == "Grooves"
+    data = HopsSettings(tolerances={"groove": Tolerance(width=0.3)}, tool_for={"mortise": 405}).to_data()
+    result = planner.post_hops_settings(data)
+    assert result["ok"] and result["settings"] == data
+    assert planner.configurator.hops_settings.tolerance("groove") == Tolerance(width=0.3)
+    # invalid ones are rejected, keeping the settings
+    result = planner.post_hops_settings({"tolerances": {"nonsense": {}}})
+    assert not result["ok"] and "nonsense" in result["error"]
+    assert planner.get_hops_settings()["settings"] == data
+
+
+def test_tool_table_import(planner):
+    table = "[ToolsCount]\nTools=1\n[ToolData0]\nName=Router D8\nToolNo=4\nGroupName=Schaft\n[ToolData0CuttingEdge0]\nID=420\nRadius=4\nUseableLength=30\n"
+    result = planner.post_too({"text": table})
+    assert result["ok"]
+    assert result["tools"]["routers"] == [{"number": 420, "diameter": 8.0, "usable_length": 30.0, "name": "Router D8"}]
+    # not applied until the settings are posted
+    assert planner.hops_settings.tools.routers != ()
+    assert planner.hops_settings.tools.tool(420) is None
+    assert not planner.post_too({"text": "nonsense"})["ok"]
+
+
+def test_hops_export_uses_the_settings(planner, monkeypatch):
+    from cabi_neat import export
+
+    calls = []
+
+    def hops_zip(cabinet, tools=None, settings=None):
+        calls.append(settings)
+        return b"zip", export.ExportReport()
+
+    monkeypatch.setattr(export, "hops_zip", hops_zip)
+    planner.configurator.stale = False
+    planner.configurator.cabinet = object()
+    planner.post_hops_settings(HopsSettings(tool_for={"groove": 410}).to_data())
+    response = planner.get_hops()
+    assert response.body == b"zip"
+    assert calls[0].tool_for == {"groove": 410}

@@ -15,17 +15,23 @@ and ``Park_V7``, then the machining:
 * Clamex P-14: in faces ``Clamex_MS_FI`` (finger mill), in edges ``Clamex1_Stumpf`` (ends) and ``Clamex1_Stumpf_X``
   (long edges) with the disc, including the access holes.
 
-Which tools there are and which one does what is in :class:`HopsTools`; :meth:`HopsTools.from_too` reads it from the
-machine's tool table.
+Which tools there are is in :class:`HopsTools`; :meth:`HopsTools.from_too` reads it from the machine's tool table.
+:class:`HopsSettings` adds which tool does which operation (instead of the automatic choice), fit tolerances per
+operation and how parts are cut to size (saw or router), and is saved as a file of its own. What each feature is (a
+groove, a mortise, ...) comes from ``feature.machining``, set by the joints that make them, with the joint's own tool and
+tolerances for it, which take precedence.
 
 HOPS coordinates: X along the plate's length, Y along its width, Z = 0 on the face on top and negative into the part.
 A plate with machining on both faces is done in two passes: the other face first, then a stop to turn it over about its
 long edge (X), then the face on top.
 """
 
+import json
 import math
 from dataclasses import dataclass
 from dataclasses import field
+from dataclasses import fields
+from typing import Dict
 from typing import Optional
 from typing import Tuple
 
@@ -80,6 +86,10 @@ def _close(a, b, tol=0.05):
     return abs(a - b) <= tol
 
 
+# HopsTools' lists of tools, and what they hold
+TOOL_LISTS = {"routers": Router, "drills": Drill, "drill_head_bits": Drill, "drill_head_horizontal_bits": Drill}
+
+
 @dataclass
 class HopsTools:
     """The machine's tools and how the HOPS export uses them.
@@ -110,11 +120,6 @@ class HopsTools:
         ``TIEFE`` and ``EINLAUF`` of ``_Sformat_V5``.
     through_overcut
         How much deeper than the plate through pockets and holes go.
-    groove_router, groove_contour_distance
-        The router for grooves (drawer bottoms) and how much wider than the groove it cuts on every side.
-    housing_router, housing_contour_distance, dado_contour_distance
-        The same for the pockets that take tenons: mortises (``housing_contour_distance``) and stopped dados
-        (``dado_contour_distance``). The notches beside the tenons use this router too, so their rounded ends match.
     part_offset
         X and Y offset of the finished part (``Fertigteil``).
     dowel_extra_depth
@@ -133,7 +138,7 @@ class HopsTools:
     clamex_finger: int = 136
     clamex_drill: int = 135
     clamex_hole_diameter: float = 6.0
-    clamex_hole_position: float = 7.7
+    clamex_hole_position: float = 7.5
     clamex_depth: float = 14.2
     clamex_face_depth: float = 14.0
     clamex_access_holes: bool = True
@@ -141,11 +146,6 @@ class HopsTools:
     format_depth: float = -2.0
     format_lead: float = 100.0
     through_overcut: float = 0.5
-    groove_router: int = 410
-    groove_contour_distance: float = 0.25
-    housing_router: int = 404
-    housing_contour_distance: float = 0.1
-    dado_contour_distance: float = 0.05
     part_offset: Tuple[float, float] = (2.0, 2.0)
     dowel_extra_depth: float = 4.0
 
@@ -158,11 +158,15 @@ class HopsTools:
         disc, ``..._Schaft...``: finger mill, ``..._Drill``: drill, and the access holes' diameter). Other settings are
         passed on as ``kwargs``.
         """
-        import configparser
-
         with open(path, "rb") as f:
             raw = f.read()
-        text = raw.decode("utf-16") if raw[:2] in (b"\xff\xfe", b"\xfe\xff") else raw.decode("latin-1")
+        return cls.from_too_text(decode_too(raw), **kwargs)
+
+    @classmethod
+    def from_too_text(cls, text, **kwargs):
+        """Tools from the text of a HOPS tool table, see :meth:`from_too`."""
+        import configparser
+
         table = configparser.ConfigParser(strict=False, interpolation=None)
         table.optionxform = str
         table.read_string(text)
@@ -201,6 +205,37 @@ class HopsTools:
             kwargs.setdefault("saw", saws[0])
         return cls(**kwargs)
 
+    def to_data(self):
+        data = {}
+        for f in fields(self):
+            value = getattr(self, f.name)
+            if f.name in TOOL_LISTS:
+                value = [{"number": t.number, "diameter": t.diameter, "usable_length": t.usable_length, "name": t.name} for t in value]
+            elif isinstance(value, tuple):
+                value = list(value)
+            data[f.name] = value
+        return data
+
+    @classmethod
+    def from_data(cls, data):
+        data = dict(data)
+        unknown = set(data) - {f.name for f in fields(cls)}
+        if unknown:
+            raise ValueError("Unknown tool settings: {}.".format(", ".join(sorted(unknown))))
+        for key, kind in TOOL_LISTS.items():
+            if key in data:
+                data[key] = tuple(kind(int(t["number"]), float(t["diameter"]), float(t["usable_length"]), t.get("name", "")) for t in data[key])
+        if "part_offset" in data:
+            data["part_offset"] = tuple(float(v) for v in data["part_offset"])
+        return cls(**data)
+
+    def tool(self, number):
+        """The router, drill or drill head bit with ``number``, or None."""
+        for tool in self.routers + self.drills + self.drill_head_bits + self.drill_head_horizontal_bits:
+            if tool.number == number:
+                return tool
+        return None
+
     def router_for(self, width, depth, length=None):
         """The largest router at most ``width`` (and ``length``) wide that reaches ``depth``, or None."""
         fitting = [r for r in self.routers if r.diameter <= width + 1e-6 and (length is None or r.diameter <= length + 1e-6) and r.usable_length >= depth]
@@ -230,6 +265,206 @@ class HopsTools:
     def closest_drills(self, diameter):
         """Diameters that could drill instead, for messages."""
         return sorted({d.diameter for d in self.drills}, key=lambda d: abs(d - diameter))[:2]
+
+
+def decode_too(raw):
+    """The text of a tool table file's bytes: UTF-16 with a byte order mark, else Latin-1."""
+    return raw.decode("utf-16") if raw[:2] in (b"\xff\xfe", b"\xfe\xff") else raw.decode("latin-1")
+
+
+# ==========================================================================
+# Settings
+# ==========================================================================
+
+# the kinds of machining whose tool and fit tolerances can be set
+OPERATIONS = ("groove", "rabbet", "mortise", "dado", "pocket", "tenon_notch", "pot", "drill", "shelf_hole", "horizontal_drill")
+# operations done with routers, the others with drills
+ROUTER_OPERATIONS = ("groove", "rabbet", "mortise", "dado", "pocket", "tenon_notch", "pot")
+# for lists and messages, including the Clamex machinings, which the macros do with their own tools
+OPERATION_LABELS = {
+    "groove": "Grooves",
+    "rabbet": "Rabbets",
+    "mortise": "Mortises",
+    "dado": "Stopped dados",
+    "pocket": "Other pockets",
+    "tenon_notch": "Tenon notches",
+    "pot": "Hinge pots",
+    "drill": "Drillings",
+    "shelf_hole": "Shelf holes",
+    "horizontal_drill": "Horizontal drillings",
+    "clamex_face": "Clamex P-14 (face)",
+    "clamex_edge": "Clamex P-14 (edge)",
+}
+# what a joint's machining settings can set, per operation: see check_machining
+MACHINING_KEYS = ("width", "length", "depth", "tool")
+# how parts are cut to size: with the saw (_Sformat_V5) or a router along their outline
+CONTOURS = ("saw", "router")
+
+
+@dataclass
+class Tolerance:
+    """How much bigger than nominal a machining is cut, in mm, e.g. for assembly clearance. Negative is smaller.
+
+    ``width`` is added across a pocket (the mating plate's thickness) or to a pot's or hole's diameter, ``length``
+    along a pocket (its closed ends move by half each; open ends run out anyway) or to a tenon notch, and ``depth`` to
+    the depth.
+    """
+
+    width: float = 0.0
+    length: float = 0.0
+    depth: float = 0.0
+
+    def to_data(self):
+        return {"width": self.width, "length": self.length, "depth": self.depth}
+
+    @classmethod
+    def from_data(cls, data):
+        if isinstance(data, Tolerance):
+            return data
+        unknown = set(data) - {"width", "length", "depth"}
+        if unknown:
+            raise ValueError("Unknown tolerance dimensions: {}.".format(", ".join(sorted(unknown))))
+        return cls(**{k: float(v or 0.0) for k, v in data.items()})
+
+
+# the workshop's tools for grooves (drawer bottoms) and for the pockets that take tenons; the notches beside the tenons
+# follow the mortises' and dados' router, so their rounded ends match
+DEFAULT_TOOLS = {"groove": 410, "mortise": 404, "dado": 404}
+# and how much bigger than the contour they're cut: grooves 0.25 on every side, mortises 0.1, stopped dados 0.05
+DEFAULT_TOLERANCES = {
+    "groove": Tolerance(width=0.5, length=0.5),
+    "mortise": Tolerance(width=0.2, length=0.2),
+    "dado": Tolerance(width=0.1, length=0.1),
+}
+
+
+@dataclass
+class HopsSettings:
+    """Everything the HOPS export can be told: the machine's tools, which tool does what, and fit tolerances.
+
+    These are the defaults for every cabinet; a joint can set its own tool and tolerances for the cuts it makes (its
+    ``machining``, see :func:`check_machining`), which take precedence.
+
+    Parameters
+    ----------
+    tools : :class:`HopsTools`
+        The machine: its tools and general settings (format, overcut, Clamex).
+    tolerances : dict
+        ``{operation: Tolerance}`` (see ``OPERATIONS``); operations not listed are cut at nominal size. Default:
+        ``DEFAULT_TOLERANCES``.
+    tool_for : dict
+        ``{operation: tool number}``: the tool to use for an operation instead of the automatic choice (the largest
+        router or the shortest drill that fits). A tool that doesn't fit is reported and the automatic one used.
+        Default: ``DEFAULT_TOOLS``.
+    contour : str
+        How parts are cut to size (if ``tools.format_parts``): ``"saw"`` (``_Sformat_V5``) or ``"router"``, along the
+        part's outline (``_Format_V5`` for rectangles, a contour otherwise).
+    contour_tool : int, optional
+        The router for ``contour="router"``. ``None``: the largest that reaches through the part.
+    """
+
+    tools: HopsTools = field(default_factory=HopsTools)
+    tolerances: Dict[str, Tolerance] = field(default_factory=lambda: dict(DEFAULT_TOLERANCES))
+    tool_for: Dict[str, Optional[int]] = field(default_factory=lambda: dict(DEFAULT_TOOLS))
+    contour: str = "saw"
+    contour_tool: Optional[int] = None
+
+    def __post_init__(self):
+        if isinstance(self.tools, dict):
+            self.tools = HopsTools.from_data(self.tools)
+        for what, keys in (("tolerances", self.tolerances), ("tool_for", self.tool_for)):
+            unknown = set(keys) - set(OPERATIONS)
+            if unknown:
+                raise ValueError("Unknown operations in {}: {}.".format(what, ", ".join(sorted(unknown))))
+        self.tolerances = {op: Tolerance.from_data(t) for op, t in self.tolerances.items()}
+        self.tool_for = {op: int(n) for op, n in self.tool_for.items() if n is not None}
+        if self.contour not in CONTOURS:
+            raise ValueError("contour must be one of {}, got {!r}.".format(", ".join(CONTOURS), self.contour))
+        if self.contour_tool is not None:
+            self.contour_tool = int(self.contour_tool)
+
+    def tolerance(self, operation, own=None):
+        """The :class:`Tolerance` of an operation, with a joint's own settings ``own`` (``{"width", ...}``) for it."""
+        tolerance = self.tolerances.get(operation) or Tolerance()
+        own = own or {}
+        return Tolerance(*(own[k] if own.get(k) is not None else getattr(tolerance, k) for k in ("width", "length", "depth")))
+
+    def tool(self, operation, own=None):
+        """The tool number chosen for an operation (or by a joint's own settings ``own``), or None for the automatic one."""
+        if own and own.get("tool") is not None:
+            return own["tool"]
+        return self.tool_for.get(operation)
+
+    def to_data(self):
+        return {
+            "tools": self.tools.to_data(),
+            "tolerances": {op: t.to_data() for op, t in self.tolerances.items()},
+            "tool_for": dict(self.tool_for),
+            "contour": self.contour,
+            "contour_tool": self.contour_tool,
+        }
+
+    @classmethod
+    def from_data(cls, data):
+        unknown = set(data) - {f.name for f in fields(cls)}
+        if unknown:
+            raise ValueError("Unknown HOPS settings: {}.".format(", ".join(sorted(unknown))))
+        return cls(**data)
+
+    def to_json(self, filepath=None, indent=2):
+        """Serialize to a JSON string, and write it to ``filepath`` if given."""
+        text = json.dumps(self.to_data(), indent=indent)
+        if filepath:
+            with open(filepath, "w") as f:
+                f.write(text)
+        return text
+
+    @classmethod
+    def from_json(cls, text_or_filepath):
+        """Load from a JSON string or file path."""
+        text = text_or_filepath
+        if not text.lstrip().startswith("{"):
+            with open(text_or_filepath) as f:
+                text = f.read()
+        return cls.from_data(json.loads(text))
+
+
+def check_machining(machining):
+    """Validate a joint's machining settings, ``{operation: {"width", "length", "depth", "tool"}}``: its own tool and
+    fit tolerances for the cuts it makes, instead of :class:`HopsSettings`' for those operations. Returns a copy with
+    numbers, without empty values, or None if nothing is set."""
+    if not machining:
+        return None
+    unknown = set(machining) - set(OPERATIONS)
+    if unknown:
+        raise ValueError("Unknown operations in machining settings: {}.".format(", ".join(sorted(unknown))))
+    checked = {}
+    for operation, values in machining.items():
+        unknown = set(values or {}) - set(MACHINING_KEYS)
+        if unknown:
+            raise ValueError("Unknown machining settings for {}: {}.".format(operation, ", ".join(sorted(unknown))))
+        values = {k: (int(v) if k == "tool" else float(v)) for k, v in (values or {}).items() if v is not None and v != ""}
+        if values:
+            checked[operation] = values
+    return checked or None
+
+
+def merge_machining(*machinings):
+    """Machining settings (see :func:`check_machining`) on top of each other, later ones winning per value."""
+    merged = {}
+    for machining in machinings:
+        for operation, values in (machining or {}).items():
+            merged[operation] = dict(merged.get(operation, {}), **values)
+    return merged or None
+
+
+def as_settings(settings):
+    """``settings`` as :class:`HopsSettings`: ``None`` gives the defaults, a :class:`HopsTools` the defaults with those tools."""
+    if settings is None:
+        return HopsSettings()
+    if isinstance(settings, HopsTools):
+        return HopsSettings(tools=settings)
+    return settings
 
 
 # ==========================================================================
@@ -390,39 +625,41 @@ class PlateProgram:
     Parameters
     ----------
     plate : :class:`compas_timber.elements.Plate`
-    tools : :class:`HopsTools`, optional
+        What each of its features is comes from ``feature.machining`` (``{"kind": ..., "settings": ...}``, set by the
+        joints, with their own tool and tolerances for it): e.g. grooves, mortises and dados, with their own router and
+        tolerances by default, dowel holes, drilled deeper, and the notches beside the tenons of stopped dados and
+        mortise and tenon joints (``"tenon_notch"``), milled from the plate's end.
+    tools : :class:`HopsSettings` | :class:`HopsTools`, optional
+        The tools and how to use them. A :class:`HopsTools` uses them with the default settings.
     access_direction : vector, optional
         Where the Clamex access holes should face (world). The face closest to it goes on top if there are any.
-    tenon_notches : dict, optional
-        The plate's notches beside the tenons of stopped dados and mortise and tenon joints, milled from the end instead
-        of as pockets: ``{id(FreeContour): TenonNotch}``.
     end_face_clamex : set, optional
         ``id`` s of the plate's Clamex face halves to mill with the disc from the plate's end (``Clamex_Einzeln``)
         instead of with the finger mill (``Clamex_MS_FI``): those of a carcass side's joints with the top and
         bottom, and of a drawer front's joints with the drawer sides.
-    dowel_holes : set, optional
-        ``id`` s of the plate's drillings that are dowel holes, drilled ``HopsTools.dowel_extra_depth`` deeper.
-    pocket_kinds : dict, optional
-        ``{id(FreeContour): "groove", "housing" or "dado"}`` for pockets with their own router and distance to the contour
-        (see :class:`HopsTools`): grooves for drawer bottoms, and the mortises and dados that take tenons.
     down : vector, optional
         Parts lie with their long edge along X. Of the two ways, the one that takes this world direction to -Y (else
         -X), e.g. down for drawer parts: their bottom edge, with the bottom's groove, then lies along X at Y = 0.
+
+    Attributes
+    ----------
+    skipped : list(str)
+        What was left out or done differently than asked, for the report.
     """
 
-    def __init__(self, plate, tools=None, access_direction=None, comment="", tenon_notches=None, down=None, pocket_kinds=None, dowel_holes=None, end_face_clamex=None):
+    def __init__(self, plate, tools=None, access_direction=None, comment="", down=None, end_face_clamex=None):
         self.plate = plate
+        self.settings = as_settings(tools)
+        self.tools = self.settings.tools
         self.end_face_clamex = end_face_clamex or set()
-        self.dowel_holes = dowel_holes or set()
-        self.pocket_kinds = pocket_kinds or {}
-        self.tenon_notches = tenon_notches or {}
-        self.tools = tools or HopsTools()
         self.access_direction = access_direction
         self.comment = comment
         self.space = _PlateSpace(plate)
         self.down = down
         self.skipped = []
         self._contours = 0
+        self._entry = None  # the machining being converted: {"operation", "own"}
+        self._outline_points = None  # the outline, if it isn't a rectangle: points in the blank's coordinates
         self._end_holes = []  # (end, diameter, depth, height, y) of holes into the ends, for the drill head
 
     # -- building ---------------------------------------------------------
@@ -430,7 +667,36 @@ class PlateProgram:
     def _skip(self, message):
         self.skipped.append("{}: {}".format(self.plate.name, message))
 
+    def _note(self, message):
+        """Like :meth:`_skip`, for something that was still machined, just not as asked. Said once per part."""
+        message = "{}: {}".format(self.plate.name, message)
+        if message not in self.skipped:
+            self.skipped.append(message)
+
+    def _tolerance(self):
+        """The tolerance of the machining being converted."""
+        entry = self._entry
+        if entry is None:
+            return Tolerance()
+        return self.settings.tolerance(entry["operation"], entry["own"])
+
+    def _choose(self, auto, candidates, fits, what):
+        """The tool for the machining being converted: the one set for it if it ``fits``, else ``auto``."""
+        entry = self._entry
+        number = self.settings.tool(entry["operation"], entry["own"]) if entry else None
+        if number is None:
+            return auto
+        numbered = [t for t in candidates if t.number == number]
+        tool = next((t for t in numbered if fits(t)), None)
+        if tool is not None:
+            return tool
+        tool = numbered[0] if numbered else None
+        reason = "isn't in the tool table" if tool is None else "doesn't fit"
+        self._note("tool {} {} for {} - {}".format(number, reason, what, "used {}".format(auto.number) if auto else "no other tool fits"))
+        return auto
+
     def text(self):
+        self._contours = 0
         space = self.space
         features = list(self.plate.features)
         edge_clamex = [f for f in features if type(f).__name__ == "P14Edge"]
@@ -453,7 +719,7 @@ class PlateProgram:
         for index, feature in enumerate(features):
             name = type(feature).__name__
             if index == 0 and name == "FreeContour" and not feature.counter_sink:
-                self._outline(feature)
+                self._outline_points = self._outline(feature)
                 continue
             for op in self._convert(feature, top):
                 ops[op.face].append(op)
@@ -468,13 +734,13 @@ class PlateProgram:
         if first is not None:
             lines.append(";===== Pass 1: {} face up =====".format("underside" if first == -top else "top"))
             if not formatted:
-                lines += self._format()
+                lines += self._format(first)
                 formatted = True
             lines += self._render(ops[first])
             lines.append(_call("MachineStop_V7", mode=0, parkmode=10, parkposx=0, parkposy=0, typ=0, r6=0, str="'Turn the panel over about its long edge (X)'", r7=0))
             lines.append(";===== Pass 2 =====")
         if not formatted:
-            lines += self._format()
+            lines += self._format(top)
         lines += self._render(ops[top] + ops[0])
         return "\n".join(lines) + "\n"
 
@@ -493,17 +759,73 @@ class PlateProgram:
             lines.extend(op.lines)
         return lines
 
-    def _format(self):
+    def _format(self, face):
+        """Cutting the part to size, with ``face`` on top: with the saw, or with a router along its outline."""
         t = self.tools
-        return [
-            "; Format",
-            _tool("WZS", t.saw),
-            _call("_Sformat_V5", tiefe=_n(t.format_depth), richtung=0, einlauf=_n(t.format_lead), l=1, v=1, r=1, h=1, esmd=1),
-        ]
+        if self.settings.contour == "saw":
+            if self._outline_points:
+                self._skip("non-rectangular outline - the saw cuts its bounding rectangle, cut it to shape separately")
+            return [
+                "; Format",
+                _tool("WZS", t.saw),
+                _call("_Sformat_V5", tiefe=_n(t.format_depth), richtung=0, einlauf=_n(t.format_lead), l=1, v=1, r=1, h=1, esmd=1),
+            ]
+        thickness = self.space.size[2]
+        reach = thickness - min(t.format_depth, 0.0)
+
+        def fits(r):
+            return r.usable_length >= reach - 1e-6
+
+        router = max((r for r in t.routers if fits(r)), key=lambda r: r.diameter, default=None)
+        number = self.settings.contour_tool
+        if number is not None:
+            pinned = next((r for r in t.routers if r.number == number), None)
+            if pinned is not None and fits(pinned):
+                router = pinned
+            else:
+                reason = "isn't in the tool table" if pinned is None else "doesn't reach through the part"
+                self._note("contour tool {} {} - {}".format(number, reason, "used {}".format(router.number) if router else "no router does"))
+        if router is None:
+            self._skip("outline - no router reaches through {}".format(_n(thickness)))
+            return []
+        lines = ["; Format: router along the outline", _tool("WZF", router.number)]
+        if not self._outline_points:
+            lines.append(_call("_Format_V5", eckenverrundung=0, tiefe=_n(t.format_depth), aufmass=0, anf="_ANF", esmd=1, ggl=0, laser=0, depth=0))
+            return lines
+        # any other outline: a contour around it, the tool outside (on the right of an anticlockwise path)
+        points = [self.space.hops_point(p, face)[:2] for p in self._outline_points]
+        area = sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(points, points[1:] + points[:1]))
+        if area < 0:
+            points.reverse()
+        lines.append("SP ({},{},{},2,1,_ANF*2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0.5mm)".format(_n(points[0][0]), _n(points[0][1]), _n(t.format_depth)))
+        lines += ["G01 ({},{},0,0,1,2)".format(_n(x), _n(y)) for x, y in points[1:] + points[:1]]
+        lines.append("EP (1,_ANF*2,0)")
+        return lines
+
+    def _notch(self, feature):
+        """The :class:`TenonNotch` of a notch beside a tenon, or None."""
+        machining = getattr(feature, "machining", None) or {}
+        if machining.get("kind") != "tenon_notch":
+            return None
+        return TenonNotch(machining["depth"], machining["dado_width"], machining["dado_depth"], machining.get("label", TenonNotch.kind), machining.get("mating"))
+
+    def _operation(self, feature):
+        """What a feature is, one of ``OPERATIONS`` (or ``"clamex_face"``), from ``feature.machining``."""
+        kind = (getattr(feature, "machining", None) or {}).get("kind")
+        name = type(feature).__name__
+        if name == "Drilling":
+            if kind == "shelf_hole" or getattr(feature, "shelf_hole", False):
+                return "shelf_hole"
+            return "drill" if self._face_of(feature) else "horizontal_drill"
+        if name == "P14Face":
+            return "clamex_face"
+        if kind in ("rabbet", "groove", "mortise", "dado", "pot", "tenon_notch"):
+            return kind
+        return "pocket"
 
     def _face_of(self, feature):
         name = type(feature).__name__
-        if id(feature) in self.tenon_notches:
+        if self._notch(feature):
             return 0  # milled from the end
         if name in ("FreeContour", "Drilling"):
             return self.space.side_of(self.plate.ref_sides[feature.ref_side_index])
@@ -512,26 +834,39 @@ class PlateProgram:
         return 0
 
     def _outline(self, feature):
+        """The outline's points in the blank's coordinates if it isn't the blank's rectangle, else None."""
         contour = feature.contour_param_object
         points = [self.space.local_point(_ref_point(self.plate.ref_sides[feature.ref_side_index], p[0], p[1])) for p in contour.polyline]
+        if len(points) > 1 and math.dist(points[0], points[-1]) < 1e-6:
+            points = points[:-1]
         length, width, _ = self.space.local_size
         if any(min(abs(p[0]), abs(p[0] - length)) > 0.01 or min(abs(p[1]), abs(p[1] - width)) > 0.01 for p in points):
-            self._skip("non-rectangular outline - not supported yet, cut it to shape separately")
+            return points
+        return None
 
     def _convert(self, feature, top):
         name = type(feature).__name__
-        if id(feature) in self.tenon_notches:
-            return self._tenon_notch(feature, self.tenon_notches[id(feature)], top)
-        if name == "FreeContour" and feature.counter_sink:
-            return self._pocket(feature)
-        if name == "Drilling":
-            return self._drilling(feature, top)
-        if name == "P14Face":
-            return self._clamex_face(feature)
         if name == "P14Edge":
             return []  # all edges' connectors together, below
-        self._skip("{} - not supported".format(name))
-        return []
+        if name not in ("FreeContour", "Drilling", "P14Face"):
+            self._skip("{} - not supported".format(name))
+            return []
+        own = (getattr(feature, "machining", None) or {}).get("settings")
+        self._entry = {"operation": self._operation(feature), "own": own}
+        try:
+            notch = self._notch(feature)
+            if notch:
+                return self._tenon_notch(feature, notch, top)
+            if name == "FreeContour" and feature.counter_sink:
+                return self._pocket(feature)
+            if name == "Drilling":
+                return self._drilling(feature, top)
+            if name == "P14Face":
+                return self._clamex_face(feature)
+            self._skip("{} - not supported".format(name))
+            return []
+        finally:
+            self._entry = None
 
     # -- pockets -------------------------------------------------------------
 
@@ -555,21 +890,28 @@ class PlateProgram:
         depth = contour.depth
         if depth >= thickness - 1e-6:
             depth = thickness + self.tools.through_overcut
+        else:
+            depth += self._tolerance().depth
         circle = _circle(points)
         if circle:
             return self._pot(circle, depth, face)
         rectangle = _rectangle(points)
         if rectangle:
-            return self._rectangle_pocket(rectangle, depth, face, self.pocket_kinds.get(id(feature)))
+            return self._rectangle_pocket(rectangle, depth, face)
         return self._free_pocket(points, depth, face)
 
     def _pot(self, circle, depth, face):
         (cx, cy), radius = circle
         t = self.tools
+        radius += self._tolerance().width / 2.0
         comment = "Pot D{} {} deep".format(_n(2 * radius), _n(depth))
+
         # a router that clears the whole pot on one circle around the center
-        routers = [r for r in t.routers if radius - 1e-6 <= r.diameter <= 2 * radius + 1e-6 and r.usable_length >= depth]
-        router = max(routers, key=lambda r: r.diameter, default=None)
+        def fits(r):
+            return radius - 1e-6 <= r.diameter <= 2 * radius + 1e-6 and r.usable_length >= depth
+
+        router = max((r for r in t.routers if fits(r)), key=lambda r: r.diameter, default=None)
+        router = self._choose(router, t.routers, fits, "pot D{}".format(_n(2 * radius)))
         if router is None:
             self._skip("pot D{} - no router between D{} and D{}".format(_n(2 * radius), _n(radius), _n(2 * radius)))
             return []
@@ -595,7 +937,7 @@ class PlateProgram:
         )
         return [_Op("pot", router.number, [call], comment, face, (cx, cy))]
 
-    def _rectangle_pocket(self, rectangle, depth, face, kind=None):
+    def _rectangle_pocket(self, rectangle, depth, face):
         (cx, cy), (a, b), angle = rectangle
         length, width, _ = self.space.size
         if abs(math.sin(math.radians(angle))) < 1e-6 or abs(math.cos(math.radians(angle))) < 1e-6:
@@ -612,21 +954,20 @@ class PlateProgram:
             x0, x1 = _grow(x0, x1, biggest, open_x)
             y0, y1 = _grow(y0, y1, biggest, open_y)
             cx, cy, a, b, angle = (x0 + x1) / 2, (y0 + y1) / 2, x1 - x0, y1 - y0, 0.0
-        if kind in ("groove", "housing", "dado"):
-            # a groove or a pocket for a tenon: its own router, and wider than the contour on every side
-            t = self.tools
-            number, distance = {
-                "groove": (t.groove_router, t.groove_contour_distance),
-                "housing": (t.housing_router, t.housing_contour_distance),
-                "dado": (t.housing_router, t.dado_contour_distance),
-            }[kind]
-            router = t.router(number, depth)
-            a, b = a + 2 * distance, b + 2 * distance
-            if router is None or router.diameter > min(a, b) + 1e-6:
-                self._skip("{} {} x {}, {} deep - router {} isn't there or doesn't fit".format(kind, _n(a), _n(b), _n(depth), number))
-                return []
+        # fit tolerances: the narrow side wider, the long one longer (for grooves, mortises and dados, by default the
+        # distance to the contour on every side, see DEFAULT_TOLERANCES)
+        tolerance = self._tolerance()
+        if a <= b:
+            a, b = a + tolerance.width, b + tolerance.length
         else:
-            router = self.tools.router_for(min(a, b), depth, max(a, b))
+            a, b = a + tolerance.length, b + tolerance.width
+        router = self.tools.router_for(min(a, b), depth, max(a, b))
+        router = self._choose(
+            router,
+            self.tools.routers,
+            lambda r: r.diameter <= min(a, b) + 1e-6 and r.usable_length >= depth,
+            "pocket {} x {}".format(_n(a), _n(b)),
+        )
         if router is None:
             self._skip("pocket {} x {}, {} deep - no router fits".format(_n(a), _n(b), _n(depth)))
             return []
@@ -660,24 +1001,34 @@ class PlateProgram:
         length, width, thickness = self.space.size
         # the contour usually runs past the part's edges: only what's in the part counts
         x0, x1, y0, y1 = max(x0, 0.0), min(x1, length), max(y0, 0.0), min(y1, width)
+        # the width tolerance moves the rabbet's inner edge further into the part
+        extra = self._tolerance().width
         if all(open_x) and sum(open_y) == 1:  # along X
-            rabbet_width = y1 - y0
             if open_y[0]:  # at the front: travel -X along its rear edge
+                y1 += extra
                 start, move = (length, y1), "-DX,0"
             else:  # at the rear: travel +X along its front edge
+                y0 -= extra
                 start, move = (0.0, y0), "DX,0"
+            rabbet_width = y1 - y0
         elif all(open_y) and sum(open_x) == 1:  # along Y
-            rabbet_width = x1 - x0
             if open_x[0]:  # at the left end: travel +Y along its right edge
+                x1 += extra
                 start, move = (x1, 0.0), "0,DY"
             else:  # at the right end: travel -Y along its left edge
+                x0 -= extra
                 start, move = (x0, width), "0,-DY"
+            rabbet_width = x1 - x0
         else:
             return None
-        routers = [r for r in self.tools.routers if r.diameter >= rabbet_width - 1e-6 and r.usable_length >= depth]
-        router = max(routers, key=lambda r: r.diameter, default=None)
+
+        def fits(r):
+            return r.diameter >= rabbet_width - 1e-6 and r.usable_length >= depth
+
+        router = max((r for r in self.tools.routers if fits(r)), key=lambda r: r.diameter, default=None)
         if router is None:
             return None
+        router = self._choose(router, self.tools.routers, fits, "rabbet {} wide".format(_n(rabbet_width)))
         lines = [
             "SP ({},{},{},1,1,_ANF*2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0.5mm)".format(_n(start[0]), _n(start[1]), _n(thickness - depth)),
             "G01 ({},0,0,10,2)".format(move),
@@ -688,7 +1039,12 @@ class PlateProgram:
 
     def _free_pocket(self, points, depth, face):
         xs, ys = [p[0] for p in points], [p[1] for p in points]
-        router = self.tools.router_for(min(max(xs) - min(xs), max(ys) - min(ys)) / 2.0, depth)
+        tolerance = self._tolerance()
+        if tolerance.width or tolerance.length:
+            self._note("pocket that isn't a rectangle: only its depth tolerance is used")
+        span = min(max(xs) - min(xs), max(ys) - min(ys)) / 2.0
+        router = self.tools.router_for(span, depth)
+        router = self._choose(router, self.tools.routers, lambda r: r.diameter <= span + 1e-6 and r.usable_length >= depth, "pocket")
         if router is None:
             self._skip("pocket, {} deep - no router fits".format(_n(depth)))
             return []
@@ -753,15 +1109,31 @@ class PlateProgram:
         if at_start and at_end:
             self._skip("{} notch along the whole end - milled as a pocket instead".format(notch.kind.lower()))
             return self._pocket(feature)
-        router = self.tools.router(self.tools.housing_router, notch.dado_depth)  # the one that mills the dado or mortise
-        if router is None or router.usable_length < notch.depth:
+        # tolerances: longer beside the tenons (shorter tenons), deeper into the part
+        tolerance = self._tolerance()
+        if not at_start:
+            lo -= tolerance.length / 2.0
+        if not at_end:
+            hi += tolerance.length / 2.0
+        notch_depth = notch.depth + tolerance.depth
+
+        # the corners follow the router that cuts the dado or mortise: the one set for those, else the automatic one
+        def cuts_dado(r):
+            return r.diameter <= notch.dado_width + 1e-6 and r.usable_length >= notch.dado_depth
+
+        router = self.tools.router_for(notch.dado_width, notch.dado_depth)
+        mating = self.tools.tool(self.settings.tool("mortise" if notch.kind.startswith("Mortise") else "dado", notch.mating))
+        if mating is not None and mating in self.tools.routers and cuts_dado(mating):
+            router = mating
+        router = self._choose(router, self.tools.routers, lambda r: cuts_dado(r) and r.usable_length >= notch_depth, "{} notch".format(notch.kind.lower()))
+        if router is None or router.usable_length < notch_depth:
             self._skip("{} notch - no router for it".format(notch.kind.lower()))
             return []
         if not (at_start or at_end) and hi - lo < router.diameter - 1e-6:
             self._skip("{} notch {} wide between tenons - narrower than the router (D{})".format(notch.kind.lower(), _n(hi - lo), _n(router.diameter)))
             return []
         radius = min(router.diameter / 2.0, thickness / 2.0)
-        r, depth = _n(radius), _n(-notch.depth)
+        r, depth = _n(radius), _n(-notch_depth)
         # one contour per tenon end beside the notch, each in two halves that start at a face and turn away from the
         # tenon at its middle, as in the workshop's programs, so both faces' edges are cut cleanly:
         # (X of the tenon end, X of its rounded corners on the faces, which way the tenon is, where to run out to,
@@ -807,7 +1179,7 @@ class PlateProgram:
                 start = _n(hi - radius) if side > 0 else _n(lo + radius)
                 lines += ["SP ({},DZ/2,{},0,2,_ANF*2,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0.5mm)".format(start, depth), "G01 ({},DZ/2,0,0,1,2)".format(exit_x), "EP (2,_ANF*2,0)"]
         lines.append("Ebene0()")
-        comment = "{}: {} x {} notch milled from the end, corners R{}".format(notch.kind, _n(hi - lo), _n(notch.depth), r)
+        comment = "{}: {} x {} notch milled from the end, corners R{}".format(notch.kind, _n(hi - lo), _n(notch_depth), r)
         return [_Op("side_contour", router.number, lines, comment, 0, (plane, lo))]
 
     # -- drillings -----------------------------------------------------------
@@ -824,10 +1196,26 @@ class PlateProgram:
         local_direction = self.space.local_vector(direction_world)
         through = not drilling.depth_limited
         depth = drilling.depth if drilling.depth_limited else 0.0
-        if drilling.depth_limited and id(drilling) in self.dowel_holes:
+        if drilling.depth_limited and (getattr(drilling, "machining", None) or {}).get("kind") == "dowel":
             depth += self.tools.dowel_extra_depth  # room for the drill's centre point
         diameter = drilling.diameter
         face = self.space.side_of(ref_side)
+        shelf_hole = self._entry is not None and self._entry["operation"] == "shelf_hole"
+        # tolerances: deeper, and a bigger diameter if there's a drill for it
+        tolerance = self._tolerance()
+        if not through:
+            depth += tolerance.depth
+        if tolerance.width:
+            wider = diameter + tolerance.width
+            if self.tools.drill_for(wider, depth) or (shelf_hole and self.tools.head_drill_for(wider, depth)):
+                diameter = wider
+            else:
+                self._note("no drill D{} for a D{} hole with its tolerance - drilled D{}".format(_n(wider), _n(diameter), _n(diameter)))
+        candidates = self.tools.drills + (self.tools.drill_head_bits if shelf_hole else ())
+
+        def choose(auto, depth):
+            drill = self._choose(auto, candidates, lambda d: _close(d.diameter, diameter) and d.usable_length >= depth, "a D{} hole".format(_n(diameter)))
+            return drill
 
         if face:  # into a face, straight down with that face on top
             if abs(abs(local_direction[2]) - 1) > 1e-3:
@@ -837,7 +1225,7 @@ class PlateProgram:
                 depth = thickness + self.tools.through_overcut
             x, y, _ = self.space.hops_point(local_entry, face)
             # shelf holes (see cabi_neat.builder) with the drill head if possible, everything else with a spindle drill
-            drill = self.tools.head_drill_for(diameter, depth) if getattr(drilling, "shelf_hole", False) else self.tools.drill_for(diameter, depth)
+            drill = choose(self.tools.head_drill_for(diameter, depth) if shelf_hole else self.tools.drill_for(diameter, depth), depth)
             comment = "Drilling D{}, {} deep".format(_n(diameter), _n(depth))
             if drill is not None and drill.number == self.tools.drill_head:
                 comment += " (drill head)"
@@ -861,7 +1249,7 @@ class PlateProgram:
             # into an end: with the drill head, several at once (see _head_end_holes)
             self._end_holes.append((end, diameter, depth, z + thickness, y))
             return []
-        drill = self.tools.drill_for(diameter, depth)
+        drill = choose(self.tools.drill_for(diameter, depth), depth)
         if drill is None:
             self._skip("horizontal drilling D{} {} deep - no drill for it".format(_n(diameter), _n(depth)))
             return []
@@ -948,7 +1336,8 @@ class PlateProgram:
         for feature in self.plate.features:
             if type(feature).__name__ != "P14Edge":
                 continue
-            x, y, z = self.space.hops_point(self.space.local_point(feature.groove_frame(self.plate).point), top)
+            point = feature.groove_frame(self.plate).point
+            x, y, z = self.space.hops_point(self.space.local_point(point), top)
             if abs(x) < 1e-3:
                 edges.setdefault("left", []).append((y, -z))
             elif abs(x - length) < 1e-3:
@@ -1012,6 +1401,7 @@ class TenonNotch:
     dado_width: float  # the dado's or mortise's width: the tenon plate's thickness
     dado_depth: float
     kind: str = "Stopped dado tenon"  # for comments and messages
+    mating: Optional[dict] = None  # the joint's own settings for its dado or mortise (its tool sets the corners')
 
 
 def _slot_groups(connectors, span):
