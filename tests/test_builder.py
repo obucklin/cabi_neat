@@ -311,7 +311,7 @@ def test_door_hangs_on_divider():
 def test_hinge_dimensions_from_config():
     cabinet = Cabinet(CabinetConfig(hinges={"door_hole_spacing": 52, "end_distance": 80}))
     joint = next(j for j in cabinet.model.joints if isinstance(j, CupHingeJoint))
-    assert (joint.door_hole_spacing, joint.end_distance, joint.hinge_count, joint.door_hole_diameter) == (52, 80, 4, 3.0)
+    assert (joint.door_hole_spacing, joint.end_distance, joint.hinge_count, joint.door_hole_diameter) == (52, 80, 4, 3.5)
     with pytest.raises(ValueError, match="Unknown hinge dimensions"):
         CabinetConfig(hinges={"screw": 3})
 

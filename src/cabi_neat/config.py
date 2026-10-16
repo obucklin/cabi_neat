@@ -132,7 +132,7 @@ HINGE_DEFAULTS = {
     "cup_edge_distance": 5.0,
     "door_hole_spacing": 48.0,
     "door_hole_offset": 6.0,
-    "door_hole_diameter": 3.0,
+    "door_hole_diameter": 3.5,
     "door_hole_depth": 11.0,
     "plate_offset": 37.0,
     "plate_hole_spacing": 32.0,

@@ -115,7 +115,7 @@ Drawer boxes are joined like this:
 
 Doors hang on European concealed cup hinges ("Topfband") using `cabi_neat.joints.CupHingeJoint`, a joint between the door and the side or divider on its hinge side. Each hinge makes these cuts:
 
-- **Door:** a Ø35 × 13 pot (`FreeContour`) whose edge is 5 mm from the door edge (the pot offset). Also two Ø3 × 11 screw holes (`Drilling`), 48 apart and 6 further from the edge than the pot centre.
+- **Door:** a Ø35 × 13 pot (`FreeContour`) whose edge is 5 mm from the door edge (the pot offset). Also two Ø3.5 × 11 screw holes (`Drilling`), 48 apart and 6 further from the edge than the pot centre.
 - **Side:** the mounting plate's two Ø5 × 12 screw holes (`Drilling`), 32 apart, on the face towards the door. They're 37 from the door's back face, so for inset doors they move back by the door's thickness.
 
 Each door gets 4 hinges, 100 from its ends; set `hinge_count` to `None` to pick the count from the door height. The hinge type follows `door_mount`.
@@ -196,17 +196,18 @@ The planner's **Fabricate** menu has **Write cut list** (CSV), **Write BTLx**, *
 
 - **BTLx** is written by compas_timber's `BTLxWriter` from the cabinet's `TimberModel`. The model is in millimetres (`Tolerance(unit="MM")`). Features that aren't BTLx processings, the Clamex P-14 grooves, are left out while writing and stay on the plates.
 - **HOPS** programs are written like the workshop's own (`Hops/Hop/OB/flur`) and use its macros (`cabi_neat.hops`), one per plate:
-  - The part is cut to size first: with the saw (201, `_Sformat_V5`), or with a router (`contour="router"`), `_Format_V5` for rectangular parts and a contour around any other outline. A non-rectangular outline with the saw is reported.
+  - The finished part (`Fertigteil`) has an offset of 2 in X and Y (`HopsTools.part_offset`). The part is cut to size first: with the saw (201, `_Sformat_V5`), or with a router (`contour="router"`), `_Format_V5` for rectangular parts and a contour around any other outline. A non-rectangular outline with the saw is reported.
   - Rabbets are a single line along their inner edge (`SP`/`G01`/`EP`, radius correction 1), as in `sides_schrank`.
-  - Grooves for drawer bottoms in the drawer sides and back are lines along their walls with a linear approach (`SP` 1) and no lead-out (`EP` 0), with the largest router that fits the width. Closed ends stop a tool radius short, open ones run a tool diameter past the edge. In a one-piece drawer front the groove is a rectangular pocket, like the other pockets. 
-  - Other pockets (mortises, tenon gaps, housings) use `_RechteckTasche_V5` with the largest router that fits, its radius as the corner radius, and no lead-out. Pockets open to an edge are widened past it for a bigger router. Other shapes use a contour and `_ExecutePocket_V5`.
-  - The notches beside tenons, a stopped dado's and a mortise and tenon's, are milled from the plate's end, in its plane (`Ebene1`-`Ebene4`). A contour runs up each tenon end with arcs of the dado or mortise router's radius, so the tenon fits the rounded end the router leaves. It's run with decreasing allowances, the last 0, to clear the notch: out to the edge at a corner of the plate, and from both tenons to the middle between two of them.
+  - Grooves for drawer bottoms are rectangular pockets too (`_RechteckTasche_V5`), by default with router 410 and 0.25 wider than the groove on every side. Through the drawer sides and back they run past both ends.
+  - Mortises and stopped dados use router 404 by default, mortises 0.1 wider on every side, stopped dados 0.05. These routers and distances are the defaults of the [HOPS settings](#hops-settings) (`DEFAULT_TOOLS`, `DEFAULT_TOLERANCES`), as tools and fit tolerances that can be changed for every joint or for one.
+  - Other pockets use `_RechteckTasche_V5` with the largest router that fits, its radius as the corner radius, and no lead-out. Pockets open to an edge are widened past it for a bigger router. Other shapes use a contour and `_ExecutePocket_V5`.
+  - The notches beside tenons, a stopped dado's and a mortise and tenon's, are milled from the plate's end, in its plane (`Ebene1`-`Ebene4`), with the dado/mortise router (404, R5.75), so the tenon fits the rounded end the router leaves. Each tenon end is milled in two halves, each starting at a face for clean edges, as in `clean_Tenon.hop`: from the underside round the corner (`G02R`/`G03R`) up to the middle, then away (`G03M`/`G02M`) and out of the notch; the same from the top face (`ESXY` 7). Each runs with a roughing allowance (half the tool) and then without; the last from the top runs down the whole tenon end. The run-outs clear the notch: past the plate's edge at a corner, to a tool radius before the other tenon between two.
   - Hinge pots use `_Kreisbahn_V5` with the Ø20 router (403).
-  - Drillings into faces use `Bohrung`, drillings into edges `HorzB`, with a spindle drill (`WZB`) of the hole's diameter: the shortest one that's deep enough. The defaults include a Ø8 (603) and a Ø3 (602, placeholder number) to be loaded.
-  - Shelf holes use the drill head instead (`WZB (501,…)`, the ID the workshop's macros use for the standard drill head) if it has a bit of their diameter that's long enough, else a spindle drill. `HopsTools.drill_head_bits` lists its bits; the default, a single Ø5 × 30, is an assumption to check against the machine. `HopsTools.from_too` reads them from the tool table's `Bohrkopf` group.
-  - Clamex P-14 in faces uses `Clamex_MS_FI` with the finger mill (136). In edges it uses `Clamex1_Stumpf` (ends) and `Clamex1_Stumpf_X` (long edges) with the disc (108), plus the access holes (drill 135).
+  - Drillings into faces use `Bohrung`, drillings into edges `HorzB`, with a spindle drill (`WZB`) of the hole's diameter: the shortest one that's deep enough. The default drills are 6035 (Ø3.5), 605 (Ø5) and 608 (Ø8). All dowel holes use 608, 4 mm deeper than in the model for the drill's centre point (`HopsTools.dowel_extra_depth`).
+  - The drill head isn't used at the moment: it's not working, so `HopsTools.drill_head_bits` and `drill_head_horizontal_bits` default to none. With bits (e.g. `ETH_DRILL_HEAD_BITS`, `ETH_DRILL_HEAD_HORIZONTAL_BITS`, or `HopsTools.from_too` reading the tool table's `Bohrkopf` group), shelf holes use it (`WZB (501,…,'51')`), and holes into a part's ends too, with `_BoGr_Hy_V5`, up to four holes per call.
+  - Clamex P-14 in faces: the carcass sides' halves of their joints with the top and bottom, and the drawer fronts' halves of their joints with the drawer sides, use `Clamex_Einzeln` with the disc (108) from the nearer end (`RICHTUNG` 8 or 4), one call per connector, as in `CLAMEX_EDGE_side_left.hop`. Other face halves use `Clamex_MS_FI` with the finger mill (136). In edges it uses `Clamex1_Stumpf` (ends) and `Clamex1_Stumpf_X` (long edges) with the disc (108), plus the access holes (drill 135).
   - With machining on both faces, the other face comes first, then `MachineStop_V7` to turn the panel over about its long edge. A plate with Clamex access holes has their face on top: the underside of shelves and of the top, and the inside of everything else.
-  - The tools default to the ETH machine's tool table (092026tools), plus a Ø8 (603) and a Ø3 (602, placeholder number) drill to be loaded. `HopsTools.from_too(path)` reads another table, including the Clamex tools.
+  - The tools default to the ETH machine's tool table (092026tools), with the drills 6035, 605 and 608. `HopsTools.from_too(path)` reads another table, including the Clamex tools.
   - Identical parts (shelves, drawer bottoms, …) share one program, named after the first with `_CUT_<n>` appended, e.g. `shelf_0_2_CUT_4.hop` is cut four times. `report.txt` lists the parts each one is for.
   - Every part lies on the table with its long edge along X. Of the two ways, drawer parts (sides, back, front) take the one with their bottom edge, and the groove, at Y = 0.
   - Files are written with Windows line endings.
@@ -224,12 +225,11 @@ The HOPS export takes settings, `cabi_neat.hops.HopsSettings`, saved as their ow
 
 - `tools`: the machine (`HopsTools`). That's its routers, drills and drill head bits, the saw and Clamex tools, the format, the through overcut and the Clamex access holes.
 - `contour`: how parts are cut to size, `"saw"` (the default) or `"router"`, and `contour_tool`, the router to use. By default it's the largest router that reaches through the part.
-- `tool_for`: the tool for an operation, e.g. `{"mortise": 405}`, instead of the automatic choice (the largest router or the shortest drill that fits). A tool that doesn't fit, or isn't in the table, is reported, and the automatic one is used.
-- `tolerances`: fit tolerances per operation in mm, added to the nominal size, e.g. `{"groove": {"width": 0.3, "depth": 0.5}}`. Negative values cut smaller.
+- `tool_for`: the tool for an operation, e.g. `{"mortise": 405}`, instead of the automatic choice (the largest router or the shortest drill that fits). A tool that doesn't fit, or isn't in the table, is reported, and the automatic one is used. Default: the workshop's, 410 for grooves and 404 for mortises and dados (`DEFAULT_TOOLS`).
+- `tolerances`: fit tolerances per operation in mm, added to the nominal size, e.g. `{"groove": {"width": 0.3, "depth": 0.5}}`. Negative values cut smaller. Default: grooves 0.5 wider and longer, mortises 0.2 and stopped dados 0.1 (`DEFAULT_TOLERANCES`).
   - `width` widens a pocket across, symmetrically (a rabbet only into the part), or enlarges a pot's or hole's diameter. A hole only gets bigger if there's a drill of the larger diameter.
   - `length` lengthens a pocket at its closed ends, half at each, or makes a tenon notch longer, so the tenons get shorter.
   - `depth` deepens it.
-- `groove_overrun`: how far grooves run past the part's edge at open ends. The default is one tool diameter.
 
 The operations are `groove`, `rabbet`, `mortise`, `dado`, `pocket`, `tenon_notch`, `pot`, `drill`, `shelf_hole` and `horizontal_drill`. The tolerances only change the HOPS programs: the model, BTLx, DXF and cut list stay nominal.
 

@@ -148,13 +148,25 @@ def hops(cabinet, directory=None, tools=None, settings=None):
     settings = as_settings(settings or tools)
     report = ExportReport()
     directions = _access_directions(cabinet)
+    # Clamex face halves milled with the disc from the plate's end: the carcass sides' halves of their joints with the
+    # top and bottom, and the drawer fronts' halves of their joints with the drawer sides (what the other cuts are
+    # comes with the features, see cabi_neat.joints)
+    end_face_clamex = {}
+    category = {cabinet.plates[part.name]: part.category for part in cabinet.layout.parts}
+    for joint in cabinet.model.joints:
+        if type(joint).__name__ != "ClamexP14Joint":
+            continue
+        cross, main = category.get(joint.cross_plate), category.get(joint.main_plate)
+        if (cross == "side" and main in ("top", "bottom")) or (cross == "drawer_front" and main == "drawer_side"):
+            faces = (id(f) for f in joint.features if type(f).__name__ == "P14Face" and f in joint.cross_plate.features)
+            end_face_clamex.setdefault(joint.cross_plate, set()).update(faces)
     # drawer parts lie with their bottom edge (and the bottom's groove) along X at Y = 0
     drawer_parts = DRAWER_BOX + ("drawer_front",)
     grouped = {}  # the machining (the text without the part's name) -> [(part name, text)]
     for part in cabinet.layout.parts:
         plate = cabinet.plates[part.name]
         down = (0, 0, -1) if part.category in drawer_parts else None
-        program = PlateProgram(plate, settings, directions.get(part.name), part.category, down=down)
+        program = PlateProgram(plate, settings, directions.get(part.name), part.category, down=down, end_face_clamex=end_face_clamex.get(plate))
         try:
             text = program.text()
         except Exception as e:  # keep going: one part's problem shouldn't stop the others

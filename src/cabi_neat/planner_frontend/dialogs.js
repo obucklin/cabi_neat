@@ -306,8 +306,7 @@ export async function hopsDialog({ write, setMessage, pickSaveTarget, writeSaveT
         <td>${toolSelect(settings, operation, settings.tool_for[operation], `data-default-op="${operation}" data-key="tool"`, "Auto")}</td>${cells.join("")}</tr>`;
     });
     return `<div class="hint">For every joint that doesn't set its own (⚙ next to the joint).</div>
-      <table class="machining"><thead><tr><th></th><th>Tool</th><th colspan="3">Fit tolerances (mm)</th></tr></thead><tbody>${rows.join("")}</tbody></table>
-      <label class="row" title="How far grooves run past the part's edge at open ends. Empty: one tool diameter">Groove overrun ${numberInput('data-setting="groove_overrun"', settings.groove_overrun, "tool Ø")}</label>`;
+      <table class="machining"><thead><tr><th></th><th>Tool</th><th colspan="3">Fit tolerances (mm)</th></tr></thead><tbody>${rows.join("")}</tbody></table>`;
   }
 
   function machinePart() {
