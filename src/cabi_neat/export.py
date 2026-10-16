@@ -124,13 +124,15 @@ def _assembly(name):
     return "_".join(name.split("_")[:3]) if name.startswith("drawer_") else "carcass"
 
 
-def hops(cabinet, directory=None, tools=None):
+def hops(cabinet, directory=None, tools=None, settings=None):
     """One HOPS program per plate of the cabinet, written to ``directory`` as ``<part name>.hop`` if given.
 
     Identical parts (e.g. shelves, drawer bottoms) share one program, named after the first of them with ``_CUT_<n>``
     appended: ``shelf_0_1_CUT_3.hop`` is cut three times. ``report.copies`` lists which parts each one is for.
 
-    See :mod:`cabi_neat.hops` for what they contain and :class:`cabi_neat.hops.HopsTools` for the tools.
+    See :mod:`cabi_neat.hops` for what they contain, :class:`cabi_neat.hops.HopsSettings` for the settings (tools, fit
+    tolerances, contours) and :class:`cabi_neat.hops.HopsTools` for the tools. ``tools`` is a shorthand for settings
+    with only those tools. Joints' own tools and tolerances (their ``machining``) come with their features.
 
     Returns
     -------
@@ -139,46 +141,29 @@ def hops(cabinet, directory=None, tools=None):
     """
     import os
 
-    from .hops import HopsTools
     from .hops import PlateProgram
-    from .hops import TenonNotch
+    from .hops import as_settings
     from .layout import DRAWER_BOX
 
-    tools = tools or HopsTools()
+    settings = as_settings(settings or tools)
     report = ExportReport()
-    programs = {}  # the machining (the text without the part's name) -> [(part name, text)]
     directions = _access_directions(cabinet)
-    # the notches beside the tenons of stopped dados and mortises and tenons, to be milled from the end:
-    # {plate: {id(feature): notch}}
-    notches = {}
-    grooves = {}  # the pockets of grooves (drawer bottoms), milled as lines: {plate: {id(feature)}}
-    # except in visible drawer fronts: a rectangular pocket there
-    pocket_grooves = {cabinet.plates[part.name] for part in cabinet.layout.parts if part.category == "drawer_front"}
-    for joint in cabinet.model.joints:
-        if type(joint).__name__ == "PlateGrooveJoint" and joint.cross_plate not in pocket_grooves:
-            grooves.setdefault(joint.cross_plate, set()).update(id(f) for f in joint.features if f in joint.cross_plate.features)
-        kind = {"PlateStoppedDadoJoint": "Stopped dado tenon", "PlateMortiseTenon": "Mortise tenon"}.get(type(joint).__name__)
-        if kind is None:
-            continue
-        notch = TenonNotch(joint.pocket_depth, joint.main_plate.thickness, joint.pocket_depth, kind)
-        for feature in joint.features:
-            if feature in joint.main_plate.features:
-                notches.setdefault(joint.main_plate, {})[id(feature)] = notch
     # drawer parts lie with their bottom edge (and the bottom's groove) along X at Y = 0
     drawer_parts = DRAWER_BOX + ("drawer_front",)
+    grouped = {}  # the machining (the text without the part's name) -> [(part name, text)]
     for part in cabinet.layout.parts:
         plate = cabinet.plates[part.name]
         down = (0, 0, -1) if part.category in drawer_parts else None
-        program = PlateProgram(plate, tools, directions.get(part.name), part.category, tenon_notches=notches.get(plate), grooves=grooves.get(plate), down=down)
+        program = PlateProgram(plate, settings, directions.get(part.name), part.category, down=down)
         try:
             text = program.text()
         except Exception as e:  # keep going: one part's problem shouldn't stop the others
             report.errors.append("{}: {}".format(part.name, e))
             continue
         report.skipped.extend(program.skipped)
-        programs.setdefault(_without_name(text), []).append((part.name, text))
+        grouped.setdefault(_without_name(text), []).append((part.name, text))
     files: Dict[str, str] = {}
-    for parts in programs.values():
+    for parts in grouped.values():
         name, text = parts[0]
         if len(parts) > 1:
             name = "{}_CUT_{}".format(name, len(parts))
@@ -218,14 +203,19 @@ def hops_bytes(text):
     return text.replace("\n", "\r\n").encode("latin-1", "replace")
 
 
-def hops_zip(cabinet, tools=None):
-    """All HOPS jobs of the cabinet in a zip, plus a report.txt of what was left out. Returns ``(bytes, report)``."""
-    files, report = hops(cabinet, tools=tools)
+def hops_zip(cabinet, tools=None, settings=None):
+    """All HOPS jobs of the cabinet in a zip, plus a report.txt of what was left out and the settings they were made
+    with (hops_settings.json). Returns ``(bytes, report)``."""
+    from .hops import as_settings
+
+    settings = as_settings(settings or tools)
+    files, report = hops(cabinet, settings=settings)
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
         for name, text in files.items():
             archive.writestr(name, hops_bytes(text))
         archive.writestr("report.txt", report.summary())
+        archive.writestr("hops_settings.json", settings.to_json())
     return buffer.getvalue(), report
 
 
@@ -288,6 +278,7 @@ def main():
     parser.add_argument("--btlx", help="BTLx file to write.")
     parser.add_argument("--hops", help="Directory to write one .hop file per part into.")
     parser.add_argument("--dxf", help="DXF file to write the part outlines to, for nesting.")
+    parser.add_argument("--hops-settings", help="HOPS settings (JSON): tools, which tool does what, fit tolerances, contours.")
     args = parser.parse_args()
     if not (args.btlx or args.hops or args.dxf):
         parser.error("give --btlx, --hops and/or --dxf")
@@ -298,7 +289,10 @@ def main():
         _, report = btlx(cabinet, args.btlx)
         print("BTLx written to {}. {}".format(args.btlx, report.summary()))
     if args.hops:
-        files, report = hops(cabinet, args.hops)
+        from .hops import HopsSettings
+
+        settings = HopsSettings.from_json(args.hops_settings) if args.hops_settings else None
+        files, report = hops(cabinet, args.hops, settings=settings)
         print("{} HOPS files written to {}. {}".format(len(files), args.hops, report.summary()))
     if args.dxf:
         _, report = dxf(cabinet, args.dxf)

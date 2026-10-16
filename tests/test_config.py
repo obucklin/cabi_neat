@@ -81,3 +81,28 @@ def test_interior_joint_validated():
 def test_drawer_panels_follow_carcass_thickness():
     assert CabinetConfig(thickness=19).drawer_panel_thickness == 19
     assert CabinetConfig(thickness=19, drawer_side_thickness=15).drawer_panel_thickness == 15
+
+
+def test_machining():
+    config = CabinetConfig(machining={"drawers": {"groove": {"width": "0.5", "tool": 410.0}}, "back": {"rabbet": {}}})
+    # validated and tidied: numbers, without empty values or entries
+    assert config.machining == {"drawers": {"groove": {"width": 0.5, "tool": 410}}}
+    assert CabinetConfig.from_json(config.to_json()).machining == config.machining
+    assert CabinetConfig(machining={}).machining is None
+    with pytest.raises(ValueError):
+        CabinetConfig(machining={"roof": {}})
+    with pytest.raises(ValueError):
+        CabinetConfig(machining={"drawers": {"groove": {"colour": 1}}})
+
+
+def test_joints_own_machining_over_the_cabinets():
+    from cabi_neat.config import Cell
+
+    config = CabinetConfig(machining={"drawers": {"groove": {"width": 0.5}}, "hinges": {"pot": {"depth": 1}}})
+    drawer = Cell("drawer", drawer={"machining": {"groove": {"depth": 1}, "rabbet": {"tool": 405}}})
+    assert config.drawer_options(drawer)["machining"] == {"groove": {"width": 0.5, "depth": 1.0}, "rabbet": {"tool": 405}}
+    door = Cell(hinges={"cup_depth": 12, "machining": {"pot": {"width": 1}}})
+    options = config.hinge_options(door)
+    assert options["cup_depth"] == 12 and options["machining"] == {"pot": {"depth": 1.0, "width": 1.0}}
+    with pytest.raises(ValueError):
+        Cell(hinges={"machining": {"pot": {"colour": 1}}})

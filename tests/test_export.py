@@ -10,8 +10,11 @@ from cabi_neat import Cabinet  # noqa: E402
 from cabi_neat import CabinetConfig  # noqa: E402
 from cabi_neat import export  # noqa: E402
 from cabi_neat.hops import Drill  # noqa: E402
+from cabi_neat.hops import HopsSettings  # noqa: E402
 from cabi_neat.hops import HopsTools  # noqa: E402
 from cabi_neat.hops import Router  # noqa: E402
+from cabi_neat.hops import Tolerance  # noqa: E402
+from cabi_neat.hops import check_machining  # noqa: E402
 
 pytestmark = pytest.mark.requires_occ
 
@@ -80,7 +83,7 @@ def test_hops_clamex(cabinet):
     top = files["top.hop"]
     assert top.count("CALL Clamex1_Stumpf (") == 2
     assert "CLAMEX_ID_H:=108" in top and "CLAMEX_B_ID:=135" in top and "ART:=0" in top
-    assert top.count("B_POS:=5.5,B_DM:=6,") == 2
+    assert top.count("B_POS:=7.5,B_DM:=6,") == 2
     left = next(line for line in top.splitlines() if "C1:=-1" in line)
     assert "EY1:=60" in left and "EY3:=60" in left and "C2:=-1" in left and "C4:=0" in left
     # the face halves with the finger mill, along the joint
@@ -387,3 +390,175 @@ def test_hops_shelf_holes_use_the_drill_head():
     assert side.count(",5,-8,10,") == drilled
     # the hinge plates' holes still use the spindle drill
     assert "WZB (609," in side and side.count(",5,-12,10,") == 8
+
+
+# ==========================================================================
+# HOPS settings: tools per operation, fit tolerances, joints' own, contours
+# ==========================================================================
+
+
+def test_features_say_what_they_are(cabinet):
+    kinds = {(getattr(f, "machining", None) or {}).get("kind") for p in cabinet.plates.values() for f in p.features}
+    assert {"rabbet", "groove", "mortise", "tenon_notch", "pot", "hinge_drill", "dowel"} <= kinds
+    # every drilling is something
+    assert all(getattr(f, "machining", None) for p in cabinet.plates.values() for f in p.features if type(f).__name__ == "Drilling")
+
+
+def test_hops_settings_round_trip(tmp_path):
+    settings = HopsSettings(
+        tools=HopsTools(through_overcut=1.0),
+        tolerances={"groove": Tolerance(width=0.4, depth=0.5)},
+        tool_for={"mortise": 405},
+        groove_overrun=10.0,
+        contour="router",
+        contour_tool=403,
+    )
+    path = tmp_path / "shop.json"
+    settings.to_json(str(path))
+    loaded = HopsSettings.from_json(str(path))
+    assert loaded.to_data() == settings.to_data()
+    assert loaded.tools == settings.tools
+    with pytest.raises(ValueError):
+        HopsSettings.from_data({"tolerances": {"nonsense": {}}})
+    with pytest.raises(ValueError):
+        HopsSettings.from_data({"tools": {"lasers": []}})
+    with pytest.raises(ValueError):
+        HopsSettings(contour="laser")
+
+
+def test_hops_settings_with_a_joints_own():
+    settings = HopsSettings(tolerances={"groove": Tolerance(width=0.4, depth=0.5)}, tool_for={"groove": 410})
+    own = {"depth": 1.0, "tool": 405}
+    assert settings.tolerance("groove", own) == Tolerance(width=0.4, depth=1.0)
+    assert settings.tolerance("groove") == Tolerance(width=0.4, depth=0.5)
+    assert settings.tool("groove", own) == 405 and settings.tool("groove") == 410
+    assert settings.tolerance("rabbet") == Tolerance()
+
+
+def test_check_machining():
+    assert check_machining({"groove": {"width": "0.5", "tool": 410.0, "depth": None}, "rabbet": {}}) == {"groove": {"width": 0.5, "tool": 410}}
+    assert check_machining({}) is None and check_machining({"rabbet": {}}) is None
+    with pytest.raises(ValueError):
+        check_machining({"laser": {}})
+    with pytest.raises(ValueError):
+        check_machining({"groove": {"colour": 1}})
+
+
+def test_hops_groove_tolerances(cabinet):
+    base = export.hops(cabinet)[0]["drawer_0_0_side_l.hop"]
+    settings = HopsSettings(tolerances={"groove": Tolerance(width=0.4, depth=0.5)})
+    text = export.hops(cabinet, settings=settings)[0]["drawer_0_0_side_l.hop"]
+    # the walls move out by 0.2 each, the floor down by 0.5 (SP's Z is the floor above the underside)
+    assert "SP (-6,10,9,1," in base and "SP (DX+6,18,9,1," in base
+    assert "SP (-6,9.8,8.5,1," in text and "SP (DX+6,18.2,8.5,1," in text
+    assert "; Groove 8.4 wide, 9.5 deep" in text
+
+    # nothing else changes
+    def rest(t):
+        return [line for line in t.splitlines() if not line.startswith(("SP (", "G01 (", "; Groove"))]
+
+    assert rest(base) == rest(text)
+
+
+def test_hops_mortise_length_tolerance(cabinet):
+    base = export.hops(cabinet)[0]["side_left.hop"]
+    text = export.hops(cabinet, settings=HopsSettings(tolerances={"mortise": Tolerance(length=1.0)}))[0]["side_left.hop"]
+    assert "TASCHENLAENGE:=18,TASCHENBREITE:=98.4" in base
+    assert "TASCHENLAENGE:=18,TASCHENBREITE:=99.4" in text and "TASCHENBREITE:=98.4" not in text
+
+
+def _mortise_tool(text):
+    return text[text.index("; Pocket 18") :].splitlines()[1]
+
+
+def test_hops_tool_for_an_operation(cabinet):
+    # mortises 18 wide: the largest router that fits is 402 (D13.4); asked for 405 (D12), they get it
+    base = export.hops(cabinet)[0]["side_left.hop"]
+    files, report = export.hops(cabinet, settings=HopsSettings(tool_for={"mortise": 405}))
+    assert _mortise_tool(base).startswith("WZF (402,") and _mortise_tool(files["side_left.hop"]).startswith("WZF (405,")
+    assert not [s for s in report.skipped if "tool 405" in s]
+    # one that doesn't fit is reported, and the automatic choice used
+    files, report = export.hops(cabinet, settings=HopsSettings(tool_for={"groove": 403}))
+    assert files["drawer_0_0_side_l.hop"] == export.hops(cabinet)[0]["drawer_0_0_side_l.hop"]
+    assert "drawer_0_0_side_l: tool 403 doesn't fit for groove 8 wide - used 410" in report.skipped
+
+
+def test_joints_own_machining():
+    config = CabinetConfig.stack(["drawer", "open", "open"])
+    base, _ = export.hops(Cabinet(config))
+    machining = {
+        "drawers": {"groove": {"width": 0.4, "depth": 0.5}},
+        "mortise_tenon": {"mortise": {"tool": 405}},
+    }
+    files, report = export.hops(Cabinet(config.copy(machining=machining)), settings=HopsSettings(tool_for={"mortise": 404}))
+    assert report.errors == []
+    # the drawers' grooves wider and deeper, the mortises with the joint's tool over the settings'
+    side = next(text for name, text in files.items() if name.startswith("drawer_0_0_side_l"))
+    assert "; Groove 8.4 wide, 9.5 deep" in side
+    assert _mortise_tool(files["side_left.hop"]).startswith("WZF (405,")
+    # the back's rabbets didn't change
+    assert files["back.hop"] == base["back.hop"]
+
+
+def test_a_panels_own_machining():
+    interior = {
+        "direction": "rows",
+        "children": [{"kind": "open"}, {"kind": "open"}, {"kind": "open"}],
+        "panel_joints": [{"type": "mortise_tenon", "machining": {"mortise": {"length": 2}}}, None],
+    }
+    config = CabinetConfig(interior=interior, door_style="none", machining={"mortise_tenon": {"mortise": {"length": 1}}})
+    side = export.hops(Cabinet(config))[0]["side_left.hop"]
+    lengths = sorted(float(m) for m in re.findall(r"TASCHENBREITE:=([\d.]+)", side))
+    # the first shelf's mortises 2 longer (its own), the second's 1 (the cabinet's)
+    assert lengths[0] + 1 == pytest.approx(lengths[-1])
+
+
+def test_hinges_and_shelf_holes_machining():
+    interior = {"direction": "rows", "children": [{"kind": "open", "shelf_holes": True}]}
+    config = CabinetConfig(interior=interior, hinges={"machining": {"pot": {"width": 1}}}, machining={"shelf_holes": {"shelf_hole": {"depth": 1}}})
+    files, _ = export.hops(Cabinet(config))
+    door = next(text for name, text in files.items() if name.startswith("door"))
+    assert "; Pot D36 13 deep" in door
+    # shelf holes 8 deep (half the panel minus 1), 1 deeper
+    assert "; Drilling D5, 9 deep" in files["side_left.hop"]
+
+
+def test_hops_router_contour(cabinet):
+    files, report = export.hops(cabinet, settings=HopsSettings(contour="router"))
+    side = files["side_left.hop"]
+    fmt = side[side.index("; Format") :].splitlines()
+    assert fmt[0] == "; Format: router along the outline"
+    assert fmt[1] == "WZF (403,_VE,_V,_VA,_SD,_ANF,'1')"  # the largest router that reaches through
+    assert fmt[2].startswith("CALL _Format_V5 ( VAL ECKENVERRUNDUNG:=0,TIEFE:=-2,")
+    assert "_Sformat_V5" not in side and "WZS" not in side
+    # the router asked for, if it reaches through (410: D6, 22 long)
+    files, report = export.hops(cabinet, settings=HopsSettings(contour="router", contour_tool=410))
+    assert files["side_left.hop"][files["side_left.hop"].index("; Format") :].splitlines()[1].startswith("WZF (410,")
+    # one that isn't there is reported, and the automatic one used
+    files, report = export.hops(cabinet, settings=HopsSettings(contour="router", contour_tool=999))
+    assert "side_left: contour tool 999 isn't in the tool table - used 403" in report.skipped
+
+
+def test_hops_zip_has_the_settings(cabinet):
+    import io
+    import zipfile
+
+    settings = HopsSettings(tolerances={"groove": Tolerance(width=0.3)})
+    data, _ = export.hops_zip(cabinet, settings=settings)
+    archive = zipfile.ZipFile(io.BytesIO(data))
+    assert "report.txt" in archive.namelist()
+    assert HopsSettings.from_json(archive.read("hops_settings.json").decode()).to_data() == settings.to_data()
+
+
+def test_export_command_line_hops_settings(tmp_path, monkeypatch):
+    import sys
+
+    config = tmp_path / "cabinet.json"
+    CabinetConfig.stack(["drawer", "open"]).to_json(str(config))
+    profile = tmp_path / "shop.json"
+    HopsSettings(tolerances={"groove": Tolerance(depth=0.5)}).to_json(str(profile))
+    out = tmp_path / "hops"
+    monkeypatch.setattr(sys, "argv", ["cabi_neat.export", str(config), "--hops", str(out), "--hops-settings", str(profile)])
+    export.main()
+    side = (out / "drawer_0_0_side_l_CUT_2.hop").read_text()
+    assert "; Groove 8 wide, 9.5 deep" in side

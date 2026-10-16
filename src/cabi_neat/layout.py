@@ -231,7 +231,7 @@ def resolve_layout(config):
             join_carcass(top, side, c.carcass_joint)
     for side in (left, right):
         if c.back_joint == "rabbet":
-            layout.join(back, side, "rabbet", rabbet_depth=c.rabbet_depth)
+            layout.join(back, side, "rabbet", rabbet_depth=c.rabbet_depth, machining=c.machining_for("back"))
         else:
             layout.join(back, side)
     layout.join(bottom, back)
@@ -348,6 +348,10 @@ def _resolve_split(layout, node, path, rect, panels, bounds, back, front_depth, 
                     ends = (panels["bottom"], panels["top"])
                 joint, parameters = node.panel_joint(i, c.interior_joint)
                 parameters = dict(c.joint_defaults()[joint], **parameters)
+                # the fabrication export's tool and tolerances for its cuts: the panel's own over the cabinet's
+                machining = c.machining_for(joint, parameters.pop("machining", None))
+                if machining:
+                    parameters["machining"] = machining
                 panel.attributes["joint"] = joint
                 panel.attributes["joint_parameters"] = parameters
                 for end in ends:
@@ -535,6 +539,7 @@ def _add_drawer(layout, key, opening, front_depth, options, on_shelf=False):
     bx = opening.x + clr
 
     attrs = {"node": key, "drawer": key, "travel": 0.75 * bd}
+    machining = options.get("machining")  # the fabrication export's tool and tolerances for the box's cuts
     front = layout.add(Part("drawer_{}_front".format(key), "drawer_front", (fx, _front_y(c), fz), (fw, c.front_thickness, fh), "y", dict(attrs)))
     side_l = layout.add(Part("drawer_{}_side_l".format(key), "drawer_side", (bx, by, bz), (st, bd, bh), "x", dict(attrs)))
     side_r = layout.add(Part("drawer_{}_side_r".format(key), "drawer_side", (bx + bw - st, by, bz), (st, bd, bh), "x", dict(attrs)))
@@ -544,23 +549,23 @@ def _add_drawer(layout, key, opening, front_depth, options, on_shelf=False):
         box_front = front
         bottom_y = by
         for panel in (side_l, side_r):
-            layout.join(panel, front, "clamex_p14", connector_count=1, dowels=True)
+            layout.join(panel, front, "clamex_p14", connector_count=1, dowels=True, machining=machining)
     else:
         # a box front, rabbeted into the sides like the back; the visible front is fixed to it
         box_front = layout.add(Part("drawer_{}_box_front".format(key), "drawer_box_front", (bx + st, by, bz), (bw - 2 * st, st, bh), "y", dict(attrs)))
         bottom_y = by + st
         for side in (side_l, side_r):
-            layout.join(box_front, side, "rabbet", rabbet_depth=None)
+            layout.join(box_front, side, "rabbet", rabbet_depth=None, machining=machining)
     for side in (side_l, side_r):
-        layout.join(box_back, side, "rabbet", rabbet_depth=None)
+        layout.join(box_back, side, "rabbet", rabbet_depth=None, machining=machining)
     # the bottom sits in grooves, raised off the box's lower edge; they run through the sides and the back (whose ends
     # are hidden in the sides' rabbets) and stop in the front
     bottom_z = bz + bottom_offset
     box_bottom = layout.add(Part("drawer_{}_bottom".format(key), "drawer_bottom", (bx + st, bottom_y, bottom_z), (bw - 2 * st, by + bd - st - bottom_y, bt), "z", dict(attrs)))
     for panel in (side_l, side_r, box_back):
-        layout.join(box_bottom, panel, "groove", depth=options["groove_depth"], through=True)
+        layout.join(box_bottom, panel, "groove", depth=options["groove_depth"], through=True, machining=machining)
     # a stopped groove in the front, exactly as long as the bottom's edge including its corners in the side grooves
-    layout.join(box_bottom, box_front, "groove", depth=options["groove_depth"], through=False)
+    layout.join(box_bottom, box_front, "groove", depth=options["groove_depth"], through=False, machining=machining)
 
 
 def part_category_group(category) -> Optional[str]:

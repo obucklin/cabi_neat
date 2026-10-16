@@ -5,6 +5,7 @@
 // their positions. Clicking inside the selected section selects the child section under the pointer; the selected
 // section's own panels are editable, anything nested deeper is greyed out.
 import * as T from "./tree.js";
+import { hopsDialog, jointDialog } from "./dialogs.js";
 
 const svg = document.getElementById("plan");
 const props = document.getElementById("props");
@@ -525,11 +526,8 @@ function renderProps() {
       majorGroup(
         "carcass-joints",
         "Carcass joints",
-        `<div class="subhead">Back in the sides: rabbet</div>
-        ${numberRow("Depth", c.rabbet_depth, `data-param="rabbet_depth" data-nullable min="0" placeholder="${round(c.thickness / 2)}" title="Empty: half the side thickness"`)}
-        <div class="subhead">${c.countertop ? "Bottom on the sides" : "Top and bottom on the sides"}: Clamex P-14</div>
-        ${numberRow("Connector distance", c.clamex_distance, 'data-param="clamex_distance" min="0"')}
-        <label class="row">Center connector <input type="checkbox" data-param="clamex_center" ${c.clamex_center ? "checked" : ""} /></label>`,
+        `${jointRow("Back in the sides: rabbet", "back", jointSummary([c.rabbet_depth !== null && `${round(c.rabbet_depth)} deep`], slotMachining("back")))}
+        ${jointRow(`${c.countertop ? "Bottom on the sides" : "Top and bottom on the sides"}: Clamex P-14`, "carcass-clamex", `${round(c.clamex_distance)} from the ends${c.clamex_center ? ", center connector" : ""}`)}`,
       ),
     );
     let countertop = "";
@@ -546,9 +544,7 @@ function renderProps() {
         </select></label>`;
       if (c.countertop_joint === "clamex_p14") {
         const center = c.countertop_clamex_center ?? c.clamex_center;
-        countertop += `
-        ${numberRow("Connector distance", c.countertop_clamex_distance, `data-param="countertop_clamex_distance" data-nullable min="0" placeholder="${round(c.clamex_distance)}" title="Empty: the carcass's connector distance"`)}
-        <label class="row">Center connector <input type="checkbox" data-param="countertop_clamex_center" ${center ? "checked" : ""} /></label>`;
+        countertop += jointRow("Clamex P-14", "countertop-clamex", `${round(c.countertop_clamex_distance ?? c.clamex_distance)} from the ends${center ? ", center connector" : ""}`);
       }
       countertop += `<div class="hint">Height includes the countertop.</div>`;
     }
@@ -628,7 +624,14 @@ function sectionGroups(path) {
       }
       body += `<div class="subgroup">${shelves}${panelRows(path)}</div>`;
     } else body += panelRows(path);
-    body += collapsible("drawer-settings", "Drawer settings" + changed(Object.keys(T.firstDrawer(node).drawer || {}).length), drawerFields(T.firstDrawer(node), onShelf), 1);
+    const own = T.firstDrawer(node).drawer || {};
+    body += collapsible("drawer-settings", "Drawer settings" + changed(Object.keys(own).filter((k) => k !== "groove_depth" && k !== "machining").length), drawerFields(T.firstDrawer(node), onShelf), 1);
+    const onePiece = own.front_one_piece ?? c.drawer_front_one_piece;
+    body += jointRow(
+      `Box joints: bottom in grooves, ${onePiece ? "front with Clamex, back in rabbets" : "front and back in rabbets"}`,
+      "drawers",
+      jointSummary([own.groove_depth !== undefined && `grooves ${round(own.groove_depth)} deep`], own.machining),
+    );
     body += drawerWarnings(path);
     groups.push(group("Drawers", body));
   } else {
@@ -655,6 +658,7 @@ function shelfHoleRows() {
     `<label class="row" title="${esc(title)}">${label} <input type="number" min="0" step="1" data-cabinet-option="shelf_hole_options" data-key="${key}"
       value="${c.shelf_hole_options && c.shelf_hole_options[key] !== undefined ? round(c.shelf_hole_options[key]) : ""}" placeholder="${placeholder || round(holes[key])}" /></label>`;
   return `<div class="hint">For all shelf holes in the cabinet. The drill head drills them if it has a bit for them.</div>
+    ${jointRow("Drilling", "shelf-holes", jointSummary([], slotMachining("shelf_holes")))}
     ${holeRow("diameter", "Diameter", "Hole diameter")}
     ${holeRow("depth", "Depth", "Empty: half the panel thickness minus 1, so holes from both faces of a divider don't meet", round(c.thickness / 2 - 1))}
     ${holeRow("spacing", "Spacing", "Distance between holes in a row")}
@@ -681,9 +685,14 @@ function panelRows(path) {
     const lit = names.some((n) => state.highlight.has(n)) ? " highlight" : "";
     html += `<div class="panel-row${lit}" data-parts="${names.join(",")}" data-group="${i}"><span>${label}</span>
       <input type="number" value="${round(groupPosition(g, path))}" min="0" step="1" data-action="position" data-group="${i}" aria-label="${label} position" />
-      ${hasPanel ? `<select data-action="joint" data-group="${i}" aria-label="${label} joint">${options.join("")}</select>` : "<span></span>"}
+      ${
+        hasPanel
+          ? `<span class="joint-cell"><select data-action="joint" data-group="${i}" aria-label="${label} joint">${options.join("")}</select>${
+              JOINT_FIELDS[joint.type] ? gearButton("panel", `${label}: ${T.JOINTS[joint.type]}`, `data-group="${i}"`, Object.keys(joint.params).length > 0) : ""
+            }</span>`
+          : "<span></span>"
+      }
     </div>`;
-    if (hasPanel) html += jointFields(joint, i, label);
   });
   return html;
 }
@@ -704,8 +713,7 @@ function drawerFields(drawer, onShelf = false) {
     ${number("side_clearance", "Side clearance", round(c.drawer_clearance), "Gap between the box's sides and the carcass on each side, for the runners")}
     ${number("side_height", "Side height", c.drawer_side_height === null ? "front − 20" : round(c.drawer_side_height), "Height of the drawer box. Empty: 20 lower than the front, as far as it fits")}
     ${bottom}
-    ${number("bottom_thickness", "Bottom thickness", round(c.drawer_bottom_thickness ?? c.back_thickness), "Empty: the carcass back's thickness")}
-    ${number("groove_depth", "Bottom groove depth", c.drawer_groove_depth ?? round((c.drawer_side_thickness ?? c.thickness) / 2), "Empty: half the grooved panel's thickness")}`;
+    ${number("bottom_thickness", "Bottom thickness", round(c.drawer_bottom_thickness ?? c.back_thickness), "Empty: the carcass back's thickness")}`;
 }
 
 // the door hinges' processing dimensions, in collapsible groups; empty fields use the cabinet's defaults
@@ -738,20 +746,148 @@ function changed(count) {
   return count ? ` <span class="changed">· ${count} changed</span>` : "";
 }
 
-/** A door's hinges: its own dimensions in General / Door / Side menus; empty fields use the cabinet's. */
+/** A door's hinges: a row whose settings button opens their dimensions and machining. */
 function hingeMenu(node) {
   const own = node.hinges || {};
-  const defaults = { ...(state.hingeDefaults || {}), ...(state.config.hinges || {}) };
-  const menus = HINGE_FIELDS.map(([id, title, fields]) => {
-    const inputs = fields.map(([key, label, min]) => {
-      const value = own[key];
-      return `<label class="row">${esc(label)} <input type="number" min="${min ?? 0}" step="any" data-option="hinges" data-key="${key}"
-        value="${value === undefined || value === null ? "" : round(value)}" placeholder="${defaults[key] ?? ""}" /></label>`;
+  const count = Object.keys(own).filter((k) => k !== "machining").length;
+  return jointRow(`Hinges · ${state.config.door_mount}`, "hinges", jointSummary([count && `${count} dimension${count > 1 ? "s" : ""} changed`], own.machining));
+}
+
+// ============================================================================
+// joints' settings, in popups
+// ============================================================================
+
+// the cuts each interior joint type makes, whose tool and tolerances its popup sets
+const JOINT_OPERATIONS = { mortise_tenon: ["mortise", "tenon_notch"], stopped_dado: ["dado", "tenon_notch"], clamex_p14: [], butt: [] };
+
+/** The settings button of a joint: `kind` says which (see openJoint), `attrs` more about it. */
+function gearButton(kind, title, attrs = "", set = false) {
+  return `<button class="gear${set ? " set" : ""}" data-action="joint-dialog" data-joint="${kind}" ${attrs} title="${esc(title)}: settings" aria-label="${esc(title)}: settings">⚙</button>`;
+}
+
+/** A joint's row: what it is, a short summary of its settings, and its settings button. */
+function jointRow(label, kind, summary = "", attrs = "") {
+  return `<div class="joint-row"><span>${esc(label)}${summary ? `<span class="hint"> · ${esc(summary)}</span>` : ""}</span>${gearButton(kind, label, attrs, Boolean(summary))}</div>`;
+}
+
+/** A summary of a joint's settings: `parts` (falsy ones left out), and whether it sets its own machining. */
+function jointSummary(parts, machining) {
+  const all = parts.filter(Boolean);
+  if (machining && Object.keys(machining).length) all.push("own HOPS settings");
+  return all.join(", ");
+}
+
+/** The cabinet's machining settings for `slot` (see MACHINING_SLOTS in config.py). */
+function slotMachining(slot) {
+  return (state.config.machining || {})[slot] || null;
+}
+
+/** The cabinet's machining settings with `slot` set to `value` (null removes it), or null if none are left. */
+function withSlot(slot, value) {
+  const machining = { ...(state.config.machining || {}) };
+  if (value) machining[slot] = value;
+  else delete machining[slot];
+  return Object.keys(machining).length ? machining : null;
+}
+
+/** Machining settings on top of each other, later ones winning per value. */
+function mergeMachining(...all) {
+  const merged = {};
+  for (const m of all) for (const [op, values] of Object.entries(m || {})) merged[op] = { ...(merged[op] || {}), ...values };
+  return Object.keys(merged).length ? merged : null;
+}
+
+/** Open the settings of a joint: `kind` is "back", "carcass-clamex", "countertop-clamex", "panel", "hinges", "drawers" or "shelf-holes". */
+async function openJoint(kind, data) {
+  const c = state.config;
+  const path = sectionOf();
+  if (kind === "back") {
+    const r = await jointDialog({
+      title: "Back in the sides: rabbet",
+      fields: [{ key: "rabbet_depth", label: "Rabbet depth", value: c.rabbet_depth, placeholder: round(c.thickness / 2), hint: "Empty: half the side thickness" }],
+      operations: ["rabbet"],
+      machining: slotMachining("back"),
     });
-    const count = fields.filter(([key]) => own[key] !== undefined && own[key] !== null).length;
-    return collapsible(`hinges/${id}`, title + changed(count), inputs.join(""), 2);
-  });
-  return collapsible("hinges", `Hinges · ${state.config.door_mount}` + changed(Object.keys(own).length), menus.join(""), 1);
+    if (r) await post({ ...c, rabbet_depth: r.values.rabbet_depth, machining: withSlot("back", r.machining) });
+  } else if (kind === "carcass-clamex" || kind === "countertop-clamex") {
+    const countertop = kind === "countertop-clamex";
+    const prefix = countertop ? "countertop_" : "";
+    const center = countertop ? (c.countertop_clamex_center ?? c.clamex_center) : c.clamex_center;
+    const r = await jointDialog({
+      title: countertop ? "Countertop on the sides: Clamex P-14" : `${c.countertop ? "Bottom" : "Top and bottom"} on the sides: Clamex P-14`,
+      fields: [
+        { key: "distance", label: "Connector distance", value: countertop ? c.countertop_clamex_distance : c.clamex_distance, placeholder: countertop ? round(c.clamex_distance) : 60, hint: "From each end of the joining edge to the nearest connector" },
+        { key: "center", label: "Center connector", checkbox: true, value: center },
+      ],
+      note: "The Clamex macros use the Clamex tools set in Write HOPS.",
+    });
+    if (!r) return;
+    const distance = r.values.distance ?? (countertop ? null : 60);
+    if (!(await post({ ...c, [`${prefix}clamex_distance`]: distance, [`${prefix}clamex_center`]: r.values.center }))) renderProps();
+  } else if (kind === "panel") {
+    const g = groupsFor(path)[Number(data.group)];
+    const joint = T.panelJointOf(root(), g, c.interior_joint);
+    const defaults = (state.jointDefaults && state.jointDefaults[joint.type]) || {};
+    const fields = (JOINT_FIELDS[joint.type] || []).map((f) => ({
+      key: f.key,
+      label: f.label,
+      checkbox: f.checkbox,
+      value: f.checkbox ? (joint.params[f.key] ?? defaults[f.key]) : joint.params[f.key],
+      placeholder: defaults[f.key] ?? (f.auto ? f.auto(c) : ""),
+      hint: f.hint,
+      min: f.min,
+    }));
+    const r = await jointDialog({
+      title: T.JOINTS[joint.type],
+      intro: "For this panel at both ends (and the panels aligned with it).",
+      fields,
+      operations: JOINT_OPERATIONS[joint.type] || [],
+      machining: joint.params.machining || null,
+      inherited: slotMachining(joint.type),
+      note: joint.type === "clamex_p14" ? "The Clamex macros use the Clamex tools set in Write HOPS." : "",
+    });
+    if (r) await edit(() => T.setPanelJointParams(root(), g.members, { ...r.values, machining: r.machining }, c.interior_joint));
+  } else if (kind === "hinges") {
+    const node = T.getNode(root(), path);
+    const own = node.hinges || {};
+    const defaults = { ...(state.hingeDefaults || {}), ...(c.hinges || {}) };
+    const fields = HINGE_FIELDS.flatMap(([, title, list]) => [
+      { heading: title },
+      ...list.map(([key, label, min]) => ({ key, label, min, value: own[key], placeholder: defaults[key] ?? "" })),
+    ]);
+    const r = await jointDialog({
+      title: `Hinges · ${c.door_mount}`,
+      intro: "For this door. Empty fields use the cabinet's.",
+      fields,
+      operations: ["pot", "drill"],
+      machining: own.machining || null,
+      inherited: mergeMachining(slotMachining("hinges"), (c.hinges || {}).machining),
+    });
+    if (r) await edit(() => T.setOptions(root(), path, "hinges", { ...r.values, machining: r.machining }));
+  } else if (kind === "drawers") {
+    const own = T.firstDrawer(T.getNode(root(), path)).drawer || {};
+    const onePiece = own.front_one_piece ?? c.drawer_front_one_piece;
+    const r = await jointDialog({
+      title: "Drawer box joints",
+      intro: `The bottom sits in grooves in the sides, front and back; ${onePiece ? "the front is fixed to the sides with Clamex and Ø8 dowels, the back sits in rabbets" : "the box's front and back sit in rabbets in the sides"}. For all drawers of this section.`,
+      fields: [
+        {
+          key: "groove_depth",
+          label: "Bottom groove depth",
+          value: own.groove_depth,
+          placeholder: c.drawer_groove_depth ?? round((c.drawer_side_thickness ?? c.thickness) / 2),
+          hint: "Empty: half the grooved panel's thickness",
+        },
+      ],
+      operations: ["groove", "rabbet", ...(onePiece ? ["drill"] : [])],
+      machining: own.machining || null,
+      inherited: slotMachining("drawers"),
+    });
+    if (r) await edit(() => T.setDrawerOptions(root(), path, { ...r.values, machining: r.machining }));
+  } else if (kind === "shelf-holes") {
+    const r = await jointDialog({ title: "Shelf holes", intro: "For all shelf holes in the cabinet.", operations: ["shelf_hole"], machining: slotMachining("shelf_holes") });
+    if (r) await post({ ...c, machining: withSlot("shelf_holes", r.machining) });
+  }
 }
 
 // remember which menus are open and which groups collapsed; `toggle` doesn't bubble, so listen while capturing
@@ -785,23 +921,6 @@ const JOINT_FIELDS = {
     { key: "stop_distance", label: "Stop", hint: "How far behind the front edge the groove stops" },
   ],
 };
-
-function jointFields(joint, group, label, at = "") {
-  const c = state.config;
-  const defaults = (state.jointDefaults && state.jointDefaults[joint.type]) || {};
-  const fields = (JOINT_FIELDS[joint.type] || []).map((f) => {
-    const attrs = `data-action="joint-param" data-group="${group}" data-key="${f.key}" ${at} aria-label="${label} ${f.label.toLowerCase()}"`;
-    if (f.checkbox) {
-      const checked = joint.params[f.key] ?? defaults[f.key];
-      return `<label class="param">${f.label} <input type="checkbox" ${checked ? "checked" : ""} ${attrs} /></label>`;
-    }
-    const value = joint.params[f.key];
-    const fallback = defaults[f.key] ?? (f.auto ? f.auto(c) : "");
-    return `<label class="param" title="${esc(f.hint || "Empty: the cabinet default")}">${f.label}
-      <input type="number" min="${f.min ?? 0}" step="1" value="${value === undefined || value === null ? "" : round(value)}" placeholder="${esc(fallback)}" ${attrs} /></label>`;
-  });
-  return fields.length ? `<div class="joint-params">${fields.join("")}</div>` : "";
-}
 
 function select(path) {
   state.selection = path;
@@ -843,7 +962,13 @@ props.addEventListener("click", async (evt) => {
   if (!button || state.busy) return;
   const { action } = button.dataset;
   const path = sectionOf();
-  if (action === "select") select(pathFromKey(button.dataset.path));
+  if (action === "joint-dialog") {
+    if (button.dataset.group !== undefined) {
+      const g = groupsFor(path)[Number(button.dataset.group)];
+      if (g) highlight(groupParts(g));
+    }
+    await openJoint(button.dataset.joint, button.dataset);
+  } else if (action === "select") select(pathFromKey(button.dataset.path));
   else if (action === "type") await edit(() => T.setType(root(), path, button.dataset.type));
   else if (action === "door") await edit(() => T.setDoor(root(), path, button.dataset.door));
   else if (action in COUNTERS) {
@@ -893,10 +1018,6 @@ props.addEventListener("change", async (evt) => {
     await edit(() => T.setDrawerOption(root(), path, el.dataset.key, value));
   }
   else if (action === "joint") await edit(() => T.setPanelJoint(root(), group().members, el.value, state.config.interior_joint));
-  else if (action === "joint-param") {
-    const value = el.type === "checkbox" ? el.checked : el.value === "" ? null : Number(el.value);
-    await edit(() => T.setPanelJointParam(root(), group().members, el.dataset.key, value, state.config.interior_joint));
-  }
   else if (action === "position") {
     const g = group();
     const delta = Number(el.value) - groupPosition(g, path);
@@ -1211,9 +1332,12 @@ async function exportBlob(kind) {
   return { blob: await res.blob(), summary: res.headers.get("X-Export-Summary") || "" };
 }
 
-/** Write one of the files for the workshop, named after the cabinet. */
-async function writeFile(kind) {
-  if (state.busy) return;
+/**
+ * Write one of the files for the workshop, named after the cabinet. `prepare` runs after choosing where (e.g. applying
+ * export settings). Resolves to true once written.
+ */
+async function writeFile(kind, prepare = null) {
+  if (state.busy) return false;
   const formats = {
     cutlist: [`${state.name}_cutlist.csv`, "Cut list (CSV)", { "text/csv": [".csv"] }, cutListBlob],
     btlx: [`${state.name}.btlx`, "BTLx", { "application/xml": [".btlx"] }, () => exportBlob("btlx")],
@@ -1227,19 +1351,22 @@ async function writeFile(kind) {
     target = await pickSaveTarget(name, description, accept);
   } catch (e) {
     setMessage(`Could not write ${description}: ${e.message}`, "error");
-    return;
+    return false;
   }
-  if (!target || state.busy) return;
+  if (!target || state.busy) return false;
   state.busy = true;
   updateToolbar();
   setMessage(state.stale ? "Generating 3D and writing…" : "Writing…");
   try {
+    if (prepare) await prepare();
     const { blob, summary } = await make();
     const saved = await writeSaveTarget(target, blob);
     setMessage(`Wrote ${saved}. ${summary}`);
     if (state.stale) await load();
+    return true;
   } catch (e) {
     setMessage(`Could not write ${description}: ${e.message}`, "error");
+    return false;
   } finally {
     state.busy = false;
     updateToolbar();
@@ -1267,7 +1394,8 @@ const MENU_ACTIONS = {
   "save-as": saveAs,
   "write-cutlist": () => writeFile("cutlist"),
   "write-btlx": () => writeFile("btlx"),
-  "write-hops": () => writeFile("hops"),
+  // the HOPS export's settings first, in a dialog that writes the programs
+  "write-hops": () => hopsDialog({ write: (prepare) => writeFile("hops", prepare), setMessage, pickSaveTarget, writeSaveTarget }),
   "write-dxf": () => writeFile("dxf"),
 };
 for (const [id, action] of Object.entries(MENU_ACTIONS)) document.getElementById(id).addEventListener("click", action);

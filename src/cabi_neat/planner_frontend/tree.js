@@ -343,10 +343,18 @@ export function setPanelJoint(root, members, type, fallback) {
 
 /** Set one parameter of the joint of every panel in a group; null goes back to the cabinet's default. */
 export function setPanelJointParam(root, members, key, value, fallback) {
+  return setPanelJointParams(root, members, { [key]: value }, fallback);
+}
+
+/** Set several parameters (`{key: value}`) of the joint of every panel in a group; null goes back to the default. */
+export function setPanelJointParams(root, members, changes, fallback) {
   return updateMembers(root, members, (entry) => {
     const { type, params } = jointEntry(entry, fallback);
-    const next = { ...params, [key]: value };
-    if (value === null || value === undefined) delete next[key];
+    const next = { ...params };
+    for (const [key, value] of Object.entries(changes)) {
+      if (value === null || value === undefined) delete next[key];
+      else next[key] = value;
+    }
     return Object.keys(next).length ? { type, ...next } : type;
   });
 }
@@ -357,13 +365,25 @@ export function setPanelJointParam(root, members, key, value, fallback) {
 
 /** Set `key` of the options dict `field` (e.g. "hinges", "drawer") of the section at `path`; null goes back to the default. */
 export function setOption(root, path, field, key, value) {
+  return setOptions(root, path, field, { [key]: value });
+}
+
+/** Set several keys (`{key: value}`) of the options dict `field` of the section at `path`; null goes back to the default. */
+export function setOptions(root, path, field, changes) {
   root = clone(root);
   const node = getNode(root, path);
-  const options = { ...(node[field] || {}) };
-  if (value === null || value === undefined) delete options[key];
-  else options[key] = value;
-  node[field] = Object.keys(options).length ? options : null;
+  node[field] = applyChanges(node[field], changes);
   return root;
+}
+
+/** `options` with `changes` (`{key: value}`) applied, null values removed; null if nothing's left. */
+function applyChanges(options, changes) {
+  const next = { ...(options || {}) };
+  for (const [key, value] of Object.entries(changes)) {
+    if (value === null || value === undefined) delete next[key];
+    else next[key] = value;
+  }
+  return Object.keys(next).length ? next : null;
 }
 
 /** Set a plain field (e.g. "drawer_shelves") of the section at `path`. */
@@ -471,14 +491,15 @@ export function setType(root, path, type) {
 
 /** Set `key` of the settings of every drawer in the section at `path` (null goes back to the cabinet's default). */
 export function setDrawerOption(root, path, key, value) {
+  return setDrawerOptions(root, path, { [key]: value });
+}
+
+/** Set several settings (`{key: value}`) of every drawer in the section at `path`; null goes back to the cabinet's. */
+export function setDrawerOptions(root, path, changes) {
   root = clone(root);
   const visit = (node) => {
-    if (isDrawer(node)) {
-      const options = { ...(node.drawer || {}) };
-      if (value === null || value === undefined) delete options[key];
-      else options[key] = value;
-      node.drawer = Object.keys(options).length ? options : null;
-    } else if (isSplit(node)) node.children.forEach(visit);
+    if (isDrawer(node)) node.drawer = applyChanges(node.drawer, changes);
+    else if (isSplit(node)) node.children.forEach(visit);
   };
   visit(getNode(root, path));
   return root;

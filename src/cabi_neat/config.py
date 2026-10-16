@@ -13,6 +13,9 @@ from typing import List
 from typing import Optional
 from typing import Union
 
+from .hops import check_machining
+from .hops import merge_machining
+
 
 class DoorMount(str, Enum):
     """How fronts (doors and drawer fronts) sit relative to the carcass."""
@@ -137,6 +140,9 @@ HINGE_DEFAULTS = {
     "plate_hole_depth": 12.0,
 }
 HINGE_DIMENSIONS = tuple(HINGE_DEFAULTS)
+# what a door's ``hinges`` can set: the dimensions, and the HOPS export's tool and tolerances for the cuts (see
+# cabi_neat.hops.check_machining)
+HINGE_OPTIONS = HINGE_DIMENSIONS + ("machining",)
 
 
 def hinge_count_for(height):
@@ -179,7 +185,7 @@ SHELF_HOLE_OPTIONS = tuple(SHELF_HOLE_DEFAULTS)
 
 
 # per-drawer settings (Cell.drawer), each defaulting to the cabinet's field in DRAWER_DEFAULTS
-DRAWER_OPTIONS = ("front_one_piece", "bottom_offset", "bottom_clearance", "side_clearance", "bottom_thickness", "groove_depth", "side_height")
+DRAWER_OPTIONS = ("front_one_piece", "bottom_offset", "bottom_clearance", "side_clearance", "bottom_thickness", "groove_depth", "side_height", "machining")
 DRAWER_DEFAULTS = {
     "front_one_piece": "drawer_front_one_piece",
     "bottom_offset": "drawer_bottom_offset",
@@ -189,6 +195,10 @@ DRAWER_DEFAULTS = {
     "groove_depth": "drawer_groove_depth",
     "side_height": "drawer_side_height",
 }
+# the joints whose machining (the HOPS export's tool and tolerances for their cuts) is set for the whole cabinet, in
+# CabinetConfig.machining: the back's rabbets, the interior joint types, shelf holes, door hinges and drawer boxes
+MACHINING_SLOTS = ("back", "mortise_tenon", "stopped_dado", "shelf_holes", "hinges", "drawers")
+
 # how much lower than its front a drawer box is, unless its side height is set
 DRAWER_SIDE_REDUCTION = 20.0
 # least material below the bottom's groove in a drawer box's sides, front and back; less is only a warning
@@ -196,13 +206,18 @@ DRAWER_MIN_BELOW_GROOVE = 5.0
 
 
 def _check_options(options, allowed, what):
-    """Validate a dict of per-node options, returning a copy without ``None`` values (or ``None`` if empty)."""
+    """Validate a dict of per-node options, returning a copy without ``None`` values (or ``None`` if empty). Its
+    ``machining``, if any, is validated with :func:`cabi_neat.hops.check_machining`."""
     if not options:
         return None
     unknown = set(options) - set(allowed)
     if unknown:
         raise ValueError("Unknown {}: {}.".format(what, ", ".join(sorted(unknown))))
     options = {k: v for k, v in options.items() if v is not None}
+    if "machining" in options:
+        options["machining"] = check_machining(options["machining"])
+        if options["machining"] is None:
+            del options["machining"]
     return options or None
 
 
@@ -215,10 +230,15 @@ def _check_panel_joint(entry):
         raise ValueError("Panel joints must be one of {}, got {!r}.".format(", ".join(INTERIOR_JOINTS), joint))
     if isinstance(entry, str):
         return entry
-    unknown = set(entry) - {"type"} - set(JOINT_PARAMETERS[joint])
+    unknown = set(entry) - {"type", "machining"} - set(JOINT_PARAMETERS[joint])
     if unknown:
         raise ValueError("Unknown parameters for {}: {}.".format(joint, ", ".join(sorted(unknown))))
-    return dict(entry)
+    entry = dict(entry)
+    if "machining" in entry:
+        entry["machining"] = check_machining(entry["machining"])
+        if entry["machining"] is None:
+            del entry["machining"]
+    return entry
 
 
 def _enum_value(value):
@@ -257,7 +277,7 @@ class Cell:
         self.kind = ZoneKind(self.kind)
         self.door_style = DoorStyle(self.door_style) if self.door_style is not None else None
         self.hinge_side = HingeSide(self.hinge_side) if self.hinge_side is not None else None
-        self.hinges = _check_options(self.hinges, HINGE_DIMENSIONS, "hinge dimensions")
+        self.hinges = _check_options(self.hinges, HINGE_OPTIONS, "hinge dimensions")
         self.drawer = _check_options(self.drawer, DRAWER_OPTIONS, "drawer settings")
 
     def to_data(self):
@@ -302,7 +322,9 @@ class Split:
         How each panel between consecutive children joins its neighbours, one entry per panel: a joint type (see
         ``INTERIOR_JOINTS``), or a dict with a ``"type"`` and that joint's parameters (see ``JOINT_PARAMETERS``), e.g.
         ``{"type": "clamex_p14", "distance": 80}``. ``None``, or a ``None`` entry, uses the cabinet's ``interior_joint``.
-        Parameters that aren't given use the cabinet's defaults (:meth:`CabinetConfig.joint_defaults`).
+        Parameters that aren't given use the cabinet's defaults (:meth:`CabinetConfig.joint_defaults`). A dict's
+        ``"machining"`` sets the HOPS export's tool and tolerances for the joint's cuts, over the cabinet's
+        :attr:`CabinetConfig.machining` for that joint type.
     hinges
         Hinge dimensions for this split's door (with ``one_door``), over the cabinet's ``hinges``.
     drawer_shelves
@@ -336,7 +358,7 @@ class Split:
             if len(self.panel_joints) != len(self.children) - 1:
                 raise ValueError("panel_joints needs one entry per panel: {} for {} children.".format(len(self.children) - 1, len(self.children)))
             self.panel_joints = [_check_panel_joint(j) for j in self.panel_joints]
-        self.hinges = _check_options(self.hinges, HINGE_DIMENSIONS, "hinge dimensions")
+        self.hinges = _check_options(self.hinges, HINGE_OPTIONS, "hinge dimensions")
 
     def panel_joint(self, gap, default):
         """``(type, parameters)`` of the panel after child ``gap``, or ``(default, {})``."""
@@ -484,6 +506,11 @@ class CabinetConfig:
         Depth of drawer boxes. ``None`` uses the interior depth minus ``drawer_rear_clearance``.
     drawer_rear_clearance
         Gap between an auto-sized drawer box and the back panel.
+    machining
+        The HOPS export's tool and fit tolerances for the cuts of joints of the whole cabinet, over the export's
+        settings (:class:`cabi_neat.hops.HopsSettings`): ``{joint: {operation: {"width", "length", "depth", "tool"}}}``
+        with joints in ``MACHINING_SLOTS``, e.g. ``{"drawers": {"groove": {"width": 0.3}}}``. Doors (``hinges``),
+        drawers (``drawer``) and panels (``panel_joints``) can set their own ``"machining"`` over these.
     """
 
     width: float = 800.0
@@ -534,6 +561,7 @@ class CabinetConfig:
     drawer_front_one_piece: bool = False
     drawer_depth: Optional[float] = None
     drawer_rear_clearance: float = 20.0
+    machining: Optional[dict] = None
 
     def __post_init__(self):
         self.columns = [c if isinstance(c, Column) else Column.from_data(c) for c in self.columns]
@@ -544,10 +572,7 @@ class CabinetConfig:
         self.hinge_side = HingeSide(self.hinge_side)
         if self.back_joint not in BACK_JOINTS:
             raise ValueError("back_joint must be one of {}, got {!r}.".format(", ".join(BACK_JOINTS), self.back_joint))
-        if self.hinges:
-            unknown = set(self.hinges) - set(HINGE_DIMENSIONS)
-            if unknown:
-                raise ValueError("Unknown hinge dimensions: {}.".format(", ".join(sorted(unknown))))
+        self.hinges = _check_options(self.hinges, HINGE_OPTIONS, "hinge dimensions")
         self.shelf_hole_options = _check_options(self.shelf_hole_options, SHELF_HOLE_OPTIONS, "shelf hole options")
         if self.carcass_joint not in CARCASS_JOINTS:
             raise ValueError("carcass_joint must be one of {}, got {!r}.".format(", ".join(CARCASS_JOINTS), self.carcass_joint))
@@ -555,6 +580,14 @@ class CabinetConfig:
             raise ValueError("countertop_joint must be one of {}, got {!r}.".format(", ".join(CARCASS_JOINTS), self.countertop_joint))
         if self.interior_joint not in INTERIOR_JOINTS:
             raise ValueError("interior_joint must be one of {}, got {!r}.".format(", ".join(INTERIOR_JOINTS), self.interior_joint))
+        if self.machining:
+            unknown = set(self.machining) - set(MACHINING_SLOTS)
+            if unknown:
+                raise ValueError("Unknown joints in machining: {}.".format(", ".join(sorted(unknown))))
+            machining = {slot: check_machining(m) for slot, m in self.machining.items()}
+            self.machining = {slot: m for slot, m in machining.items() if m} or None
+        else:
+            self.machining = None
 
     # ==========================================================================
     # presets
@@ -612,10 +645,16 @@ class CabinetConfig:
         """Thickness of drawer box sides, front and back: ``drawer_side_thickness``, or the carcass ``thickness``."""
         return self.drawer_side_thickness if self.drawer_side_thickness is not None else self.thickness
 
+    def machining_for(self, slot, own=None):
+        """The HOPS export's tool and tolerances for the cuts of a joint: the cabinet's for ``slot`` (see
+        ``MACHINING_SLOTS``), with the joint's ``own`` over them. None if nothing is set."""
+        return merge_machining((self.machining or {}).get(slot), own)
+
     def drawer_options(self, cell):
         """The settings of the drawer ``cell``: its own, falling back to the cabinet's."""
         own = cell.drawer or {}
         options = {key: own.get(key, getattr(self, field)) for key, field in DRAWER_DEFAULTS.items()}
+        options["machining"] = self.machining_for("drawers", own.get("machining"))
         if options["bottom_thickness"] is None:
             options["bottom_thickness"] = self.back_thickness
         return options
@@ -629,7 +668,12 @@ class CabinetConfig:
 
     def hinge_options(self, node):
         """The hinge dimensions of ``node``'s door: its own, falling back to the cabinet's ``hinges``."""
-        return dict(self.hinges or {}, **(node.hinges or {}))
+        options = dict(self.hinges or {}, **(node.hinges or {}))
+        machining = self.machining_for("hinges", merge_machining((self.hinges or {}).get("machining"), (node.hinges or {}).get("machining")))
+        options.pop("machining", None)
+        if machining:
+            options["machining"] = machining
+        return options
 
     def joint_defaults(self):
         """Parameters of each interior joint type, for panels that don't set their own."""

@@ -12,6 +12,12 @@ from fastapi import Response
 from .config import SHELF_HOLE_DEFAULTS
 from .config import CabinetConfig
 from .config import Cell
+from .hops import CONTOURS
+from .hops import OPERATION_LABELS
+from .hops import OPERATIONS
+from .hops import ROUTER_OPERATIONS
+from .hops import HopsSettings
+from .hops import HopsTools
 from .joints import CupHingeJoint
 from .layout import resolve_layout
 from .sections import sectioned
@@ -112,6 +118,14 @@ class Planner:
         ``X-Export-Summary`` says what couldn't be exported.
     ``POST /planner/api/display``
         ``{"show_fronts", "open_fronts"}`` (either optional): what the 3D view shows.
+    ``GET /planner/api/hops-settings``
+        The HOPS export's settings (:class:`cabi_neat.hops.HopsSettings`): ``{"settings", "defaults", "operations",
+        "router_operations", "labels", "contours"}``.
+    ``POST /planner/api/hops-settings``
+        Make settings the current ones. Returns them with ``"ok": true``, or ``{"ok": false, "error"}``.
+    ``POST /planner/api/hops-settings/too``
+        ``{"text"}``: a HOPS tool table (``.too``). Returns ``{"ok", "tools"}``, the tools read from it, without
+        applying them.
     """
 
     def __init__(self, configurator):
@@ -128,6 +142,9 @@ class Planner:
         app.add_route("/planner/api/export/hops", self.get_hops)
         app.add_route("/planner/api/export/dxf", self.get_dxf)
         app.add_route("/planner/api/display", self.post_display, methods=("POST",))
+        app.add_route("/planner/api/hops-settings", self.get_hops_settings)
+        app.add_route("/planner/api/hops-settings", self.post_hops_settings, methods=("POST",))
+        app.add_route("/planner/api/hops-settings/too", self.post_too, methods=("POST",))
         app.add_static_mount("/planner", FRONTEND_DIR, name="planner_frontend")
         _revalidate_planner_files(app)
 
@@ -189,11 +206,44 @@ class Planner:
             return _export_error("BTLx", e)
         return Response(content=xml, media_type="application/xml", headers=_download_headers("cabinet.btlx", report))
 
+    @property
+    def hops_settings(self):
+        """The HOPS export's settings, kept by the configurator."""
+        settings = getattr(self.configurator, "hops_settings", None)
+        if settings is None:
+            settings = self.configurator.hops_settings = HopsSettings()
+        return settings
+
+    def get_hops_settings(self):
+        return {
+            "settings": self.hops_settings.to_data(),
+            "defaults": HopsSettings().to_data(),
+            "operations": list(OPERATIONS),
+            "router_operations": list(ROUTER_OPERATIONS),
+            "labels": OPERATION_LABELS,
+            "contours": list(CONTOURS),
+        }
+
+    def post_hops_settings(self, data: dict = Body(...)):
+        try:
+            settings = HopsSettings.from_data(data)
+        except (TypeError, ValueError, KeyError) as e:
+            return {"ok": False, "error": "Invalid HOPS settings: {}".format(e)}
+        self.configurator.hops_settings = settings
+        return dict(self.get_hops_settings(), ok=True)
+
+    def post_too(self, data: dict = Body(...)):
+        try:
+            tools = HopsTools.from_too_text(data.get("text") or "")
+        except Exception as e:
+            return {"ok": False, "error": "Couldn't read the tool table: {}".format(e)}
+        return {"ok": True, "tools": tools.to_data()}
+
     def get_hops(self):
         from . import export
 
         try:
-            data, report = export.hops_zip(self._built_cabinet())
+            data, report = export.hops_zip(self._built_cabinet(), settings=self.hops_settings)
         except Exception as e:
             return _export_error("HOPS", e)
         return Response(content=data, media_type="application/zip", headers=_download_headers("cabinet_hops.zip", report))

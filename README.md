@@ -175,11 +175,11 @@ The page keeps no geometry of its own. It edits the interior tree (`planner_fron
 python -m cabi_neat.export cabinet.json --btlx cabinet.btlx --hops hops/ --dxf outlines.dxf
 ```
 
-The planner's **Fabricate** menu has **Write cut list** (CSV), **Write BTLx**, **Write HOPS** (a zip with one program per part and a `report.txt`) and **Write DXF**. From Python, `cabi_neat.export.btlx(cabinet, path)`, `cabi_neat.export.hops(cabinet, directory)` and `cabi_neat.export.dxf(cabinet, path)` do the same. Each export returns a report of what it couldn't export.
+The planner's **Fabricate** menu has **Write cut list** (CSV), **Write BTLx**, **Write HOPS** (a zip with one program per part and a `report.txt`, after a dialog with its settings, see [HOPS settings](#hops-settings)) and **Write DXF**. From Python, `cabi_neat.export.btlx(cabinet, path)`, `cabi_neat.export.hops(cabinet, directory)` and `cabi_neat.export.dxf(cabinet, path)` do the same. Each export returns a report of what it couldn't export.
 
 - **BTLx** is written by compas_timber's `BTLxWriter` from the cabinet's `TimberModel`. The model is in millimetres (`Tolerance(unit="MM")`). Features that aren't BTLx processings, the Clamex P-14 grooves, are left out while writing and stay on the plates.
 - **HOPS** programs are written like the workshop's own (`Hops/Hop/OB/flur`) and use its macros (`cabi_neat.hops`), one per plate:
-  - The part is cut to size first: saw 201 and `_Sformat_V5`.
+  - The part is cut to size first: with the saw (201, `_Sformat_V5`), or with a router (`contour="router"`), `_Format_V5` for rectangular parts and a contour around any other outline. A non-rectangular outline with the saw is reported.
   - Rabbets are a single line along their inner edge (`SP`/`G01`/`EP`, radius correction 1), as in `sides_schrank`.
   - Grooves for drawer bottoms in the drawer sides and back are lines along their walls with a linear approach (`SP` 1) and no lead-out (`EP` 0), with the largest router that fits the width. Closed ends stop a tool radius short, open ones run a tool diameter past the edge. In a one-piece drawer front the groove is a rectangular pocket, like the other pockets. 
   - Other pockets (mortises, tenon gaps, housings) use `_RechteckTasche_V5` with the largest router that fits, its radius as the corner radius, and no lead-out. Pockets open to an edge are widened past it for a bigger router. Other shapes use a contour and `_ExecutePocket_V5`.
@@ -193,12 +193,51 @@ The planner's **Fabricate** menu has **Write cut list** (CSV), **Write BTLx**, *
   - Identical parts (shelves, drawer bottoms, …) share one program, named after the first with `_CUT_<n>` appended, e.g. `shelf_0_2_CUT_4.hop` is cut four times. `report.txt` lists the parts each one is for.
   - Every part lies on the table with its long edge along X. Of the two ways, drawer parts (sides, back, front) take the one with their bottom edge, and the groove, at Y = 0.
   - Files are written with Windows line endings.
+  - The zip also holds `hops_settings.json`: the settings the programs were made with (see below).
 - **DXF** (`cabi_neat.dxf`) has the 2D outlines of all parts in one file, for planning nesting:
   - It's DXF R12 (AC1009) for the widest compatibility, in millimetres, with Windows line endings.
   - Each part is a block named after it (upper case, e.g. `SHELF_0_1`), with its outline as a closed `POLYLINE` and its name as a `TEXT` in the middle.
   - Each block is inserted once. The inserts are laid out in rows 3 m wide, in one band per thickness, thinnest first.
   - The inserts, outlines and names are on one layer per material thickness, e.g. `18MM`, `8MM`, `8_5MM`.
   - An outline is the processed plate's silhouette, seen from its frame's +z side. It includes what goes through the whole thickness: tenons, stopped dado notches, a back widened into its rabbets. Pockets, grooves and drillings aren't in it. The report lists any part whose silhouette falls apart into several pieces; only the largest is drawn.
+
+### HOPS settings
+
+The HOPS export takes settings, `cabi_neat.hops.HopsSettings`, saved as their own JSON file. They're the machine's and the workshop's defaults, not the cabinet's, so one file serves every cabinet:
+
+- `tools`: the machine (`HopsTools`). That's its routers, drills and drill head bits, the saw and Clamex tools, the format, the through overcut and the Clamex access holes.
+- `contour`: how parts are cut to size, `"saw"` (the default) or `"router"`, and `contour_tool`, the router to use. By default it's the largest router that reaches through the part.
+- `tool_for`: the tool for an operation, e.g. `{"mortise": 405}`, instead of the automatic choice (the largest router or the shortest drill that fits). A tool that doesn't fit, or isn't in the table, is reported, and the automatic one is used.
+- `tolerances`: fit tolerances per operation in mm, added to the nominal size, e.g. `{"groove": {"width": 0.3, "depth": 0.5}}`. Negative values cut smaller.
+  - `width` widens a pocket across, symmetrically (a rabbet only into the part), or enlarges a pot's or hole's diameter. A hole only gets bigger if there's a drill of the larger diameter.
+  - `length` lengthens a pocket at its closed ends, half at each, or makes a tenon notch longer, so the tenons get shorter.
+  - `depth` deepens it.
+- `groove_overrun`: how far grooves run past the part's edge at open ends. The default is one tool diameter.
+
+The operations are `groove`, `rabbet`, `mortise`, `dado`, `pocket`, `tenon_notch`, `pot`, `drill`, `shelf_hole` and `horizontal_drill`. The tolerances only change the HOPS programs: the model, BTLx, DXF and cut list stay nominal.
+
+**A joint's own settings.** A joint can have its own tool and tolerances for the cuts it makes, its `machining`: `{operation: {"width", "length", "depth", "tool"}}`. Empty values use the HOPS settings. The joint passes them on with each feature it makes (`feature.machining`), and the HOPS export applies them over its settings. They belong to the cabinet:
+- `CabinetConfig.machining` holds them for the whole cabinet, by joint: `back` (rabbets), `mortise_tenon` and `stopped_dado` (shelves and dividers), `shelf_holes`, `hinges` and `drawers` (grooves, rabbets and the dowels of one-piece fronts). For example: `{"drawers": {"groove": {"width": 0.3}}}`.
+- A shelf's or divider's entry in `panel_joints`, a door's `hinges` and a drawer's `drawer` can each have their own `"machining"` over the cabinet's.
+
+```bash
+python -m cabi_neat cabinet.json --hops-settings shop.json            # planner, starting with these settings
+python -m cabi_neat.export cabinet.json --hops hops/ --hops-settings shop.json
+```
+
+From Python: `export.hops(cabinet, settings=HopsSettings.from_json("shop.json"))`.
+
+**In the planner.**
+- Each joint has a settings button (⚙): the back's rabbets, the Clamex P-14 of the carcass and the countertop, each shelf's and divider's joint, a door's hinges, a drawer section's box joints, and the shelf holes.
+  - Its popup has the joint's dimensions (depth, tenons, connector distance, stop, the hinges' pots and screws, the bottom grooves' depth) and, for each cut it makes, its tool and fit tolerances.
+  - Empty fields use the defaults, shown greyed.
+  - The Clamex macros use the Clamex tools set in the HOPS settings.
+- **Write HOPS…** first shows the HOPS settings:
+  - **Cutting parts to size:** saw or router, and the router.
+  - **Machine:** import the tool table (`.too`), the Clamex tools, the through overcut and the drill head.
+  - **Defaults per machining:** a tool and fit tolerances for each operation.
+  - **Write HOPS…** applies the settings and writes the programs. *Load settings…* and *Save settings…* read and write the JSON file.
+  - The browser remembers the settings last used, unless the planner was started with `--hops-settings`.
 
 ## Setup
 
