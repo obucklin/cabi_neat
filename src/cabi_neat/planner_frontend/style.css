@@ -865,13 +865,13 @@ dialog.joint-dialog {
 }
 
 dialog.hops-dialog {
-  width: 1000px;
+  width: 1120px;
   max-width: calc(100vw - 32px);
 }
 
 dialog.popup .columns {
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
   gap: 24px;
 }
 
@@ -914,7 +914,7 @@ table.machining tbody th {
 }
 
 table.machining select {
-  max-width: 220px;
+  max-width: 160px;
 }
 
 label.mini {
@@ -925,7 +925,7 @@ label.mini {
 }
 
 label.mini input {
-  width: 62px;
+  width: 54px;
 }
 
 details.tool-list summary {

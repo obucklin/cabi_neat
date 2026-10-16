@@ -527,7 +527,7 @@ function renderProps() {
         "carcass-joints",
         "Carcass joints",
         `${jointRow("Back in the sides: rabbet", "back", jointSummary([c.rabbet_depth !== null && `${round(c.rabbet_depth)} deep`], slotMachining("back")))}
-        ${jointRow(`${c.countertop ? "Bottom on the sides" : "Top and bottom on the sides"}: Clamex P-14`, "carcass-clamex", `${round(c.clamex_distance)} from the ends${c.clamex_center ? ", center connector" : ""}`)}`,
+        ${jointRow(`${c.countertop ? "Bottom on the sides" : "Top and bottom on the sides"}: Clamex P-14`, "carcass-clamex", `${round(c.clamex_distance)} from the ends${c.clamex_center ? ", center connector" : ""}`, c.clamex_distance !== 60 || !c.clamex_center)}`,
       ),
     );
     let countertop = "";
@@ -544,7 +544,8 @@ function renderProps() {
         </select></label>`;
       if (c.countertop_joint === "clamex_p14") {
         const center = c.countertop_clamex_center ?? c.clamex_center;
-        countertop += jointRow("Clamex P-14", "countertop-clamex", `${round(c.countertop_clamex_distance ?? c.clamex_distance)} from the ends${center ? ", center connector" : ""}`);
+        const own = c.countertop_clamex_distance !== null || c.countertop_clamex_center !== null;
+        countertop += jointRow("Clamex P-14", "countertop-clamex", `${round(c.countertop_clamex_distance ?? c.clamex_distance)} from the ends${center ? ", center connector" : ""}`, own);
       }
       countertop += `<div class="hint">Height includes the countertop.</div>`;
     }
@@ -765,9 +766,9 @@ function gearButton(kind, title, attrs = "", set = false) {
   return `<button class="gear${set ? " set" : ""}" data-action="joint-dialog" data-joint="${kind}" ${attrs} title="${esc(title)}: settings" aria-label="${esc(title)}: settings">⚙</button>`;
 }
 
-/** A joint's row: what it is, a short summary of its settings, and its settings button. */
-function jointRow(label, kind, summary = "", attrs = "") {
-  return `<div class="joint-row"><span>${esc(label)}${summary ? `<span class="hint"> · ${esc(summary)}</span>` : ""}</span>${gearButton(kind, label, attrs, Boolean(summary))}</div>`;
+/** A joint's row: what it is, a short summary of its settings, and its settings button (highlighted if `set`, i.e. not the defaults). */
+function jointRow(label, kind, summary = "", set = Boolean(summary)) {
+  return `<div class="joint-row"><span>${esc(label)}${summary ? `<span class="hint"> · ${esc(summary)}</span>` : ""}</span>${gearButton(kind, label, "", set)}</div>`;
 }
 
 /** A summary of a joint's settings: `parts` (falsy ones left out), and whether it sets its own machining. */
@@ -1411,7 +1412,9 @@ document.getElementById("cabinet-name").addEventListener("change", (evt) => setN
 // start
 // ============================================================================
 
-document.getElementById("view3d").src = `/?ws_host=${location.hostname}&ws_port=${location.port || 80}`;
+// the compas_threejs viewer of the server; the static site has its own 3D view there instead (web/viewer3d.js)
+const view3d = document.getElementById("view3d");
+if (view3d.tagName === "IFRAME") view3d.src = `/?ws_host=${location.hostname}&ws_port=${location.port || 80}`;
 new ResizeObserver(() => render()).observe(svg);
 updateToolbar();
 updateName();

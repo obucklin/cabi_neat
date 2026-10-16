@@ -6,8 +6,22 @@ the whole config back; the configurator rebuilds the 3D model, which the page sh
 
 from pathlib import Path
 
-from fastapi import Body
-from fastapi import Response
+try:
+    from fastapi import Body
+    from fastapi import Response
+except ImportError:  # in the browser (see cabi_neat.web) there's no web server: the handlers are called directly
+
+    def Body(*args, **kwargs):
+        return None
+
+    class Response:
+        """What a handler answers when it isn't JSON: ``content`` (str or bytes), its media type, headers and status."""
+
+        def __init__(self, content=b"", status_code=200, media_type=None, headers=None):
+            self.body = content.encode("utf-8") if isinstance(content, str) else content
+            self.status_code = status_code
+            self.media_type = media_type
+            self.headers = dict(headers or {})
 
 from .config import SHELF_HOLE_DEFAULTS
 from .config import CabinetConfig

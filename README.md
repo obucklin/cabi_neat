@@ -169,6 +169,23 @@ At the carcass level the sidebar has four main groups: Cabinet, Carcass joints, 
 
 The page keeps no geometry of its own. It edits the interior tree (`planner_frontend/tree.js`) and posts the config to `/planner/api/config`. Python then resolves and builds the cabinet, updates the 3D view, and sends the resolved layout back for drawing. `cabi_neat.sections.sectioned(config)` converts any config into the planner's *section form*, where every node has an explicit front, without changing its geometry.
 
+### In the browser (GitHub Pages)
+
+The planner also runs as a static site, with its Python in the browser: [Pyodide](https://pyodide.org) runs cabi_neat, compas_timber and compas in a web worker. No server is needed.
+
+```bash
+python web/build.py _site                 # the site: the planner page, web/ and the Python wheels
+python -m http.server -d _site            # then open http://localhost:8000
+```
+
+- **Deployment:** `.github/workflows/pages.yml` builds and deploys the site on every push to `main`. In the repository's settings, set Pages → Source to *GitHub Actions*.
+- **How it works:** `web/web.js` answers the page's `api/...` calls with `cabi_neat.web.WebPlanner`, which uses the same handlers as the server's planner.
+- **Without OpenCascade:** OpenCascade can't run in the browser, so there are no Breps.
+  - **3D view:** `web/viewer3d.js` draws each part as an extrusion of its outline, minus the cuts that go through it (`cabi_neat.dxf.plate_shape`). Tenons, notches and extended parts show; pockets, grooves and holes don't.
+  - **Exports:** HOPS, BTLx and DXF give the same output as the server's. A DXF outline may start at a different corner.
+- **Loading:** a first visit downloads Python, numpy, scipy and shapely (about 30 MB), which takes 15 to 30 s; later visits are faster. Generating the 3D model takes a few seconds.
+- **compas_timber version:** it comes from its repository at the commit pinned in `web/build.py`, the one the planner is tested with.
+
 ## Fabrication output
 
 ```bash
